@@ -1,69 +1,306 @@
 ﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Site.master.cs" Inherits="ScienceBuddy.SiteMaster" %>
-
 <!DOCTYPE html>
-
 <html lang="en">
 <head runat="server">
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%: Page.Title %> - My ASP.NET Application</title>
+    <meta name="description" content="ScienceBuddy – Fun science learning for Malaysian primary school students aged 7 to 12." />
+    <meta name="theme-color" content="#2563EB" />
 
-    <asp:PlaceHolder runat="server">
-        <%: Scripts.Render("~/bundles/modernizr") %>
-    </asp:PlaceHolder>
+    <title><%: Page.Title %> – ScienceBuddy</title>
 
-    <webopt:bundlereference runat="server" path="~/Content/css" />
+    <%-- Favicon --%>
     <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
 
-</head>
-<body>
-    <form runat="server">
-        <asp:ScriptManager runat="server">
-            <Scripts>
-                <%--To learn more about bundling scripts in ScriptManager see https://go.microsoft.com/fwlink/?LinkID=301884 --%>
-                <%--Framework Scripts--%>
-                <asp:ScriptReference Name="MsAjaxBundle" />
-                <asp:ScriptReference Name="jquery" />
-                <asp:ScriptReference Name="WebForms.js" Assembly="System.Web" Path="~/Scripts/WebForms/WebForms.js" />
-                <asp:ScriptReference Name="WebUIValidation.js" Assembly="System.Web" Path="~/Scripts/WebForms/WebUIValidation.js" />
-                <asp:ScriptReference Name="MenuStandards.js" Assembly="System.Web" Path="~/Scripts/WebForms/MenuStandards.js" />
-                <asp:ScriptReference Name="GridView.js" Assembly="System.Web" Path="~/Scripts/WebForms/GridView.js" />
-                <asp:ScriptReference Name="DetailsView.js" Assembly="System.Web" Path="~/Scripts/WebForms/DetailsView.js" />
-                <asp:ScriptReference Name="TreeView.js" Assembly="System.Web" Path="~/Scripts/WebForms/TreeView.js" />
-                <asp:ScriptReference Name="WebParts.js" Assembly="System.Web" Path="~/Scripts/WebForms/WebParts.js" />
-                <asp:ScriptReference Name="Focus.js" Assembly="System.Web" Path="~/Scripts/WebForms/Focus.js" />
-                <asp:ScriptReference Name="WebFormsBundle" />
-                <%--Site Scripts--%>
-            </Scripts>
-        </asp:ScriptManager>
+    <%-- Google Fonts --%>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark">
-            <div class="container">
-                <a class="navbar-brand" runat="server" href="~/">Application name</a>
-                <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" title="Toggle navigation" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
+    <%-- Bootstrap Icons --%>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+
+    <%-- Core Styles --%>
+    <link href="<%: ResolveUrl("~/Content/bootstrap.min.css") %>" rel="stylesheet" />
+    <link href="<%: ResolveUrl("~/Content/Site.css") %>" rel="stylesheet" />
+    <link href="<%: ResolveUrl("~/Content/responsive.css") %>" rel="stylesheet" />
+
+    <%-- Page-level head content --%>
+    <asp:ContentPlaceHolder ID="HeadContent" runat="server" />
+</head>
+<body class="<%: BodyCssClass %>">
+<form id="MainForm" runat="server">
+
+    <asp:ScriptManager ID="ScriptManager1" runat="server" EnablePartialRendering="true">
+        <Scripts>
+            <asp:ScriptReference Name="MsAjaxBundle" />
+            <asp:ScriptReference Name="jquery" />
+            <asp:ScriptReference Name="WebForms.js"        Assembly="System.Web" Path="~/Scripts/WebForms/WebForms.js" />
+            <asp:ScriptReference Name="WebUIValidation.js" Assembly="System.Web" Path="~/Scripts/WebForms/WebUIValidation.js" />
+            <asp:ScriptReference Name="MenuStandards.js"   Assembly="System.Web" Path="~/Scripts/WebForms/MenuStandards.js" />
+            <asp:ScriptReference Name="GridView.js"        Assembly="System.Web" Path="~/Scripts/WebForms/GridView.js" />
+            <asp:ScriptReference Name="DetailsView.js"     Assembly="System.Web" Path="~/Scripts/WebForms/DetailsView.js" />
+            <asp:ScriptReference Name="TreeView.js"        Assembly="System.Web" Path="~/Scripts/WebForms/TreeView.js" />
+            <asp:ScriptReference Name="WebParts.js"        Assembly="System.Web" Path="~/Scripts/WebForms/WebParts.js" />
+            <asp:ScriptReference Name="Focus.js"           Assembly="System.Web" Path="~/Scripts/WebForms/Focus.js" />
+            <asp:ScriptReference Name="WebFormsBundle" />
+        </Scripts>
+    </asp:ScriptManager>
+
+    <%-- ══════════════════════════════════════════════════════
+         LAYOUT: GUEST / DASHBOARD  →  Top Navigation Only
+         ══════════════════════════════════════════════════════ --%>
+    <asp:Panel ID="pnlTopNavLayout" runat="server" CssClass="sb-layout-topnav" Visible="false">
+
+        <%-- TOP NAVIGATION --%>
+        <nav class="sb-topnav" role="navigation" aria-label="Main navigation">
+            <div class="sb-container-fluid sb-flex-between w-full">
+
+                <%-- Brand --%>
+                <a class="sb-nav-brand" runat="server" href="~/">
+                    <img src="<%: ResolveUrl("~/Images/Logo/sciencebuddy-logo.png") %>"
+                         alt="ScienceBuddy Logo"
+                         onerror="this.style.display='none'" />
+                    <span class="sb-nav-brand-text">Science<span>Buddy</span></span>
+                </a>
+
+                <%-- Mobile toggle --%>
+                <button type="button"
+                        class="sb-nav-toggler"
+                        aria-controls="topNavLinks"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation">
+                    <i class="bi bi-list fs-lg"></i>
                 </button>
-                <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item"><a class="nav-link" runat="server" href="~/">Home</a></li>
-                        <li class="nav-item"><a class="nav-link" runat="server" href="~/About">About</a></li>
-                        <li class="nav-item"><a class="nav-link" runat="server" href="~/Contact">Contact</a></li>
-                    </ul>
+
+                <%-- Placeholder Nav Links (pages populate via ContentPlaceHolder) --%>
+                <ul id="topNavLinks" class="sb-nav-links" role="list">
+                    <asp:ContentPlaceHolder ID="TopNavLinks" runat="server">
+                        <%-- Default guest links --%>
+                        <li role="listitem"><a runat="server" href="~/" class="nav-link">
+                            <i class="bi bi-house nav-icon"></i> Home</a></li>
+                        <li role="listitem"><a runat="server" href="~/About" class="nav-link">
+                            <i class="bi bi-info-circle nav-icon"></i> About</a></li>
+                        <li role="listitem"><a runat="server" href="~/Contact" class="nav-link">
+                            <i class="bi bi-envelope nav-icon"></i> Contact</a></li>
+                    </asp:ContentPlaceHolder>
+                </ul>
+
+                <%-- Nav Actions (right side) --%>
+                <div class="sb-nav-actions">
+                    <asp:ContentPlaceHolder ID="TopNavActions" runat="server">
+                        <%-- Default: Login / Register buttons for guests --%>
+                        <a runat="server" href="~/Login"    class="sb-btn sb-btn-outline-primary sb-btn-sm">Sign In</a>
+                        <a runat="server" href="~/Register" class="sb-btn sb-btn-primary sb-btn-sm">Register</a>
+                    </asp:ContentPlaceHolder>
                 </div>
+
             </div>
         </nav>
-        <div class="container body-content">
-            <asp:ContentPlaceHolder ID="MainContent" runat="server">
-            </asp:ContentPlaceHolder>
-            <hr />
-            <footer>
-                <p>&copy; <%: DateTime.Now.Year %> - My ASP.NET Application</p>
+
+        <%-- MAIN CONTENT AREA --%>
+        <main class="sb-main-content" id="mainContent" role="main" aria-label="Page content">
+            <asp:ContentPlaceHolder ID="MainContent" runat="server" />
+        </main>
+
+        <%-- FOOTER --%>
+        <footer class="sb-footer" role="contentinfo">
+            <div class="sb-footer-inner">
+                <a class="sb-footer-brand" runat="server" href="~/">
+                    <img src="<%: ResolveUrl("~/Images/Logo/sciencebuddy-logo.png") %>"
+                         alt="ScienceBuddy"
+                         onerror="this.style.display='none'" />
+                    <span class="sb-footer-brand-name">Science<span>Buddy</span></span>
+                </a>
+                <span class="sb-footer-copy">
+                    &copy; <%: DateTime.Now.Year %> ScienceBuddy &mdash; Inspiring young scientists across Malaysia 🔬
+                </span>
+                <ul class="sb-footer-links">
+                    <li><a runat="server" href="~/About">About</a></li>
+                    <li><a runat="server" href="~/Contact">Contact</a></li>
+                    <li><a href="#">Privacy</a></li>
+                    <li><a href="#">Terms</a></li>
+                </ul>
+            </div>
+        </footer>
+
+    </asp:Panel>
+
+    <%-- ══════════════════════════════════════════════════════
+         LAYOUT: LOGGED-IN NON-DASHBOARD  →  Sidebar + Header
+         ══════════════════════════════════════════════════════ --%>
+    <asp:Panel ID="pnlSidebarLayout" runat="server" CssClass="sb-layout-sidebar" Visible="false">
+
+        <%-- SIDEBAR OVERLAY (mobile backdrop) --%>
+        <div class="sb-sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+
+        <%-- LEFT SIDEBAR --%>
+        <aside class="sb-sidebar" id="sbSidebar" role="complementary" aria-label="Sidebar navigation">
+
+            <%-- Sidebar Brand --%>
+            <a class="sb-sidebar-brand" runat="server" href="~/">
+                <img src="<%: ResolveUrl("~/Images/Logo/sciencebuddy-logo.png") %>"
+                     alt="ScienceBuddy Logo"
+                     onerror="this.style.display='none'" />
+                <span class="brand-text">Science<span>Buddy</span></span>
+            </a>
+
+            <%-- Sidebar Navigation --%>
+            <nav class="sb-sidebar-nav" aria-label="Sidebar navigation">
+                <%-- Pages inject their role-specific menu here --%>
+                <div class="sb-nav-menu-placeholder">
+                    <asp:ContentPlaceHolder ID="SidebarMenu" runat="server">
+                        <%-- Placeholder: role-specific pages will override this --%>
+                        <div class="sb-nav-section">
+                            <div class="sb-nav-section-label">Navigation</div>
+                            <a href="#" class="sb-sidebar-item">
+                                <i class="bi bi-house item-icon"></i>
+                                <span class="item-label">Dashboard</span>
+                            </a>
+                        </div>
+                    </asp:ContentPlaceHolder>
+                </div>
+            </nav>
+
+            <%-- Sidebar Footer (user info / logout placeholder) --%>
+            <div class="sb-sidebar-footer">
+                <asp:ContentPlaceHolder ID="SidebarFooter" runat="server">
+                    <%-- Role-specific pages inject user profile / logout here --%>
+                </asp:ContentPlaceHolder>
+            </div>
+
+        </aside>
+
+        <%-- CONTENT AREA (header + main + footer) --%>
+        <div class="sb-content-area">
+
+            <%-- TOP HEADER --%>
+            <header class="sb-topheader" role="banner">
+
+                <%-- Sidebar toggle --%>
+                <button type="button"
+                        class="sb-sidebar-toggle"
+                        data-sidebar-toggle
+                        aria-label="Toggle sidebar"
+                        aria-expanded="true"
+                        aria-controls="sbSidebar">
+                    <i class="bi bi-list"></i>
+                </button>
+
+                <%-- Page title --%>
+                <span class="sb-page-title">
+                    <asp:ContentPlaceHolder ID="PageTitle" runat="server">
+                        <%: Page.Title %>
+                    </asp:ContentPlaceHolder>
+                </span>
+
+                <%-- Header right actions --%>
+                <div class="sb-nav-actions">
+
+                    <%-- Notification bell --%>
+                    <button type="button"
+                            class="sb-nav-notification"
+                            aria-label="Notifications"
+                            data-tooltip="Notifications">
+                        <i class="bi bi-bell"></i>
+                        <asp:Panel ID="pnlNotifDot" runat="server" CssClass="notification-dot" Visible="false" />
+                    </button>
+
+                    <%-- User avatar / dropdown trigger --%>
+                    <div class="sb-dropdown">
+                        <button type="button"
+                                class="sb-nav-user"
+                                data-dropdown-toggle="userDropdown"
+                                aria-haspopup="true"
+                                aria-expanded="false">
+                            <div class="user-avatar">
+                                <asp:Image ID="imgUserAvatar" runat="server"
+                                           AlternateText="User Avatar"
+                                           CssClass="user-avatar-img"
+                                           Visible="false" />
+                                <asp:Literal ID="litUserInitials" runat="server" Text="U" />
+                            </div>
+                            <div class="user-info">
+                                <span class="user-name">
+                                    <asp:Literal ID="litUserName" runat="server" Text="Guest" />
+                                </span>
+                                <span class="user-role">
+                                    <asp:Literal ID="litUserRole" runat="server" Text="User" />
+                                </span>
+                            </div>
+                            <i class="bi bi-chevron-down ms-1 text-muted" style="font-size:.75rem"></i>
+                        </button>
+
+                        <%-- User dropdown menu --%>
+                        <div class="sb-dropdown-menu" id="userDropdown" role="menu" aria-label="User menu">
+                            <asp:ContentPlaceHolder ID="UserDropdownMenu" runat="server">
+                                <%-- Default items; role-specific pages can override --%>
+                                <a runat="server" href="#" class="sb-dropdown-item" role="menuitem">
+                                    <i class="bi bi-person"></i> My Profile
+                                </a>
+                                <a runat="server" href="#" class="sb-dropdown-item" role="menuitem">
+                                    <i class="bi bi-gear"></i> Settings
+                                </a>
+                                <div class="sb-dropdown-divider"></div>
+                                <a runat="server" href="~/Logout" class="sb-dropdown-item danger" role="menuitem">
+                                    <i class="bi bi-box-arrow-right"></i> Sign Out
+                                </a>
+                            </asp:ContentPlaceHolder>
+                        </div>
+                    </div>
+
+                </div>
+            </header>
+
+            <%-- BREADCRUMB (optional, pages may inject) --%>
+            <asp:Panel ID="pnlBreadcrumb" runat="server" Visible="false">
+                <div style="padding: 8px 32px 0;">
+                    <asp:ContentPlaceHolder ID="BreadcrumbContent" runat="server" />
+                </div>
+            </asp:Panel>
+
+            <%-- MAIN CONTENT --%>
+            <main class="sb-main-content" id="mainContentSidebar" role="main" aria-label="Page content">
+                <asp:ContentPlaceHolder ID="MainContentSidebar" runat="server" />
+            </main>
+
+            <%-- FOOTER --%>
+            <footer class="sb-footer" role="contentinfo" style="margin-top:auto;">
+                <div class="sb-footer-inner">
+                    <span class="sb-footer-copy">
+                        &copy; <%: DateTime.Now.Year %> ScienceBuddy
+                    </span>
+                    <ul class="sb-footer-links">
+                        <li><a runat="server" href="~/About">About</a></li>
+                        <li><a runat="server" href="~/Contact">Contact</a></li>
+                        <li><a href="#">Help</a></li>
+                    </ul>
+                </div>
             </footer>
+
         </div>
-    </form>
+        <%-- /.sb-content-area --%>
+
+    </asp:Panel>
+
+    <%-- ══════════════════════════════════════════════════
+         GLOBAL: Toast notification container
+         ══════════════════════════════════════════════════ --%>
+    <div class="sb-toast-container" id="toastContainer" aria-live="polite" aria-atomic="false"></div>
+
+    <%-- ══════════════════════════════════════════════════
+         SCRIPTS
+         ══════════════════════════════════════════════════ --%>
     <asp:PlaceHolder runat="server">
-        <%: Scripts.Render("~/Scripts/bootstrap.js") %>
+        <%: Scripts.Render("~/Scripts/bootstrap.bundle.js") %>
     </asp:PlaceHolder>
+    <script src="<%: ResolveUrl("~/Scripts/site.js") %>"></script>
+    <script src="<%: ResolveUrl("~/Scripts/validation.js") %>"></script>
+    <script src="<%: ResolveUrl("~/Scripts/modal.js") %>"></script>
+
+    <%-- Page-level scripts --%>
+    <asp:ContentPlaceHolder ID="ScriptsContent" runat="server" />
+
+</form>
 </body>
 </html>
