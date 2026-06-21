@@ -50,57 +50,22 @@ Student pages:
 
 Student/
 
-* Dashboard.aspx
-* Learning.aspx
-* Quiz.aspx
-* Progress.aspx
-* Forum.aspx
-* Messages.aspx
-* Profile.aspx
-
 Teacher pages:
 
 Teacher/
-
-* Dashboard.aspx
-* Materials.aspx
-* QuizManagement.aspx
-* StudentProgress.aspx
-* LiveSessions.aspx
-* Forum.aspx
-* Messages.aspx
-* Profile.aspx
 
 Parent pages:
 
 Parent/
 
-* Dashboard.aspx
-* ChildProgress.aspx
-* StudyPlan.aspx
-* Rewards.aspx
-* Messages.aspx
-* Profile.aspx
-
 Admin pages:
 
 Admin/
 
-* Dashboard.aspx
-* UserManagement.aspx
-* ApprovalManagement.aspx
-* Reports.aspx
-* Settings.aspx
 
 Guest pages:
 
 Guest/
-
-* Home.aspx
-* About.aspx
-* Lessons.aspx
-* Quizzes.aspx
-* Forum.aspx
 
 ---
 
