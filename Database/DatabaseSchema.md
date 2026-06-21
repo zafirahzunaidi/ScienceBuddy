@@ -928,12 +928,11 @@ Tracks student virtual lab progress.
 | studentId | FK -> Student.studentId | Student linked to lab progress. |
 | labId | FK -> VirtualLab.labId | Virtual lab activity. |
 | isCompleted |  | TRUE/FALSE completion status. |
-| score |  | Lab score. |
 | completedDate |  | Date/time lab was completed. |
 
 ## Sample Data Placeholder
 
-| labProgressId | studentId | labId | isCompleted | score | completedDate |
+| labProgressId | studentId | labId | isCompleted | completedDate |
 |---|---|---|---|---|---|
 | LABP001 |  |  |  |  |  |
 
