@@ -302,8 +302,12 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Guest\" />
-    <Folder Include="Images\" />
-    <Folder Include="Uploads\" />
+    <Folder Include="Images\Avatars\" />
+    <Folder Include="Images\Badges\" />
+    <Folder Include="Images\Lessons\" />
+    <Folder Include="Images\Levels\" />
+    <Folder Include="Uploads\Materials\" />
+    <Folder Include="Uploads\TeacherCertificates\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
