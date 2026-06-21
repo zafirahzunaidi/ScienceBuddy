@@ -335,7 +335,7 @@ Stores learning units under levels.
 
 | Column | Key | Description |
 |---|---|---|
-| unitId | PK | Unique unit ID. Format: U101 to U305. |
+| unitId | PK | Unique unit ID. Format: UN101 to UN305. |
 | levelId | FK -> Level.levelId | Level that the unit belongs to. |
 | unitNameEN |  | English unit name. |
 | unitNameBM |  | Malay unit name. |
@@ -345,8 +345,8 @@ Stores learning units under levels.
 
 ## ID Format Notes
 
-* `U101` means Level 1, Unit 1.
-* `U305` means Level 3, Unit 5.
+* `UN101` means Level 1, Unit 1.
+* `UN305` means Level 3, Unit 5.
 
 ---
 
