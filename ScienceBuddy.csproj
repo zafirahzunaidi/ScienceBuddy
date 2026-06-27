@@ -318,10 +318,15 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Guest\" />
-    <Folder Include="Images\Avatars\" />
-    <Folder Include="Images\Badges\" />
-    <Folder Include="Images\Lessons\" />
-    <Folder Include="Images\Levels\" />
+    <Folder Include="Images\Badge\" />
+    <Folder Include="Images\Certificate\" />
+    <Folder Include="Images\Lesson\" />
+    <Folder Include="Images\Level\" />
+    <Folder Include="Images\Material\" />
+    <Folder Include="Images\Personality\" />
+    <Folder Include="Images\PrivateMessage\" />
+    <Folder Include="Images\Question\" />
+    <Folder Include="Images\Teacher\" />
     <Folder Include="Uploads\Materials\" />
     <Folder Include="Uploads\TeacherCertificates\" />
   </ItemGroup>
