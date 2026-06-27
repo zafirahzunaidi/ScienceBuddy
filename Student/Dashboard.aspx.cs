@@ -10,7 +10,7 @@ namespace ScienceBuddy.Student
     {
         // ── Connection string ─────────────────────────────────────────
         private string ConnStr =>
-            ConfigurationManager.ConnectionStrings["ScienceBuddyDB"].ConnectionString;
+            ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
         // ── Page Load ─────────────────────────────────────────────────
         protected void Page_Load(object sender, EventArgs e)

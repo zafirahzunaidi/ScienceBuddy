@@ -42,7 +42,7 @@ namespace ScienceBuddy
             string username = txtUsername.Text.Trim();
             string password = txtPassword.Text;   // plain-text match against [User].password
 
-            string connStr = ConfigurationManager.ConnectionStrings["ScienceBuddyDB"].ConnectionString;
+            string connStr = ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
             // Retrieve userId, role, and status for the matching username + password.
             // Uses parameterised query — no string concatenation.
