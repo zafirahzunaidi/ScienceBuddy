@@ -176,10 +176,15 @@ Store images inside:
 Images/
 
 * Logo/
-* Avatars/
-* Badges/
+* Badge/
+* Certificate/
+* Lesson/
+* Level/
+* Material/
 * Personality/
-* Units/
+* PrivateMessage/
+* Question/
+* Teacher/
 
 Do not store image binary data in SQL Server.
 
@@ -187,7 +192,7 @@ Store image paths only.
 
 Example:
 
-~/Images/Badges/unit-master.png
+Images/Badge/unit-master.png
 
 ---
 
