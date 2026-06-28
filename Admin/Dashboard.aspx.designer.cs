@@ -9,18 +9,57 @@
 
 namespace ScienceBuddy.Admin
 {
-
-
     public partial class Dashboard
     {
+        /// <summary>litAdminName control.</summary>
+        protected global::System.Web.UI.WebControls.Literal litAdminName;
 
-        /// <summary>
-        /// form1 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlForm form1;
+        /// <summary>litDate control.</summary>
+        protected global::System.Web.UI.WebControls.Literal litDate;
+
+        /// <summary>litStudents control.</summary>
+        protected global::System.Web.UI.WebControls.Literal litStudents;
+
+        /// <summary>litParents control.</summary>
+        protected global::System.Web.UI.WebControls.Literal litParents;
+
+        /// <summary>litTeachers control.</summary>
+        protected global::System.Web.UI.WebControls.Literal litTeachers;
+
+        /// <summary>litLessons control.</summary>
+        protected global::System.Web.UI.WebControls.Literal litLessons;
+
+        /// <summary>litQuizzes control.</summary>
+        protected global::System.Web.UI.WebControls.Literal litQuizzes;
+
+        /// <summary>litPendingRequests control.</summary>
+        protected global::System.Web.UI.WebControls.Literal litPendingRequests;
+
+        /// <summary>pnlRequests control.</summary>
+        protected global::System.Web.UI.WebControls.Panel pnlRequests;
+
+        /// <summary>rptRequests control.</summary>
+        protected global::System.Web.UI.WebControls.Repeater rptRequests;
+
+        /// <summary>pnlRequestsEmpty control.</summary>
+        protected global::System.Web.UI.WebControls.Panel pnlRequestsEmpty;
+
+        /// <summary>pnlNotifs control.</summary>
+        protected global::System.Web.UI.WebControls.Panel pnlNotifs;
+
+        /// <summary>rptNotifs control.</summary>
+        protected global::System.Web.UI.WebControls.Repeater rptNotifs;
+
+        /// <summary>pnlNotifsEmpty control.</summary>
+        protected global::System.Web.UI.WebControls.Panel pnlNotifsEmpty;
+
+        /// <summary>pnlLogs control.</summary>
+        protected global::System.Web.UI.WebControls.Panel pnlLogs;
+
+        /// <summary>rptLogs control.</summary>
+        protected global::System.Web.UI.WebControls.Repeater rptLogs;
+
+        /// <summary>pnlLogsEmpty control.</summary>
+        protected global::System.Web.UI.WebControls.Panel pnlLogsEmpty;
     }
 }

@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    ScienceBuddy - Core Design System
    Child-friendly science learning platform for ages 7-12
    ============================================================ */
@@ -472,7 +472,9 @@ ul, ol { list-style: none; }
 
 .sb-sidebar {
     width: var(--sidebar-width);
-    min-height: 100vh;
+    /* Exact viewport height — gives flex children a real ceiling so the
+       nav region can overflow-y:auto and scroll independently. */
+    height: 100vh;
     background: var(--color-white);
     border-right: 2px solid var(--color-primary-light);
     display: flex;
@@ -482,7 +484,15 @@ ul, ol { list-style: none; }
     left: 0;
     z-index: 950;
     transition: width var(--transition-base), transform var(--transition-base);
+    /* overflow:clip — visually clips the collapsing width transition without
+       creating a new scroll container (unlike overflow:hidden which blocks
+       the inner nav scrollbar). Falls back to overflow:hidden for older
+       browsers, which is acceptable since label text is already clipped
+       per-element via max-width:0. */
     overflow: hidden;
+    overflow: clip;
+    /* No horizontal scroll ever. */
+    overflow-x: hidden;
     box-shadow: var(--shadow-sm);
 }
 
@@ -490,23 +500,31 @@ ul, ol { list-style: none; }
     width: var(--sidebar-collapsed);
 }
 
-/* Sidebar Brand */
+/* ── Sidebar Brand (always visible, never scrolls) ── */
 .sb-sidebar-brand {
     display: flex;
     align-items: center;
     gap: var(--space-sm);
-    padding: var(--space-md) var(--space-lg);
+    padding: 0 var(--space-md);
     height: var(--topnav-height);
     border-bottom: 1px solid var(--color-primary-light);
-    flex-shrink: 0;
+    flex-shrink: 0;           /* never shrink — always visible at top */
     text-decoration: none;
     overflow: hidden;
+    /* Smooth transition for centring on collapse */
+    transition: justify-content var(--transition-base),
+                padding var(--transition-base);
 }
 
 .sb-sidebar-brand img {
+    /* Fixed square box: logo can never be stretched or squashed.
+       object-fit:contain preserves original aspect ratio. */
+    width: 40px;
     height: 40px;
-    width: auto;
+    min-width: 40px;    /* prevents flex shrink from squashing it */
+    object-fit: contain;
     flex-shrink: 0;
+    display: block;
 }
 
 .sb-sidebar-brand .brand-text {
@@ -515,24 +533,56 @@ ul, ol { list-style: none; }
     font-weight: 800;
     color: var(--color-primary);
     white-space: nowrap;
-    transition: opacity var(--transition-fast);
+    /* Collapse text with max-width so the logo is never reflowed */
+    max-width: 200px;
+    overflow: hidden;
+    transition: opacity var(--transition-fast),
+                max-width var(--transition-base);
 }
 
 .sb-sidebar-brand .brand-text span {
     color: var(--color-orange);
 }
 
-.sb-sidebar.collapsed .brand-text { opacity: 0; width: 0; }
-
-/* Sidebar Nav */
-.sb-sidebar-nav {
-    flex: 1;
-    padding: var(--space-md) var(--space-sm);
-    overflow-y: auto;
-    overflow-x: hidden;
+/* Collapsed: hide text only, centre the logo, keep full aspect ratio */
+.sb-sidebar.collapsed .sb-sidebar-brand {
+    justify-content: center;
+    padding: 0;
 }
 
-.sb-sidebar-nav::-webkit-scrollbar { width: 4px; }
+.sb-sidebar.collapsed .brand-text {
+    opacity: 0;
+    max-width: 0;
+}
+
+/* ── Sidebar Nav (the only scrollable region) ── */
+.sb-sidebar-nav {
+    flex: 1;
+    /* min-height:0 is the critical flexbox rule — without it a flex child
+       refuses to shrink below its content height, so overflow-y:auto
+       never activates on short viewports. */
+    min-height: 0;
+    /* calc() max-height is a belt-and-suspenders fallback for browsers that
+       mis-compute flex heights. Subtracts the brand row + footer row. */
+    max-height: calc(100vh - var(--topnav-height) - 33px);
+    padding: var(--space-md) var(--space-sm);
+    /* Extra bottom padding so the last item is never flush against the
+       footer border — gives comfortable breathing room. */
+    padding-bottom: var(--space-xl);
+    overflow-y: auto;
+    overflow-x: hidden;     /* no horizontal scroll ever */
+}
+
+/* Thin, unobtrusive scrollbar inside the nav */
+.sb-sidebar-nav::-webkit-scrollbar       { width: 4px; }
+.sb-sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+.sb-sidebar-nav::-webkit-scrollbar-thumb {
+    background: var(--color-primary-light);
+    border-radius: var(--border-radius-full);
+}
+.sb-sidebar-nav::-webkit-scrollbar-thumb:hover { background: var(--color-secondary); }
+/* Firefox */
+.sb-sidebar-nav { scrollbar-width: thin; scrollbar-color: var(--color-primary-light) transparent; }
 
 .sb-nav-section {
     margin-bottom: var(--space-lg);
@@ -552,23 +602,26 @@ ul, ol { list-style: none; }
 
 .sb-sidebar.collapsed .sb-nav-section-label { opacity: 0; }
 
-/* Sidebar Menu Items */
+/* ── Sidebar Menu Items ── */
 .sb-sidebar-item {
     display: flex;
     align-items: center;
     gap: var(--space-sm);
-    padding: 10px var(--space-md);
+    /* Slightly taller touch target + comfortable vertical spacing */
+    padding: 11px var(--space-md);
     border-radius: var(--border-radius);
     font-weight: 600;
     font-size: 0.9375rem;
     color: var(--color-text-secondary);
     cursor: pointer;
-    transition: all var(--transition-fast);
+    transition: background var(--transition-fast), color var(--transition-fast),
+                padding var(--transition-base);
     text-decoration: none;
     white-space: nowrap;
     overflow: hidden;
     position: relative;
-    margin-bottom: 2px;
+    /* A little more breathing room between items */
+    margin-bottom: 3px;
 }
 
 .sb-sidebar-item:hover {
@@ -597,37 +650,58 @@ ul, ol { list-style: none; }
 .sb-sidebar-item .item-icon {
     font-size: 1.2rem;
     flex-shrink: 0;
+    /* Fixed width keeps icon in the same column in both modes */
     width: 24px;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .sb-sidebar-item .item-label {
     flex: 1;
-    transition: opacity var(--transition-fast);
+    max-width: 200px;
+    overflow: hidden;
+    transition: opacity var(--transition-fast), max-width var(--transition-base);
 }
-
-.sb-sidebar.collapsed .item-label { opacity: 0; width: 0; }
 
 .sb-sidebar-item .item-badge {
     flex-shrink: 0;
     transition: opacity var(--transition-fast);
 }
 
+/* Collapsed menu items: centre the icon, no horizontal padding */
+.sb-sidebar.collapsed .sb-sidebar-item {
+    justify-content: center;
+    padding: 11px 0;
+}
+
+.sb-sidebar.collapsed .item-label {
+    opacity: 0;
+    max-width: 0;
+}
+
 .sb-sidebar.collapsed .item-badge { opacity: 0; }
+
+/* Collapsed active bar stays centred */
+.sb-sidebar.collapsed .sb-sidebar-item.active::before {
+    left: 0;
+    height: 65%;
+}
 
 /* Placeholder menu area */
 .sb-nav-menu-placeholder {
     padding: var(--space-sm);
 }
 
-/* Sidebar Footer */
+/* ── Sidebar Footer (always visible, never scrolls) ── */
 .sb-sidebar-footer {
     padding: var(--space-md) var(--space-sm);
     border-top: 1px solid var(--color-primary-light);
+    /* prevent footer from shrinking when nav area fills the height */
     flex-shrink: 0;
 }
 
-/* Sidebar Overlay (mobile) */
+/* Sidebar Overlay (mobile backdrop) */
 .sb-sidebar-overlay {
     display: none;
     position: fixed;

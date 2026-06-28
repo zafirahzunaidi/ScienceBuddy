@@ -52,9 +52,17 @@
                 if (e.key === 'Escape' && self.isMobile()) { self.close(); }
             });
 
-            /* Restore collapsed state from localStorage */
-            if (!self.isMobile() && localStorage.getItem('sb_sidebar_collapsed') === 'true') {
-                self.collapse();
+            /* Restore collapsed state from localStorage — Admin pages start
+               expanded by default. Only restore a previously user-chosen
+               collapsed state; never auto-collapse on first load. */
+            if (!self.isMobile()) {
+                var stored = localStorage.getItem('sb_sidebar_collapsed');
+                if (stored === 'true') {
+                    self.collapse();
+                } else {
+                    /* Guarantee expanded on first load (no stored preference) */
+                    self.expand();
+                }
             }
 
             /* Handle resize */
