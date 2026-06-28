@@ -28,37 +28,33 @@
    ============================================================ */
 @media (max-width: 1023px) {
 
-    /* Collapse sidebar by default on tablet */
-    .sb-sidebar {
-        width: var(--sidebar-collapsed);
-    }
-
-    .sb-sidebar .brand-text,
-    .sb-sidebar .item-label,
-    .sb-sidebar .item-badge,
-    .sb-sidebar .sb-nav-section-label {
-        opacity: 0;
-        width: 0;
-        overflow: hidden;
-    }
-
+    /* Sidebar stays expanded on tablet — user controls collapse via toggle.
+       The JS restores the last user-chosen state from localStorage.
+       Only the content area offset changes so nothing jumps. */
     .sb-layout-sidebar .sb-content-area {
         margin-left: var(--sidebar-collapsed);
     }
 
-    /* Sidebar expands on hover on tablet */
-    .sb-sidebar:hover {
-        width: var(--sidebar-width);
-        z-index: 960;
-        box-shadow: var(--shadow-xl);
+    /* When explicitly collapsed (via toggle button), apply the full
+       collapsed treatment — same rules as the base .collapsed state
+       but scoped to tablet so they don't bleed into desktop. */
+    .sb-sidebar.collapsed .brand-text,
+    .sb-sidebar.collapsed .item-label,
+    .sb-sidebar.collapsed .item-badge,
+    .sb-sidebar.collapsed .sb-nav-section-label {
+        opacity: 0;
+        max-width: 0;
+        overflow: hidden;
     }
 
-    .sb-sidebar:hover .brand-text,
-    .sb-sidebar:hover .item-label,
-    .sb-sidebar:hover .item-badge,
-    .sb-sidebar:hover .sb-nav-section-label {
-        opacity: 1;
-        width: auto;
+    .sb-sidebar.collapsed .sb-sidebar-item {
+        justify-content: center;
+        padding: 11px 0;
+    }
+
+    .sb-sidebar.collapsed .sb-sidebar-brand {
+        justify-content: center;
+        padding: 0;
     }
 
     /* Grid adjustments */
@@ -100,9 +96,12 @@
         padding: var(--space-lg) var(--space-md);
     }
 
-    /* ---------- Sidebar (mobile drawer) ---------- */
+    /* ---------- Sidebar (mobile off-canvas drawer) ---------- */
     .sb-sidebar {
         width: var(--sidebar-width);
+        /* height:100vh so the drawer fills the full screen height
+           and its nav region can scroll independently */
+        height: 100vh;
         transform: translateX(-100%);
         box-shadow: none;
     }
@@ -112,17 +111,31 @@
         box-shadow: var(--shadow-xl);
     }
 
-    /* Reset hover expand on mobile */
+    /* Prevent hover-expand from firing inside the drawer */
     .sb-sidebar:hover {
         width: var(--sidebar-width);
     }
 
+    /* Restore all text labels in drawer (overrides tablet rules) */
     .sb-sidebar .brand-text,
     .sb-sidebar .item-label,
     .sb-sidebar .item-badge,
     .sb-sidebar .sb-nav-section-label {
         opacity: 1;
-        width: auto;
+        max-width: 200px;
+    }
+
+    /* Normal alignment for items and brand in drawer */
+    .sb-sidebar .sb-sidebar-item,
+    .sb-sidebar:hover .sb-sidebar-item {
+        justify-content: flex-start;
+        padding: 10px var(--space-md);
+    }
+
+    .sb-sidebar .sb-sidebar-brand,
+    .sb-sidebar:hover .sb-sidebar-brand {
+        justify-content: flex-start;
+        padding: 0 var(--space-md);
     }
 
     /* ---------- Top nav (mobile) ---------- */
