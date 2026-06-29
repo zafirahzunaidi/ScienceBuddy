@@ -246,7 +246,7 @@
         <a href="<%: ResolveUrl("~/Student/LiveSessions.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-camera-video item-icon"></i><span class="item-label">Live Sessions</span>
         </a>
-        <a href="#" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Student/AIStudyCompanion.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-robot item-icon"></i><span class="item-label">AI Study Companion</span>
         </a>
     </div>
@@ -454,7 +454,7 @@
                 <div class="sd-quick-label"><asp:Literal ID="litQALive" runat="server" Text="Live Sessions" /></div>
                 <div class="sd-quick-desc"><asp:Literal ID="litQALiveDesc" runat="server" Text="Join teacher-led classes" /></div>
             </a>
-            <a href="#" class="sd-quick-card qc-ai">
+            <a href="<%: ResolveUrl("~/Student/AIStudyCompanion.aspx") %>" class="sd-quick-card qc-ai">
                 <div class="sd-quick-icon" style="background:#F3E8FF;color:#7C3AED;"><i class="bi bi-robot"></i></div>
                 <div class="sd-quick-label"><asp:Literal ID="litQAAI" runat="server" Text="AI Study Companion" /></div>
                 <div class="sd-quick-desc"><asp:Literal ID="litQAAIDesc" runat="server" Text="Personalised help &amp; hints" /></div>

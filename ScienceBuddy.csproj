@@ -191,7 +191,11 @@
     <Content Include="Scripts\WebForms\WebParts.js" />
     <Content Include="Scripts\WebForms\WebUIValidation.js" />
     <Content Include="Site.Master" />
+    <Content Include="Student\AIStudyCompanion.aspx" />
+    <Content Include="Student\CreateForumPost.aspx" />
     <Content Include="Student\Dashboard.aspx" />
+    <Content Include="Student\Forum.aspx" />
+    <Content Include="Student\ForumThread.aspx" />
     <Content Include="Student\Labs\BloodFlowSimulator.aspx" />
     <Content Include="Student\Labs\CircuitLab.aspx" />
     <Content Include="Student\Labs\GreatSoakChallenge.aspx" />
@@ -204,8 +208,11 @@
     <Content Include="Student\LevelDetails.aspx" />
     <Content Include="Student\LiveSessions.aspx" />
     <Content Include="Student\MyLearning.aspx" />
+    <Content Include="Student\MyProfile.aspx" />
+    <Content Include="Student\MyRanking.aspx" />
     <Content Include="Student\Notifications.aspx" />
     <Content Include="Student\PracticeLibrary.aspx" />
+    <Content Include="Student\ProgressRewards.aspx" />
     <Content Include="Student\UnitDetails.aspx" />
     <Content Include="Student\VirtualLab.aspx" />
     <Content Include="Student\VirtualLabs.aspx" />
@@ -334,12 +341,40 @@
     <Compile Include="Site.Mobile.Master.designer.cs">
       <DependentUpon>Site.Mobile.Master</DependentUpon>
     </Compile>
+    <Compile Include="Student\AIStudyCompanion.aspx.cs">
+      <DependentUpon>AIStudyCompanion.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\AIStudyCompanion.aspx.designer.cs">
+      <DependentUpon>AIStudyCompanion.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Student\CreateForumPost.aspx.cs">
+      <DependentUpon>CreateForumPost.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\CreateForumPost.aspx.designer.cs">
+      <DependentUpon>CreateForumPost.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Student\Dashboard.aspx.cs">
       <DependentUpon>Dashboard.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Student\Dashboard.aspx.designer.cs">
       <DependentUpon>Dashboard.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Student\Forum.aspx.cs">
+      <DependentUpon>Forum.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\Forum.aspx.designer.cs">
+      <DependentUpon>Forum.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Student\ForumThread.aspx.cs">
+      <DependentUpon>ForumThread.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\ForumThread.aspx.designer.cs">
+      <DependentUpon>ForumThread.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\Labs\BloodFlowSimulator.aspx.cs">
       <DependentUpon>BloodFlowSimulator.aspx</DependentUpon>
@@ -425,6 +460,20 @@
     <Compile Include="Student\MyLearning.aspx.designer.cs">
       <DependentUpon>MyLearning.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Student\MyProfile.aspx.cs">
+      <DependentUpon>MyProfile.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\MyProfile.aspx.designer.cs">
+      <DependentUpon>MyProfile.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Student\MyRanking.aspx.cs">
+      <DependentUpon>MyRanking.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\MyRanking.aspx.designer.cs">
+      <DependentUpon>MyRanking.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Student\Notifications.aspx.cs">
       <DependentUpon>Notifications.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -438,6 +487,13 @@
     </Compile>
     <Compile Include="Student\PracticeLibrary.aspx.designer.cs">
       <DependentUpon>PracticeLibrary.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Student\ProgressRewards.aspx.cs">
+      <DependentUpon>ProgressRewards.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\ProgressRewards.aspx.designer.cs">
+      <DependentUpon>ProgressRewards.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\UnitDetails.aspx.cs">
       <DependentUpon>UnitDetails.aspx</DependentUpon>
