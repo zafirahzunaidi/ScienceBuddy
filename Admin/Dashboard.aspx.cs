@@ -14,6 +14,15 @@ namespace ScienceBuddy.Admin
         private string ConnStr =>
             ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
+        // ── Language helper ──────────────────────────────────────────
+        protected string CurrentLanguage =>
+            ((ScienceBuddy.SiteMaster)Master).CurrentLanguage;
+
+        protected string T(string en, string bm)
+        {
+            return CurrentLanguage == "BM" ? bm : en;
+        }
+
         // ── Page Load ────────────────────────────────────────────────
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -70,7 +79,17 @@ namespace ScienceBuddy.Admin
 
                 // Recent notifications for this admin (latest 5)
                 LoadNotifications(conn, userId);
+
+                // Apply bilingual labels
+                ApplyLanguageLabels();
             }
+        }
+
+        // ── Bilingual labels ─────────────────────────────────────────
+        private void ApplyLanguageLabels()
+        {
+            // These Literals are set here; the ASPX markup uses them
+            // Hero greeting prefix is set in SetAdminName
         }
 
         // ── Admin display name ───────────────────────────────────────
@@ -163,7 +182,8 @@ namespace ScienceBuddy.Admin
         {
             const string sql = @"
                 SELECT TOP 5
-                    [notificationId], [titleEN], [messageEN],
+                    [notificationId], [titleEN], [titleBM],
+                    [messageEN], [messageBM],
                     [isRead], [createdAt]
                 FROM dbo.[Notification]
                 WHERE [toUserId] = @uid
@@ -186,8 +206,14 @@ namespace ScienceBuddy.Admin
                 var list = new List<object>();
                 foreach (DataRow row in dt.Rows)
                 {
-                    string title   = row["titleEN"]?.ToString() ?? "(No title)";
-                    string message = row["messageEN"]?.ToString() ?? "";
+                    string title   = CurrentLanguage == "BM"
+                        ? (row["titleBM"]?.ToString() ?? row["titleEN"]?.ToString() ?? "(No title)")
+                        : (row["titleEN"]?.ToString() ?? "(No title)");
+                    string message = CurrentLanguage == "BM"
+                        ? (row["messageBM"]?.ToString() ?? row["messageEN"]?.ToString() ?? "")
+                        : (row["messageEN"]?.ToString() ?? "");
+                    if (string.IsNullOrWhiteSpace(title)) title = row["titleEN"]?.ToString() ?? "(No title)";
+                    if (string.IsNullOrWhiteSpace(message)) message = row["messageEN"]?.ToString() ?? "";
                     bool   isRead  = row["isRead"] != DBNull.Value && Convert.ToBoolean(row["isRead"]);
                     DateTime createdAt = row["createdAt"] == DBNull.Value
                                           ? DateTime.Now
@@ -233,10 +259,24 @@ namespace ScienceBuddy.Admin
                          : lower == "warning"  ? "sb-badge-warning"
                          : lower == "info"     ? "sb-badge-primary"
                          : "sb-badge-gray";
+            // Translate status label
+            string label = status;
+            switch (lower)
+            {
+                case "pending":   label = T("Pending", "Tertunggak"); break;
+                case "approved":  label = T("Approved", "Diluluskan"); break;
+                case "rejected":  label = T("Rejected", "Ditolak"); break;
+                case "completed": label = T("Completed", "Selesai"); break;
+                case "active":    label = T("Active", "Aktif"); break;
+                case "inactive":  label = T("Inactive", "Tidak Aktif"); break;
+                case "success":   label = T("Success", "Berjaya"); break;
+                case "failed":    label = T("Failed", "Gagal"); break;
+                case "warning":   label = T("Warning", "Amaran"); break;
+            }
             return string.Format(
                 "<span class=\"sb-badge {0}\" style=\"margin-left:4px;\">{1}</span>",
                 cls,
-                HttpUtility.HtmlEncode(status));
+                HttpUtility.HtmlEncode(label));
         }
 
         // ── Utility: log icon per action keyword ─────────────────────

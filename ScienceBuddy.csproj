@@ -101,6 +101,8 @@
   <ItemGroup>
     <Content Include="About.aspx" />
     <Content Include="Admin\Dashboard.aspx" />
+    <Content Include="Admin\ContentRequests.aspx" />
+    <Content Include="Admin\Notifications.aspx" />
     <Content Include="Contact.aspx" />
     <Content Include="Content\bootstrap-grid.css" />
     <Content Include="Content\bootstrap-grid.min.css" />
@@ -202,6 +204,20 @@
     </Compile>
     <Compile Include="Admin\Dashboard.aspx.designer.cs">
       <DependentUpon>Dashboard.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\ContentRequests.aspx.cs">
+      <DependentUpon>ContentRequests.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\ContentRequests.aspx.designer.cs">
+      <DependentUpon>ContentRequests.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\Notifications.aspx.cs">
+      <DependentUpon>Notifications.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\Notifications.aspx.designer.cs">
+      <DependentUpon>Notifications.aspx</DependentUpon>
     </Compile>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="About.aspx.cs">

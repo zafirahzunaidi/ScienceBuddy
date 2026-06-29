@@ -214,13 +214,13 @@
                     </div>
 
                     <%-- Notification bell --%>
-                    <button type="button"
+                    <a href="<%: ResolveUrl("~/Admin/Notifications.aspx") %>"
                             class="sb-nav-notification"
                             aria-label="Notifications"
                             data-tooltip="Notifications">
                         <i class="bi bi-bell"></i>
                         <asp:Panel ID="pnlNotifDot" runat="server" CssClass="notification-dot" Visible="false" />
-                    </button>
+                    </a>
 
                     <%-- User avatar / dropdown trigger --%>
                     <div class="sb-dropdown">
