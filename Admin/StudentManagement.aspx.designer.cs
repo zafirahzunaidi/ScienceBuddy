@@ -22,5 +22,22 @@ namespace ScienceBuddy.Admin
         protected global::System.Web.UI.WebControls.Panel pnlStudents;
         protected global::System.Web.UI.WebControls.Repeater rptStudents;
         protected global::System.Web.UI.WebControls.Panel pnlEmpty;
+        // Modal
+        protected global::System.Web.UI.WebControls.Panel pnlModal;
+        protected global::System.Web.UI.WebControls.Literal litMInitials;
+        protected global::System.Web.UI.WebControls.Literal litMName;
+        protected global::System.Web.UI.WebControls.Literal litMUsername;
+        protected global::System.Web.UI.WebControls.Literal litMLessons;
+        protected global::System.Web.UI.WebControls.Literal litMXP;
+        protected global::System.Web.UI.WebControls.Literal litMQuizzes;
+        protected global::System.Web.UI.WebControls.Literal litMBadges;
+        protected global::System.Web.UI.WebControls.Literal litMEmail;
+        protected global::System.Web.UI.WebControls.Literal litMPhone;
+        protected global::System.Web.UI.WebControls.Literal litMLevel;
+        protected global::System.Web.UI.WebControls.Literal litMPersonality;
+        protected global::System.Web.UI.WebControls.Literal litMLangVal;
+        protected global::System.Web.UI.WebControls.Literal litMStatus;
+        protected global::System.Web.UI.WebControls.Literal litMXPPct;
+        protected global::System.Web.UI.WebControls.Button btnCloseModal;
     }
 }

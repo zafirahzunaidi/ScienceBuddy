@@ -69,48 +69,29 @@
 
 <%-- ════ SIDEBAR ════ --%>
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
-    <div class="sb-nav-section">
-        <div class="sb-nav-section-label">Main</div>
-        <a href="<%: ResolveUrl("~/Admin/Dashboard.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-speedometer2 item-icon"></i><span class="item-label">Dashboard</span>
-        </a>
+    <div class="sb-nav-section"><div class="sb-nav-section-label">Main</div>
+        <a href="<%: ResolveUrl("~/Admin/Dashboard.aspx") %>" class="sb-sidebar-item"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label">Dashboard</span></a>
     </div>
-    <div class="sb-nav-section">
-        <div class="sb-nav-section-label">User Management</div>
+    <div class="sb-nav-section"><div class="sb-nav-section-label">User Management</div>
         <a href="<%: ResolveUrl("~/Admin/StudentManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-people item-icon"></i><span class="item-label">Students</span></a>
-        <a href="#" class="sb-sidebar-item"><i class="bi bi-person-heart item-icon"></i><span class="item-label">Parents</span></a>
+        <a href="<%: ResolveUrl("~/Admin/ParentManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person-heart item-icon"></i><span class="item-label">Parents</span></a>
         <a href="#" class="sb-sidebar-item"><i class="bi bi-person-badge item-icon"></i><span class="item-label">Teachers</span></a>
     </div>
-    <div class="sb-nav-section">
-        <div class="sb-nav-section-label">Learning Content</div>
+    <div class="sb-nav-section"><div class="sb-nav-section-label">Learning Content</div>
         <a href="#" class="sb-sidebar-item"><i class="bi bi-book item-icon"></i><span class="item-label">Lessons</span></a>
         <a href="#" class="sb-sidebar-item"><i class="bi bi-patch-question item-icon"></i><span class="item-label">Quizzes</span></a>
         <a href="#" class="sb-sidebar-item"><i class="bi bi-question-circle item-icon"></i><span class="item-label">Questions</span></a>
         <a href="#" class="sb-sidebar-item"><i class="bi bi-file-earmark-text item-icon"></i><span class="item-label">Teacher Materials</span></a>
         <a href="#" class="sb-sidebar-item"><i class="bi bi-camera-video item-icon"></i><span class="item-label">Live Sessions</span></a>
-        <a href="<%: ResolveUrl("~/Admin/ContentRequests.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-inbox item-icon"></i><span class="item-label">Content Requests</span>
-        </a>
+        <a href="<%: ResolveUrl("~/Admin/ContentRequests.aspx") %>" class="sb-sidebar-item"><i class="bi bi-inbox item-icon"></i><span class="item-label">Content Requests</span></a>
     </div>
-    <div class="sb-nav-section">
-        <div class="sb-nav-section-label">Gamification</div>
+    <div class="sb-nav-section"><div class="sb-nav-section-label">Gamification</div>
         <a href="#" class="sb-sidebar-item"><i class="bi bi-trophy item-icon"></i><span class="item-label">Badges</span></a>
         <a href="#" class="sb-sidebar-item"><i class="bi bi-lightning item-icon"></i><span class="item-label">XP Actions</span></a>
     </div>
-    <div class="sb-nav-section">
-        <div class="sb-nav-section-label">Configuration</div>
-        <a href="#" class="sb-sidebar-item"><i class="bi bi-gear item-icon"></i><span class="item-label">Settings</span></a>
-    </div>
-    <div class="sb-nav-section">
-        <div class="sb-nav-section-label">Logs</div>
-        <a href="#" class="sb-sidebar-item"><i class="bi bi-clock-history item-icon"></i><span class="item-label">Activity Logs</span></a>
-    </div>
-    <div class="sb-nav-section">
-        <div class="sb-nav-section-label">Account</div>
-        <a href="<%: ResolveUrl("~/Admin/Notifications.aspx") %>" class="sb-sidebar-item active">
-            <i class="bi bi-bell item-icon"></i><span class="item-label">Notifications</span>
-        </a>
-        <a href="#" class="sb-sidebar-item"><i class="bi bi-person item-icon"></i><span class="item-label">My Profile</span></a>
+    <div class="sb-nav-section"><div class="sb-nav-section-label">Account</div>
+        <a href="<%: ResolveUrl("~/Admin/Notifications.aspx") %>" class="sb-sidebar-item active"><i class="bi bi-bell item-icon"></i><span class="item-label">Notifications</span></a>
+        <a href="<%: ResolveUrl("~/Admin/Profile.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person item-icon"></i><span class="item-label">My Profile</span></a>
         <a href="<%: ResolveUrl("~/Logout.aspx") %>" class="sb-sidebar-item" onclick="return confirm('Are you sure you want to sign out?');"><i class="bi bi-box-arrow-right item-icon"></i><span class="item-label">Sign Out</span></a>
     </div>
 </asp:Content>

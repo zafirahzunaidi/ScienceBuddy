@@ -96,6 +96,11 @@
 .sm-empty-msg { font-size:1.0625rem; font-weight:700; color:var(--color-text-secondary); }
 .sm-empty-sub { font-size:.875rem; color:var(--color-text-muted); margin-top:4px; }
 
+/* Modal overlay fix — only cover content area, not sidebar */
+.sm-modal-wrap .sb-modal-overlay { left:var(--sidebar-width); }
+.sidebar-collapsed .sm-modal-wrap .sb-modal-overlay { left:var(--sidebar-collapsed); }
+@media(max-width:767px) { .sm-modal-wrap .sb-modal-overlay { left:0; } }
+
 /* Responsive */
 @media(max-width:1279px) { .sm-grid { grid-template-columns:repeat(3,1fr); } .sm-insights { grid-template-columns:repeat(2,1fr); } }
 @media(max-width:1023px) { .sm-grid { grid-template-columns:repeat(2,1fr); } }
@@ -114,24 +119,27 @@
 
 <%-- ════ SIDEBAR ════ --%>
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
-    <div class="sb-nav-section">
-        <div class="sb-nav-section-label">Main</div>
+    <div class="sb-nav-section"><div class="sb-nav-section-label">Main</div>
         <a href="<%: ResolveUrl("~/Admin/Dashboard.aspx") %>" class="sb-sidebar-item"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label">Dashboard</span></a>
     </div>
-    <div class="sb-nav-section">
-        <div class="sb-nav-section-label">User Management</div>
+    <div class="sb-nav-section"><div class="sb-nav-section-label">User Management</div>
         <a href="<%: ResolveUrl("~/Admin/StudentManagement.aspx") %>" class="sb-sidebar-item active"><i class="bi bi-people item-icon"></i><span class="item-label">Students</span></a>
-        <a href="#" class="sb-sidebar-item"><i class="bi bi-person-heart item-icon"></i><span class="item-label">Parents</span></a>
+        <a href="<%: ResolveUrl("~/Admin/ParentManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person-heart item-icon"></i><span class="item-label">Parents</span></a>
         <a href="#" class="sb-sidebar-item"><i class="bi bi-person-badge item-icon"></i><span class="item-label">Teachers</span></a>
     </div>
-    <div class="sb-nav-section">
-        <div class="sb-nav-section-label">Learning Content</div>
+    <div class="sb-nav-section"><div class="sb-nav-section-label">Learning Content</div>
         <a href="#" class="sb-sidebar-item"><i class="bi bi-book item-icon"></i><span class="item-label">Lessons</span></a>
         <a href="#" class="sb-sidebar-item"><i class="bi bi-patch-question item-icon"></i><span class="item-label">Quizzes</span></a>
+        <a href="#" class="sb-sidebar-item"><i class="bi bi-question-circle item-icon"></i><span class="item-label">Questions</span></a>
+        <a href="#" class="sb-sidebar-item"><i class="bi bi-file-earmark-text item-icon"></i><span class="item-label">Teacher Materials</span></a>
+        <a href="#" class="sb-sidebar-item"><i class="bi bi-camera-video item-icon"></i><span class="item-label">Live Sessions</span></a>
         <a href="<%: ResolveUrl("~/Admin/ContentRequests.aspx") %>" class="sb-sidebar-item"><i class="bi bi-inbox item-icon"></i><span class="item-label">Content Requests</span></a>
     </div>
-    <div class="sb-nav-section">
-        <div class="sb-nav-section-label">Account</div>
+    <div class="sb-nav-section"><div class="sb-nav-section-label">Gamification</div>
+        <a href="#" class="sb-sidebar-item"><i class="bi bi-trophy item-icon"></i><span class="item-label">Badges</span></a>
+        <a href="#" class="sb-sidebar-item"><i class="bi bi-lightning item-icon"></i><span class="item-label">XP Actions</span></a>
+    </div>
+    <div class="sb-nav-section"><div class="sb-nav-section-label">Account</div>
         <a href="<%: ResolveUrl("~/Admin/Notifications.aspx") %>" class="sb-sidebar-item"><i class="bi bi-bell item-icon"></i><span class="item-label">Notifications</span></a>
         <a href="<%: ResolveUrl("~/Admin/Profile.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person item-icon"></i><span class="item-label">My Profile</span></a>
         <a href="<%: ResolveUrl("~/Logout.aspx") %>" class="sb-sidebar-item" onclick="return confirm('Are you sure you want to sign out?');"><i class="bi bi-box-arrow-right item-icon"></i><span class="item-label">Sign Out</span></a>
@@ -207,7 +215,7 @@
 <%-- STUDENT CARDS --%>
 <asp:Panel ID="pnlStudents" runat="server" Visible="false">
     <div class="sm-grid">
-        <asp:Repeater ID="rptStudents" runat="server">
+        <asp:Repeater ID="rptStudents" runat="server" OnItemCommand="rptStudents_ItemCommand">
             <ItemTemplate>
                 <div class="sm-card">
                     <div class="sm-avatar" style='<%# Eval("avatarGradient") %>'>
@@ -230,9 +238,10 @@
                         <span><i class="bi bi-trophy"></i> <%# Eval("badgesEarned") %></span>
                     </div>
                     <div class="sm-card-footer">
-                        <button type="button" class="sb-btn sb-btn-light sb-btn-xs" onclick="alert('<%= T("Student profile coming soon.", "Profil pelajar akan datang.") %>');">
+                        <asp:LinkButton ID="lnkViewDetails" runat="server" CssClass="sb-btn sb-btn-light sb-btn-xs"
+                            CommandName="ViewStudent" CommandArgument='<%# Eval("studentId") %>'>
                             <i class="bi bi-eye"></i> <%= T("View Details", "Lihat Butiran") %>
-                        </button>
+                        </asp:LinkButton>
                     </div>
                 </div>
             </ItemTemplate>
@@ -248,5 +257,47 @@
         <div class="sm-empty-sub"><%= T("Try adjusting your search or filters.", "Cuba laraskan carian atau penapis anda.") %></div>
     </div>
 </asp:Panel>
+
+<%-- ══ STUDENT DETAIL MODAL ══ --%>
+<asp:Panel ID="pnlModal" runat="server" Visible="false" CssClass="sm-modal-wrap">
+<div class="sb-modal-overlay active" style="display:flex;margin-left:0;">
+    <div class="sb-modal" style="max-width:560px;max-height:90vh;overflow-y:auto;">
+        <%-- Modal gradient header --%>
+        <div style="background:linear-gradient(135deg,#6366F1,#818CF8);padding:var(--space-xl);color:#fff;text-align:center;border-radius:var(--border-radius-xl) var(--border-radius-xl) 0 0;">
+            <div style="width:72px;height:72px;border-radius:50%;margin:0 auto var(--space-sm);display:flex;align-items:center;justify-content:center;font-size:1.75rem;font-weight:800;background:rgba(255,255,255,.2);border:3px solid rgba(255,255,255,.4);">
+                <asp:Literal ID="litMInitials" runat="server" />
+            </div>
+            <div style="font-family:var(--font-primary);font-size:1.25rem;font-weight:800;"><asp:Literal ID="litMName" runat="server" /></div>
+            <div style="font-size:.875rem;opacity:.8;">@<asp:Literal ID="litMUsername" runat="server" /></div>
+        </div>
+        <%-- Stats row --%>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-xs);padding:var(--space-md);background:var(--color-surface-alt);text-align:center;">
+            <div><div style="font-family:var(--font-primary);font-size:1.125rem;font-weight:800;color:var(--color-text);"><asp:Literal ID="litMLessons" runat="server" Text="0" /></div><div style="font-size:.6875rem;color:var(--color-text-muted);font-weight:600;"><%= T("Lessons", "Pelajaran") %></div></div>
+            <div><div style="font-family:var(--font-primary);font-size:1.125rem;font-weight:800;color:var(--color-text);"><asp:Literal ID="litMXP" runat="server" Text="0" /></div><div style="font-size:.6875rem;color:var(--color-text-muted);font-weight:600;">XP</div></div>
+            <div><div style="font-family:var(--font-primary);font-size:1.125rem;font-weight:800;color:var(--color-text);"><asp:Literal ID="litMQuizzes" runat="server" Text="0" /></div><div style="font-size:.6875rem;color:var(--color-text-muted);font-weight:600;"><%= T("Quizzes", "Kuiz") %></div></div>
+            <div><div style="font-family:var(--font-primary);font-size:1.125rem;font-weight:800;color:var(--color-text);"><asp:Literal ID="litMBadges" runat="server" Text="0" /></div><div style="font-size:.6875rem;color:var(--color-text-muted);font-weight:600;"><%= T("Badges", "Lencana") %></div></div>
+        </div>
+        <%-- Body fields --%>
+        <div style="padding:var(--space-lg);">
+            <div style="margin-bottom:var(--space-md);"><div style="font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--color-text-muted);margin-bottom:2px;"><%= T("Email", "E-mel") %></div><div style="font-size:.9375rem;font-weight:600;color:var(--color-text);"><asp:Literal ID="litMEmail" runat="server" Text="-" /></div></div>
+            <div style="margin-bottom:var(--space-md);"><div style="font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--color-text-muted);margin-bottom:2px;"><%= T("Phone", "Telefon") %></div><div style="font-size:.9375rem;font-weight:600;color:var(--color-text);"><asp:Literal ID="litMPhone" runat="server" Text="-" /></div></div>
+            <div style="margin-bottom:var(--space-md);"><div style="font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--color-text-muted);margin-bottom:2px;"><%= T("Level", "Tahap") %></div><div style="font-size:.9375rem;font-weight:600;color:var(--color-text);"><asp:Literal ID="litMLevel" runat="server" Text="-" /></div></div>
+            <div style="margin-bottom:var(--space-md);"><div style="font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--color-text-muted);margin-bottom:2px;"><%= T("Personality", "Personaliti") %></div><div style="font-size:.9375rem;font-weight:600;color:var(--color-text);"><asp:Literal ID="litMPersonality" runat="server" Text="-" /></div></div>
+            <div style="margin-bottom:var(--space-md);"><div style="font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--color-text-muted);margin-bottom:2px;"><%= T("Language", "Bahasa") %></div><div style="font-size:.9375rem;font-weight:600;color:var(--color-text);"><asp:Literal ID="litMLangVal" runat="server" Text="-" /></div></div>
+            <div style="margin-bottom:var(--space-md);"><div style="font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--color-text-muted);margin-bottom:2px;"><%= T("Status", "Status") %></div><div style="font-size:.9375rem;font-weight:600;"><asp:Literal ID="litMStatus" runat="server" Text="-" /></div></div>
+            <%-- XP Progress --%>
+            <div style="margin-bottom:var(--space-md);">
+                <div style="font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--color-text-muted);margin-bottom:4px;"><%= T("XP Progress", "Kemajuan XP") %></div>
+                <div style="height:8px;background:#F1F5F9;border-radius:99px;overflow:hidden;"><div style="height:100%;border-radius:99px;background:linear-gradient(90deg,#6366F1,#818CF8);width:<%= litMXPPct.Text %>%;"></div></div>
+            </div>
+        </div>
+        <%-- Footer --%>
+        <div class="sb-modal-footer">
+            <asp:Button ID="btnCloseModal" runat="server" CssClass="sb-btn sb-btn-ghost sb-btn-sm" OnClick="btnCloseModal_Click" />
+        </div>
+    </div>
+</div>
+</asp:Panel>
+<asp:Literal ID="litMXPPct" runat="server" Text="0" Visible="false" />
 
 </asp:Content>
