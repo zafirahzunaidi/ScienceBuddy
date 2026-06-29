@@ -50,7 +50,7 @@
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Learn</div>
-        <a href="<%: ResolveUrl("~/Student/Learning.aspx") %>" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Student/MyLearning.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-book item-icon"></i><span class="item-label">My Learning</span></a>
         <a href="<%: ResolveUrl("~/Student/Quiz.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-patch-question item-icon"></i><span class="item-label">Practice Library</span></a>

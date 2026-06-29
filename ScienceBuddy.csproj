@@ -187,6 +187,7 @@
     <Content Include="Scripts\WebForms\WebUIValidation.js" />
     <Content Include="Site.Master" />
     <Content Include="Student\Dashboard.aspx" />
+    <Content Include="Student\LevelDetails.aspx" />
     <Content Include="Student\MyLearning.aspx" />
     <Content Include="Student\Notifications.aspx" />
     <Content Include="Teacher\Dashboard.aspx" />
@@ -285,6 +286,13 @@
     </Compile>
     <Compile Include="Student\Dashboard.aspx.designer.cs">
       <DependentUpon>Dashboard.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Student\LevelDetails.aspx.cs">
+      <DependentUpon>LevelDetails.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\LevelDetails.aspx.designer.cs">
+      <DependentUpon>LevelDetails.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\MyLearning.aspx.cs">
       <DependentUpon>MyLearning.aspx</DependentUpon>
