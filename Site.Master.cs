@@ -1,33 +1,14 @@
 ﻿using System;
+using System.Configuration;
+using System.Data.SqlClient;
 using System.Web;
 using System.Web.UI;
 
 namespace ScienceBuddy
 {
-    /// <summary>
-    /// ScienceBuddy Master Page
-    ///
-    /// Supports two layout modes controlled by the LayoutMode property:
-    ///   "TopNav"  – Guest pages and dashboard (top navigation only).
-    ///   "Sidebar" – Logged-in non-dashboard pages (left sidebar + top header).
-    ///
-    /// Child pages set the layout in their Page_Load:
-    ///   ((SiteMaster)Master).LayoutMode = "TopNav";   // or "Sidebar"
-    ///
-    /// Optional helpers:
-    ///   SetUserInfo(name, role, initials) – populate header user widget.
-    ///   ShowBreadcrumb()                 – reveal breadcrumb panel.
-    ///   ShowNotificationDot()            – show red dot on bell icon.
-    ///   BodyCssClass                     – extra CSS classes added to <body>.
-    /// </summary>
     public partial class SiteMaster : MasterPage
     {
         // ── Layout mode ─────────────────────────────────────────────
-        /// <summary>
-        /// "TopNav" (default) or "Sidebar".
-        /// Set this in the child page's Page_Init or Page_Load
-        /// before the master page renders.
-        /// </summary>
         public string LayoutMode
         {
             get { return ViewState["LayoutMode"] as string ?? "TopNav"; }
@@ -35,9 +16,6 @@ namespace ScienceBuddy
         }
 
         // ── CSS classes on <body> ────────────────────────────────────
-        /// <summary>
-        /// Additional CSS classes applied to the &lt;body&gt; element.
-        /// </summary>
         public string BodyCssClass
         {
             get { return ViewState["BodyCssClass"] as string ?? string.Empty; }
@@ -47,36 +25,167 @@ namespace ScienceBuddy
         // ── Page lifecycle ───────────────────────────────────────────
         protected void Page_Init(object sender, EventArgs e)
         {
-            // Nothing needed here; layout is resolved in PreRender.
         }
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Nothing needed here; layout is resolved in PreRender.
+            if (!IsPostBack)
+            {
+                // If user is logged in but language not yet set in Session, load from DB.
+                InitLanguageFromDB();
+                ApplyLanguageToggleState();
+            }
         }
 
         protected void Page_PreRender(object sender, EventArgs e)
         {
             ApplyLayout();
+            ApplyLanguageToggleState();
         }
 
         // ── Layout switching ─────────────────────────────────────────
         private void ApplyLayout()
         {
             bool useSidebar = string.Equals(LayoutMode, "Sidebar", StringComparison.OrdinalIgnoreCase);
-
-            pnlTopNavLayout.Visible = !useSidebar;
+            pnlTopNavLayout.Visible  = !useSidebar;
             pnlSidebarLayout.Visible = useSidebar;
         }
 
-        // ── Public helpers for child pages ───────────────────────────
+        // ══════════════════════════════════════════════════════════════
+        //  LANGUAGE SWITCHER
+        // ══════════════════════════════════════════════════════════════
 
         /// <summary>
-        /// Populate the logged-in user widget in the top header (sidebar layout).
+        /// Returns the current preferred language from Session (EN or BM).
         /// </summary>
-        /// <param name="fullName">Display name shown next to the avatar.</param>
-        /// <param name="role">Role label shown below the name (e.g. "Student").</param>
-        /// <param name="initials">1–2 character initials rendered inside the avatar circle.</param>
+        public string CurrentLanguage
+        {
+            get
+            {
+                string lang = Session["preferredLanguage"] as string;
+                return string.IsNullOrEmpty(lang) ? "EN" : lang;
+            }
+        }
+
+        /// <summary>
+        /// On first load, if logged in and Session["preferredLanguage"] is empty,
+        /// fetch from User table so the toggle reflects their saved preference.
+        /// </summary>
+        private void InitLanguageFromDB()
+        {
+            if (Session["preferredLanguage"] != null) return; // already set
+            string userId = Session["userId"] as string;
+            if (string.IsNullOrEmpty(userId)) return; // not logged in
+
+            try
+            {
+                string connStr = ConfigurationManager
+                    .ConnectionStrings["ScienceBuddyDB"].ConnectionString;
+
+                const string sql = "SELECT preferredLanguage FROM [User] WHERE userId = @userId";
+                using (var conn = new SqlConnection(connStr))
+                using (var cmd  = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@userId", userId);
+                    conn.Open();
+                    object result = cmd.ExecuteScalar();
+                    if (result != null && result != System.DBNull.Value)
+                    {
+                        Session["preferredLanguage"] = result.ToString();
+                    }
+                    else
+                    {
+                        Session["preferredLanguage"] = "EN";
+                    }
+                }
+            }
+            catch (SqlException)
+            {
+                Session["preferredLanguage"] = "EN";
+            }
+        }
+
+        /// <summary>
+        /// Applies active/inactive CSS class to all language toggle buttons.
+        /// </summary>
+        private void ApplyLanguageToggleState()
+        {
+            string lang = CurrentLanguage;
+            string activeClass  = "sb-lang-btn active";
+            string defaultClass = "sb-lang-btn";
+
+            // Top-nav layout buttons
+            if (btnLangEN_Top != null)
+                btnLangEN_Top.CssClass = lang == "EN" ? activeClass : defaultClass;
+            if (btnLangBM_Top != null)
+                btnLangBM_Top.CssClass = lang == "BM" ? activeClass : defaultClass;
+
+            // Sidebar-header layout buttons
+            if (btnLangEN_Header != null)
+                btnLangEN_Header.CssClass = lang == "EN" ? activeClass : defaultClass;
+            if (btnLangBM_Header != null)
+                btnLangBM_Header.CssClass = lang == "BM" ? activeClass : defaultClass;
+        }
+
+        /// <summary>Click handler — switch to English.</summary>
+        protected void btnLangEN_Click(object sender, EventArgs e)
+        {
+            SetLanguage("EN");
+        }
+
+        /// <summary>Click handler — switch to Bahasa Melayu.</summary>
+        protected void btnLangBM_Click(object sender, EventArgs e)
+        {
+            SetLanguage("BM");
+        }
+
+        /// <summary>
+        /// Core language switch logic:
+        /// 1) Update Session
+        /// 2) If logged in, update User.preferredLanguage in DB
+        /// 3) Redirect to same page (refresh)
+        /// </summary>
+        private void SetLanguage(string lang)
+        {
+            Session["preferredLanguage"] = lang;
+
+            // If user is logged in, persist to database
+            string userId = Session["userId"] as string;
+            if (!string.IsNullOrEmpty(userId))
+            {
+                try
+                {
+                    string connStr = ConfigurationManager
+                        .ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+
+                    const string sql = @"
+                        UPDATE [User]
+                        SET    preferredLanguage = @lang
+                        WHERE  userId = @userId";
+
+                    using (var conn = new SqlConnection(connStr))
+                    using (var cmd  = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@lang",   lang);
+                        cmd.Parameters.AddWithValue("@userId", userId);
+                        conn.Open();
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                catch (SqlException)
+                {
+                    // Silently fail — Session still holds the value.
+                }
+            }
+
+            // Refresh current page
+            Response.Redirect(Request.RawUrl, false);
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        //  PUBLIC HELPERS FOR CHILD PAGES
+        // ══════════════════════════════════════════════════════════════
+
         public void SetUserInfo(string fullName, string role, string initials)
         {
             if (litUserName     != null) litUserName.Text     = HtmlEncode(fullName  ?? "User");
@@ -84,31 +193,19 @@ namespace ScienceBuddy
             if (litUserInitials != null) litUserInitials.Text = HtmlEncode((initials ?? "U").ToUpper());
         }
 
-        /// <summary>
-        /// Sets the user avatar image.  If the image fails to load the
-        /// initials circle acts as the fallback automatically.
-        /// </summary>
-        /// <param name="imageUrl">Relative or absolute URL to the avatar image.</param>
         public void SetUserAvatar(string imageUrl)
         {
             if (imgUserAvatar == null || string.IsNullOrWhiteSpace(imageUrl)) return;
             imgUserAvatar.ImageUrl = imageUrl;
-            imgUserAvatar.Visible = true;
+            imgUserAvatar.Visible  = true;
             if (litUserInitials != null) litUserInitials.Visible = false;
         }
 
-        /// <summary>
-        /// Show the red notification dot on the bell icon.
-        /// </summary>
         public void ShowNotificationDot()
         {
             if (pnlNotifDot != null) pnlNotifDot.Visible = true;
         }
 
-        /// <summary>
-        /// Make the breadcrumb bar visible.
-        /// Child pages fill the BreadcrumbContent placeholder with their crumbs.
-        /// </summary>
         public void ShowBreadcrumb()
         {
             if (pnlBreadcrumb != null) pnlBreadcrumb.Visible = true;

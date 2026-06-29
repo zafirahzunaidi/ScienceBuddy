@@ -74,5 +74,18 @@ namespace ScienceBuddy
 
         /// <summary>ScriptsContent – page-level scripts injected before &lt;/body&gt;.</summary>
         protected global::System.Web.UI.WebControls.ContentPlaceHolder ScriptsContent;
+
+        // ── Language Toggle buttons ──────────────────────────────────
+        /// <summary>EN button in top-nav layout.</summary>
+        protected global::System.Web.UI.WebControls.LinkButton btnLangEN_Top;
+
+        /// <summary>BM button in top-nav layout.</summary>
+        protected global::System.Web.UI.WebControls.LinkButton btnLangBM_Top;
+
+        /// <summary>EN button in sidebar-header layout.</summary>
+        protected global::System.Web.UI.WebControls.LinkButton btnLangEN_Header;
+
+        /// <summary>BM button in sidebar-header layout.</summary>
+        protected global::System.Web.UI.WebControls.LinkButton btnLangBM_Header;
     }
 }

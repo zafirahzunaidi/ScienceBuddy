@@ -88,6 +88,14 @@
 
                 <%-- Nav Actions (right side) --%>
                 <div class="sb-nav-actions">
+                    <%-- Language Toggle --%>
+                    <div class="sb-lang-toggle" role="group" aria-label="Language selector">
+                        <asp:LinkButton ID="btnLangEN_Top" runat="server" CssClass="sb-lang-btn"
+                            OnClick="btnLangEN_Click" CausesValidation="false">EN</asp:LinkButton>
+                        <asp:LinkButton ID="btnLangBM_Top" runat="server" CssClass="sb-lang-btn"
+                            OnClick="btnLangBM_Click" CausesValidation="false">BM</asp:LinkButton>
+                    </div>
+
                     <asp:ContentPlaceHolder ID="TopNavActions" runat="server">
                         <%-- Default: Login / Register buttons for guests --%>
                         <a runat="server" href="~/Login"    class="sb-btn sb-btn-outline-primary sb-btn-sm">Sign In</a>
@@ -196,6 +204,14 @@
 
                 <%-- Header right actions --%>
                 <div class="sb-nav-actions">
+
+                    <%-- Language Toggle --%>
+                    <div class="sb-lang-toggle" role="group" aria-label="Language selector">
+                        <asp:LinkButton ID="btnLangEN_Header" runat="server" CssClass="sb-lang-btn"
+                            OnClick="btnLangEN_Click" CausesValidation="false">EN</asp:LinkButton>
+                        <asp:LinkButton ID="btnLangBM_Header" runat="server" CssClass="sb-lang-btn"
+                            OnClick="btnLangBM_Click" CausesValidation="false">BM</asp:LinkButton>
+                    </div>
 
                     <%-- Notification bell --%>
                     <button type="button"
