@@ -37,12 +37,16 @@
 
 /* Section header */
 .ad-sec-hd {
-    display:flex; align-items:center; justify-content:space-between;
+    display:flex; align-items:flex-start; justify-content:space-between;
     margin-bottom:var(--space-md); gap:var(--space-md); flex-wrap:wrap;
+    margin-top:var(--space-lg);
 }
 .ad-sec-title {
     font-family:var(--font-primary); font-size:1.0625rem; font-weight:800;
     color:var(--color-text); display:flex; align-items:center; gap:var(--space-sm);
+}
+.ad-sec-sub {
+    font-size:.8125rem; color:var(--color-text-muted); margin-top:2px; font-weight:500;
 }
 
 /* Filter bar */
@@ -85,35 +89,25 @@
 /* Action buttons inline */
 .cr-actions { display:flex; gap:var(--space-xs); flex-wrap:nowrap; }
 
-/* Page header hero (lighter than dashboard) */
-.cr-hero {
-    background:linear-gradient(135deg,#1D4ED8 0%,#2563EB 60%,#3B82F6 100%);
-    border-radius:var(--border-radius-xl);
-    padding:var(--space-xl) var(--space-2xl);
-    color:#fff; position:relative; overflow:hidden;
+/* Page header (clean, no hero banner) */
+.cr-page-header {
     margin-bottom:var(--space-xl);
-    box-shadow:0 8px 32px rgba(37,99,235,.25);
+    padding-bottom:var(--space-md);
+    border-bottom:1.5px solid var(--border-color);
 }
-.cr-hero::before {
-    content:''; position:absolute; width:300px; height:300px; border-radius:50%;
-    background:rgba(255,255,255,.05); top:-80px; right:-60px; pointer-events:none;
-}
-.cr-hero-eyebrow {
-    font-size:.75rem; font-weight:700; letter-spacing:1.5px;
-    text-transform:uppercase; opacity:.75; margin-bottom:6px;
-    display:flex; align-items:center; gap:6px;
-}
-.cr-hero-title {
+.cr-page-title {
     font-family:var(--font-primary); font-size:1.75rem; font-weight:800;
-    line-height:1.2; margin-bottom:6px;
+    color:var(--color-text); line-height:1.2; margin-bottom:var(--space-xs);
 }
-.cr-hero-sub { font-size:.9375rem; opacity:.88; max-width:520px; line-height:1.5; }
+.cr-page-sub {
+    font-size:.9375rem; color:var(--color-text-secondary); line-height:1.5;
+    max-width:560px;
+}
 
 /* Responsive */
 @media(max-width:1279px) { .ad-stats { grid-template-columns:repeat(2,1fr); } }
 @media(max-width:767px) {
-    .cr-hero { padding:var(--space-lg); }
-    .cr-hero-title { font-size:1.375rem; }
+    .cr-page-title { font-size:1.375rem; }
     .ad-stats { grid-template-columns:repeat(2,1fr); }
     .cr-filter-bar { flex-direction:column; align-items:stretch; }
     .cr-filter-bar .sb-input,
@@ -134,7 +128,7 @@
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">User Management</div>
-        <a href="#" class="sb-sidebar-item"><i class="bi bi-people item-icon"></i><span class="item-label">Students</span></a>
+        <a href="<%: ResolveUrl("~/Admin/StudentManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-people item-icon"></i><span class="item-label">Students</span></a>
         <a href="#" class="sb-sidebar-item"><i class="bi bi-person-heart item-icon"></i><span class="item-label">Parents</span></a>
         <a href="#" class="sb-sidebar-item"><i class="bi bi-person-badge item-icon"></i><span class="item-label">Teachers</span></a>
     </div>
@@ -168,8 +162,9 @@
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Account</div>
+        <a href="<%: ResolveUrl("~/Admin/Notifications.aspx") %>" class="sb-sidebar-item"><i class="bi bi-bell item-icon"></i><span class="item-label">Notifications</span></a>
         <a href="<%: ResolveUrl("~/Admin/Profile.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person item-icon"></i><span class="item-label">My Profile</span></a>
-        <a href="<%: ResolveUrl("~/Logout.aspx") %>" class="sb-sidebar-item"><i class="bi bi-box-arrow-right item-icon"></i><span class="item-label">Sign Out</span></a>
+        <a href="<%: ResolveUrl("~/Logout.aspx") %>" class="sb-sidebar-item" onclick="return confirm('Are you sure you want to sign out?');"><i class="bi bi-box-arrow-right item-icon"></i><span class="item-label">Sign Out</span></a>
     </div>
 </asp:Content>
 
@@ -178,11 +173,10 @@
 <%-- ════ MAIN CONTENT ════ --%>
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 
-<%-- ── 1. HERO / PAGE HEADER ── --%>
-<div class="cr-hero">
-    <div class="cr-hero-eyebrow"><i class="bi bi-inbox-fill"></i> Learning Content Moderation</div>
-    <div class="cr-hero-title">Content Requests</div>
-    <div class="cr-hero-sub">Review, approve, or reject teacher-submitted learning content before it becomes available to students.</div>
+<%-- ── 1. PAGE HEADER ── --%>
+<div class="cr-page-header">
+    <h1 class="cr-page-title"><%= T("Content Requests", "Permintaan Kandungan") %></h1>
+    <p class="cr-page-sub"><%= T("Review, approve, or reject teacher-submitted learning content.", "Semak, luluskan, atau tolak kandungan pembelajaran yang dihantar oleh guru.") %></p>
 </div>
 
 <%-- ── 2. SUMMARY CARDS ── --%>
@@ -190,22 +184,22 @@
     <div class="ad-stat c-pending">
         <div class="ad-stat-icon" style="background:#FEF3C7;color:#D97706;"><i class="bi bi-hourglass-split"></i></div>
         <div class="ad-stat-val"><asp:Literal ID="litPending" runat="server" Text="0" /></div>
-        <div class="ad-stat-lbl">Pending Requests</div>
+        <div class="ad-stat-lbl"><%= T("Pending Requests", "Permintaan Tertunggak") %></div>
     </div>
     <div class="ad-stat c-approved">
         <div class="ad-stat-icon" style="background:#D1FAE5;color:#059669;"><i class="bi bi-check-circle-fill"></i></div>
         <div class="ad-stat-val"><asp:Literal ID="litApproved" runat="server" Text="0" /></div>
-        <div class="ad-stat-lbl">Approved</div>
+        <div class="ad-stat-lbl"><%= T("Approved", "Diluluskan") %></div>
     </div>
     <div class="ad-stat c-rejected">
         <div class="ad-stat-icon" style="background:#FEE2E2;color:#DC2626;"><i class="bi bi-x-circle-fill"></i></div>
         <div class="ad-stat-val"><asp:Literal ID="litRejected" runat="server" Text="0" /></div>
-        <div class="ad-stat-lbl">Rejected</div>
+        <div class="ad-stat-lbl"><%= T("Rejected", "Ditolak") %></div>
     </div>
     <div class="ad-stat c-total">
         <div class="ad-stat-icon" style="background:#DBEAFE;color:#2563EB;"><i class="bi bi-collection-fill"></i></div>
         <div class="ad-stat-val"><asp:Literal ID="litTotal" runat="server" Text="0" /></div>
-        <div class="ad-stat-lbl">Total Requests</div>
+        <div class="ad-stat-lbl"><%= T("Total Requests", "Jumlah Permintaan") %></div>
     </div>
 </div>
 
@@ -213,7 +207,6 @@
 <div class="cr-filter-bar">
     <i class="bi bi-search text-muted" style="font-size:1rem;flex-shrink:0;"></i>
     <asp:TextBox ID="txtSearch" runat="server" CssClass="sb-input sb-input-sm"
-        placeholder="Search by title, teacher or subtopic…"
         AutoPostBack="false" />
     <asp:DropDownList ID="ddlStatus" runat="server" CssClass="sb-select sb-input-sm"
         AutoPostBack="false">
@@ -238,10 +231,13 @@
 
 <%-- ── 4. PENDING REQUESTS TABLE ── --%>
 <div class="ad-sec-hd">
-    <div class="ad-sec-title">
-        <i class="bi bi-hourglass-split" style="color:#D97706;"></i>
-        Pending Requests
-        <asp:Literal ID="litPendingBadge" runat="server" />
+    <div>
+        <div class="ad-sec-title">
+            <i class="bi bi-hourglass-split" style="color:#D97706;"></i>
+            <%= T("Pending Requests", "Permintaan Tertunggak") %>
+            <asp:Literal ID="litPendingBadge" runat="server" />
+        </div>
+        <div class="ad-sec-sub"><%= T("Review new learning content awaiting approval.", "Semak kandungan pembelajaran baharu yang menunggu kelulusan.") %></div>
     </div>
 </div>
 <div class="ad-card">
@@ -303,17 +299,17 @@
                                     <div class="cr-actions">
                                         <asp:LinkButton ID="lnkApprove" runat="server"
                                             CommandName="Approve"
-                                            CommandArgument='<%# Eval("sourceType") + "|" + Eval("requestId") %>'
+                                            CommandArgument='<%# Eval("sourceType") + "|" + Eval("requestId") + "|" + Eval("teacherUserId") + "|" + Eval("teacherName") + "|" + Eval("title") %>'
                                             CssClass="sb-btn sb-btn-success sb-btn-xs"
                                             OnClientClick="return confirm('Approve this submission?');">
-                                            <i class="bi bi-check-lg"></i> Approve
+                                            <i class="bi bi-check-lg"></i> <%= T("Approve", "Luluskan") %>
                                         </asp:LinkButton>
                                         <asp:LinkButton ID="lnkReject" runat="server"
                                             CommandName="Reject"
-                                            CommandArgument='<%# Eval("sourceType") + "|" + Eval("requestId") %>'
+                                            CommandArgument='<%# Eval("sourceType") + "|" + Eval("requestId") + "|" + Eval("teacherUserId") + "|" + Eval("teacherName") + "|" + Eval("title") %>'
                                             CssClass="sb-btn sb-btn-danger sb-btn-xs"
                                             OnClientClick="return confirm('Reject this submission?');">
-                                            <i class="bi bi-x-lg"></i> Reject
+                                            <i class="bi bi-x-lg"></i> <%= T("Reject", "Tolak") %>
                                         </asp:LinkButton>
                                     </div>
                                 </td>
@@ -327,17 +323,20 @@
     <asp:Panel ID="pnlPendingEmpty" runat="server">
         <div class="ad-empty">
             <div class="ad-empty-ico">🎉</div>
-            <div class="ad-empty-msg">Great! There are no pending content requests.</div>
-            <div class="ad-empty-sub">All teacher submissions have been reviewed.</div>
+            <div class="ad-empty-msg"><%= T("Great! There are no pending content requests.", "Hebat! Tiada permintaan kandungan tertunggak.") %></div>
+            <div class="ad-empty-sub"><%= T("All teacher submissions have been reviewed.", "Semua penghantaran guru telah disemak.") %></div>
         </div>
     </asp:Panel>
 </div>
 
 <%-- ── 5. REVIEWED HISTORY TABLE ── --%>
 <div class="ad-sec-hd">
-    <div class="ad-sec-title">
-        <i class="bi bi-clock-history" style="color:#7C3AED;"></i>
-        Approved / Rejected History
+    <div>
+        <div class="ad-sec-title">
+            <i class="bi bi-clock-history" style="color:#7C3AED;"></i>
+            <%= T("Approved / Rejected History", "Sejarah Diluluskan / Ditolak") %>
+        </div>
+        <div class="ad-sec-sub"><%= T("Previously reviewed teacher submissions.", "Penghantaran guru yang telah disemak sebelum ini.") %></div>
     </div>
 </div>
 <div class="ad-card">
@@ -392,8 +391,8 @@
     <asp:Panel ID="pnlHistoryEmpty" runat="server">
         <div class="ad-empty">
             <div class="ad-empty-ico">📋</div>
-            <div class="ad-empty-msg">No reviewed requests yet.</div>
-            <div class="ad-empty-sub">Approved and rejected submissions will appear here.</div>
+            <div class="ad-empty-msg"><%= T("No reviewed requests yet.", "Tiada permintaan yang telah disemak.") %></div>
+            <div class="ad-empty-sub"><%= T("Approved and rejected submissions will appear here.", "Penghantaran yang diluluskan dan ditolak akan dipaparkan di sini.") %></div>
         </div>
     </asp:Panel>
 </div>

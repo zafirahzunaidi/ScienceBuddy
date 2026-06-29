@@ -14,6 +14,15 @@ namespace ScienceBuddy.Admin
         private string ConnStr =>
             ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
+        // ── Language helper ──────────────────────────────────────────
+        protected string CurrentLanguage =>
+            ((ScienceBuddy.SiteMaster)Master).CurrentLanguage;
+
+        protected string T(string en, string bm)
+        {
+            return CurrentLanguage == "BM" ? bm : en;
+        }
+
         // ── Page Load ────────────────────────────────────────────────
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -31,7 +40,19 @@ namespace ScienceBuddy.Admin
                 SetMasterUserInfo();
                 LoadSummary();
                 LoadTables("", "", "");
+
+                // Show success toast from reject→notify→redirect workflow
+                if (Session["cr_toast"] != null)
+                {
+                    ShowToast("<i class=\"bi bi-check-circle-fill\"></i> " + Session["cr_toast"].ToString(), "sb-alert-success");
+                    Session.Remove("cr_toast");
+                }
             }
+
+            // Set bilingual placeholders/labels every load (even on postback)
+            txtSearch.Attributes["placeholder"] = T("Search by title, teacher or subtopic…", "Cari mengikut tajuk, guru atau subtopik…");
+            btnSearch.Text = T("Search", "Cari");
+            btnReset.Text  = T("Reset", "Tetapkan Semula");
         }
 
         // ── Master user widget ───────────────────────────────────────
@@ -163,6 +184,7 @@ namespace ScienceBuddy.Admin
                             m.[createdDate]     AS submittedDate,
                             m.[reviewedDate],
                             m.[status],
+                            m.[createdByUserId] AS teacherUserId,
                             ISNULL(t.[name], u.[username]) AS teacherName,
                             ISNULL(st.[subtopicTitleEN], '') AS subtopicTitle,
                             ISNULL(un.[unitNameEN], '')    AS unitName
@@ -203,6 +225,7 @@ namespace ScienceBuddy.Admin
                                 sourceType    = "Material",
                                 title         = row["title"].ToString(),
                                 teacherName   = row["teacherName"].ToString(),
+                                teacherUserId = row["teacherUserId"].ToString(),
                                 unitName      = row["unitName"].ToString(),
                                 subtopicTitle = row["subtopicTitle"].ToString(),
                                 language      = row["language"] == DBNull.Value ? "—" : row["language"].ToString(),
@@ -229,6 +252,7 @@ namespace ScienceBuddy.Admin
                             q.[createdAt]                       AS submittedDate,
                             CAST(NULL AS DATE)                  AS reviewedDate,
                             q.[status],
+                            q.[createdByUserId]                 AS teacherUserId,
                             ISNULL(t.[name], u.[username])      AS teacherName,
                             ISNULL(st.[subtopicTitleEN], '')    AS subtopicTitle,
                             ISNULL(un.[unitNameEN], '')         AS unitName
@@ -270,6 +294,7 @@ namespace ScienceBuddy.Admin
                                 sourceType    = "Practice Quiz",
                                 title         = row["title"].ToString(),
                                 teacherName   = row["teacherName"].ToString(),
+                                teacherUserId = row["teacherUserId"].ToString(),
                                 unitName      = row["unitName"].ToString(),
                                 subtopicTitle = row["subtopicTitle"].ToString(),
                                 language      = row["language"] == DBNull.Value ? "—" : row["language"].ToString(),
@@ -324,26 +349,98 @@ namespace ScienceBuddy.Admin
         {
             if (e.CommandName != "Approve" && e.CommandName != "Reject") return;
 
-            string arg       = e.CommandArgument.ToString();
-            int    sep       = arg.IndexOf('|');
-            if (sep < 0) return;
+            // Parse: sourceType|requestId|teacherUserId|teacherName|title
+            string[] parts = e.CommandArgument.ToString().Split('|');
+            if (parts.Length < 5) return;
 
-            string sourceType = arg.Substring(0, sep);
-            string id         = arg.Substring(sep + 1);
-            string newStatus  = e.CommandName == "Approve" ? "Approved" : "Rejected";
+            string sourceType    = parts[0];
+            string id            = parts[1];
+            string teacherUserId = parts[2];
+            string teacherName   = parts[3];
+            string contentTitle  = parts[4];
+            string newStatus     = e.CommandName == "Approve" ? "Approved" : "Rejected";
 
             bool ok = UpdateStatus(sourceType, id, newStatus);
+            if (!ok)
+            {
+                LoadSummary();
+                LoadTables(txtSearch.Text.Trim(), ddlStatus.SelectedValue, ddlType.SelectedValue);
+                ShowToast("<i class=\"bi bi-x-circle-fill\"></i> " + T("Failed to update status.", "Gagal mengemas kini status."), "sb-alert-error");
+                return;
+            }
 
-            // Refresh everything
-            LoadSummary();
-            string search = txtSearch.Text.Trim();
-            LoadTables(search, ddlStatus.SelectedValue, ddlType.SelectedValue);
+            if (e.CommandName == "Approve")
+            {
+                // ── APPROVE: Insert notification directly, stay on page ──
+                InsertApprovalNotification(teacherUserId, contentTitle);
 
-            // Show toast
-            ShowToast(ok
-                ? string.Format("<i class=\"bi bi-check-circle-fill\"></i> <strong>{0}</strong> — status updated to <strong>{1}</strong>.", id, newStatus)
-                : "<i class=\"bi bi-x-circle-fill\"></i> Failed to update status. Please try again.",
-                ok ? "sb-alert-success" : "sb-alert-error");
+                LoadSummary();
+                LoadTables(txtSearch.Text.Trim(), ddlStatus.SelectedValue, ddlType.SelectedValue);
+                ShowToast("<i class=\"bi bi-check-circle-fill\"></i> " +
+                    T("Content approved successfully. Notification sent to the teacher.",
+                      "Kandungan berjaya diluluskan. Notifikasi telah dihantar kepada guru."),
+                    "sb-alert-success");
+            }
+            else
+            {
+                // ── REJECT: Store in Session, redirect to Notifications ──
+                Session["notif_action"]        = "Rejected";
+                Session["notif_teacherUserId"] = teacherUserId;
+                Session["notif_teacherName"]   = teacherName;
+                Session["notif_contentTitle"]  = contentTitle;
+                Session["notif_contentType"]   = sourceType;
+                Session["notif_requestId"]     = id;
+
+                Response.Redirect("~/Admin/Notifications.aspx?from=contentrequest", false);
+                Context.ApplicationInstance.CompleteRequest();
+            }
+        }
+
+        // ── Insert approval notification directly ────────────────────
+        private void InsertApprovalNotification(string teacherUserId, string contentTitle)
+        {
+            try
+            {
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    string notifId = GenerateNextNotifId(conn);
+
+                    string titleEN = "Content Request Approved";
+                    string titleBM = "Permohonan Kandungan Diluluskan";
+                    string msgEN   = string.Format(
+                        "Your learning content \"{0}\" has been approved and is now available in ScienceBuddy.", contentTitle);
+                    string msgBM   = string.Format(
+                        "Kandungan pembelajaran \"{0}\" telah diluluskan dan kini tersedia dalam ScienceBuddy.", contentTitle);
+
+                    using (var cmd = new SqlCommand(@"
+                        INSERT INTO dbo.[Notification]
+                            ([notificationId],[toUserId],[titleEN],[titleBM],[messageEN],[messageBM],[isRead],[createdAt])
+                        VALUES (@id,@uid,@tEN,@tBM,@mEN,@mBM,0,GETDATE())", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", notifId);
+                        cmd.Parameters.AddWithValue("@uid", teacherUserId);
+                        cmd.Parameters.AddWithValue("@tEN", titleEN);
+                        cmd.Parameters.AddWithValue("@tBM", titleBM);
+                        cmd.Parameters.AddWithValue("@mEN", msgEN);
+                        cmd.Parameters.AddWithValue("@mBM", msgBM);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch { /* Notification insert failure should not block approval */ }
+        }
+
+        // ── Generate next notification ID (N001, N002, etc.) ─────────
+        private string GenerateNextNotifId(SqlConnection conn)
+        {
+            using (var cmd = new SqlCommand(
+                "SELECT MAX(CAST(SUBSTRING([notificationId],2,LEN([notificationId])-1) AS INT)) FROM dbo.[Notification]", conn))
+            {
+                var val = cmd.ExecuteScalar();
+                int next = (val != null && val != DBNull.Value) ? Convert.ToInt32(val) + 1 : 1;
+                return "N" + next.ToString("D3");
+            }
         }
 
         // ── Update status in DB ──────────────────────────────────────

@@ -81,7 +81,7 @@ namespace ScienceBuddy
             try
             {
                 string connStr = ConfigurationManager
-                    .ConnectionStrings["ScienceBuddyDB"].ConnectionString;
+                    .ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
                 const string sql = "SELECT preferredLanguage FROM [User] WHERE userId = @userId";
                 using (var conn = new SqlConnection(connStr))

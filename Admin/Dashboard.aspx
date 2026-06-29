@@ -208,7 +208,7 @@
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">User Management</div>
-        <a href="#" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Admin/StudentManagement.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-people item-icon"></i>
             <span class="item-label">Students</span>
         </a>
@@ -243,7 +243,7 @@
             <i class="bi bi-camera-video item-icon"></i>
             <span class="item-label">Live Sessions</span>
         </a>
-        <a href="#" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Admin/ContentRequests.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-inbox item-icon"></i>
             <span class="item-label">Content Requests</span>
         </a>
@@ -291,11 +291,16 @@
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Account</div>
+        <a href="<%: ResolveUrl("~/Admin/Notifications.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-bell item-icon"></i>
+            <span class="item-label">Notifications</span>
+        </a>
         <a href="<%: ResolveUrl("~/Admin/Profile.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-person item-icon"></i>
             <span class="item-label">My Profile</span>
         </a>
-        <a href="<%: ResolveUrl("~/Logout.aspx") %>" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Logout.aspx") %>" class="sb-sidebar-item"
+            onclick="return confirm('Are you sure you want to sign out?');">
             <i class="bi bi-box-arrow-right item-icon"></i>
             <span class="item-label">Sign Out</span>
         </a>
@@ -310,12 +315,12 @@
 <%-- ── 1. HERO ── --%>
 <div class="ad-hero">
     <div class="ad-hero-body">
-        <div class="ad-hero-eyebrow"><i class="bi bi-shield-check"></i> Administrator Console</div>
-        <div class="ad-hero-title">Welcome back, <asp:Literal ID="litAdminName" runat="server" Text="Admin" />!</div>
-        <div class="ad-hero-sub">Manage users, monitor learning content, and keep ScienceBuddy running smoothly.</div>
+        <div class="ad-hero-eyebrow"><i class="bi bi-shield-check"></i> <%= T("Administrator Console", "Konsol Pentadbir") %></div>
+        <div class="ad-hero-title"><%= T("Welcome back,", "Selamat kembali,") %> <asp:Literal ID="litAdminName" runat="server" Text="Admin" />!</div>
+        <div class="ad-hero-sub"><%= T("Manage users, monitor learning content, and keep ScienceBuddy running smoothly.", "Urus pengguna, pantau kandungan pembelajaran, dan pastikan ScienceBuddy berjalan lancar.") %></div>
         <div class="ad-hero-meta">
             <span class="ad-hero-chip"><i class="bi bi-calendar3"></i> <asp:Literal ID="litDate" runat="server" /></span>
-            <span class="ad-hero-chip"><i class="bi bi-person-fill-check"></i> Administrator</span>
+            <span class="ad-hero-chip"><i class="bi bi-person-fill-check"></i> <%= T("Administrator", "Pentadbir") %></span>
         </div>
     </div>
     <div class="ad-hero-icon">🛡️</div>
@@ -326,64 +331,64 @@
     <div class="ad-stat c-students">
         <div class="ad-stat-icon" style="background:#DBEAFE;color:#1D4ED8;"><i class="bi bi-people-fill"></i></div>
         <div class="ad-stat-val"><asp:Literal ID="litStudents" runat="server" Text="0" /></div>
-        <div class="ad-stat-lbl">Total Students</div>
+        <div class="ad-stat-lbl"><%= T("Total Students", "Jumlah Pelajar") %></div>
     </div>
     <div class="ad-stat c-parents">
         <div class="ad-stat-icon" style="background:#D1FAE5;color:#059669;"><i class="bi bi-person-heart"></i></div>
         <div class="ad-stat-val"><asp:Literal ID="litParents" runat="server" Text="0" /></div>
-        <div class="ad-stat-lbl">Total Parents</div>
+        <div class="ad-stat-lbl"><%= T("Total Parents", "Jumlah Ibu Bapa") %></div>
     </div>
     <div class="ad-stat c-teachers">
         <div class="ad-stat-icon" style="background:#EDE9FE;color:#7C3AED;"><i class="bi bi-person-badge-fill"></i></div>
         <div class="ad-stat-val"><asp:Literal ID="litTeachers" runat="server" Text="0" /></div>
-        <div class="ad-stat-lbl">Total Teachers</div>
+        <div class="ad-stat-lbl"><%= T("Total Teachers", "Jumlah Guru") %></div>
     </div>
     <div class="ad-stat c-lessons">
         <div class="ad-stat-icon" style="background:#FEF3C7;color:#D97706;"><i class="bi bi-book-fill"></i></div>
         <div class="ad-stat-val"><asp:Literal ID="litLessons" runat="server" Text="0" /></div>
-        <div class="ad-stat-lbl">Total Lessons</div>
+        <div class="ad-stat-lbl"><%= T("Total Lessons", "Jumlah Pelajaran") %></div>
     </div>
     <div class="ad-stat c-quizzes">
         <div class="ad-stat-icon" style="background:#FEE2E2;color:#DC2626;"><i class="bi bi-patch-question-fill"></i></div>
         <div class="ad-stat-val"><asp:Literal ID="litQuizzes" runat="server" Text="0" /></div>
-        <div class="ad-stat-lbl">Total Quizzes</div>
+        <div class="ad-stat-lbl"><%= T("Total Quizzes", "Jumlah Kuiz") %></div>
     </div>
     <div class="ad-stat c-requests">
         <div class="ad-stat-icon" style="background:#CFFAFE;color:#0891B2;"><i class="bi bi-inbox-fill"></i></div>
         <div class="ad-stat-val"><asp:Literal ID="litPendingRequests" runat="server" Text="0" /></div>
-        <div class="ad-stat-lbl">Pending Requests</div>
+        <div class="ad-stat-lbl"><%= T("Pending Requests", "Permintaan Tertunggak") %></div>
     </div>
 </div>
 
 <%-- ── 3. QUICK ACTIONS ── --%>
 <div class="ad-sec-hd">
-    <div class="ad-sec-title"><i class="bi bi-lightning-fill" style="color:#2563EB;"></i> Quick Actions</div>
+    <div class="ad-sec-title"><i class="bi bi-lightning-fill" style="color:#2563EB;"></i> <%= T("Quick Actions", "Tindakan Pantas") %></div>
 </div>
 <div class="ad-quick" style="margin-bottom:var(--space-xl);">
     <a href="#" class="ad-quick-card ad-qc-users">
         <div class="ad-quick-ico" style="background:#DBEAFE;color:#1D4ED8;"><i class="bi bi-people-fill"></i></div>
-        <div class="ad-quick-lbl">User Management</div>
-        <div class="ad-quick-desc">Students, parents &amp; teachers</div>
+        <div class="ad-quick-lbl"><%= T("User Management", "Pengurusan Pengguna") %></div>
+        <div class="ad-quick-desc"><%= T("Students, parents &amp; teachers", "Pelajar, ibu bapa &amp; guru") %></div>
     </a>
     <a href="#" class="ad-quick-card ad-qc-content">
         <div class="ad-quick-ico" style="background:#FEF3C7;color:#D97706;"><i class="bi bi-collection-fill"></i></div>
-        <div class="ad-quick-lbl">Learning Content</div>
-        <div class="ad-quick-desc">Lessons, quizzes &amp; questions</div>
+        <div class="ad-quick-lbl"><%= T("Learning Content", "Kandungan Pembelajaran") %></div>
+        <div class="ad-quick-desc"><%= T("Lessons, quizzes &amp; questions", "Pelajaran, kuiz &amp; soalan") %></div>
     </a>
-    <a href="#" class="ad-quick-card ad-qc-requests">
+    <a href="<%: ResolveUrl("~/Admin/ContentRequests.aspx") %>" class="ad-quick-card ad-qc-requests">
         <div class="ad-quick-ico" style="background:#CFFAFE;color:#0891B2;"><i class="bi bi-inbox-fill"></i></div>
-        <div class="ad-quick-lbl">Content Requests</div>
-        <div class="ad-quick-desc">Review pending submissions</div>
+        <div class="ad-quick-lbl"><%= T("Content Requests", "Permintaan Kandungan") %></div>
+        <div class="ad-quick-desc"><%= T("Review pending submissions", "Semak penghantaran tertunggak") %></div>
     </a>
     <a href="#" class="ad-quick-card ad-qc-gamify">
         <div class="ad-quick-ico" style="background:#EDE9FE;color:#7C3AED;"><i class="bi bi-trophy-fill"></i></div>
-        <div class="ad-quick-lbl">Gamification</div>
-        <div class="ad-quick-desc">Badges &amp; XP configuration</div>
+        <div class="ad-quick-lbl"><%= T("Gamification", "Gamifikasi") %></div>
+        <div class="ad-quick-desc"><%= T("Badges &amp; XP configuration", "Lencana &amp; konfigurasi XP") %></div>
     </a>
     <a href="#" class="ad-quick-card ad-qc-notif">
         <div class="ad-quick-ico" style="background:#FEE2E2;color:#DC2626;"><i class="bi bi-bell-fill"></i></div>
-        <div class="ad-quick-lbl">Notifications</div>
-        <div class="ad-quick-desc">Send &amp; manage alerts</div>
+        <div class="ad-quick-lbl"><%= T("Notifications", "Notifikasi") %></div>
+        <div class="ad-quick-desc"><%= T("Send &amp; manage alerts", "Hantar &amp; urus makluman") %></div>
     </a>
 </div>
 
@@ -393,7 +398,7 @@
     <%-- Pending Content Requests --%>
     <div>
         <div class="ad-sec-hd">
-            <div class="ad-sec-title"><i class="bi bi-inbox" style="color:#0891B2;"></i> Pending Content Requests</div>
+            <div class="ad-sec-title"><i class="bi bi-inbox" style="color:#0891B2;"></i> <%= T("Pending Content Requests", "Permintaan Kandungan Tertunggak") %></div>
         </div>
         <div class="ad-card">
             <asp:Panel ID="pnlRequests" runat="server" Visible="false">
@@ -423,7 +428,7 @@
                                             <span class="sb-badge sb-badge-warning">Pending</span>
                                         </td>
                                         <td class="col-actions">
-                                            <a href="#" class="sb-btn sb-btn-primary sb-btn-xs">Review</a>
+                                            <a href="<%: ResolveUrl("~/Admin/ContentRequests.aspx") %>" class="sb-btn sb-btn-primary sb-btn-xs"><%= T("Review", "Semak") %></a>
                                         </td>
                                     </tr>
                                 </ItemTemplate>
@@ -435,7 +440,7 @@
             <asp:Panel ID="pnlRequestsEmpty" runat="server">
                 <div class="ad-empty">
                     <div class="ad-empty-ico">📭</div>
-                    <div class="ad-empty-msg">No pending content requests.</div>
+                    <div class="ad-empty-msg"><%= T("No pending content requests.", "Tiada permintaan kandungan tertunggak.") %></div>
                 </div>
             </asp:Panel>
         </div>
@@ -444,7 +449,7 @@
     <%-- Recent Notifications --%>
     <div>
         <div class="ad-sec-hd">
-            <div class="ad-sec-title"><i class="bi bi-bell" style="color:#DC2626;"></i> Recent Notifications</div>
+            <div class="ad-sec-title"><i class="bi bi-bell" style="color:#DC2626;"></i> <%= T("Recent Notifications", "Notifikasi Terkini") %></div>
         </div>
         <div class="ad-card">
             <asp:Panel ID="pnlNotifs" runat="server" Visible="false">
@@ -466,7 +471,7 @@
             <asp:Panel ID="pnlNotifsEmpty" runat="server">
                 <div class="ad-empty">
                     <div class="ad-empty-ico">🔔</div>
-                    <div class="ad-empty-msg">No new notifications.</div>
+                    <div class="ad-empty-msg"><%= T("No new notifications.", "Tiada notifikasi baharu.") %></div>
                 </div>
             </asp:Panel>
         </div>
@@ -477,7 +482,7 @@
 <%-- ── 5. RECENT SYSTEM ACTIVITIES ── --%>
 <div class="ad-row3">
     <div class="ad-sec-hd">
-        <div class="ad-sec-title"><i class="bi bi-clock-history" style="color:#7C3AED;"></i> Recent System Activities</div>
+        <div class="ad-sec-title"><i class="bi bi-clock-history" style="color:#7C3AED;"></i> <%= T("Recent System Activities", "Aktiviti Sistem Terkini") %></div>
     </div>
     <div class="ad-card">
         <asp:Panel ID="pnlLogs" runat="server" Visible="false">
@@ -509,7 +514,7 @@
         <asp:Panel ID="pnlLogsEmpty" runat="server">
             <div class="ad-empty">
                 <div class="ad-empty-ico">📋</div>
-                <div class="ad-empty-msg">No recent system activities.</div>
+                <div class="ad-empty-msg"><%= T("No recent system activities.", "Tiada aktiviti sistem terkini.") %></div>
             </div>
         </asp:Panel>
     </div>

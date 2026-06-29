@@ -14,6 +14,15 @@ namespace ScienceBuddy.Admin
         private string ConnStr =>
             ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
+        // ── Language helper ──────────────────────────────────────────
+        protected string CurrentLanguage =>
+            ((ScienceBuddy.SiteMaster)Master).CurrentLanguage;
+
+        protected string T(string en, string bm)
+        {
+            return CurrentLanguage == "BM" ? bm : en;
+        }
+
         // ── Page Load ────────────────────────────────────────────────
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -57,18 +66,21 @@ namespace ScienceBuddy.Admin
                 litLessons.Text         = SafeCount(conn, "SELECT COUNT(*) FROM dbo.[Lesson]").ToString();
                 litQuizzes.Text         = SafeCount(conn, "SELECT COUNT(*) FROM dbo.[Quiz]").ToString();
 
-                // Pending content requests — table may not exist yet
-                litPendingRequests.Text = "0";
-                pnlRequestsEmpty.Visible = true;
-                pnlRequests.Visible      = false;
+                // Pending content requests count (Material + Practice Quiz)
+                int pendingCount = SafeCount(conn,
+                    "SELECT (SELECT COUNT(*) FROM dbo.[Material] WHERE [status]='Pending') + (SELECT COUNT(*) FROM dbo.[Quiz] WHERE [status]='Pending' AND [quizType]='Practice')");
+                litPendingRequests.Text = pendingCount.ToString();
+
+                // Load pending requests table (latest 5)
+                LoadPendingRequests(conn);
 
                 // Master user info widget
                 master_SetUserInfo(conn, userId);
 
-                // Recent logs (latest 10)
+                // Recent logs (latest 5)
                 LoadRecentLogs(conn);
 
-                // Recent notifications for this admin (latest 5)
+                // Recent notifications (latest 5 system-wide)
                 LoadNotifications(conn, userId);
             }
         }
@@ -101,11 +113,75 @@ namespace ScienceBuddy.Admin
             }
         }
 
+        // ── Pending content requests (latest 5) ──────────────────────
+        private void LoadPendingRequests(SqlConnection conn)
+        {
+            // Union Material + Practice Quiz where status = 'Pending'
+            const string sql = @"
+                SELECT TOP 5 * FROM (
+                    SELECT
+                        m.[materialId]   AS requestId,
+                        'Material'       AS requestType,
+                        m.[materialTitle] AS title,
+                        ISNULL(t.[name], u.[username]) AS requestedBy,
+                        m.[createdDate]  AS submittedDate
+                    FROM dbo.[Material] m
+                    LEFT JOIN dbo.[User] u ON u.[userId] = m.[createdByUserId]
+                    LEFT JOIN dbo.[Teacher] t ON t.[userId] = m.[createdByUserId]
+                    WHERE m.[status] = 'Pending'
+                    UNION ALL
+                    SELECT
+                        q.[quizId]       AS requestId,
+                        'Practice Quiz'  AS requestType,
+                        ISNULL(q.[quizTitleEN], q.[quizTitleBM]) AS title,
+                        ISNULL(t.[name], u.[username]) AS requestedBy,
+                        q.[createdAt]    AS submittedDate
+                    FROM dbo.[Quiz] q
+                    LEFT JOIN dbo.[User] u ON u.[userId] = q.[createdByUserId]
+                    LEFT JOIN dbo.[Teacher] t ON t.[userId] = q.[createdByUserId]
+                    WHERE q.[status] = 'Pending' AND q.[quizType] = 'Practice'
+                ) AS combined
+                ORDER BY submittedDate DESC";
+
+            using (var cmd = new SqlCommand(sql, conn))
+            {
+                var da = new SqlDataAdapter(cmd);
+                var dt = new DataTable();
+                da.Fill(dt);
+
+                if (dt.Rows.Count == 0)
+                {
+                    pnlRequests.Visible      = false;
+                    pnlRequestsEmpty.Visible = true;
+                    return;
+                }
+
+                var list = new List<object>();
+                foreach (DataRow row in dt.Rows)
+                {
+                    DateTime submitted = row["submittedDate"] == DBNull.Value
+                        ? DateTime.Now : Convert.ToDateTime(row["submittedDate"]);
+
+                    list.Add(new
+                    {
+                        requestType  = row["requestType"].ToString(),
+                        requestedBy  = row["requestedBy"]?.ToString() ?? "—",
+                        requestedDate = submitted.ToString("d MMM yyyy"),
+                    });
+                }
+
+                pnlRequests.Visible      = true;
+                pnlRequestsEmpty.Visible = false;
+                rptRequests.DataSource   = list;
+                rptRequests.DataBind();
+            }
+        }
+
         // ── Recent activity logs ─────────────────────────────────────
         private void LoadRecentLogs(SqlConnection conn)
         {
             const string sql = @"
-                SELECT TOP 10
+                SELECT TOP 5
                     l.[logId], l.[action], l.[description],
                     l.[logDateTime], l.[status],
                     ISNULL(u.[username], 'System') AS username
@@ -158,20 +234,22 @@ namespace ScienceBuddy.Admin
             }
         }
 
-        // ── Recent notifications ─────────────────────────────────────
+        // ── Recent notifications (latest 5 system-wide) ────────────────
         private void LoadNotifications(SqlConnection conn, string userId)
         {
             const string sql = @"
                 SELECT TOP 5
-                    [notificationId], [titleEN], [messageEN],
-                    [isRead], [createdAt]
-                FROM dbo.[Notification]
-                WHERE [toUserId] = @uid
-                ORDER BY [createdAt] DESC";
+                    n.[notificationId], n.[titleEN], n.[titleBM],
+                    n.[messageEN], n.[messageBM],
+                    n.[isRead], n.[createdAt],
+                    ISNULL(u.[username], n.[toUserId]) AS recipientName,
+                    u.[role] AS recipientRole
+                FROM dbo.[Notification] n
+                LEFT JOIN dbo.[User] u ON u.[userId] = n.[toUserId]
+                ORDER BY n.[createdAt] DESC";
 
             using (var cmd = new SqlCommand(sql, conn))
             {
-                cmd.Parameters.AddWithValue("@uid", userId);
                 var da = new SqlDataAdapter(cmd);
                 var dt = new DataTable();
                 da.Fill(dt);
@@ -186,17 +264,25 @@ namespace ScienceBuddy.Admin
                 var list = new List<object>();
                 foreach (DataRow row in dt.Rows)
                 {
-                    string title   = row["titleEN"]?.ToString() ?? "(No title)";
-                    string message = row["messageEN"]?.ToString() ?? "";
-                    bool   isRead  = row["isRead"] != DBNull.Value && Convert.ToBoolean(row["isRead"]);
+                    string title = CurrentLanguage == "BM"
+                        ? (NullSafe(row["titleBM"]) != "" ? NullSafe(row["titleBM"]) : NullSafe(row["titleEN"]))
+                        : NullSafe(row["titleEN"]);
+                    if (string.IsNullOrWhiteSpace(title)) title = NullSafe(row["titleEN"]);
+                    if (string.IsNullOrWhiteSpace(title)) title = T("(No title)", "(Tiada tajuk)");
+
+                    string message = CurrentLanguage == "BM"
+                        ? (NullSafe(row["messageBM"]) != "" ? NullSafe(row["messageBM"]) : NullSafe(row["messageEN"]))
+                        : NullSafe(row["messageEN"]);
+                    if (message.Length > 90) message = message.Substring(0, 90) + "…";
+
+                    bool isRead = row["isRead"] != DBNull.Value && Convert.ToBoolean(row["isRead"]);
                     DateTime createdAt = row["createdAt"] == DBNull.Value
-                                          ? DateTime.Now
-                                          : Convert.ToDateTime(row["createdAt"]);
+                        ? DateTime.Now : Convert.ToDateTime(row["createdAt"]);
 
                     list.Add(new
                     {
                         title   = title,
-                        message = message.Length > 90 ? message.Substring(0, 90) + "…" : message,
+                        message = message,
                         isRead  = isRead,
                         timeAgo = FormatTimeAgo(createdAt)
                     });
@@ -207,6 +293,11 @@ namespace ScienceBuddy.Admin
                 rptNotifs.DataSource   = list;
                 rptNotifs.DataBind();
             }
+        }
+
+        private static string NullSafe(object val)
+        {
+            return (val == null || val == DBNull.Value) ? "" : val.ToString();
         }
 
         // ── Utility: safe scalar count ───────────────────────────────
@@ -233,10 +324,24 @@ namespace ScienceBuddy.Admin
                          : lower == "warning"  ? "sb-badge-warning"
                          : lower == "info"     ? "sb-badge-primary"
                          : "sb-badge-gray";
+            // Translate status label
+            string label = status;
+            switch (lower)
+            {
+                case "pending":   label = T("Pending", "Tertunggak"); break;
+                case "approved":  label = T("Approved", "Diluluskan"); break;
+                case "rejected":  label = T("Rejected", "Ditolak"); break;
+                case "completed": label = T("Completed", "Selesai"); break;
+                case "active":    label = T("Active", "Aktif"); break;
+                case "inactive":  label = T("Inactive", "Tidak Aktif"); break;
+                case "success":   label = T("Success", "Berjaya"); break;
+                case "failed":    label = T("Failed", "Gagal"); break;
+                case "warning":   label = T("Warning", "Amaran"); break;
+            }
             return string.Format(
                 "<span class=\"sb-badge {0}\" style=\"margin-left:4px;\">{1}</span>",
                 cls,
-                HttpUtility.HtmlEncode(status));
+                HttpUtility.HtmlEncode(label));
         }
 
         // ── Utility: log icon per action keyword ─────────────────────
