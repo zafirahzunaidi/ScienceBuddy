@@ -237,7 +237,7 @@
         <a href="<%: ResolveUrl("~/Student/MyLearning.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-book item-icon"></i><span class="item-label">My Learning</span>
         </a>
-        <a href="<%: ResolveUrl("~/Student/Quiz.aspx") %>" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Student/PracticeLibrary.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-patch-question item-icon"></i><span class="item-label">Practice Library</span>
         </a>
         <a href="<%: ResolveUrl("~/Student/VirtualLabs.aspx") %>" class="sb-sidebar-item">
@@ -439,7 +439,7 @@
                 <div class="sd-quick-label"><asp:Literal ID="litQALearn" runat="server" Text="My Learning" /></div>
                 <div class="sd-quick-desc"><asp:Literal ID="litQALearnDesc" runat="server" Text="Lessons, subtopics &amp; units" /></div>
             </a>
-            <a href="<%: ResolveUrl("~/Student/Quiz.aspx") %>" class="sd-quick-card qc-quiz">
+            <a href="<%: ResolveUrl("~/Student/PracticeLibrary.aspx") %>" class="sd-quick-card qc-quiz">
                 <div class="sd-quick-icon" style="background:#FFFBEB;color:#B45309;"><i class="bi bi-patch-question-fill"></i></div>
                 <div class="sd-quick-label"><asp:Literal ID="litQAPractice" runat="server" Text="Practice Library" /></div>
                 <div class="sd-quick-desc"><asp:Literal ID="litQAPracticeDesc" runat="server" Text="Quizzes &amp; self-assessment" /></div>
