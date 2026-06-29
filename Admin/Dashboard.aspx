@@ -427,7 +427,7 @@
                                             <span class="sb-badge sb-badge-warning">Pending</span>
                                         </td>
                                         <td class="col-actions">
-                                            <a href="#" class="sb-btn sb-btn-primary sb-btn-xs">Review</a>
+                                            <a href="<%: ResolveUrl("~/Admin/ContentRequests.aspx") %>" class="sb-btn sb-btn-primary sb-btn-xs"><%= T("Review", "Semak") %></a>
                                         </td>
                                     </tr>
                                 </ItemTemplate>
