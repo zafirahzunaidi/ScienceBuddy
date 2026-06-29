@@ -243,7 +243,7 @@
         <a href="<%: ResolveUrl("~/Student/VirtualLabs.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-eyedropper item-icon"></i><span class="item-label">Virtual Labs</span>
         </a>
-        <a href="#" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Student/LiveSessions.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-camera-video item-icon"></i><span class="item-label">Live Sessions</span>
         </a>
         <a href="#" class="sb-sidebar-item">
