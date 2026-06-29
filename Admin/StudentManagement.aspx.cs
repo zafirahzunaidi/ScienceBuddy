@@ -42,8 +42,9 @@ namespace ScienceBuddy.Admin
 
             // Bilingual labels
             txtSearch.Attributes["placeholder"] = T("Search by name, username or email…", "Cari mengikut nama, nama pengguna atau e-mel…");
-            btnSearch.Text = T("Search", "Cari");
-            btnReset.Text  = T("Reset", "Tetapkan Semula");
+            btnSearch.Text     = T("Search", "Cari");
+            btnReset.Text      = T("Reset", "Tetapkan Semula");
+            btnCloseModal.Text = T("Close", "Tutup");
         }
 
         private void SetMasterUserInfo()
@@ -205,6 +206,7 @@ namespace ScienceBuddy.Admin
 
                         list.Add(new
                         {
+                            studentId       = row["studentId"].ToString(),
                             displayName     = display,
                             username        = username,
                             initials        = initials,
@@ -242,6 +244,79 @@ namespace ScienceBuddy.Admin
             ddlLang.SelectedIndex   = 0;
             ddlSort.SelectedIndex   = 0;
             LoadStudents("", "", "", "", "name");
+        }
+
+        // ── View Details modal ───────────────────────────────────────
+        protected void rptStudents_ItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+            if (e.CommandName == "ViewStudent")
+                ShowStudentModal(e.CommandArgument.ToString());
+        }
+
+        private void ShowStudentModal(string studentId)
+        {
+            using (var conn = new SqlConnection(ConnStr))
+            {
+                conn.Open();
+                string lvlCol = CurrentLanguage == "BM" ? "lv.[levelNameBM]" : "lv.[levelNameEN]";
+                string pCol   = CurrentLanguage == "BM" ? "p.[personalityNameBM]" : "p.[personalityNameEN]";
+
+                string sql = string.Format(@"
+                    SELECT s.[studentId], s.[name], s.[nickname], s.[XP], s.[phoneNumber],
+                           u.[username], u.[email], u.[status], u.[preferredLanguage],
+                           ISNULL({0}, '-') AS levelName,
+                           ISNULL({1}, '-') AS personalityName,
+                           (SELECT COUNT(*) FROM dbo.[LessonProgress] lp WHERE lp.[studentId]=s.[studentId] AND lp.[isCompleted]=1) AS lessonsCompleted,
+                           (SELECT COUNT(*) FROM dbo.[StudentBadge] sb WHERE sb.[studentId]=s.[studentId]) AS badgesEarned,
+                           (SELECT COUNT(*) FROM dbo.[QuizResult] qr WHERE qr.[studentId]=s.[studentId]) AS quizzesCompleted
+                    FROM dbo.[Student] s
+                    LEFT JOIN dbo.[User] u ON u.[userId]=s.[userId]
+                    LEFT JOIN dbo.[Level] lv ON lv.[levelId]=s.[currentLevelId]
+                    LEFT JOIN dbo.[Personality] p ON p.[personalityId]=s.[personalityId]
+                    WHERE s.[studentId]=@sid", lvlCol, pCol);
+
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@sid", studentId);
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (!reader.Read()) return;
+
+                        string name     = NullSafe(reader["nickname"]);
+                        if (string.IsNullOrWhiteSpace(name)) name = NullSafe(reader["name"]);
+                        if (string.IsNullOrWhiteSpace(name)) name = "Student";
+                        string username = NullSafe(reader["username"]);
+                        int xp          = reader["XP"] == DBNull.Value ? 0 : Convert.ToInt32(reader["XP"]);
+                        int pct         = Math.Min(xp * 100 / Math.Max(500, 1), 100);
+                        string status   = NullSafe(reader["status"]);
+                        string lang     = NullSafe(reader["preferredLanguage"]);
+
+                        litMInitials.Text    = GetInitials(name);
+                        litMName.Text        = HttpUtility.HtmlEncode(name);
+                        litMUsername.Text     = HttpUtility.HtmlEncode(username);
+                        litMEmail.Text       = HttpUtility.HtmlEncode(NullSafe(reader["email"]));
+                        litMPhone.Text       = HttpUtility.HtmlEncode(NullSafe(reader["phoneNumber"]));
+                        litMLevel.Text       = string.Format("<span class=\"sb-badge sb-badge-primary\">{0}</span>",
+                                                HttpUtility.HtmlEncode(NullSafe(reader["levelName"])));
+                        litMPersonality.Text = HttpUtility.HtmlEncode(NullSafe(reader["personalityName"]));
+                        litMLangVal.Text     = lang == "BM" ? "Bahasa Melayu" : "English";
+                        litMStatus.Text      = string.Format("<span class=\"sb-badge {0}\">{1}</span>",
+                                                status == "Active" ? "sb-badge-success" : "sb-badge-error",
+                                                HttpUtility.HtmlEncode(status == "Active" ? T("Active","Aktif") : T("Blocked","Disekat")));
+                        litMXP.Text          = xp.ToString();
+                        litMXPPct.Text       = pct.ToString();
+                        litMLessons.Text     = reader["lessonsCompleted"].ToString();
+                        litMBadges.Text      = reader["badgesEarned"].ToString();
+                        litMQuizzes.Text     = reader["quizzesCompleted"].ToString();
+                    }
+                }
+            }
+            pnlModal.Visible = true;
+        }
+
+        protected void btnCloseModal_Click(object sender, EventArgs e)
+        {
+            pnlModal.Visible = false;
         }
 
         // ── Helpers ──────────────────────────────────────────────────

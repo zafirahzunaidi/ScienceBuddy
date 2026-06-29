@@ -212,7 +212,7 @@
             <i class="bi bi-people item-icon"></i>
             <span class="item-label">Students</span>
         </a>
-        <a href="#" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Admin/ParentManagement.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-person-heart item-icon"></i>
             <span class="item-label">Parents</span>
         </a>
