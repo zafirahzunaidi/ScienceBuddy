@@ -252,7 +252,7 @@
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Progress</div>
-        <a href="<%: ResolveUrl("~/Student/Progress.aspx") %>" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Student/ProgressRewards.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-bar-chart-line item-icon"></i><span class="item-label">Progress &amp; Rewards</span>
         </a>
         <a href="<%: ResolveUrl("~/Student/Forum.aspx") %>" class="sb-sidebar-item">
@@ -459,7 +459,7 @@
                 <div class="sd-quick-label"><asp:Literal ID="litQAAI" runat="server" Text="AI Study Companion" /></div>
                 <div class="sd-quick-desc"><asp:Literal ID="litQAAIDesc" runat="server" Text="Personalised help &amp; hints" /></div>
             </a>
-            <a href="<%: ResolveUrl("~/Student/Progress.aspx") %>" class="sd-quick-card qc-progress">
+            <a href="<%: ResolveUrl("~/Student/ProgressRewards.aspx") %>" class="sd-quick-card qc-progress">
                 <div class="sd-quick-icon" style="background:#FFF0E8;color:#FF6B2C;"><i class="bi bi-trophy-fill"></i></div>
                 <div class="sd-quick-label"><asp:Literal ID="litQAProgress" runat="server" Text="Progress &amp; Rewards" /></div>
                 <div class="sd-quick-desc"><asp:Literal ID="litQAProgressDesc" runat="server" Text="XP, badges &amp; achievements" /></div>
