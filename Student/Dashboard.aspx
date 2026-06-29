@@ -225,7 +225,7 @@
         <a href="<%: ResolveUrl("~/Student/Dashboard.aspx") %>" class="sb-sidebar-item active">
             <i class="bi bi-speedometer2 item-icon"></i><span class="item-label">Dashboard</span>
         </a>
-        <a href="#" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Student/Notifications.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-bell item-icon"></i><span class="item-label">Notifications</span>
             <asp:Panel ID="pnlNotifBadge" runat="server" Visible="false" CssClass="item-badge">
                 <span class="sb-badge sb-badge-error sb-badge-sm"><asp:Literal ID="litNotifCount" runat="server" /></span>
@@ -234,7 +234,7 @@
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Learn</div>
-        <a href="<%: ResolveUrl("~/Student/Learning.aspx") %>" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Student/MyLearning.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-book item-icon"></i><span class="item-label">My Learning</span>
         </a>
         <a href="<%: ResolveUrl("~/Student/Quiz.aspx") %>" class="sb-sidebar-item">
@@ -279,7 +279,7 @@
 <div class="sd-hero">
     <div class="sd-hero-blob1"></div><div class="sd-hero-blob2"></div><div class="sd-hero-blob3"></div>
     <div class="sd-hero-left">
-        <div class="sd-hero-eyebrow"><i class="bi bi-stars"></i> Science Learning</div>
+        <div class="sd-hero-eyebrow"><i class="bi bi-stars"></i> <asp:Literal ID="litHeroEyebrow" runat="server" Text="Science Learning" /></div>
         <div class="sd-hero-greeting"><asp:Literal ID="litGreeting" runat="server" Text="Hi there! 👋" /></div>
         <div class="sd-hero-sub"><asp:Literal ID="litMotivation" runat="server" Text="Ready to explore science today?" /></div>
         <div class="sd-hero-chips">
@@ -289,10 +289,10 @@
         </div>
         <div class="sd-hero-cta">
             <a href="<%: ResolveUrl("~/Student/Learning.aspx") %>" class="sd-hero-btn sd-hero-btn-primary">
-                <i class="bi bi-play-circle-fill"></i> Continue Learning
+                <i class="bi bi-play-circle-fill"></i> <asp:Literal ID="litHeroCTA1" runat="server" Text="Continue Learning" />
             </a>
             <a href="<%: ResolveUrl("~/Student/Progress.aspx") %>" class="sd-hero-btn sd-hero-btn-secondary">
-                <i class="bi bi-trophy-fill"></i> My Progress
+                <i class="bi bi-trophy-fill"></i> <asp:Literal ID="litHeroCTA2" runat="server" Text="My Progress" />
             </a>
         </div>
     </div>
@@ -315,7 +315,7 @@
                  data-pct="<asp:Literal ID='litXPBarPct' runat='server' Text='0' />"></div>
         </div>
         <div class="sd-xp-bar-info">
-            <span>Level Progress</span>
+            <span><asp:Literal ID="litXPBarProgress" runat="server" Text="Level Progress" /></span>
             <span><asp:Literal ID="litXPBarHint" runat="server" Text="Keep learning to earn more XP!" /></span>
         </div>
     </div>
@@ -329,8 +329,8 @@
             <span class="sd-stat-badge-pill" style="background:#DBEAFE;color:#1D4ED8;">Level</span>
         </div>
         <div class="sd-stat-val"><asp:Literal ID="litStatLevel" runat="server" Text="—" /></div>
-        <div class="sd-stat-lbl">Current Level</div>
-        <div class="sd-stat-sub">Keep going to advance!</div>
+        <div class="sd-stat-lbl"><asp:Literal ID="litStatLevelLbl" runat="server" Text="Current Level" /></div>
+        <div class="sd-stat-sub"><asp:Literal ID="litStatLevelSub" runat="server" Text="Keep going to advance!" /></div>
     </div>
     <div class="sd-stat-card sc-xp">
         <div class="sd-stat-top">
@@ -338,8 +338,8 @@
             <span class="sd-stat-badge-pill" style="background:#FFF0E8;color:#FF6B2C;">XP</span>
         </div>
         <div class="sd-stat-val"><asp:Literal ID="litStatXP" runat="server" Text="0" /></div>
-        <div class="sd-stat-lbl">Total XP Earned</div>
-        <div class="sd-stat-sub">Every lesson earns XP</div>
+        <div class="sd-stat-lbl"><asp:Literal ID="litStatXPLbl" runat="server" Text="Total XP Earned" /></div>
+        <div class="sd-stat-sub"><asp:Literal ID="litStatXPSub" runat="server" Text="Every lesson earns XP" /></div>
     </div>
     <div class="sd-stat-card sc-badge">
         <div class="sd-stat-top">
@@ -347,8 +347,8 @@
             <span class="sd-stat-badge-pill" style="background:#FFFBEB;color:#B45309;">Badges</span>
         </div>
         <div class="sd-stat-val"><asp:Literal ID="litStatBadges" runat="server" Text="0" /></div>
-        <div class="sd-stat-lbl">Badges Earned</div>
-        <div class="sd-stat-sub">Complete tasks to earn more</div>
+        <div class="sd-stat-lbl"><asp:Literal ID="litStatBadgesLbl" runat="server" Text="Badges Earned" /></div>
+        <div class="sd-stat-sub"><asp:Literal ID="litStatBadgesSub" runat="server" Text="Complete tasks to earn more" /></div>
     </div>
     <div class="sd-stat-card sc-lesson">
         <div class="sd-stat-top">
@@ -356,8 +356,8 @@
             <span class="sd-stat-badge-pill" style="background:#DCFCE7;color:#15803D;">Done</span>
         </div>
         <div class="sd-stat-val"><asp:Literal ID="litStatLessons" runat="server" Text="0" /></div>
-        <div class="sd-stat-lbl">Lessons Completed</div>
-        <div class="sd-stat-sub">Great job so far!</div>
+        <div class="sd-stat-lbl"><asp:Literal ID="litStatLessonsLbl" runat="server" Text="Lessons Completed" /></div>
+        <div class="sd-stat-sub"><asp:Literal ID="litStatLessonsSub" runat="server" Text="Great job so far!" /></div>
     </div>
 </div>
 
@@ -374,7 +374,7 @@
                 <asp:Literal ID="litPersonalityThumbFallback" runat="server" />
             </div>
             <div class="sd-rec-banner-body">
-                <div class="sd-rec-banner-label">✨ Recommended for your learning style</div>
+                <div class="sd-rec-banner-label"><asp:Literal ID="litRecLabel" runat="server" Text="✨ Recommended for your learning style" /></div>
                 <div class="sd-rec-banner-title"><asp:Literal ID="litPersonalityName" runat="server" Text="Learner" /></div>
                 <div class="sd-rec-banner-sub"><asp:Literal ID="litPersonalityRec" runat="server" Text="Keep learning at your own pace!" /></div>
                 <asp:HyperLink ID="lnkPersonalityAction" runat="server" NavigateUrl="#"
@@ -389,14 +389,14 @@
     <%-- ── SECTION: CONTINUE LEARNING ── --%>
     <asp:Panel ID="pnlSectionContinue" runat="server">
         <div class="sd-section-hd">
-            <div class="sd-section-title"><span class="ico">📖</span> Continue Learning</div>
-            <a href="<%: ResolveUrl("~/Student/Learning.aspx") %>" class="sd-view-all">View All <i class="bi bi-arrow-right"></i></a>
+            <div class="sd-section-title"><span class="ico">📖</span> <asp:Literal ID="litSecContinue" runat="server" Text="Continue Learning" /></div>
+            <a href="<%: ResolveUrl("~/Student/Learning.aspx") %>" class="sd-view-all"><asp:Literal ID="litViewAll" runat="server" Text="View All" /> <i class="bi bi-arrow-right"></i></a>
         </div>
         <div class="sd-continue">
-            <div class="sd-continue-header"><i class="bi bi-play-circle-fill"></i> &nbsp;Pick up where you left off</div>
+            <div class="sd-continue-header"><i class="bi bi-play-circle-fill"></i> &nbsp;<asp:Literal ID="litContinueHeader" runat="server" Text="Pick up where you left off" /></div>
             <div class="sd-continue-body">
                 <asp:Panel ID="pnlContinue" runat="server">
-                    <div class="sd-continue-meta"><i class="bi bi-bookmark-fill"></i> Next Lesson</div>
+                    <div class="sd-continue-meta"><i class="bi bi-bookmark-fill"></i> <asp:Literal ID="litContinueMeta" runat="server" Text="Next Lesson" /></div>
                     <div class="sd-continue-title"><asp:Literal ID="litContinueTitle" runat="server" Text="Your next lesson is ready" /></div>
                     <div class="sd-continue-sub"><asp:Literal ID="litContinueSub" runat="server" Text="Continue from where you left off." /></div>
                     <div class="sd-continue-bar-wrap">
@@ -410,17 +410,17 @@
                     </div>
                     <a href="<%: ResolveUrl("~/Student/Learning.aspx") %>"
                        class="sb-btn sb-btn-orange">
-                        <i class="bi bi-play-fill"></i> Continue Learning
+                        <i class="bi bi-play-fill"></i> <asp:Literal ID="litContinueBtn" runat="server" Text="Continue Learning" />
                     </a>
                 </asp:Panel>
                 <asp:Panel ID="pnlContinueEmpty" runat="server" Visible="false">
                     <div class="sb-empty-state" style="padding:var(--space-xl) 0;">
                         <div class="empty-icon">🚀</div>
-                        <div class="empty-title">Ready to begin your adventure?</div>
-                        <div class="empty-desc">You haven't started any lessons yet. Dive in and discover science!</div>
+                        <div class="empty-title"><asp:Literal ID="litEmptyTitle" runat="server" Text="Ready to begin your adventure?" /></div>
+                        <div class="empty-desc"><asp:Literal ID="litEmptyDesc" runat="server" Text="You haven't started any lessons yet. Dive in and discover science!" /></div>
                         <a href="<%: ResolveUrl("~/Student/Learning.aspx") %>"
                            class="sb-btn sb-btn-orange mt-md">
-                            <i class="bi bi-play-fill"></i> Start Learning
+                            <i class="bi bi-play-fill"></i> <asp:Literal ID="litEmptyBtn" runat="server" Text="Start Learning" />
                         </a>
                     </div>
                 </asp:Panel>
@@ -431,38 +431,38 @@
     <%-- ── SECTION: QUICK ACTIONS ── --%>
     <asp:Panel ID="pnlSectionQuick" runat="server">
         <div class="sd-section-hd">
-            <div class="sd-section-title"><span class="ico">⚡</span> Quick Actions</div>
+            <div class="sd-section-title"><span class="ico">⚡</span> <asp:Literal ID="litSecQuick" runat="server" Text="Quick Actions" /></div>
         </div>
         <div class="sd-quick-grid">
             <a href="<%: ResolveUrl("~/Student/Learning.aspx") %>" class="sd-quick-card qc-learn">
                 <div class="sd-quick-icon" style="background:#DBEAFE;color:#1D4ED8;"><i class="bi bi-book-half"></i></div>
-                <div class="sd-quick-label">My Learning</div>
-                <div class="sd-quick-desc">Lessons, subtopics &amp; units</div>
+                <div class="sd-quick-label"><asp:Literal ID="litQALearn" runat="server" Text="My Learning" /></div>
+                <div class="sd-quick-desc"><asp:Literal ID="litQALearnDesc" runat="server" Text="Lessons, subtopics &amp; units" /></div>
             </a>
             <a href="<%: ResolveUrl("~/Student/Quiz.aspx") %>" class="sd-quick-card qc-quiz">
                 <div class="sd-quick-icon" style="background:#FFFBEB;color:#B45309;"><i class="bi bi-patch-question-fill"></i></div>
-                <div class="sd-quick-label">Practice Library</div>
-                <div class="sd-quick-desc">Quizzes &amp; self-assessment</div>
+                <div class="sd-quick-label"><asp:Literal ID="litQAPractice" runat="server" Text="Practice Library" /></div>
+                <div class="sd-quick-desc"><asp:Literal ID="litQAPracticeDesc" runat="server" Text="Quizzes &amp; self-assessment" /></div>
             </a>
             <a href="#" class="sd-quick-card qc-lab">
                 <div class="sd-quick-icon" style="background:#DCFCE7;color:#15803D;"><i class="bi bi-eyedropper"></i></div>
-                <div class="sd-quick-label">Virtual Labs</div>
-                <div class="sd-quick-desc">Interactive science experiments</div>
+                <div class="sd-quick-label"><asp:Literal ID="litQALab" runat="server" Text="Virtual Labs" /></div>
+                <div class="sd-quick-desc"><asp:Literal ID="litQALabDesc" runat="server" Text="Interactive science experiments" /></div>
             </a>
             <a href="#" class="sd-quick-card qc-live">
                 <div class="sd-quick-icon" style="background:#E0F2FE;color:#0369A1;"><i class="bi bi-camera-video-fill"></i></div>
-                <div class="sd-quick-label">Live Sessions</div>
-                <div class="sd-quick-desc">Join teacher-led classes</div>
+                <div class="sd-quick-label"><asp:Literal ID="litQALive" runat="server" Text="Live Sessions" /></div>
+                <div class="sd-quick-desc"><asp:Literal ID="litQALiveDesc" runat="server" Text="Join teacher-led classes" /></div>
             </a>
             <a href="#" class="sd-quick-card qc-ai">
                 <div class="sd-quick-icon" style="background:#F3E8FF;color:#7C3AED;"><i class="bi bi-robot"></i></div>
-                <div class="sd-quick-label">AI Study Companion</div>
-                <div class="sd-quick-desc">Personalised help &amp; hints</div>
+                <div class="sd-quick-label"><asp:Literal ID="litQAAI" runat="server" Text="AI Study Companion" /></div>
+                <div class="sd-quick-desc"><asp:Literal ID="litQAAIDesc" runat="server" Text="Personalised help &amp; hints" /></div>
             </a>
             <a href="<%: ResolveUrl("~/Student/Progress.aspx") %>" class="sd-quick-card qc-progress">
                 <div class="sd-quick-icon" style="background:#FFF0E8;color:#FF6B2C;"><i class="bi bi-trophy-fill"></i></div>
-                <div class="sd-quick-label">Progress &amp; Rewards</div>
-                <div class="sd-quick-desc">XP, badges &amp; achievements</div>
+                <div class="sd-quick-label"><asp:Literal ID="litQAProgress" runat="server" Text="Progress &amp; Rewards" /></div>
+                <div class="sd-quick-desc"><asp:Literal ID="litQAProgressDesc" runat="server" Text="XP, badges &amp; achievements" /></div>
             </a>
         </div>
     </asp:Panel>
@@ -470,7 +470,7 @@
     <%-- ── SECTION: SOCIAL (Socializer personality) ── --%>
     <asp:Panel ID="pnlSectionSocial" runat="server" Visible="false">
         <div class="sd-section-hd">
-            <div class="sd-section-title"><span class="ico">🤝</span> Learn Together</div>
+            <div class="sd-section-title"><span class="ico">🤝</span> <asp:Literal ID="litSecSocial" runat="server" Text="Learn Together" /></div>
         </div>
         <div class="sd-social-grid">
             <a href="<%: ResolveUrl("~/Student/Forum.aspx") %>" class="sd-social-card">
@@ -495,8 +495,8 @@
     <%-- ── SECTION: NOTIFICATIONS ── --%>
     <asp:Panel ID="pnlSectionNotif" runat="server">
         <div class="sd-section-hd">
-            <div class="sd-section-title"><span class="ico">🔔</span> Recent Notifications</div>
-            <a href="#" class="sd-view-all">See All <i class="bi bi-arrow-right"></i></a>
+            <div class="sd-section-title"><span class="ico">🔔</span> <asp:Literal ID="litSecNotif" runat="server" Text="Recent Notifications" /></div>
+            <a href="#" class="sd-view-all"><asp:Literal ID="litSeeAll" runat="server" Text="See All" /> <i class="bi bi-arrow-right"></i></a>
         </div>
         <div class="sd-notif-card">
             <div class="sd-notif-hdr">
@@ -522,8 +522,8 @@
                 <asp:Panel ID="pnlNotificationsEmpty" runat="server" Visible="false">
                     <div class="sb-empty-state" style="padding:var(--space-lg) 0;">
                         <div class="empty-icon" style="font-size:2.5rem;">🎉</div>
-                        <div class="empty-title">You're all caught up!</div>
-                        <div class="empty-desc">No new notifications right now. Check back later.</div>
+                        <div class="empty-title"><asp:Literal ID="litNotifEmpty" runat="server" Text="You're all caught up!" /></div>
+                        <div class="empty-desc"><asp:Literal ID="litNotifEmptyDesc" runat="server" Text="No new notifications right now. Check back later." /></div>
                     </div>
                 </asp:Panel>
             </div>

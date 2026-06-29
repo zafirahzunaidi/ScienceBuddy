@@ -32,6 +32,14 @@ namespace ScienceBuddy.Student
         protected global::System.Web.UI.WebControls.Literal litStatXP;
         protected global::System.Web.UI.WebControls.Literal litStatBadges;
         protected global::System.Web.UI.WebControls.Literal litStatLessons;
+        protected global::System.Web.UI.WebControls.Literal litStatLevelLbl;
+        protected global::System.Web.UI.WebControls.Literal litStatXPLbl;
+        protected global::System.Web.UI.WebControls.Literal litStatBadgesLbl;
+        protected global::System.Web.UI.WebControls.Literal litStatLessonsLbl;
+        protected global::System.Web.UI.WebControls.Literal litStatLevelSub;
+        protected global::System.Web.UI.WebControls.Literal litStatXPSub;
+        protected global::System.Web.UI.WebControls.Literal litStatBadgesSub;
+        protected global::System.Web.UI.WebControls.Literal litStatLessonsSub;
 
         // ── Personality-ordered sections ────────────────────────
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl sdSections;
@@ -63,5 +71,38 @@ namespace ScienceBuddy.Student
         protected global::System.Web.UI.WebControls.Panel    pnlNotifications;
         protected global::System.Web.UI.WebControls.Repeater rptNotifications;
         protected global::System.Web.UI.WebControls.Panel    pnlNotificationsEmpty;
+
+        // ── Bilingual label Literals ────────────────────────────
+        protected global::System.Web.UI.WebControls.Literal litHeroEyebrow;
+        protected global::System.Web.UI.WebControls.Literal litHeroCTA1;
+        protected global::System.Web.UI.WebControls.Literal litHeroCTA2;
+        protected global::System.Web.UI.WebControls.Literal litXPBarProgress;
+        protected global::System.Web.UI.WebControls.Literal litRecLabel;
+        protected global::System.Web.UI.WebControls.Literal litSecContinue;
+        protected global::System.Web.UI.WebControls.Literal litSecQuick;
+        protected global::System.Web.UI.WebControls.Literal litSecNotif;
+        protected global::System.Web.UI.WebControls.Literal litSecSocial;
+        protected global::System.Web.UI.WebControls.Literal litViewAll;
+        protected global::System.Web.UI.WebControls.Literal litSeeAll;
+        protected global::System.Web.UI.WebControls.Literal litContinueHeader;
+        protected global::System.Web.UI.WebControls.Literal litContinueMeta;
+        protected global::System.Web.UI.WebControls.Literal litContinueBtn;
+        protected global::System.Web.UI.WebControls.Literal litEmptyTitle;
+        protected global::System.Web.UI.WebControls.Literal litEmptyDesc;
+        protected global::System.Web.UI.WebControls.Literal litEmptyBtn;
+        protected global::System.Web.UI.WebControls.Literal litNotifEmpty;
+        protected global::System.Web.UI.WebControls.Literal litNotifEmptyDesc;
+        protected global::System.Web.UI.WebControls.Literal litQALearn;
+        protected global::System.Web.UI.WebControls.Literal litQALearnDesc;
+        protected global::System.Web.UI.WebControls.Literal litQAPractice;
+        protected global::System.Web.UI.WebControls.Literal litQAPracticeDesc;
+        protected global::System.Web.UI.WebControls.Literal litQALab;
+        protected global::System.Web.UI.WebControls.Literal litQALabDesc;
+        protected global::System.Web.UI.WebControls.Literal litQALive;
+        protected global::System.Web.UI.WebControls.Literal litQALiveDesc;
+        protected global::System.Web.UI.WebControls.Literal litQAAI;
+        protected global::System.Web.UI.WebControls.Literal litQAAIDesc;
+        protected global::System.Web.UI.WebControls.Literal litQAProgress;
+        protected global::System.Web.UI.WebControls.Literal litQAProgressDesc;
     }
 }

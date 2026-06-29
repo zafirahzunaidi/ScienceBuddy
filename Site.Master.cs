@@ -41,6 +41,7 @@ namespace ScienceBuddy
         {
             ApplyLayout();
             ApplyLanguageToggleState();
+            AutoPopulateUserProfile();
         }
 
         // ── Layout switching ─────────────────────────────────────────
@@ -180,6 +181,103 @@ namespace ScienceBuddy
 
             // Refresh current page
             Response.Redirect(Request.RawUrl, false);
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        //  AUTO-POPULATE USER PROFILE IN HEADER
+        // ══════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Automatically loads the logged-in user's display name and role
+        /// into the top header widget. Uses Session cache to avoid repeated DB hits.
+        /// Only runs when user is logged in and the header still shows defaults.
+        /// Child pages that call SetUserInfo() manually will override this.
+        /// </summary>
+        private void AutoPopulateUserProfile()
+        {
+            // Only for sidebar layout (logged-in pages)
+            if (!string.Equals(LayoutMode, "Sidebar", StringComparison.OrdinalIgnoreCase))
+                return;
+
+            string userId = Session["userId"] as string;
+            if (string.IsNullOrEmpty(userId)) return;
+
+            // If a child page already set it (text != default), skip
+            if (litUserName != null && litUserName.Text != "Guest" && litUserName.Text != "User")
+                return;
+
+            // Try Session cache first
+            string displayName = Session["_profileName"] as string;
+            string role        = Session["role"] as string ?? "User";
+
+            if (string.IsNullOrEmpty(displayName))
+            {
+                // Load from DB
+                try
+                {
+                    string connStr = ConfigurationManager
+                        .ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+
+                    string sql = "";
+                    switch (role)
+                    {
+                        case "Student":
+                            sql = @"SELECT s.nickname, s.name
+                                    FROM Student s WHERE s.userId = @userId";
+                            break;
+                        case "Teacher":
+                            sql = @"SELECT name, name AS nickname
+                                    FROM Teacher WHERE userId = @userId";
+                            break;
+                        case "Parent":
+                            sql = @"SELECT name, name AS nickname
+                                    FROM Parent WHERE userId = @userId";
+                            break;
+                        default:
+                            sql = @"SELECT username AS name, username AS nickname
+                                    FROM [User] WHERE userId = @userId";
+                            break;
+                    }
+
+                    using (var conn = new SqlConnection(connStr))
+                    using (var cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@userId", userId);
+                        conn.Open();
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                string nickname = reader["nickname"]?.ToString();
+                                string name     = reader["name"]?.ToString();
+                                displayName = !string.IsNullOrWhiteSpace(nickname) ? nickname : name;
+                            }
+                        }
+                    }
+
+                    if (string.IsNullOrWhiteSpace(displayName))
+                        displayName = Session["username"] as string ?? "User";
+
+                    // Cache in session so next page load is instant
+                    Session["_profileName"] = displayName;
+                }
+                catch (SqlException)
+                {
+                    displayName = Session["username"] as string ?? "User";
+                }
+            }
+
+            // Build initials
+            string initials = "U";
+            if (!string.IsNullOrWhiteSpace(displayName))
+            {
+                var parts = displayName.Trim().Split(' ');
+                initials = parts.Length >= 2
+                    ? (parts[0][0].ToString() + parts[parts.Length - 1][0].ToString()).ToUpper()
+                    : displayName[0].ToString().ToUpper();
+            }
+
+            SetUserInfo(displayName, role, initials);
         }
 
         // ══════════════════════════════════════════════════════════════
