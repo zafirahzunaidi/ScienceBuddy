@@ -276,7 +276,7 @@
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Logs</div>
-        <a href="#" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Admin/SystemActivityLogs.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-clock-history item-icon"></i>
             <span class="item-label">Activity Logs</span>
         </a>

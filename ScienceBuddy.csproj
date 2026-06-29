@@ -108,6 +108,7 @@
     <Content Include="Admin\StudentManagement.aspx" />
     <Content Include="Admin\ParentManagement.aspx" />
     <Content Include="Admin\TeacherManagement.aspx" />
+    <Content Include="Admin\SystemActivityLogs.aspx" />
     <Content Include="Contact.aspx" />
     <Content Include="Content\bootstrap-grid.css" />
     <Content Include="Content\bootstrap-grid.min.css" />
@@ -280,6 +281,13 @@
     </Compile>
     <Compile Include="Admin\TeacherManagement.aspx.designer.cs">
       <DependentUpon>TeacherManagement.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\SystemActivityLogs.aspx.cs">
+      <DependentUpon>SystemActivityLogs.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\SystemActivityLogs.aspx.designer.cs">
+      <DependentUpon>SystemActivityLogs.aspx</DependentUpon>
     </Compile>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="About.aspx.cs">
