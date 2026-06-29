@@ -155,7 +155,7 @@ namespace ScienceBuddy.Student
                     : (isLocked ? T("Locked", "Dikunci") : T("Unlocked", "Dibuka"));
                 string btnText = isLocked ? T("Locked", "Dikunci") : T("View Level", "Lihat Tahap");
                 string btnClass = isLocked ? "sb-btn sb-btn-ghost sb-btn-sm" : "sb-btn sb-btn-primary sb-btn-sm";
-                string linkUrl = isLocked ? "#" : ResolveUrl("~/Student/MyLearning.aspx?level=" + lid);
+                string linkUrl = isLocked ? "#" : ResolveUrl("~/Student/LevelDetails.aspx?levelId=" + lid);
 
                 list.Add(new {
                     CssClass = cssClass, Name = HttpUtility.HtmlEncode(name),
