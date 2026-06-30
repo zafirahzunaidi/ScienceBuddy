@@ -236,9 +236,6 @@
         </a>
         <a href="<%: ResolveUrl("~/Student/Notifications.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-bell item-icon"></i><span class="item-label">Notifications</span>
-            <asp:Panel ID="pnlNotifBadge" runat="server" Visible="false" CssClass="item-badge">
-                <span class="sb-badge sb-badge-error sb-badge-sm"><asp:Literal ID="litNotifCount" runat="server" /></span>
-            </asp:Panel>
         </a>
     </div>
     <div class="sb-nav-section">
@@ -248,6 +245,9 @@
         </a>
         <a href="<%: ResolveUrl("~/Student/PracticeLibrary.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-patch-question item-icon"></i><span class="item-label">Practice Library</span>
+        </a>
+        <a href="<%: ResolveUrl("~/Student/QuizHistory.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-clock-history item-icon"></i><span class="item-label">Quiz History</span>
         </a>
         <a href="<%: ResolveUrl("~/Student/VirtualLabs.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-eyedropper item-icon"></i><span class="item-label">Virtual Labs</span>
@@ -260,26 +260,30 @@
         </a>
     </div>
     <div class="sb-nav-section">
+        <div class="sb-nav-section-label">Communication</div>
+        <a href="<%: ResolveUrl("~/Student/Messages.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-chat-dots item-icon"></i><span class="item-label">Messages</span>
+        </a>
+        <a href="<%: ResolveUrl("~/Student/Forum.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-people item-icon"></i><span class="item-label">Forum</span>
+        </a>
+    </div>
+    <div class="sb-nav-section">
         <div class="sb-nav-section-label">Progress</div>
         <a href="<%: ResolveUrl("~/Student/ProgressRewards.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-bar-chart-line item-icon"></i><span class="item-label">Progress &amp; Rewards</span>
         </a>
-        <a href="<%: ResolveUrl("~/Student/Forum.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-chat-dots item-icon"></i><span class="item-label">Forum</span>
+        <a href="<%: ResolveUrl("~/Student/MyRanking.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-trophy item-icon"></i><span class="item-label">My Ranking</span>
         </a>
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Account</div>
-        <a href="<%: ResolveUrl("~/Student/Messages.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-envelope item-icon"></i><span class="item-label">Messages</span>
-        </a>
         <a href="<%: ResolveUrl("~/Student/MyProfile.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-person item-icon"></i><span class="item-label">My Profile</span>
         </a>
-        <a href="<%: ResolveUrl("~/Logout.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-box-arrow-right item-icon"></i><span class="item-label">Sign Out</span>
-        </a>
     </div>
+    <asp:Panel ID="pnlNotifBadge" runat="server" Visible="false" style="display:none;"><asp:Literal ID="litNotifCount" runat="server" /></asp:Panel>
 </asp:Content>
 
 <asp:Content ID="cPageTitle" ContentPlaceHolderID="PageTitle" runat="server">Dashboard</asp:Content>
