@@ -99,7 +99,6 @@
   <ItemGroup>
     <Content Include="About.aspx" />
     <Content Include="Admin\Dashboard.aspx" />
-    <Content Include="Admin\ContentRequests.aspx" />
     <Content Include="Admin\Notifications.aspx" />
     <Content Include="Admin\Profile.aspx" />
     <Content Include="Admin\Settings.aspx" />
@@ -109,6 +108,13 @@
     <Content Include="Admin\SystemActivityLogs.aspx" />
     <Content Include="Admin\LiveSessions.aspx" />
     <Content Include="Admin\CertificateManagement.aspx" />
+    <Content Include="Admin\LessonManagement.aspx" />
+    <Content Include="Admin\QuizManagement.aspx" />
+    <Content Include="Admin\SuspiciousLogins.aspx" />
+    <Content Include="Admin\GamificationManagement.aspx" />
+    <Content Include="Admin\LoginLogs.aspx" />
+    <Content Include="Admin\SystemSettings.aspx" />
+    <Content Include="Admin\TeacherMaterials.aspx" />
     <Content Include="Contact.aspx" />
     <Content Include="Content\bootstrap-grid.css" />
     <Content Include="Content\bootstrap-grid.min.css" />
@@ -251,13 +257,6 @@
     <Compile Include="Admin\Dashboard.aspx.designer.cs">
       <DependentUpon>Dashboard.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Admin\ContentRequests.aspx.cs">
-      <DependentUpon>ContentRequests.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Admin\ContentRequests.aspx.designer.cs">
-      <DependentUpon>ContentRequests.aspx</DependentUpon>
-    </Compile>
     <Compile Include="Admin\Notifications.aspx.cs">
       <DependentUpon>Notifications.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -320,6 +319,55 @@
     </Compile>
     <Compile Include="Admin\CertificateManagement.aspx.designer.cs">
       <DependentUpon>CertificateManagement.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\LessonManagement.aspx.cs">
+      <DependentUpon>LessonManagement.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\LessonManagement.aspx.designer.cs">
+      <DependentUpon>LessonManagement.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\QuizManagement.aspx.cs">
+      <DependentUpon>QuizManagement.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\QuizManagement.aspx.designer.cs">
+      <DependentUpon>QuizManagement.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\SuspiciousLogins.aspx.cs">
+      <DependentUpon>SuspiciousLogins.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\SuspiciousLogins.aspx.designer.cs">
+      <DependentUpon>SuspiciousLogins.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\GamificationManagement.aspx.cs">
+      <DependentUpon>GamificationManagement.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\GamificationManagement.aspx.designer.cs">
+      <DependentUpon>GamificationManagement.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\LoginLogs.aspx.cs">
+      <DependentUpon>LoginLogs.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\LoginLogs.aspx.designer.cs">
+      <DependentUpon>LoginLogs.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\SystemSettings.aspx.cs">
+      <DependentUpon>SystemSettings.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\SystemSettings.aspx.designer.cs">
+      <DependentUpon>SystemSettings.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\TeacherMaterials.aspx.cs">
+      <DependentUpon>TeacherMaterials.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\TeacherMaterials.aspx.designer.cs">
+      <DependentUpon>TeacherMaterials.aspx</DependentUpon>
     </Compile>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="About.aspx.cs">

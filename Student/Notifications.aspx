@@ -5,18 +5,22 @@
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
 <style>
 :root{--student:#FF6B2C;--student-light:#FFF0E8;}
-.sn-header{margin-bottom:var(--space-xl);}
+.sn-header{margin-bottom:var(--space-lg);}
 .sn-title{font-family:var(--font-primary);font-size:1.75rem;font-weight:800;color:var(--color-text);}
 .sn-subtitle{font-size:.9375rem;color:var(--color-text-secondary);margin-top:4px;}
-.sn-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-md);margin-bottom:var(--space-xl);}
-.sn-sum-card{background:var(--color-white);border-radius:var(--border-radius-lg);
-    border:1.5px solid var(--border-color);box-shadow:var(--shadow-sm);padding:var(--space-lg);
-    display:flex;align-items:center;gap:var(--space-md);transition:transform .2s,box-shadow .2s;}
-.sn-sum-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);}
-.sn-sum-icon{width:48px;height:48px;border-radius:var(--border-radius);
-    display:flex;align-items:center;justify-content:center;font-size:1.375rem;flex-shrink:0;}
-.sn-sum-val{font-family:var(--font-primary);font-size:1.75rem;font-weight:800;line-height:1;}
-.sn-sum-lbl{font-size:.8125rem;color:var(--color-text-secondary);margin-top:4px;font-weight:600;}
+/* Search + Filters */
+.sn-bar{display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-lg);flex-wrap:wrap;}
+.sn-search{flex:1;min-width:180px;position:relative;}
+.sn-search input{width:100%;padding:10px 14px 10px 36px;border:1.5px solid var(--border-color);
+    border-radius:var(--border-radius-full);font-size:.875rem;background:#FAFBFC;transition:border-color .2s;}
+.sn-search input:focus{border-color:#2563EB;outline:none;box-shadow:0 0 0 3px rgba(37,99,235,.08);}
+.sn-search i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--color-text-muted);font-size:.9rem;}
+.sn-chips{display:flex;gap:6px;flex-wrap:wrap;}
+.sn-chip{padding:6px 16px;border-radius:var(--border-radius-full);font-size:.8rem;font-weight:700;
+    border:1.5px solid var(--border-color);background:var(--color-white);color:var(--color-text-secondary);
+    cursor:pointer;transition:all .2s;text-decoration:none;}
+.sn-chip:hover{border-color:var(--student);color:var(--student);text-decoration:none;}
+.sn-chip.active{background:var(--student);color:#fff;border-color:var(--student);}
 .sn-toolbar{display:flex;align-items:center;justify-content:space-between;
     margin-bottom:var(--space-lg);flex-wrap:wrap;gap:var(--space-sm);}
 .sn-list{display:flex;flex-direction:column;gap:var(--space-md);}
@@ -35,7 +39,7 @@
 .sn-item-time{font-size:.75rem;color:var(--color-text-muted);display:flex;align-items:center;gap:4px;}
 .sn-item-actions{flex-shrink:0;display:flex;align-items:center;}
 .sn-unread-dot{width:8px;height:8px;border-radius:50%;background:var(--student);flex-shrink:0;}
-@media(max-width:767px){.sn-summary{grid-template-columns:1fr;}}
+@media(max-width:767px){.sn-bar{flex-direction:column;align-items:stretch;}}
 @media(max-width:479px){.sn-item{flex-direction:column;}}
 </style>
 </asp:Content>
@@ -109,39 +113,20 @@
     <div class="sn-subtitle"><asp:Literal ID="litSubtitle" runat="server" /></div>
 </div>
 
-<%-- Summary Cards --%>
-<div class="sn-summary">
-    <div class="sn-sum-card">
-        <div class="sn-sum-icon" style="background:#DBEAFE;color:#1D4ED8;"><i class="bi bi-bell-fill"></i></div>
-        <div>
-            <div class="sn-sum-val"><asp:Literal ID="litTotalCount" runat="server" Text="0" /></div>
-            <div class="sn-sum-lbl"><asp:Literal ID="litTotalLbl" runat="server" /></div>
-        </div>
+<%-- Search Bar + Filter Chips --%>
+<div class="sn-bar">
+    <div class="sn-search">
+        <i class="bi bi-search"></i>
+        <asp:TextBox ID="txtSearch" runat="server" placeholder="Search..." />
     </div>
-    <div class="sn-sum-card">
-        <div class="sn-sum-icon" style="background:var(--student-light);color:var(--student);"><i class="bi bi-envelope-open-fill"></i></div>
-        <div>
-            <div class="sn-sum-val"><asp:Literal ID="litUnreadCount" runat="server" Text="0" /></div>
-            <div class="sn-sum-lbl"><asp:Literal ID="litUnreadLbl" runat="server" /></div>
-        </div>
+    <div class="sn-chips">
+        <asp:LinkButton ID="btnFilterAll" runat="server" CssClass="sn-chip active" OnClick="btnFilter_Click" CommandArgument="all" CausesValidation="false"><asp:Literal ID="litFilterAll" runat="server" Text="All" /></asp:LinkButton>
+        <asp:LinkButton ID="btnFilterUnread" runat="server" CssClass="sn-chip" OnClick="btnFilter_Click" CommandArgument="unread" CausesValidation="false"><asp:Literal ID="litFilterUnread" runat="server" Text="Unread" /></asp:LinkButton>
+        <asp:LinkButton ID="btnFilterRead" runat="server" CssClass="sn-chip" OnClick="btnFilter_Click" CommandArgument="read" CausesValidation="false"><asp:Literal ID="litFilterRead" runat="server" Text="Read" /></asp:LinkButton>
     </div>
-    <div class="sn-sum-card">
-        <div class="sn-sum-icon" style="background:#DCFCE7;color:#15803D;"><i class="bi bi-clock-fill"></i></div>
-        <div>
-            <div class="sn-sum-val"><asp:Literal ID="litLatestDate" runat="server" Text="—" /></div>
-            <div class="sn-sum-lbl"><asp:Literal ID="litLatestLbl" runat="server" /></div>
-        </div>
-    </div>
-</div>
-
-<%-- Toolbar --%>
-<div class="sn-toolbar">
-    <a href="<%: ResolveUrl("~/Student/Dashboard.aspx") %>" class="sb-btn sb-btn-ghost sb-btn-sm">
-        <i class="bi bi-arrow-left"></i> <asp:Literal ID="litBackBtn" runat="server" Text="Back to Dashboard" />
-    </a>
     <asp:LinkButton ID="btnMarkAllRead" runat="server" CssClass="sb-btn sb-btn-primary sb-btn-sm"
         OnClick="btnMarkAllRead_Click" CausesValidation="false">
-        <i class="bi bi-check2-all"></i> <asp:Literal ID="litMarkAll" runat="server" Text="Mark All as Read" />
+        <i class="bi bi-check2-all"></i> <asp:Literal ID="litMarkAll" runat="server" Text="Mark All Read" />
     </asp:LinkButton>
 </div>
 

@@ -33,10 +33,12 @@ namespace ScienceBuddy.Student
             var master = (ScienceBuddy.SiteMaster)Master;
             master.LayoutMode = "Sidebar";
 
+            // Always init language and labels (fixes BM toggle + postback text loss)
+            InitLanguage();
+            SetLabels();
+
             if (!IsPostBack)
             {
-                InitLanguage();
-                SetLabels();
                 LoadNotifications();
             }
         }
@@ -84,15 +86,21 @@ namespace ScienceBuddy.Student
             litTitle.Text     = T("Notifications", "Pemberitahuan");
             litSubtitle.Text  = T("Stay updated with your learning activities.",
                                   "Kekal dikemas kini dengan aktiviti pembelajaran anda.");
-            litTotalLbl.Text  = T("Total Notifications", "Jumlah Pemberitahuan");
-            litUnreadLbl.Text = T("Unread", "Belum Dibaca");
-            litLatestLbl.Text = T("Latest", "Terkini");
-            litBackBtn.Text   = T("Back to Dashboard", "Kembali ke Dashboard");
-            litMarkAll.Text   = T("Mark All as Read", "Tandai Semua Dibaca");
-            litEmptyTitle.Text = T("Nothing here yet", "Tiada apa-apa di sini lagi");
-            litEmptyDesc.Text  = T("Your learning updates will appear here.",
-                                   "Kemas kini pembelajaran anda akan muncul di sini.");
-            litEmptyBtn.Text   = T("Back to Dashboard", "Kembali ke Dashboard");
+            litFilterAll.Text = T("All", "Semua");
+            litFilterUnread.Text = T("Unread", "Belum Dibaca");
+            litFilterRead.Text = T("Read", "Dibaca");
+            litMarkAll.Text   = T("Mark All Read", "Tandai Semua Dibaca");
+            litEmptyTitle.Text = T("All caught up!", "Semuanya dikemas kini!");
+            litEmptyDesc.Text  = T("No notifications here. Keep learning and updates will appear!",
+                                   "Tiada pemberitahuan di sini. Teruskan belajar dan kemas kini akan muncul!");
+            litEmptyBtn.Text   = T("Continue Learning", "Teruskan Belajar");
+            txtSearch.Attributes["placeholder"] = T("Search notifications...", "Cari pemberitahuan...");
+
+            // Update filter chip active state
+            string filter = ViewState["Filter"] as string ?? "all";
+            btnFilterAll.CssClass = filter == "all" ? "sn-chip active" : "sn-chip";
+            btnFilterUnread.CssClass = filter == "unread" ? "sn-chip active" : "sn-chip";
+            btnFilterRead.CssClass = filter == "read" ? "sn-chip active" : "sn-chip";
         }
 
         private void LoadNotifications()
@@ -101,32 +109,41 @@ namespace ScienceBuddy.Student
 
             if (!TableExists("Notification"))
             {
-                ShowEmpty(0, 0);
+                ShowEmpty(userId);
                 return;
             }
 
-            DataTable dt;
-            const string sql = @"
+            string filter = ViewState["Filter"] as string ?? "all";
+            string search = txtSearch.Text.Trim();
+
+            string sql = @"
                 SELECT notificationId, titleEN, titleBM, messageEN, messageBM,
                        isRead, createdAt
                 FROM   Notification
-                WHERE  toUserId = @userId
-                ORDER BY createdAt DESC";
+                WHERE  toUserId = @userId";
 
+            if (filter == "unread") sql += " AND isRead = 0";
+            else if (filter == "read") sql += " AND isRead = 1";
+
+            if (!string.IsNullOrEmpty(search))
+                sql += " AND (titleEN LIKE @search OR titleBM LIKE @search OR messageEN LIKE @search OR messageBM LIKE @search)";
+
+            sql += " ORDER BY createdAt DESC";
+
+            DataTable dt;
             using (var conn = new SqlConnection(ConnStr))
             using (var cmd = new SqlCommand(sql, conn))
             {
                 cmd.Parameters.AddWithValue("@userId", userId);
+                if (!string.IsNullOrEmpty(search))
+                    cmd.Parameters.AddWithValue("@search", "%" + search + "%");
                 var da = new SqlDataAdapter(cmd);
                 dt = new DataTable();
                 conn.Open();
                 da.Fill(dt);
             }
 
-            int total  = dt.Rows.Count;
             int unread = 0;
-            DateTime? latest = null;
-
             var list = new List<object>();
             bool isBM = CurrentLanguage == "BM";
 
@@ -137,8 +154,6 @@ namespace ScienceBuddy.Student
 
                 DateTime created = row["createdAt"] == DBNull.Value
                     ? DateTime.Now : Convert.ToDateTime(row["createdAt"]);
-
-                if (latest == null || created > latest) latest = created;
 
                 string title = isBM ? row["titleBM"].ToString() : row["titleEN"].ToString();
                 if (string.IsNullOrWhiteSpace(title)) title = row["titleEN"].ToString();
@@ -159,31 +174,37 @@ namespace ScienceBuddy.Student
                 });
             }
 
-            // Summary
-            litTotalCount.Text  = total.ToString();
-            litUnreadCount.Text = unread.ToString();
-            litLatestDate.Text  = latest.HasValue ? latest.Value.ToString("d MMM yyyy") : "—";
-
-            if (total == 0)
+            if (list.Count == 0)
             {
-                ShowEmpty(total, unread);
+                ShowEmpty(userId);
                 return;
             }
 
             pnlList.Visible  = true;
             pnlEmpty.Visible = false;
-            btnMarkAllRead.Visible = unread > 0;
+            // Show Mark All Read based on GLOBAL unread count, not filtered
+            btnMarkAllRead.Visible = GetGlobalUnreadCount(userId) > 0;
             rptNotifications.DataSource = list;
             rptNotifications.DataBind();
         }
 
-        private void ShowEmpty(int total, int unread)
+        private void ShowEmpty(string userId)
         {
             pnlList.Visible  = false;
             pnlEmpty.Visible = true;
-            btnMarkAllRead.Visible = false;
-            litTotalCount.Text  = total.ToString();
-            litUnreadCount.Text = unread.ToString();
+            // Still show Mark All Read if unread exist globally
+            btnMarkAllRead.Visible = GetGlobalUnreadCount(userId) > 0;
+        }
+
+        private int GetGlobalUnreadCount(string userId)
+        {
+            using (var conn = new SqlConnection(ConnStr))
+            using (var cmd = new SqlCommand("SELECT COUNT(*) FROM Notification WHERE toUserId=@uid AND isRead=0", conn))
+            {
+                cmd.Parameters.AddWithValue("@uid", userId);
+                conn.Open();
+                return (int)cmd.ExecuteScalar();
+            }
         }
 
         // ── Event handlers ────────────────────────────────────────────
@@ -203,6 +224,15 @@ namespace ScienceBuddy.Student
                 cmd.ExecuteNonQuery();
             }
 
+            InitLanguage();
+            SetLabels();
+            LoadNotifications();
+        }
+
+        protected void btnFilter_Click(object sender, EventArgs e)
+        {
+            var btn = (LinkButton)sender;
+            ViewState["Filter"] = btn.CommandArgument;
             InitLanguage();
             SetLabels();
             LoadNotifications();

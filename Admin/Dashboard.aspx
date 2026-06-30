@@ -1,10 +1,10 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Dashboard.aspx.cs"
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Dashboard.aspx.cs"
     Inherits="ScienceBuddy.Admin.Dashboard" MasterPageFile="~/Site.Master"
     Title="Admin Dashboard" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
 <style>
-/* ── Admin Dashboard page-scoped styles ── */
+/* -- Admin Dashboard page-scoped styles -- */
 :root { --admin: #2563EB; --admin-dark: #1D4ED8; --admin-light: #DBEAFE; }
 
 /* Hero */
@@ -35,7 +35,7 @@
 .ad-hero-title {
     font-family: var(--font-primary); font-size: 2rem; font-weight: 800;
     line-height: 1.2; margin-bottom: var(--space-sm);
-    /* Wrap gracefully — don't let a long admin name overflow the hero card */
+    /* Wrap gracefully � don't let a long admin name overflow the hero card */
     word-break: break-word;
     overflow-wrap: anywhere;
 }
@@ -197,7 +197,7 @@
 </style>
 </asp:Content>
 
-<%-- ════ SIDEBAR MENU ════ --%>
+<%-- ---- SIDEBAR MENU ---- --%>
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Main</div>
@@ -223,11 +223,11 @@
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Learning Content</div>
-        <a href="#" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Admin/LessonManagement.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-book item-icon"></i>
             <span class="item-label">Lessons</span>
         </a>
-        <a href="#" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Admin/QuizManagement.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-patch-question item-icon"></i>
             <span class="item-label">Quizzes</span>
         </a>
@@ -235,17 +235,17 @@
             <i class="bi bi-question-circle item-icon"></i>
             <span class="item-label">Questions</span>
         </a>
-        <a href="#" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Admin/TeacherMaterials.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-file-earmark-text item-icon"></i>
-            <span class="item-label">Teacher Materials</span>
+            <span class="item-label">Material Requests</span>
         </a>
         <a href="<%: ResolveUrl("~/Admin/LiveSessions.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-camera-video item-icon"></i>
             <span class="item-label">Live Sessions</span>
         </a>
-        <a href="<%: ResolveUrl("~/Admin/ContentRequests.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-inbox item-icon"></i>
-            <span class="item-label">Content Requests</span>
+        <a href="<%: ResolveUrl("~/Admin/QuestionRequests.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-clipboard-check item-icon"></i>
+            <span class="item-label">Question Requests</span>
         </a>
         <a href="<%: ResolveUrl("~/Admin/CertificateManagement.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-award item-icon"></i>
@@ -254,28 +254,16 @@
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Gamification</div>
-        <a href="#" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Admin/GamificationManagement.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-trophy item-icon"></i>
-            <span class="item-label">Badges</span>
-        </a>
-        <a href="#" class="sb-sidebar-item">
-            <i class="bi bi-lightning item-icon"></i>
-            <span class="item-label">XP Actions</span>
+            <span class="item-label">Gamification</span>
         </a>
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Configuration</div>
-        <a href="#" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Admin/SystemSettings.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-gear item-icon"></i>
-            <span class="item-label">Quiz Settings</span>
-        </a>
-        <a href="#" class="sb-sidebar-item">
-            <i class="bi bi-shield-lock item-icon"></i>
-            <span class="item-label">Security Settings</span>
-        </a>
-        <a href="#" class="sb-sidebar-item">
-            <i class="bi bi-sliders item-icon"></i>
-            <span class="item-label">XP Settings</span>
+            <span class="item-label">System Settings</span>
         </a>
     </div>
     <div class="sb-nav-section">
@@ -284,11 +272,11 @@
             <i class="bi bi-clock-history item-icon"></i>
             <span class="item-label">Activity Logs</span>
         </a>
-        <a href="#" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Admin/LoginLogs.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-box-arrow-in-right item-icon"></i>
             <span class="item-label">Login Logs</span>
         </a>
-        <a href="#" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Admin/SuspiciousLogins.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-exclamation-triangle item-icon"></i>
             <span class="item-label">Suspicious Logins</span>
         </a>
@@ -313,10 +301,10 @@
 
 <asp:Content ID="cPageTitle" ContentPlaceHolderID="PageTitle" runat="server">Admin Dashboard</asp:Content>
 
-<%-- ════ MAIN CONTENT ════ --%>
+<%-- ---- MAIN CONTENT ---- --%>
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 
-<%-- ── 1. HERO ── --%>
+<%-- -- 1. HERO -- --%>
 <div class="ad-hero">
     <div class="ad-hero-body">
         <div class="ad-hero-eyebrow"><i class="bi bi-shield-check"></i> <%= T("Administrator Console", "Konsol Pentadbir") %></div>
@@ -327,10 +315,10 @@
             <span class="ad-hero-chip"><i class="bi bi-person-fill-check"></i> <%= T("Administrator", "Pentadbir") %></span>
         </div>
     </div>
-    <div class="ad-hero-icon">🛡️</div>
+    <div class="ad-hero-icon">???</div>
 </div>
 
-<%-- ── 2. SUMMARY STAT CARDS ── --%>
+<%-- -- 2. SUMMARY STAT CARDS -- --%>
 <div class="ad-stats">
     <div class="ad-stat c-students">
         <div class="ad-stat-icon" style="background:#DBEAFE;color:#1D4ED8;"><i class="bi bi-people-fill"></i></div>
@@ -360,11 +348,11 @@
     <div class="ad-stat c-requests">
         <div class="ad-stat-icon" style="background:#CFFAFE;color:#0891B2;"><i class="bi bi-inbox-fill"></i></div>
         <div class="ad-stat-val"><asp:Literal ID="litPendingRequests" runat="server" Text="0" /></div>
-        <div class="ad-stat-lbl"><%= T("Pending Requests", "Permintaan Tertunggak") %></div>
+        <div class="ad-stat-lbl"><%= T("Pending Question Requests", "Permintaan Soalan Tertunggak") %></div>
     </div>
 </div>
 
-<%-- ── 3. QUICK ACTIONS ── --%>
+<%-- -- 3. QUICK ACTIONS -- --%>
 <div class="ad-sec-hd">
     <div class="ad-sec-title"><i class="bi bi-lightning-fill" style="color:#2563EB;"></i> <%= T("Quick Actions", "Tindakan Pantas") %></div>
 </div>
@@ -379,10 +367,10 @@
         <div class="ad-quick-lbl"><%= T("Learning Content", "Kandungan Pembelajaran") %></div>
         <div class="ad-quick-desc"><%= T("Lessons, quizzes &amp; questions", "Pelajaran, kuiz &amp; soalan") %></div>
     </a>
-    <a href="<%: ResolveUrl("~/Admin/ContentRequests.aspx") %>" class="ad-quick-card ad-qc-requests">
-        <div class="ad-quick-ico" style="background:#CFFAFE;color:#0891B2;"><i class="bi bi-inbox-fill"></i></div>
-        <div class="ad-quick-lbl"><%= T("Content Requests", "Permintaan Kandungan") %></div>
-        <div class="ad-quick-desc"><%= T("Review pending submissions", "Semak penghantaran tertunggak") %></div>
+    <a href="<%: ResolveUrl("~/Admin/QuestionRequests.aspx") %>" class="ad-quick-card ad-qc-requests">
+        <div class="ad-quick-ico" style="background:#CFFAFE;color:#0891B2;"><i class="bi bi-clipboard-check-fill"></i></div>
+        <div class="ad-quick-lbl"><%= T("Question Requests", "Permintaan Soalan") %></div>
+        <div class="ad-quick-desc"><%= T("Review pending question submissions", "Semak penghantaran soalan tertunggak") %></div>
     </a>
     <a href="#" class="ad-quick-card ad-qc-gamify">
         <div class="ad-quick-ico" style="background:#EDE9FE;color:#7C3AED;"><i class="bi bi-trophy-fill"></i></div>
@@ -396,13 +384,13 @@
     </a>
 </div>
 
-<%-- ── 4 & 5. PENDING REQUESTS + RECENT ACTIVITIES ── --%>
+<%-- -- 4 & 5. PENDING REQUESTS + RECENT ACTIVITIES -- --%>
 <div class="ad-row2">
 
-    <%-- Pending Content Requests --%>
+    <%-- Pending Question Requests --%>
     <div>
         <div class="ad-sec-hd">
-            <div class="ad-sec-title"><i class="bi bi-inbox" style="color:#0891B2;"></i> <%= T("Pending Content Requests", "Permintaan Kandungan Tertunggak") %></div>
+            <div class="ad-sec-title"><i class="bi bi-clipboard-check" style="color:#0891B2;"></i> <%= T("Pending Question Requests", "Permintaan Soalan Tertunggak") %></div>
         </div>
         <div class="ad-card">
             <asp:Panel ID="pnlRequests" runat="server" Visible="false">
@@ -432,7 +420,7 @@
                                             <span class="sb-badge sb-badge-warning">Pending</span>
                                         </td>
                                         <td class="col-actions">
-                                            <a href="<%: ResolveUrl("~/Admin/ContentRequests.aspx") %>" class="sb-btn sb-btn-primary sb-btn-xs"><%= T("Review", "Semak") %></a>
+                                            <a href="<%: ResolveUrl("~/Admin/QuestionRequests.aspx") %>" class="sb-btn sb-btn-primary sb-btn-xs"><%= T("Review", "Semak") %></a>
                                         </td>
                                     </tr>
                                 </ItemTemplate>
@@ -443,8 +431,8 @@
             </asp:Panel>
             <asp:Panel ID="pnlRequestsEmpty" runat="server">
                 <div class="ad-empty">
-                    <div class="ad-empty-ico">📭</div>
-                    <div class="ad-empty-msg"><%= T("No pending content requests.", "Tiada permintaan kandungan tertunggak.") %></div>
+                    <div class="ad-empty-ico">??</div>
+                    <div class="ad-empty-msg"><%= T("No pending question requests.", "Tiada permintaan soalan tertunggak.") %></div>
                 </div>
             </asp:Panel>
         </div>
@@ -474,7 +462,7 @@
             </asp:Panel>
             <asp:Panel ID="pnlNotifsEmpty" runat="server">
                 <div class="ad-empty">
-                    <div class="ad-empty-ico">🔔</div>
+                    <div class="ad-empty-ico">??</div>
                     <div class="ad-empty-msg"><%= T("No new notifications.", "Tiada notifikasi baharu.") %></div>
                 </div>
             </asp:Panel>
@@ -483,7 +471,7 @@
 
 </div><%-- /.ad-row2 --%>
 
-<%-- ── 5. RECENT SYSTEM ACTIVITIES ── --%>
+<%-- -- 5. RECENT SYSTEM ACTIVITIES -- --%>
 <div class="ad-row3">
     <div class="ad-sec-hd">
         <div class="ad-sec-title"><i class="bi bi-clock-history" style="color:#7C3AED;"></i> <%= T("Recent System Activities", "Aktiviti Sistem Terkini") %></div>
@@ -517,7 +505,7 @@
         </asp:Panel>
         <asp:Panel ID="pnlLogsEmpty" runat="server">
             <div class="ad-empty">
-                <div class="ad-empty-ico">📋</div>
+                <div class="ad-empty-ico">??</div>
                 <div class="ad-empty-msg"><%= T("No recent system activities.", "Tiada aktiviti sistem terkini.") %></div>
             </div>
         </asp:Panel>

@@ -121,7 +121,9 @@ namespace ScienceBuddy.Student.Labs
 
                 if (!exists && Tbl("LabProgress"))
                 {
-                    string pid = "LP" + DateTime.Now.ToString("yyyyMMddHHmmss");
+                    string pid = "LPR001";
+                    using (var seqCmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(labProgressId,4,LEN(labProgressId)-3) AS INT)),0) FROM LabProgress WHERE labProgressId LIKE 'LPR[0-9]%'", conn))
+                    { int last = Convert.ToInt32(seqCmd.ExecuteScalar()); pid = "LPR" + (last + 1).ToString("D3"); }
                     using (var cmd = new SqlCommand(@"INSERT INTO LabProgress(labProgressId,studentId,labId,isCompleted,score,completedDate)
                         VALUES(@pid,@s,@l,1,@sc,@dt)", conn))
                     {

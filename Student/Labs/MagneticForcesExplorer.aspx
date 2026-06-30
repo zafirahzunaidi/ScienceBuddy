@@ -133,21 +133,27 @@
     <div class="lab-instruction"><asp:Literal ID="litStep2Inst" runat="server" /></div>
 
     <div class="sort-items" id="objectItems">
-        <div class="sort-item" data-obj="nail" data-mag="1" onclick="selectObj(this)">🔩 <asp:Literal ID="litObjNail" runat="server" Text="Nail" /></div>
-        <div class="sort-item" data-obj="clip" data-mag="1" onclick="selectObj(this)">📎 <asp:Literal ID="litObjClip" runat="server" Text="Paperclip" /></div>
-        <div class="sort-item" data-obj="coin" data-mag="1" onclick="selectObj(this)">🪙 <asp:Literal ID="litObjCoin" runat="server" Text="Coin" /></div>
-        <div class="sort-item" data-obj="pencil" data-mag="0" onclick="selectObj(this)">✏️ <asp:Literal ID="litObjPencil" runat="server" Text="Pencil" /></div>
-        <div class="sort-item" data-obj="eraser" data-mag="0" onclick="selectObj(this)">🧽 <asp:Literal ID="litObjEraser" runat="server" Text="Eraser" /></div>
-        <div class="sort-item" data-obj="ruler" data-mag="0" onclick="selectObj(this)">📏 <asp:Literal ID="litObjRuler" runat="server" Text="Plastic Ruler" /></div>
+        <div class="sort-item" data-obj="nail" data-mag="1" draggable="true" ondragstart="dragStart(event)" onclick="selectObj(this)"><i class="bi bi-nut-fill"></i> <asp:Literal ID="litObjNail" runat="server" Text="Nail" /></div>
+        <div class="sort-item" data-obj="clip" data-mag="1" draggable="true" ondragstart="dragStart(event)" onclick="selectObj(this)"><i class="bi bi-paperclip"></i> <asp:Literal ID="litObjClip" runat="server" Text="Paperclip" /></div>
+        <div class="sort-item" data-obj="coin" data-mag="1" draggable="true" ondragstart="dragStart(event)" onclick="selectObj(this)"><i class="bi bi-coin"></i> <asp:Literal ID="litObjCoin" runat="server" Text="Coin" /></div>
+        <div class="sort-item" data-obj="pencil" data-mag="0" draggable="true" ondragstart="dragStart(event)" onclick="selectObj(this)"><i class="bi bi-pencil-fill"></i> <asp:Literal ID="litObjPencil" runat="server" Text="Pencil" /></div>
+        <div class="sort-item" data-obj="eraser" data-mag="0" draggable="true" ondragstart="dragStart(event)" onclick="selectObj(this)"><i class="bi bi-eraser-fill"></i> <asp:Literal ID="litObjEraser" runat="server" Text="Eraser" /></div>
+        <div class="sort-item" data-obj="ruler" data-mag="0" draggable="true" ondragstart="dragStart(event)" onclick="selectObj(this)"><i class="bi bi-rulers"></i> <asp:Literal ID="litObjRuler" runat="server" Text="Plastic Ruler" /></div>
     </div>
 
     <div class="sort-zone">
-        <div class="sort-bucket magnetic" id="bucketMag" onclick="placeObj('mag')">
-            <div class="sort-bucket-title">🧲 <asp:Literal ID="litMagnetic" runat="server" Text="Magnetic" /></div>
+        <div class="sort-bucket magnetic" id="bucketMag" onclick="placeObj('mag')"
+             ondragover="event.preventDefault();this.style.borderColor='#22C55E';this.style.background='#F0FDF4';"
+             ondragleave="this.style.borderColor='';this.style.background='';"
+             ondrop="dropObj(event,'mag');this.style.borderColor='';this.style.background='';">
+            <div class="sort-bucket-title"><i class="bi bi-magnet-fill"></i> <asp:Literal ID="litMagnetic" runat="server" Text="Magnetic" /></div>
             <div id="magItems"></div>
         </div>
-        <div class="sort-bucket non-magnetic" id="bucketNon" onclick="placeObj('non')">
-            <div class="sort-bucket-title">❌ <asp:Literal ID="litNonMagnetic" runat="server" Text="Non-Magnetic" /></div>
+        <div class="sort-bucket non-magnetic" id="bucketNon" onclick="placeObj('non')"
+             ondragover="event.preventDefault();this.style.borderColor='#EF4444';this.style.background='#FEF2F2';"
+             ondragleave="this.style.borderColor='';this.style.background='';"
+             ondrop="dropObj(event,'non');this.style.borderColor='';this.style.background='';">
+            <div class="sort-bucket-title"><i class="bi bi-x-circle-fill"></i> <asp:Literal ID="litNonMagnetic" runat="server" Text="Non-Magnetic" /></div>
             <div id="nonItems"></div>
         </div>
     </div>
@@ -188,6 +194,21 @@ function testPole(combo){
     }
     if(!poleTested){ poleTested=true; earnStar(1);
         fb.className='lab-feedback show correct'; fb.textContent=lang==='BM'?'⭐ Hebat! Anda faham kutub magnet.':'⭐ Great! You understand magnet poles.'; }
+}
+
+function dragStart(e){
+    e.dataTransfer.setData('text/plain',e.target.getAttribute('data-obj'));
+    e.dataTransfer.effectAllowed='move';
+    selectedObj=e.target;
+    e.target.style.opacity='0.5';
+    setTimeout(function(){e.target.style.opacity='1';},300);
+}
+
+function dropObj(e,bucket){
+    e.preventDefault();
+    var objId=e.dataTransfer.getData('text/plain');
+    var el=document.querySelector('.sort-item[data-obj="'+objId+'"]');
+    if(el && !el.classList.contains('placed')){selectedObj=el;placeObj(bucket);}
 }
 
 function selectObj(el){ if(el.classList.contains('placed'))return; selectedObj=el; 
