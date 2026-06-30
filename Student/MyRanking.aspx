@@ -4,18 +4,18 @@
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
 <style>
 /* ── My Ranking Page ── */
-:root{--rk-gold:#FFD84D;--rk-orange:#FF6B2C;--rk-gold-light:#FFF8E1;--rk-bronze:#CD7F32;--rk-silver:#C0C0C0;}
+:root{--rk-gold:#FACC15;--rk-blue:#2563EB;--rk-indigo:#4F46E5;--rk-purple:#7C3AED;--rk-gold-light:#FEF3C7;--rk-bronze:#CD7F32;--rk-silver:#C0C0C0;}
 
 /* ══ HERO ══ */
 .rk-hero{
-    background:linear-gradient(135deg,#FFD84D 0%,#FFAB2C 40%,#FF6B2C 100%);
+    background:linear-gradient(135deg,#2563EB 0%,#4F46E5 45%,#7C3AED 100%);
     border-radius:var(--border-radius-xl);padding:var(--space-2xl);
     color:#fff;display:flex;align-items:center;justify-content:space-between;
     gap:var(--space-xl);position:relative;overflow:hidden;margin-bottom:var(--space-xl);
-    box-shadow:0 12px 40px rgba(255,107,44,.25);
+    box-shadow:0 12px 40px rgba(79,70,229,.25);
 }
-.rk-hero::before{content:'🏆';position:absolute;font-size:8rem;opacity:.08;
-    top:-20px;right:80px;pointer-events:none;line-height:1;}
+.rk-hero::before{content:'';position:absolute;width:100px;height:100px;border-radius:50%;
+    background:rgba(250,204,21,.12);top:-20px;right:80px;pointer-events:none;}
 .rk-hero-blob1{position:absolute;width:300px;height:300px;border-radius:50%;
     background:rgba(255,255,255,.08);top:-100px;right:-60px;pointer-events:none;}
 .rk-hero-blob2{position:absolute;width:160px;height:160px;border-radius:50%;
@@ -39,9 +39,9 @@
     padding:var(--space-xl);display:flex;align-items:center;gap:var(--space-lg);
     margin-bottom:var(--space-xl);position:relative;overflow:hidden;}
 .rk-personal::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;
-    background:linear-gradient(90deg,#FFD84D,#FF6B2C);border-radius:var(--border-radius-xl) var(--border-radius-xl) 0 0;}
+    background:linear-gradient(90deg,var(--rk-gold),var(--rk-indigo));border-radius:var(--border-radius-xl) var(--border-radius-xl) 0 0;}
 .rk-personal-avatar{width:64px;height:64px;border-radius:50%;
-    background:linear-gradient(135deg,#FFD84D,#FF6B2C);
+    background:linear-gradient(135deg,var(--rk-blue),var(--rk-purple));
     display:flex;align-items:center;justify-content:center;
     font-size:1.75rem;font-weight:800;color:#fff;flex-shrink:0;
     box-shadow:0 4px 16px rgba(255,107,44,.25);}
@@ -50,14 +50,14 @@
     color:var(--color-text);margin-bottom:4px;}
 .rk-personal-stats{display:flex;gap:var(--space-lg);flex-wrap:wrap;}
 .rk-personal-stat{display:flex;flex-direction:column;align-items:flex-start;}
-.rk-personal-stat-val{font-family:var(--font-primary);font-size:1.25rem;font-weight:800;color:var(--rk-orange);}
+.rk-personal-stat-val{font-family:var(--font-primary);font-size:1.25rem;font-weight:800;color:var(--rk-indigo);}
 .rk-personal-stat-lbl{font-size:.75rem;color:var(--color-text-muted);font-weight:600;}
 
 /* ══ LEADERBOARD ══ */
 .rk-board{background:var(--color-white);border-radius:var(--border-radius-xl);
     border:1.5px solid var(--border-color);box-shadow:var(--shadow-md);
     overflow:hidden;margin-bottom:var(--space-xl);}
-.rk-board-header{background:linear-gradient(135deg,#FFD84D 0%,#FFAB2C 100%);
+.rk-board-header{background:linear-gradient(135deg,var(--rk-blue) 0%,var(--rk-indigo) 100%);
     padding:var(--space-md) var(--space-xl);display:flex;align-items:center;gap:var(--space-sm);
     color:#fff;font-family:var(--font-primary);font-weight:800;font-size:1rem;}
 .rk-board-list{padding:var(--space-sm) 0;}
@@ -65,12 +65,12 @@
     padding:var(--space-sm) var(--space-xl);border-bottom:1px solid #FFF8E1;
     transition:background .2s;}
 .rk-board-row:last-child{border-bottom:none;}
-.rk-board-row:hover{background:#FFFDF5;}
-.rk-board-row.rk-current{background:#FFF8E1;border-left:4px solid var(--rk-orange);}
+.rk-board-row:hover{background:#F8FAFC;}
+.rk-board-row.rk-current{background:#EFF6FF;border-left:4px solid var(--rk-indigo);}
 .rk-board-rank{width:36px;height:36px;border-radius:50%;
     display:flex;align-items:center;justify-content:center;
     font-weight:800;font-size:.875rem;flex-shrink:0;}
-.rk-board-rank.rk-gold{background:linear-gradient(135deg,#FFD84D,#FFAB2C);color:#fff;box-shadow:0 3px 10px rgba(255,171,44,.3);}
+.rk-board-rank.rk-gold{background:linear-gradient(135deg,#FACC15,#F59E0B);color:#fff;box-shadow:0 3px 10px rgba(250,204,21,.3);}
 .rk-board-rank.rk-silver{background:linear-gradient(135deg,#E8E8E8,#C0C0C0);color:#555;box-shadow:0 3px 10px rgba(192,192,192,.3);}
 .rk-board-rank.rk-bronze{background:linear-gradient(135deg,#E8A96D,#CD7F32);color:#fff;box-shadow:0 3px 10px rgba(205,127,50,.3);}
 .rk-board-rank.rk-normal{background:#F5F5F5;color:var(--color-text-secondary);}
@@ -80,7 +80,7 @@
 .rk-board-name{flex:1;font-weight:700;font-size:.9375rem;color:var(--color-text);}
 .rk-board-level{font-size:.8125rem;color:var(--color-text-secondary);font-weight:600;min-width:80px;}
 .rk-board-xp{font-family:var(--font-primary);font-weight:800;font-size:.9375rem;
-    color:var(--rk-orange);min-width:70px;text-align:right;}
+    color:var(--rk-purple);min-width:70px;text-align:right;}
 .rk-board-badges{font-size:.8125rem;color:var(--color-text-muted);min-width:50px;text-align:center;
     display:flex;align-items:center;gap:4px;justify-content:center;}
 
@@ -90,9 +90,9 @@
     padding:var(--space-lg) var(--space-xl);margin-bottom:var(--space-xl);
     display:flex;align-items:center;gap:var(--space-lg);}
 .rk-yourpos-title{font-family:var(--font-primary);font-weight:800;font-size:.9375rem;
-    color:var(--rk-orange);margin-bottom:4px;}
+    color:var(--rk-indigo);margin-bottom:4px;}
 .rk-yourpos-info{display:flex;gap:var(--space-lg);align-items:center;flex-wrap:wrap;}
-.rk-yourpos-rank{font-family:var(--font-primary);font-size:1.5rem;font-weight:800;color:var(--rk-orange);}
+.rk-yourpos-rank{font-family:var(--font-primary);font-size:1.5rem;font-weight:800;color:var(--rk-indigo);}
 .rk-yourpos-name{font-weight:700;color:var(--color-text);}
 .rk-yourpos-xp{font-weight:700;color:var(--color-text-secondary);}
 
@@ -122,9 +122,9 @@
 .rk-nav-btn{display:inline-flex;align-items:center;gap:6px;padding:12px 24px;
     border-radius:var(--border-radius-full);font-weight:700;font-size:.9375rem;
     text-decoration:none;transition:all .2s;border:2px solid transparent;}
-.rk-nav-btn-primary{background:linear-gradient(135deg,#FFD84D,#FF6B2C);color:#fff;
-    box-shadow:0 4px 16px rgba(255,107,44,.25);}
-.rk-nav-btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(255,107,44,.35);text-decoration:none;color:#fff;}
+.rk-nav-btn-primary{background:linear-gradient(135deg,var(--rk-blue),var(--rk-purple));color:#fff;
+    box-shadow:0 4px 16px rgba(79,70,229,.25);}
+.rk-nav-btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(79,70,229,.35);text-decoration:none;color:#fff;}
 .rk-nav-btn-secondary{background:var(--color-white);color:var(--color-text);
     border-color:var(--border-color);box-shadow:var(--shadow-sm);}
 .rk-nav-btn-secondary:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);text-decoration:none;color:var(--color-text);}
@@ -222,7 +222,7 @@
 <div class="rk-hero">
     <div class="rk-hero-blob1"></div><div class="rk-hero-blob2"></div>
     <div class="rk-hero-left">
-        <div class="rk-hero-title">🏆 <asp:Literal ID="litHeroRank" runat="server" Text="#1" /></div>
+        <div class="rk-hero-title"><i class="bi bi-trophy-fill" style="color:var(--rk-gold);"></i> <asp:Literal ID="litHeroRank" runat="server" Text="#1" /></div>
         <div class="rk-hero-sub"><asp:Literal ID="litHeroMessage" runat="server" Text="See your position and keep improving step by step." /></div>
         <div class="rk-hero-chips">
             <span class="rk-hero-chip rk-rank-chip"><i class="bi bi-trophy-fill"></i> <asp:Literal ID="litHeroXP" runat="server" Text="0 XP" /></span>
@@ -230,7 +230,7 @@
         </div>
     </div>
     <div class="rk-hero-right">
-        <div class="rk-hero-trophy">🏆</div>
+        <div class="rk-hero-trophy"><i class="bi bi-trophy-fill" style="font-size:4.5rem;color:var(--rk-gold);filter:drop-shadow(0 4px 12px rgba(0,0,0,.2));"></i></div>
     </div>
 </div>
 
