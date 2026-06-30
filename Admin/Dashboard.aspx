@@ -227,7 +227,7 @@
             <i class="bi bi-book item-icon"></i>
             <span class="item-label">Lessons</span>
         </a>
-        <a href="#" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Admin/QuizManagement.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-patch-question item-icon"></i>
             <span class="item-label">Quizzes</span>
         </a>
@@ -254,13 +254,9 @@
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Gamification</div>
-        <a href="#" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Admin/GamificationManagement.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-trophy item-icon"></i>
-            <span class="item-label">Badges</span>
-        </a>
-        <a href="#" class="sb-sidebar-item">
-            <i class="bi bi-lightning item-icon"></i>
-            <span class="item-label">XP Actions</span>
+            <span class="item-label">Gamification</span>
         </a>
     </div>
     <div class="sb-nav-section">
@@ -284,11 +280,11 @@
             <i class="bi bi-clock-history item-icon"></i>
             <span class="item-label">Activity Logs</span>
         </a>
-        <a href="#" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Admin/LoginLogs.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-box-arrow-in-right item-icon"></i>
             <span class="item-label">Login Logs</span>
         </a>
-        <a href="#" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Admin/SuspiciousLogins.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-exclamation-triangle item-icon"></i>
             <span class="item-label">Suspicious Logins</span>
         </a>

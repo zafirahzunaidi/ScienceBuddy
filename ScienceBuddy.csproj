@@ -110,6 +110,10 @@
     <Content Include="Admin\LiveSessions.aspx" />
     <Content Include="Admin\CertificateManagement.aspx" />
     <Content Include="Admin\LessonManagement.aspx" />
+    <Content Include="Admin\QuizManagement.aspx" />
+    <Content Include="Admin\SuspiciousLogins.aspx" />
+    <Content Include="Admin\GamificationManagement.aspx" />
+    <Content Include="Admin\LoginLogs.aspx" />
     <Content Include="Contact.aspx" />
     <Content Include="Content\bootstrap-grid.css" />
     <Content Include="Content\bootstrap-grid.min.css" />
@@ -319,6 +323,34 @@
     </Compile>
     <Compile Include="Admin\LessonManagement.aspx.designer.cs">
       <DependentUpon>LessonManagement.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\QuizManagement.aspx.cs">
+      <DependentUpon>QuizManagement.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\QuizManagement.aspx.designer.cs">
+      <DependentUpon>QuizManagement.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\SuspiciousLogins.aspx.cs">
+      <DependentUpon>SuspiciousLogins.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\SuspiciousLogins.aspx.designer.cs">
+      <DependentUpon>SuspiciousLogins.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\GamificationManagement.aspx.cs">
+      <DependentUpon>GamificationManagement.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\GamificationManagement.aspx.designer.cs">
+      <DependentUpon>GamificationManagement.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\LoginLogs.aspx.cs">
+      <DependentUpon>LoginLogs.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\LoginLogs.aspx.designer.cs">
+      <DependentUpon>LoginLogs.aspx</DependentUpon>
     </Compile>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="About.aspx.cs">
