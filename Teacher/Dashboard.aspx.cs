@@ -10,6 +10,17 @@ namespace ScienceBuddy.Teacher
 {
     public partial class Dashboard : Page
     {
+        // ── Language support ─────────────────────────────────────────
+        protected string CurrentLanguage
+        {
+            get
+            {
+                string lang = Session["preferredLanguage"] as string;
+                return string.IsNullOrEmpty(lang) ? "EN" : lang;
+            }
+        }
+        protected string T(string en, string bm) { return CurrentLanguage == "BM" ? bm : en; }
+
         // ── Connection string ────────────────────────────────────────
         private string ConnStr =>
             ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
