@@ -131,6 +131,12 @@
     <Content Include="favicon.ico" />
     <Content Include="ForgotPassword.aspx" />
     <Content Include="Global.asax" />
+    <Content Include="Images\Personality\achiever.png" />
+    <Content Include="Images\Personality\chill-learner.png" />
+    <Content Include="Images\Personality\creative.png" />
+    <Content Include="Images\Personality\gogetter.png" />
+    <Content Include="Images\Personality\socializer.png" />
+    <Content Include="Images\Personality\thinker.png" />
     <Content Include="Login.aspx" />
     <Content Include="Logout.aspx" />
     <Content Include="Parent\Dashboard.aspx" />
@@ -563,7 +569,6 @@
     <Folder Include="Images\Lesson\" />
     <Folder Include="Images\Level\" />
     <Folder Include="Images\Material\" />
-    <Folder Include="Images\Personality\" />
     <Folder Include="Images\PrivateMessage\" />
     <Folder Include="Images\Question\" />
     <Folder Include="Images\Teacher\" />

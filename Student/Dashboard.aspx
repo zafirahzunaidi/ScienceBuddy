@@ -1,12 +1,12 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Dashboard.aspx.cs"
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Dashboard.aspx.cs"
     Inherits="ScienceBuddy.Student.Dashboard" MasterPageFile="~/Site.Master"
     Title="Dashboard" %>
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
 <style>
-/* ── Student Dashboard ── */
+/* -- Student Dashboard -- */
 :root{--student:#FF6B2C;--student-light:#FFF0E8;--student-dark:#E85B1D;--student-mid:#FF8C54;}
 
-/* ══ HERO ══ */
+/* -- HERO -- */
 .sd-hero{
     background:linear-gradient(135deg,#1D4ED8 0%,#2563EB 40%,#4DA8FF 100%);
     border-radius:var(--border-radius-xl);padding:var(--space-2xl) var(--space-2xl);
@@ -15,7 +15,7 @@
     box-shadow:0 12px 40px rgba(37,99,235,.30);
 }
 /* decorative science blobs */
-.sd-hero::before{content:'⚗️';position:absolute;font-size:7rem;opacity:.07;
+.sd-hero::before{content:'??';position:absolute;font-size:7rem;opacity:.07;
     top:-16px;right:200px;pointer-events:none;line-height:1;}
 .sd-hero-blob1{position:absolute;width:320px;height:320px;border-radius:50%;
     background:rgba(255,255,255,.06);top:-100px;right:-60px;pointer-events:none;}
@@ -54,7 +54,7 @@
     font-weight:700;opacity:.85;}
 </style>
 <style>
-/* ══ SECTION HEADING ══ */
+/* -- SECTION HEADING -- */
 .sd-section-hd{display:flex;align-items:center;justify-content:space-between;
     margin-bottom:var(--space-md);gap:var(--space-md);}
 .sd-section-title{font-family:var(--font-primary);font-size:1.0625rem;font-weight:800;
@@ -64,7 +64,7 @@
     text-decoration:none;display:flex;align-items:center;gap:4px;}
 .sd-view-all:hover{text-decoration:underline;}
 
-/* ══ STAT CARDS ══ */
+/* -- STAT CARDS -- */
 .sd-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-md);margin-bottom:var(--space-xl);}
 .sd-stat-card{background:var(--color-white);border-radius:var(--border-radius-lg);
     border:1.5px solid var(--border-color);box-shadow:var(--shadow-sm);
@@ -87,10 +87,10 @@
 .sd-stat-lbl{font-size:.8125rem;color:var(--color-text-secondary);font-weight:600;}
 .sd-stat-sub{font-size:.75rem;color:var(--color-text-muted);margin-top:2px;}
 
-/* ══ PERSONALITY SECTION ORDER (flex column, JS-free) ══ */
+/* -- PERSONALITY SECTION ORDER (flex column, JS-free) -- */
 .sd-sections{display:flex;flex-direction:column;gap:var(--space-xl);}
 
-/* ══ PERSONALITY RECOMMENDATION BANNER ══ */
+/* -- PERSONALITY RECOMMENDATION BANNER -- */
 .sd-rec-banner{border-radius:var(--border-radius-xl);padding:var(--space-xl);
     display:flex;align-items:center;gap:var(--space-lg);position:relative;overflow:hidden;}
 .sd-rec-banner::after{content:'';position:absolute;width:200px;height:200px;border-radius:50%;
@@ -108,7 +108,7 @@
 .sd-rec-banner-sub{font-size:.9rem;color:rgba(255,255,255,.85);margin-bottom:var(--space-md);line-height:1.5;}
 </style>
 <style>
-/* ══ CONTINUE LEARNING ══ */
+/* -- CONTINUE LEARNING -- */
 .sd-continue{background:var(--color-white);border-radius:var(--border-radius-xl);
     border:2px solid var(--student-light);box-shadow:var(--shadow-md);overflow:hidden;}
 .sd-continue-header{background:linear-gradient(135deg,var(--student) 0%,var(--student-mid) 100%);
@@ -127,7 +127,7 @@
 .sd-continue-bar-fill{height:100%;background:linear-gradient(90deg,var(--student),var(--student-mid));
     border-radius:var(--border-radius-full);width:0%;transition:width .8s ease;}
 
-/* ══ QUICK ACTIONS ══ */
+/* -- QUICK ACTIONS -- */
 .sd-quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-md);}
 .sd-quick-card{background:var(--color-white);border-radius:var(--border-radius-xl);
     border:1.5px solid var(--border-color);box-shadow:var(--shadow-sm);
@@ -150,7 +150,7 @@
 .sd-quick-desc{font-size:.8rem;color:var(--color-text-muted);line-height:1.4;}
 </style>
 <style>
-/* ══ NOTIFICATIONS ══ */
+/* -- NOTIFICATIONS -- */
 .sd-notif-card{background:var(--color-white);border-radius:var(--border-radius-xl);
     border:1.5px solid var(--border-color);box-shadow:var(--shadow-sm);overflow:hidden;}
 .sd-notif-hdr{padding:var(--space-md) var(--space-lg);border-bottom:1px solid var(--border-color);
@@ -168,7 +168,7 @@
 .sd-notif-time{font-size:.75rem;color:var(--color-text-muted);margin-top:3px;
     display:flex;align-items:center;gap:4px;}
 
-/* ══ SOCIAL SHORTCUTS (Socializer) ══ */
+/* -- SOCIAL SHORTCUTS (Socializer) -- */
 .sd-social-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-md);}
 .sd-social-card{background:var(--color-white);border-radius:var(--border-radius-xl);
     border:1.5px solid var(--border-color);box-shadow:var(--shadow-sm);
@@ -180,7 +180,7 @@
 .sd-social-label{font-family:var(--font-primary);font-size:.9375rem;font-weight:700;color:var(--color-text);}
 .sd-social-sub{font-size:.8rem;color:var(--color-text-muted);}
 
-/* ══ GAMIFICATION XP BAR ══ */
+/* -- GAMIFICATION XP BAR -- */
 .sd-xp-bar-section{background:linear-gradient(135deg,#1D4ED8,#2563EB);
     border-radius:var(--border-radius-xl);padding:var(--space-lg) var(--space-xl);
     color:#fff;display:flex;align-items:center;gap:var(--space-lg);}
@@ -193,7 +193,7 @@
 .sd-xp-bar-info{font-size:.8125rem;opacity:.85;margin-top:5px;display:flex;
     align-items:center;justify-content:space-between;}
 
-/* ══ RESPONSIVE ══ */
+/* -- RESPONSIVE -- */
 @media(max-width:1023px){
     .sd-stats{grid-template-columns:repeat(2,1fr);}
     .sd-quick-grid{grid-template-columns:repeat(2,1fr);}
@@ -218,7 +218,7 @@
 </style>
 </asp:Content>
 
-<%-- ════ SIDEBAR ════ --%>
+<%-- ---- SIDEBAR ---- --%>
 <asp:Content ID="cSidebarMenu" ContentPlaceHolderID="SidebarMenu" runat="server">
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Main</div>
@@ -261,7 +261,7 @@
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Account</div>
-        <a href="<%: ResolveUrl("~/Student/Profile.aspx") %>" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Student/MyProfile.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-person item-icon"></i><span class="item-label">My Profile</span>
         </a>
         <a href="<%: ResolveUrl("~/Logout.aspx") %>" class="sb-sidebar-item">
@@ -272,23 +272,23 @@
 
 <asp:Content ID="cPageTitle" ContentPlaceHolderID="PageTitle" runat="server">Dashboard</asp:Content>
 
-<%-- ════ MAIN CONTENT ════ --%>
+<%-- ---- MAIN CONTENT ---- --%>
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 
-<%-- ── HERO ── --%>
+<%-- -- HERO -- --%>
 <div class="sd-hero">
     <div class="sd-hero-blob1"></div><div class="sd-hero-blob2"></div><div class="sd-hero-blob3"></div>
     <div class="sd-hero-left">
         <div class="sd-hero-eyebrow"><i class="bi bi-stars"></i> <asp:Literal ID="litHeroEyebrow" runat="server" Text="Science Learning" /></div>
-        <div class="sd-hero-greeting"><asp:Literal ID="litGreeting" runat="server" Text="Hi there! 👋" /></div>
+        <div class="sd-hero-greeting"><asp:Literal ID="litGreeting" runat="server" Text="Hi there! ??" /></div>
         <div class="sd-hero-sub"><asp:Literal ID="litMotivation" runat="server" Text="Ready to explore science today?" /></div>
         <div class="sd-hero-chips">
-            <span class="sd-hero-chip"><i class="bi bi-bar-chart-fill"></i> <asp:Literal ID="litHeroLevel" runat="server" Text="Level: —" /></span>
-            <span class="sd-hero-chip"><i class="bi bi-stars"></i> <asp:Literal ID="litHeroPersonality" runat="server" Text="—" /></span>
+            <span class="sd-hero-chip"><i class="bi bi-bar-chart-fill"></i> <asp:Literal ID="litHeroLevel" runat="server" Text="Level: �" /></span>
+            <span class="sd-hero-chip"><i class="bi bi-stars"></i> <asp:Literal ID="litHeroPersonality" runat="server" Text="�" /></span>
             <span class="sd-hero-chip xp-chip"><i class="bi bi-lightning-charge-fill"></i> <asp:Literal ID="litHeroXP" runat="server" Text="0 XP" /></span>
         </div>
         <div class="sd-hero-cta">
-            <a href="<%: ResolveUrl("~/Student/Learning.aspx") %>" class="sd-hero-btn sd-hero-btn-primary">
+            <a href="<%: ResolveUrl("~/Student/MyLearning.aspx") %>" class="sd-hero-btn sd-hero-btn-primary">
                 <i class="bi bi-play-circle-fill"></i> <asp:Literal ID="litHeroCTA1" runat="server" Text="Continue Learning" />
             </a>
             <a href="<%: ResolveUrl("~/Student/Progress.aspx") %>" class="sd-hero-btn sd-hero-btn-secondary">
@@ -299,16 +299,16 @@
     <div class="sd-hero-right">
         <div class="sd-hero-avatar">
             <asp:Image ID="imgPersonalityAvatar" runat="server" AlternateText="Personality avatar"
-                onerror="this.style.display='none';this.parentElement.innerHTML='🔬';" />
+                onerror="this.style.display='none';this.parentElement.innerHTML='??';" />
             <asp:Literal ID="litAvatarFallback" runat="server" />
         </div>
         <div class="sd-hero-avatar-label"><asp:Literal ID="litHeroPersonality2" runat="server" /></div>
     </div>
 </div>
 
-<%-- ── XP GAMIFICATION BAR ── --%>
+<%-- -- XP GAMIFICATION BAR -- --%>
 <div class="sd-xp-bar-section" style="margin-bottom:var(--space-xl);">
-    <span class="sd-xp-bar-label">⚡ <asp:Literal ID="litXPBarLabel" runat="server" Text="0 XP" /></span>
+    <span class="sd-xp-bar-label">? <asp:Literal ID="litXPBarLabel" runat="server" Text="0 XP" /></span>
     <div class="sd-xp-bar-wrap">
         <div class="sd-xp-bar">
             <div class="sd-xp-bar-fill" id="xpBarFill" style="width:0%"
@@ -321,20 +321,20 @@
     </div>
 </div>
 
-<%-- ── STAT CARDS ── --%>
+<%-- -- STAT CARDS -- --%>
 <div class="sd-stats" style="margin-bottom:var(--space-xl);">
     <div class="sd-stat-card sc-level">
         <div class="sd-stat-top">
-            <div class="sd-stat-icon" style="background:#DBEAFE;color:#1D4ED8;">🎓</div>
+            <div class="sd-stat-icon" style="background:#DBEAFE;color:#1D4ED8;">??</div>
             <span class="sd-stat-badge-pill" style="background:#DBEAFE;color:#1D4ED8;">Level</span>
         </div>
-        <div class="sd-stat-val"><asp:Literal ID="litStatLevel" runat="server" Text="—" /></div>
+        <div class="sd-stat-val"><asp:Literal ID="litStatLevel" runat="server" Text="�" /></div>
         <div class="sd-stat-lbl"><asp:Literal ID="litStatLevelLbl" runat="server" Text="Current Level" /></div>
         <div class="sd-stat-sub"><asp:Literal ID="litStatLevelSub" runat="server" Text="Keep going to advance!" /></div>
     </div>
     <div class="sd-stat-card sc-xp">
         <div class="sd-stat-top">
-            <div class="sd-stat-icon" style="background:#FFF0E8;color:#FF6B2C;">⚡</div>
+            <div class="sd-stat-icon" style="background:#FFF0E8;color:#FF6B2C;">?</div>
             <span class="sd-stat-badge-pill" style="background:#FFF0E8;color:#FF6B2C;">XP</span>
         </div>
         <div class="sd-stat-val"><asp:Literal ID="litStatXP" runat="server" Text="0" /></div>
@@ -343,7 +343,7 @@
     </div>
     <div class="sd-stat-card sc-badge">
         <div class="sd-stat-top">
-            <div class="sd-stat-icon" style="background:#FFFBEB;color:#B45309;">🏅</div>
+            <div class="sd-stat-icon" style="background:#FFFBEB;color:#B45309;">??</div>
             <span class="sd-stat-badge-pill" style="background:#FFFBEB;color:#B45309;">Badges</span>
         </div>
         <div class="sd-stat-val"><asp:Literal ID="litStatBadges" runat="server" Text="0" /></div>
@@ -352,7 +352,7 @@
     </div>
     <div class="sd-stat-card sc-lesson">
         <div class="sd-stat-top">
-            <div class="sd-stat-icon" style="background:#DCFCE7;color:#15803D;">✅</div>
+            <div class="sd-stat-icon" style="background:#DCFCE7;color:#15803D;">?</div>
             <span class="sd-stat-badge-pill" style="background:#DCFCE7;color:#15803D;">Done</span>
         </div>
         <div class="sd-stat-val"><asp:Literal ID="litStatLessons" runat="server" Text="0" /></div>
@@ -361,20 +361,20 @@
     </div>
 </div>
 
-<%-- ── PERSONALITY-ORDERED SECTIONS WRAPPER ── --%>
+<%-- -- PERSONALITY-ORDERED SECTIONS WRAPPER -- --%>
 <%-- Code-behind sets CSS order on each panel via inline style --%>
 <div class="sd-sections" id="sdSections" runat="server">
 
-    <%-- ── SECTION: PERSONALITY RECOMMENDATION ── --%>
+    <%-- -- SECTION: PERSONALITY RECOMMENDATION -- --%>
     <asp:Panel ID="pnlSectionRec" runat="server">
         <div class="sd-rec-banner" id="divRecBanner" runat="server">
             <div class="sd-rec-banner-icon" id="divPersonalityAvatar" runat="server">
                 <asp:Image ID="imgPersonalityThumb" runat="server" AlternateText="Personality"
-                    onerror="this.style.display='none';this.parentElement.innerHTML='🧠';" />
+                    onerror="this.style.display='none';this.parentElement.innerHTML='??';" />
                 <asp:Literal ID="litPersonalityThumbFallback" runat="server" />
             </div>
             <div class="sd-rec-banner-body">
-                <div class="sd-rec-banner-label"><asp:Literal ID="litRecLabel" runat="server" Text="✨ Recommended for your learning style" /></div>
+                <div class="sd-rec-banner-label"><asp:Literal ID="litRecLabel" runat="server" Text="? Recommended for your learning style" /></div>
                 <div class="sd-rec-banner-title"><asp:Literal ID="litPersonalityName" runat="server" Text="Learner" /></div>
                 <div class="sd-rec-banner-sub"><asp:Literal ID="litPersonalityRec" runat="server" Text="Keep learning at your own pace!" /></div>
                 <asp:HyperLink ID="lnkPersonalityAction" runat="server" NavigateUrl="#"
@@ -386,11 +386,11 @@
         </div>
     </asp:Panel>
 
-    <%-- ── SECTION: CONTINUE LEARNING ── --%>
+    <%-- -- SECTION: CONTINUE LEARNING -- --%>
     <asp:Panel ID="pnlSectionContinue" runat="server">
         <div class="sd-section-hd">
-            <div class="sd-section-title"><span class="ico">📖</span> <asp:Literal ID="litSecContinue" runat="server" Text="Continue Learning" /></div>
-            <a href="<%: ResolveUrl("~/Student/Learning.aspx") %>" class="sd-view-all"><asp:Literal ID="litViewAll" runat="server" Text="View All" /> <i class="bi bi-arrow-right"></i></a>
+            <div class="sd-section-title"><span class="ico">??</span> <asp:Literal ID="litSecContinue" runat="server" Text="Continue Learning" /></div>
+            <a href="<%: ResolveUrl("~/Student/MyLearning.aspx") %>" class="sd-view-all"><asp:Literal ID="litViewAll" runat="server" Text="View All" /> <i class="bi bi-arrow-right"></i></a>
         </div>
         <div class="sd-continue">
             <div class="sd-continue-header"><i class="bi bi-play-circle-fill"></i> &nbsp;<asp:Literal ID="litContinueHeader" runat="server" Text="Pick up where you left off" /></div>
@@ -408,17 +408,17 @@
                             <div class="sd-continue-bar-fill" id="continueFill" style="width:30%"></div>
                         </div>
                     </div>
-                    <a href="<%: ResolveUrl("~/Student/Learning.aspx") %>"
+                    <a href="<%: ResolveUrl("~/Student/MyLearning.aspx") %>"
                        class="sb-btn sb-btn-orange">
                         <i class="bi bi-play-fill"></i> <asp:Literal ID="litContinueBtn" runat="server" Text="Continue Learning" />
                     </a>
                 </asp:Panel>
                 <asp:Panel ID="pnlContinueEmpty" runat="server" Visible="false">
                     <div class="sb-empty-state" style="padding:var(--space-xl) 0;">
-                        <div class="empty-icon">🚀</div>
+                        <div class="empty-icon">??</div>
                         <div class="empty-title"><asp:Literal ID="litEmptyTitle" runat="server" Text="Ready to begin your adventure?" /></div>
                         <div class="empty-desc"><asp:Literal ID="litEmptyDesc" runat="server" Text="You haven't started any lessons yet. Dive in and discover science!" /></div>
-                        <a href="<%: ResolveUrl("~/Student/Learning.aspx") %>"
+                        <a href="<%: ResolveUrl("~/Student/MyLearning.aspx") %>"
                            class="sb-btn sb-btn-orange mt-md">
                             <i class="bi bi-play-fill"></i> <asp:Literal ID="litEmptyBtn" runat="server" Text="Start Learning" />
                         </a>
@@ -428,13 +428,13 @@
         </div>
     </asp:Panel>
 
-    <%-- ── SECTION: QUICK ACTIONS ── --%>
+    <%-- -- SECTION: QUICK ACTIONS -- --%>
     <asp:Panel ID="pnlSectionQuick" runat="server">
         <div class="sd-section-hd">
-            <div class="sd-section-title"><span class="ico">⚡</span> <asp:Literal ID="litSecQuick" runat="server" Text="Quick Actions" /></div>
+            <div class="sd-section-title"><span class="ico">?</span> <asp:Literal ID="litSecQuick" runat="server" Text="Quick Actions" /></div>
         </div>
         <div class="sd-quick-grid">
-            <a href="<%: ResolveUrl("~/Student/Learning.aspx") %>" class="sd-quick-card qc-learn">
+            <a href="<%: ResolveUrl("~/Student/MyLearning.aspx") %>" class="sd-quick-card qc-learn">
                 <div class="sd-quick-icon" style="background:#DBEAFE;color:#1D4ED8;"><i class="bi bi-book-half"></i></div>
                 <div class="sd-quick-label"><asp:Literal ID="litQALearn" runat="server" Text="My Learning" /></div>
                 <div class="sd-quick-desc"><asp:Literal ID="litQALearnDesc" runat="server" Text="Lessons, subtopics &amp; units" /></div>
@@ -467,10 +467,10 @@
         </div>
     </asp:Panel>
 
-    <%-- ── SECTION: SOCIAL (Socializer personality) ── --%>
+    <%-- -- SECTION: SOCIAL (Socializer personality) -- --%>
     <asp:Panel ID="pnlSectionSocial" runat="server" Visible="false">
         <div class="sd-section-hd">
-            <div class="sd-section-title"><span class="ico">🤝</span> <asp:Literal ID="litSecSocial" runat="server" Text="Learn Together" /></div>
+            <div class="sd-section-title"><span class="ico">??</span> <asp:Literal ID="litSecSocial" runat="server" Text="Learn Together" /></div>
         </div>
         <div class="sd-social-grid">
             <a href="<%: ResolveUrl("~/Student/Forum.aspx") %>" class="sd-social-card">
@@ -485,17 +485,17 @@
                 <div class="sd-social-icon" style="background:#F3E8FF;color:#7C3AED;"><i class="bi bi-envelope-fill"></i></div>
                 <div><div class="sd-social-label">Messages</div><div class="sd-social-sub">Chat with your teacher</div></div>
             </a>
-            <a href="<%: ResolveUrl("~/Student/Learning.aspx") %>" class="sd-social-card">
+            <a href="<%: ResolveUrl("~/Student/MyLearning.aspx") %>" class="sd-social-card">
                 <div class="sd-social-icon" style="background:#FFF0E8;color:#FF6B2C;"><i class="bi bi-book-fill"></i></div>
                 <div><div class="sd-social-label">Continue Learning</div><div class="sd-social-sub">Pick up your next lesson</div></div>
             </a>
         </div>
     </asp:Panel>
 
-    <%-- ── SECTION: NOTIFICATIONS ── --%>
+    <%-- -- SECTION: NOTIFICATIONS -- --%>
     <asp:Panel ID="pnlSectionNotif" runat="server">
         <div class="sd-section-hd">
-            <div class="sd-section-title"><span class="ico">🔔</span> <asp:Literal ID="litSecNotif" runat="server" Text="Recent Notifications" /></div>
+            <div class="sd-section-title"><span class="ico">??</span> <asp:Literal ID="litSecNotif" runat="server" Text="Recent Notifications" /></div>
             <a href="#" class="sd-view-all"><asp:Literal ID="litSeeAll" runat="server" Text="See All" /> <i class="bi bi-arrow-right"></i></a>
         </div>
         <div class="sd-notif-card">
@@ -521,7 +521,7 @@
                 </asp:Panel>
                 <asp:Panel ID="pnlNotificationsEmpty" runat="server" Visible="false">
                     <div class="sb-empty-state" style="padding:var(--space-lg) 0;">
-                        <div class="empty-icon" style="font-size:2.5rem;">🎉</div>
+                        <div class="empty-icon" style="font-size:2.5rem;">??</div>
                         <div class="empty-title"><asp:Literal ID="litNotifEmpty" runat="server" Text="You're all caught up!" /></div>
                         <div class="empty-desc"><asp:Literal ID="litNotifEmptyDesc" runat="server" Text="No new notifications right now. Check back later." /></div>
                     </div>
@@ -534,7 +534,7 @@
 
 </asp:Content>
 
-<%-- ════ PAGE SCRIPTS ════ --%>
+<%-- ---- PAGE SCRIPTS ---- --%>
 <asp:Content ID="cScripts" ContentPlaceHolderID="ScriptsContent" runat="server">
 <script>
 document.addEventListener('DOMContentLoaded', function () {
