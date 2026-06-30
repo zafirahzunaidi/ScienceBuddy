@@ -239,6 +239,7 @@
     <Content Include="Student\VirtualLabs.aspx" />
     <Content Include="Teacher\Dashboard.aspx" />
     <Content Include="Teacher\manageMaterials.aspx" />
+    <Content Include="Teacher\privateMessages.aspx" />
     <Content Include="Teacher\uploadMaterial.aspx" />
     <Content Include="Teacher\manageQuiz.aspx" />
     <Content Include="Teacher\createUnitLevelQuiz.aspx" />
@@ -674,6 +675,13 @@
     </Compile>
     <Compile Include="Teacher\manageMaterials.aspx.designer.cs">
       <DependentUpon>manageMaterials.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Teacher\privateMessages.aspx.cs">
+      <DependentUpon>privateMessages.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Teacher\privateMessages.aspx.designer.cs">
+      <DependentUpon>privateMessages.aspx</DependentUpon>
     </Compile>
     <Compile Include="Teacher\uploadMaterial.aspx.cs">
       <DependentUpon>uploadMaterial.aspx</DependentUpon>
