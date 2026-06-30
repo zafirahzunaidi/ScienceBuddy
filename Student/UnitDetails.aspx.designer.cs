@@ -49,6 +49,12 @@ namespace ScienceBuddy.Student
         protected global::System.Web.UI.WebControls.Literal litQuizTitle;
         protected global::System.Web.UI.WebControls.Literal litQuizSub;
         protected global::System.Web.UI.WebControls.Literal litQuizBtn;
+        protected global::System.Web.UI.HtmlControls.HtmlAnchor lnkQuizStart;
+        protected global::System.Web.UI.WebControls.Panel pnlQuizResult;
+        protected global::System.Web.UI.HtmlControls.HtmlAnchor lnkQuizResult;
+        protected global::System.Web.UI.WebControls.Literal litQuizResultBtn;
+        protected global::System.Web.UI.HtmlControls.HtmlAnchor lnkQuizReview;
+        protected global::System.Web.UI.WebControls.Literal litQuizReviewBtn;
         protected global::System.Web.UI.WebControls.Panel pnlQuizEmpty;
         protected global::System.Web.UI.WebControls.Literal litQuizEmpty;
     }

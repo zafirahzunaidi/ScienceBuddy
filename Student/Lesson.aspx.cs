@@ -198,8 +198,14 @@ namespace ScienceBuddy.Student
 
                 if (!already && Tbl("LessonProgress"))
                 {
-                    // Generate new progressId
-                    string progId = "PR" + DateTime.Now.ToString("yyyyMMddHHmmss");
+                    // Generate sequential progressId: LP + 3-digit (LP001, LP002...)
+                    string progId = "LP001";
+                    using (var seqCmd = new SqlCommand(@"SELECT ISNULL(MAX(CAST(SUBSTRING(progressId,3,LEN(progressId)-2) AS INT)),0) FROM LessonProgress WHERE progressId LIKE 'LP[0-9]%'", conn))
+                    {
+                        int last = Convert.ToInt32(seqCmd.ExecuteScalar());
+                        progId = "LP" + (last + 1).ToString("D3");
+                    }
+
                     using (var cmd = new SqlCommand(@"INSERT INTO LessonProgress(progressId,studentId,lessonId,isCompleted,completedDate)
                         VALUES(@pid,@s,@l,1,@d)", conn))
                     {
@@ -222,38 +228,54 @@ namespace ScienceBuddy.Student
 
         private void AwardXP(SqlConnection conn, string studentId, string lessonId)
         {
-            if (!Tbl("XPAction") || !Tbl("XPTransaction")) return;
-
-            // Get XP value for "Complete Lesson"
-            int xpValue = 0; string xpActionId = null;
-            using (var cmd = new SqlCommand("SELECT xpActionId,xpValue FROM XPAction WHERE actionNameEN='Complete Lesson'", conn))
+            try
             {
-                using (var r = cmd.ExecuteReader())
-                { if (r.Read()) { xpActionId = r["xpActionId"].ToString(); xpValue = Convert.ToInt32(r["xpValue"]); } }
-            }
-            if (xpValue == 0 || string.IsNullOrEmpty(xpActionId)) return;
+                if (!Tbl("XPAction") || !Tbl("XPTransaction")) return;
 
-            // Check duplicate
-            using (var cmd = new SqlCommand(@"SELECT COUNT(*) FROM XPTransaction WHERE studentId=@s AND xpActionId=@a AND referenceId=@r", conn))
-            {
-                cmd.Parameters.AddWithValue("@s", studentId); cmd.Parameters.AddWithValue("@a", xpActionId); cmd.Parameters.AddWithValue("@r", lessonId);
-                if ((int)cmd.ExecuteScalar() > 0) return;
-            }
+                // Find XP action for lesson completion
+                string xpActionId = null;
+                using (var cmd = new SqlCommand("SELECT TOP 1 xpActionId FROM XPAction WHERE actionNameEN LIKE '%Lesson%'", conn))
+                {
+                    object r = cmd.ExecuteScalar();
+                    if (r != null && r != DBNull.Value) xpActionId = r.ToString();
+                }
+                if (string.IsNullOrEmpty(xpActionId)) return;
 
-            // Insert transaction
-            string txId = "XPT" + DateTime.Now.ToString("yyyyMMddHHmmss");
-            using (var cmd = new SqlCommand(@"INSERT INTO XPTransaction(xpTransactionId,studentId,xpActionId,xpEarned,referenceId,earnedAt)
-                VALUES(@id,@s,@a,@xp,@ref,@dt)", conn))
-            {
-                cmd.Parameters.AddWithValue("@id", txId); cmd.Parameters.AddWithValue("@s", studentId);
-                cmd.Parameters.AddWithValue("@a", xpActionId); cmd.Parameters.AddWithValue("@xp", xpValue);
-                cmd.Parameters.AddWithValue("@ref", lessonId); cmd.Parameters.AddWithValue("@dt", DateTime.Now);
-                cmd.ExecuteNonQuery();
-            }
+                int xpAmount = 10; // default XP for lesson completion
 
-            // Update Student.XP
-            using (var cmd = new SqlCommand("UPDATE Student SET XP = XP + @xp WHERE studentId=@s", conn))
-            { cmd.Parameters.AddWithValue("@xp", xpValue); cmd.Parameters.AddWithValue("@s", studentId); cmd.ExecuteNonQuery(); }
+                // Check duplicate: same student + same action on same day
+                using (var cmd = new SqlCommand("SELECT COUNT(*) FROM XPTransaction WHERE studentId=@s AND xpActionId=@a AND dateEarned=@d", conn))
+                {
+                    cmd.Parameters.AddWithValue("@s", studentId);
+                    cmd.Parameters.AddWithValue("@a", xpActionId);
+                    cmd.Parameters.AddWithValue("@d", DateTime.Today);
+                    // Allow multiple lesson completions per day, skip duplicate check
+                }
+
+                // Generate sequential xpTransactionId: XT + 3-digit (XT001, XT002...)
+                string xtId = "XT001";
+                using (var cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(xpTransactionId,3,LEN(xpTransactionId)-2) AS INT)),0) FROM XPTransaction WHERE xpTransactionId LIKE 'XT[0-9]%'", conn))
+                {
+                    int last = Convert.ToInt32(cmd.ExecuteScalar());
+                    xtId = "XT" + (last + 1).ToString("D3");
+                }
+
+                // Insert XPTransaction (columns: xpTransactionId, studentId, xpActionId, xpAmount, dateEarned)
+                using (var cmd = new SqlCommand("INSERT INTO XPTransaction(xpTransactionId,studentId,xpActionId,xpAmount,dateEarned) VALUES(@id,@s,@a,@xp,@dt)", conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", xtId);
+                    cmd.Parameters.AddWithValue("@s", studentId);
+                    cmd.Parameters.AddWithValue("@a", xpActionId);
+                    cmd.Parameters.AddWithValue("@xp", xpAmount);
+                    cmd.Parameters.AddWithValue("@dt", DateTime.Today);
+                    cmd.ExecuteNonQuery();
+                }
+
+                // Update Student.XP
+                using (var cmd = new SqlCommand("UPDATE Student SET XP = ISNULL(XP,0) + @xp WHERE studentId=@s", conn))
+                { cmd.Parameters.AddWithValue("@xp", xpAmount); cmd.Parameters.AddWithValue("@s", studentId); cmd.ExecuteNonQuery(); }
+            }
+            catch { /* Do not crash lesson completion if XP award fails */ }
         }
 
         private void ShowLocked(string t, string d)

@@ -476,6 +476,11 @@
                 <div class="sd-quick-label"><asp:Literal ID="litQAProgress" runat="server" Text="Progress &amp; Rewards" /></div>
                 <div class="sd-quick-desc"><asp:Literal ID="litQAProgressDesc" runat="server" Text="XP, badges &amp; achievements" /></div>
             </a>
+            <a href="<%: ResolveUrl("~/Student/QuizHistory.aspx") %>" class="sd-quick-card qc-learn">
+                <div class="sd-quick-icon" style="background:#E0F2FE;color:#0369A1;"><i class="bi bi-clock-history"></i></div>
+                <div class="sd-quick-label"><asp:Literal ID="litQAHistory" runat="server" Text="Quiz History" /></div>
+                <div class="sd-quick-desc"><asp:Literal ID="litQAHistoryDesc" runat="server" Text="Past attempts &amp; scores" /></div>
+            </a>
         </div>
     </asp:Panel>
 

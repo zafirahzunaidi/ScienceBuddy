@@ -250,21 +250,43 @@ namespace ScienceBuddy.Student
             if (!Tbl("Quiz")) { pnlQuiz.Visible = false; pnlQuizEmpty.Visible = true; return; }
 
             bool bm = CurrentLanguage == "BM";
-            using (var cmd = new SqlCommand("SELECT TOP 1 quizId,quizTitleEN,quizTitleBM FROM Quiz WHERE unitId=@u AND quizType='Unit' ORDER BY createdAt DESC", conn))
+            string quizId = null;
+            using (var cmd = new SqlCommand("SELECT TOP 1 quizId,quizTitleEN,quizTitleBM FROM Quiz WHERE unitId=@u AND quizType='Unit' AND (status IS NULL OR status IN ('Approved','Published')) ORDER BY createdAt DESC", conn))
             {
                 cmd.Parameters.AddWithValue("@u", unitId);
                 using (var r = cmd.ExecuteReader())
                 {
                     if (r.Read())
                     {
+                        quizId = r["quizId"].ToString();
                         string t = bm ? r["quizTitleBM"].ToString() : r["quizTitleEN"].ToString();
                         if (string.IsNullOrWhiteSpace(t)) t = r["quizTitleEN"].ToString();
                         pnlQuiz.Visible = true; pnlQuizEmpty.Visible = false;
                         litQuizTitle.Text = HttpUtility.HtmlEncode(t);
                         litQuizSub.Text = T("Test your understanding of this unit.","Uji kefahaman anda tentang unit ini.");
                         litQuizBtn.Text = T("Start Quiz","Mula Kuiz");
+                        lnkQuizStart.HRef = ResolveUrl("~/Student/Quiz.aspx?quizId=" + quizId);
                     }
-                    else { pnlQuiz.Visible = false; pnlQuizEmpty.Visible = true; }
+                    else { pnlQuiz.Visible = false; pnlQuizEmpty.Visible = true; return; }
+                }
+            }
+
+            // Check if student has a previous attempt
+            if (!string.IsNullOrEmpty(quizId) && Tbl("QuizResult"))
+            {
+                using (var cmd = new SqlCommand("SELECT TOP 1 resultId FROM QuizResult WHERE studentId=@s AND quizId=@q ORDER BY attemptedDate DESC", conn))
+                {
+                    cmd.Parameters.AddWithValue("@s", studentId); cmd.Parameters.AddWithValue("@q", quizId);
+                    object lastResult = cmd.ExecuteScalar();
+                    if (lastResult != null && lastResult != DBNull.Value)
+                    {
+                        string rid = lastResult.ToString();
+                        pnlQuizResult.Visible = true;
+                        litQuizResultBtn.Text = T("View Last Result", "Lihat Keputusan Terkini");
+                        litQuizReviewBtn.Text = T("Review Answers", "Semak Jawapan");
+                        lnkQuizResult.HRef = ResolveUrl("~/Student/QuizResult.aspx?resultId=" + rid);
+                        lnkQuizReview.HRef = ResolveUrl("~/Student/QuizReview.aspx?resultId=" + rid);
+                    }
                 }
             }
         }

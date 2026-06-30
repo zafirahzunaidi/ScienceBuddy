@@ -618,6 +618,16 @@ namespace ScienceBuddy.Student
         protected global::System.Web.UI.WebControls.Literal litQAProgressDesc;
 
         /// <summary>
+        /// litQAHistory control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litQAHistory;
+
+        /// <summary>
+        /// litQAHistoryDesc control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litQAHistoryDesc;
+
+        /// <summary>
         /// pnlSectionSocial control.
         /// </summary>
         /// <remarks>
