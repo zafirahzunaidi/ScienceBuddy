@@ -35,7 +35,7 @@
 .ad-hero-title {
     font-family: var(--font-primary); font-size: 2rem; font-weight: 800;
     line-height: 1.2; margin-bottom: var(--space-sm);
-    /* Wrap gracefully � don't let a long admin name overflow the hero card */
+    /* Wrap gracefully ? don't let a long admin name overflow the hero card */
     word-break: break-word;
     overflow-wrap: anywhere;
 }
@@ -195,6 +195,9 @@
 }
 @media(max-width:479px)  { .ad-stats { grid-template-columns: 1fr 1fr; } .ad-quick { grid-template-columns: 1fr; } }
 </style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="<%: ResolveUrl("~/Scripts/admin-signout.js") %>"></script>
 </asp:Content>
 
 <%-- ---- SIDEBAR MENU ---- --%>
@@ -256,7 +259,7 @@
         <div class="sb-nav-section-label">Gamification</div>
         <a href="<%: ResolveUrl("~/Admin/GamificationManagement.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-trophy item-icon"></i>
-            <span class="item-label">Gamification</span>
+            <span class="item-label">Student Performance</span>
         </a>
     </div>
     <div class="sb-nav-section">
@@ -291,8 +294,7 @@
             <i class="bi bi-person item-icon"></i>
             <span class="item-label">My Profile</span>
         </a>
-        <a href="<%: ResolveUrl("~/Logout.aspx") %>" class="sb-sidebar-item"
-            onclick="return confirm('Are you sure you want to sign out?');">
+        <a href="javascript:;" class="sb-sidebar-item" onclick="showSignOutModal()">
             <i class="bi bi-box-arrow-right item-icon"></i>
             <span class="item-label">Sign Out</span>
         </a>

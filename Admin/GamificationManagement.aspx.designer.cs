@@ -18,6 +18,8 @@ namespace ScienceBuddy.Admin
         protected global::System.Web.UI.WebControls.Literal litActiveStudents;
         protected global::System.Web.UI.WebControls.Repeater rptXPActions;
         protected global::System.Web.UI.WebControls.Panel pnlLeaderboard;
+        protected global::System.Web.UI.WebControls.Literal litPodium;
+        protected global::System.Web.UI.WebControls.Panel pnlRankings;
         protected global::System.Web.UI.WebControls.Repeater rptLeaderboard;
         protected global::System.Web.UI.WebControls.Panel pnlNoLeaderboard;
         protected global::System.Web.UI.WebControls.Panel pnlXPTab;

@@ -1,6 +1,6 @@
 <%@ Page Language="C#" AutoEventWireup="true" CodeBehind="GamificationManagement.aspx.cs"
     Inherits="ScienceBuddy.Admin.GamificationManagement" MasterPageFile="~/Site.Master"
-    Title="Gamification Management" %>
+    Title="Student Performance" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
 <style>
@@ -34,9 +34,38 @@
 .gm-lb-xp{font-family:var(--font-primary);font-weight:800;font-size:.875rem;color:var(--gm-gold);margin-left:auto;}
 .gm-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:var(--space-2xl);}
 .gm-empty-ico{font-size:3rem;margin-bottom:var(--space-md);opacity:.35;color:var(--gm-accent);}.gm-empty-msg{font-size:1rem;font-weight:700;color:var(--color-text-secondary);}
+
+/* Podium */
+.gm-podium{display:flex;align-items:flex-end;justify-content:center;gap:var(--space-md);margin-bottom:var(--space-xl);padding-top:var(--space-lg);}
+.gm-podium-item{display:flex;flex-direction:column;align-items:center;text-align:center;transition:transform .3s;}
+.gm-podium-item:hover{transform:translateY(-4px);}
+.gm-podium-block{border-radius:var(--border-radius-xl) var(--border-radius-xl) 0 0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:var(--space-lg) var(--space-md) var(--space-md);position:relative;overflow:hidden;}
+.gm-podium-block::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(180deg,rgba(255,255,255,.15) 0%,transparent 60%);pointer-events:none;}
+.gm-podium-1st .gm-podium-block{width:150px;min-height:220px;background:linear-gradient(135deg,#F59E0B,#FBBF24);box-shadow:0 8px 30px rgba(245,158,11,.35);}
+.gm-podium-2nd .gm-podium-block{width:125px;min-height:160px;background:linear-gradient(135deg,#94A3B8,#CBD5E1);box-shadow:0 6px 20px rgba(148,163,184,.3);}
+.gm-podium-3rd .gm-podium-block{width:125px;min-height:120px;background:linear-gradient(135deg,#92400E,#D97706);box-shadow:0 6px 20px rgba(146,64,14,.3);}
+.gm-podium-medal{font-size:1.75rem;margin-bottom:6px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.2));}
+.gm-podium-avatar{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:800;color:#fff;border:3px solid rgba(255,255,255,.5);margin-bottom:6px;background:rgba(255,255,255,.2);}
+.gm-podium-name{font-size:.8rem;font-weight:700;color:#fff;line-height:1.2;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.gm-podium-xp{font-family:var(--font-primary);font-size:1rem;font-weight:800;color:rgba(255,255,255,.9);margin-top:4px;}
+.gm-podium-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--color-text-muted);margin-top:8px;}
+
+/* Rankings (4+) */
+.gm-rankings{border-top:1px solid var(--border-color);padding-top:var(--space-md);}
+.gm-rank-card{display:flex;align-items:center;gap:var(--space-md);padding:10px var(--space-md);border-radius:var(--border-radius);transition:background .15s;margin-bottom:2px;}
+.gm-rank-card:hover{background:var(--color-surface-alt);}
+.gm-rank-num{width:28px;font-family:var(--font-primary);font-size:.8rem;font-weight:800;color:var(--color-text-muted);text-align:center;}
+.gm-rank-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#fff;flex-shrink:0;}
+.gm-rank-name{flex:1;font-weight:600;font-size:.875rem;color:var(--color-text);}
+.gm-rank-xp{font-family:var(--font-primary);font-weight:800;font-size:.875rem;color:var(--gm-gold);}
+
+@media(max-width:767px){.gm-podium{flex-direction:column;align-items:center;}.gm-podium-item{width:100%;}.gm-podium-block{width:100%!important;min-height:auto!important;flex-direction:row;border-radius:var(--border-radius-xl);padding:var(--space-md) var(--space-lg);gap:var(--space-md);}}
 @media(max-width:1279px){.gm-stats{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:767px){.gm-stats{grid-template-columns:1fr 1fr;}}
 </style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="<%: ResolveUrl("~/Scripts/admin-signout.js") %>"></script>
 </asp:Content>
 
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
@@ -58,7 +87,7 @@
         <a href="<%: ResolveUrl("~/Admin/CertificateManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-award item-icon"></i><span class="item-label">Certificates</span></a>
     </div>
     <div class="sb-nav-section"><div class="sb-nav-section-label">Gamification</div>
-        <a href="<%: ResolveUrl("~/Admin/GamificationManagement.aspx") %>" class="sb-sidebar-item active"><i class="bi bi-trophy item-icon"></i><span class="item-label">Gamification</span></a>
+        <a href="<%: ResolveUrl("~/Admin/GamificationManagement.aspx") %>" class="sb-sidebar-item active"><i class="bi bi-trophy item-icon"></i><span class="item-label">Student Performance</span></a>
     </div>
     <div class="sb-nav-section"><div class="sb-nav-section-label">Configuration</div>
         <a href="<%: ResolveUrl("~/Admin/SystemSettings.aspx") %>" class="sb-sidebar-item"><i class="bi bi-gear item-icon"></i><span class="item-label">System Settings</span></a>
@@ -71,16 +100,16 @@
     <div class="sb-nav-section"><div class="sb-nav-section-label">Account</div>
         <a href="<%: ResolveUrl("~/Admin/Notifications.aspx") %>" class="sb-sidebar-item"><i class="bi bi-bell item-icon"></i><span class="item-label">Notifications</span></a>
         <a href="<%: ResolveUrl("~/Admin/Profile.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person item-icon"></i><span class="item-label">My Profile</span></a>
-        <a href="<%: ResolveUrl("~/Logout.aspx") %>" class="sb-sidebar-item" onclick="return confirm('Are you sure you want to sign out?');"><i class="bi bi-box-arrow-right item-icon"></i><span class="item-label">Sign Out</span></a>
+        <a href="javascript:;" class="sb-sidebar-item" onclick="showSignOutModal()"><i class="bi bi-box-arrow-right item-icon"></i><span class="item-label">Sign Out</span></a>
     </div>
 </asp:Content>
 
-<asp:Content ID="cPageTitle" ContentPlaceHolderID="PageTitle" runat="server"><%= T("Gamification Management", "Pengurusan Gamifikasi") %></asp:Content>
+<asp:Content ID="cPageTitle" ContentPlaceHolderID="PageTitle" runat="server"><%= T("Student Performance", "Prestasi Pelajar") %></asp:Content>
 
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 <div class="gm-header">
-    <h1 class="gm-title"><i class="bi bi-trophy-fill" style="color:var(--gm-gold);"></i> <%= T("Gamification Management", "Pengurusan Gamifikasi") %></h1>
-    <p class="gm-sub"><%= T("Manage XP rewards, badges, student achievements, and ScienceBuddy's reward system.", "Urus ganjaran XP, lencana, pencapaian pelajar, dan sistem ganjaran ScienceBuddy.") %></p>
+    <h1 class="gm-title"><i class="bi bi-trophy-fill" style="color:var(--gm-gold);"></i> <%= T("Student Performance", "Prestasi Pelajar") %></h1>
+    <p class="gm-sub"><%= T("Monitor XP rewards, badges, student achievements, and the ScienceBuddy reward system.", "Pantau ganjaran XP, lencana, pencapaian pelajar, dan sistem ganjaran ScienceBuddy.") %></p>
 </div>
 
 <%-- TABS --%>
@@ -119,19 +148,31 @@
     </asp:Repeater>
 </div>
 
-<%-- TOP STUDENTS LEADERBOARD --%>
+<%-- STUDENT LEADERBOARD (Podium Style) --%>
 <div class="gm-card">
-    <div class="gm-card-hdr"><i class="bi bi-bar-chart-fill" style="color:var(--gm-purple);"></i> <%= T("Top Students by XP", "Pelajar Tertinggi mengikut XP") %></div>
+    <div class="gm-card-hdr"><i class="bi bi-bar-chart-fill" style="color:var(--gm-purple);"></i> <%= T("Student Leaderboard", "Papan Markah Pelajar") %></div>
     <asp:Panel ID="pnlLeaderboard" runat="server" Visible="false">
-        <asp:Repeater ID="rptLeaderboard" runat="server">
-            <ItemTemplate>
-                <div class="gm-lb-card">
-                    <div class='gm-lb-rank <%# Eval("rankCls") %>'><%# Eval("rank") %></div>
-                    <div class="gm-lb-name"><%# HttpUtility.HtmlEncode(Eval("studentName")) %></div>
-                    <div class="gm-lb-xp"><%# Eval("totalXP") %> XP</div>
+        <div style="padding:var(--space-xl);">
+            <!-- PODIUM -->
+            <div class="gm-podium">
+                <asp:Literal ID="litPodium" runat="server" />
+            </div>
+            <!-- REST OF RANKINGS (4+) -->
+            <asp:Panel ID="pnlRankings" runat="server" Visible="false">
+                <div class="gm-rankings">
+                    <asp:Repeater ID="rptLeaderboard" runat="server">
+                        <ItemTemplate>
+                            <div class="gm-rank-card">
+                                <div class="gm-rank-num">#<%# Eval("rank") %></div>
+                                <div class="gm-rank-avatar" style='background:<%# Eval("avatarBg") %>;'><%# Eval("initials") %></div>
+                                <div class="gm-rank-name"><%# HttpUtility.HtmlEncode(Eval("studentName")) %></div>
+                                <div class="gm-rank-xp"><%# Eval("totalXP") %> XP</div>
+                            </div>
+                        </ItemTemplate>
+                    </asp:Repeater>
                 </div>
-            </ItemTemplate>
-        </asp:Repeater>
+            </asp:Panel>
+        </div>
     </asp:Panel>
     <asp:Panel ID="pnlNoLeaderboard" runat="server">
         <div class="gm-empty"><div class="gm-empty-ico"><i class="bi bi-bar-chart"></i></div><div class="gm-empty-msg"><%= T("No XP data yet.", "Tiada data XP lagi.") %></div></div>
@@ -182,7 +223,7 @@
 <%-- TAB: STUDENT REWARDS --%>
 <asp:Panel ID="pnlStudentsTab" runat="server" Visible="false">
 <div class="gm-card">
-    <div class="gm-card-hdr"><i class="bi bi-people-fill" style="color:var(--gm-blue);"></i> <%= T("Top Students by XP", "Pelajar Tertinggi mengikut XP") %></div>
+    <div class="gm-card-hdr"><i class="bi bi-people-fill" style="color:var(--gm-blue);"></i> <%= T("Student Leaderboard", "Papan Markah Pelajar") %></div>
     <asp:Repeater ID="rptStudentRewards" runat="server">
         <ItemTemplate>
             <div class="gm-lb-card">

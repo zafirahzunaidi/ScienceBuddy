@@ -128,19 +128,66 @@ namespace ScienceBuddy.Admin
                 using (var cmd = new SqlCommand(@"SELECT TOP 10 s.[name], SUM(xt.[xpAmount]) AS totalXP
                     FROM dbo.[XPTransaction] xt
                     JOIN dbo.[Student] s ON s.[studentId]=xt.[studentId]
-                    GROUP BY s.[name] ORDER BY totalXP DESC", conn))
+                    GROUP BY s.[name] ORDER BY totalXP DESC, MIN(xt.[dateEarned]) ASC", conn))
                 {
                     var da = new SqlDataAdapter(cmd); var dt = new DataTable(); da.Fill(dt);
                     if (dt.Rows.Count == 0) { pnlLeaderboard.Visible = false; pnlNoLeaderboard.Visible = true; return; }
-                    var list = new List<object>(); int rank = 1;
-                    foreach (DataRow r in dt.Rows)
-                    {
-                        string cls = rank == 1 ? "r1" : rank == 2 ? "r2" : rank == 3 ? "r3" : "rn";
-                        list.Add(new { rank = rank, rankCls = cls, studentName = NS(r["name"]), totalXP = r["totalXP"] });
-                        rank++;
-                    }
                     pnlLeaderboard.Visible = true; pnlNoLeaderboard.Visible = false;
-                    rptLeaderboard.DataSource = list; rptLeaderboard.DataBind();
+
+                    // Build podium for top 3
+                    string podiumHtml = "";
+                    string[] medals = { "&#x1F947;", "&#x1F948;", "&#x1F949;" }; // gold, silver, bronze
+                    string[] labels = { T("1st Place", "Tempat Ke-1"), T("2nd Place", "Tempat Ke-2"), T("3rd Place", "Tempat Ke-3") };
+                    string[] avatarColors = { "linear-gradient(135deg,#F59E0B,#D97706)", "linear-gradient(135deg,#94A3B8,#64748B)", "linear-gradient(135deg,#92400E,#B45309)" };
+                    string[] blockCss = { "gm-podium-1st", "gm-podium-2nd", "gm-podium-3rd" };
+
+                    // Build each podium item by rank (0=1st, 1=2nd, 2=3rd)
+                    var podiumItems = new string[3];
+                    for (int i = 0; i < Math.Min(3, dt.Rows.Count); i++)
+                    {
+                        string name = NS(dt.Rows[i]["name"]);
+                        string xp = dt.Rows[i]["totalXP"].ToString();
+                        string initials = name.Length >= 2 ? name.Substring(0, 2).ToUpper() : name.ToUpper();
+
+                        podiumItems[i] = string.Format(
+                            "<div class=\"gm-podium-item {0}\">" +
+                            "<div class=\"gm-podium-block\">" +
+                            "<div class=\"gm-podium-medal\">{1}</div>" +
+                            "<div class=\"gm-podium-avatar\" style=\"background:{2};\">{3}</div>" +
+                            "<div class=\"gm-podium-name\">{4}</div>" +
+                            "<div class=\"gm-podium-xp\">{5} XP</div>" +
+                            "</div>" +
+                            "<div class=\"gm-podium-label\">{6}</div>" +
+                            "</div>",
+                            blockCss[i], medals[i], avatarColors[i], HttpUtility.HtmlEncode(initials),
+                            HttpUtility.HtmlEncode(name), xp, labels[i]);
+                    }
+
+                    // Display order: 2nd | 1st | 3rd (center = winner)
+                    if (dt.Rows.Count >= 3)
+                        podiumHtml = podiumItems[1] + podiumItems[0] + podiumItems[2];
+                    else if (dt.Rows.Count == 2)
+                        podiumHtml = podiumItems[1] + podiumItems[0];
+                    else if (dt.Rows.Count == 1)
+                        podiumHtml = podiumItems[0];
+
+                    litPodium.Text = podiumHtml;
+
+                    // Rankings 4+
+                    if (dt.Rows.Count > 3)
+                    {
+                        pnlRankings.Visible = true;
+                        var list = new List<object>();
+                        string[] bgColors = { "#6366F1", "#0EA5E9", "#8B5CF6", "#059669", "#D97706", "#DC2626", "#EC4899" };
+                        for (int i = 3; i < dt.Rows.Count; i++)
+                        {
+                            string name = NS(dt.Rows[i]["name"]);
+                            string initials = name.Length >= 2 ? name.Substring(0, 2).ToUpper() : name.ToUpper();
+                            list.Add(new { rank = i + 1, studentName = name, totalXP = dt.Rows[i]["totalXP"].ToString(), initials = initials, avatarBg = bgColors[(i - 3) % bgColors.Length] });
+                        }
+                        rptLeaderboard.DataSource = list; rptLeaderboard.DataBind();
+                    }
+                    else { pnlRankings.Visible = false; }
                 }
             }
         }
