@@ -28,6 +28,19 @@ namespace ScienceBuddy.Student
         protected global::System.Web.UI.WebControls.Literal litPersonalLevelLbl;
         protected global::System.Web.UI.WebControls.Literal litPersonalBadgesLbl;
 
+        // ── Podium ───────────────────────────────────────────────
+        protected global::System.Web.UI.WebControls.Literal litPodiumTitle;
+        protected global::System.Web.UI.WebControls.Literal litPodium;
+
+        // ── Filters ─────────────────────────────────────────────
+        protected global::System.Web.UI.WebControls.Literal litFilterLabel;
+        protected global::System.Web.UI.WebControls.LinkButton btnFilterAll;
+        protected global::System.Web.UI.WebControls.Literal litFAll;
+        protected global::System.Web.UI.WebControls.LinkButton btnFilterLevel;
+        protected global::System.Web.UI.WebControls.Literal litFLevel;
+        protected global::System.Web.UI.WebControls.LinkButton btnFilterPers;
+        protected global::System.Web.UI.WebControls.Literal litFPers;
+
         // ── Leaderboard ─────────────────────────────────────────
         protected global::System.Web.UI.WebControls.Literal  litBoardTitle;
         protected global::System.Web.UI.WebControls.Panel    pnlBoard;

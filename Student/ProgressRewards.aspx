@@ -265,11 +265,7 @@
         <div class="pr-stat-value"><asp:Literal ID="litCertsCount" runat="server" Text="0" /></div>
         <div class="pr-stat-label"><asp:Literal ID="litCertsLabel" runat="server" Text="Certificates Earned" /></div>
     </div>
-    <div class="pr-stat-card">
-        <div class="pr-stat-icon"><i class="bi bi-lightning-charge-fill" style="color:#FF6B2C;"></i></div>
-        <div class="pr-stat-value"><asp:Literal ID="litTotalXP" runat="server" Text="0" /></div>
-        <div class="pr-stat-label"><asp:Literal ID="litTotalXPLabel" runat="server" Text="Total XP" /></div>
-    </div>
+    <asp:Literal ID="litTotalXP" runat="server" Visible="false" /><asp:Literal ID="litTotalXPLabel" runat="server" Visible="false" />
 </div>
 
 <%-- ── BADGE COLLECTION ── --%>

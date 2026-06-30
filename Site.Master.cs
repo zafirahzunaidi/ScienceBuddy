@@ -202,13 +202,16 @@ namespace ScienceBuddy
             string userId = Session["userId"] as string;
             if (string.IsNullOrEmpty(userId)) return;
 
-            // If a child page already set it (text != default), skip
-            if (litUserName != null && litUserName.Text != "Guest" && litUserName.Text != "User")
-                return;
+            string role = Session["role"] as string ?? "User";
 
-            // Try Session cache first
-            string displayName = Session["_profileName"] as string;
-            string role        = Session["role"] as string ?? "User";
+            // Check if cached profile belongs to current user
+            string cachedUserId = Session["_profileUserId"] as string;
+            string displayName = null;
+
+            if (cachedUserId == userId)
+            {
+                displayName = Session["_profileName"] as string;
+            }
 
             if (string.IsNullOrEmpty(displayName))
             {
@@ -258,8 +261,9 @@ namespace ScienceBuddy
                     if (string.IsNullOrWhiteSpace(displayName))
                         displayName = Session["username"] as string ?? "User";
 
-                    // Cache in session so next page load is instant
+                    // Cache with userId tag so it invalidates on user switch
                     Session["_profileName"] = displayName;
+                    Session["_profileUserId"] = userId;
                 }
                 catch (SqlException)
                 {

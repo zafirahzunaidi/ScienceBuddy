@@ -229,6 +229,7 @@
     <Content Include="Student\MyProfile.aspx" />
     <Content Include="Student\MyRanking.aspx" />
     <Content Include="Student\Notifications.aspx" />
+    <Content Include="Student\PersonalityTest.aspx" />
     <Content Include="Student\PracticeLibrary.aspx" />
     <Content Include="Student\ProgressRewards.aspx" />
     <Content Include="Student\Quiz.aspx" />
@@ -606,6 +607,13 @@
     </Compile>
     <Compile Include="Student\Notifications.aspx.designer.cs">
       <DependentUpon>Notifications.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Student\PersonalityTest.aspx.cs">
+      <DependentUpon>PersonalityTest.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\PersonalityTest.aspx.designer.cs">
+      <DependentUpon>PersonalityTest.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\PracticeLibrary.aspx.cs">
       <DependentUpon>PracticeLibrary.aspx</DependentUpon>

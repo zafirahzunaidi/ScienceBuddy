@@ -49,15 +49,17 @@
 .sd-hero-btn-secondary{background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.4);
     backdrop-filter:blur(8px);}
 .sd-hero-btn-secondary:hover{background:rgba(255,255,255,.3);transform:translateY(-3px) scale(1.02);text-decoration:none;}
-.sd-hero-right{position:relative;z-index:1;flex-shrink:0;}
-.sd-hero-avatar{width:280px;height:280px;border-radius:50%;
-    background:rgba(255,255,255,.08);border:none;
-    display:flex;align-items:center;justify-content:center;font-size:5rem;
-    overflow:hidden;box-shadow:0 0 60px rgba(255,255,255,.15);
-    animation:sd-float 5s ease-in-out infinite;margin:-40px -20px -40px 0;}
-.sd-hero-avatar img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 8px 24px rgba(0,0,0,.2));}
-.sd-hero-avatar-label{text-align:center;margin-top:0;font-size:.875rem;
-    font-weight:700;opacity:.9;}
+.sd-hero-right{position:relative;z-index:2;flex-shrink:0;align-self:center;}
+.sd-hero-avatar{width:460px;height:460px;border-radius:0;
+    background:none;border:none;
+    display:flex;align-items:center;justify-content:center;
+    overflow:visible;box-shadow:none;
+    animation:sd-float 5s ease-in-out infinite;margin:-100px -60px -100px 0;position:relative;}
+.sd-hero-avatar::before{content:'✦';position:absolute;top:22%;left:8%;font-size:1.6rem;color:rgba(255,255,255,.85);animation:sd-twinkle 2s ease-in-out infinite;pointer-events:none;text-shadow:0 0 10px rgba(255,255,255,.8);}
+.sd-hero-avatar::after{content:'★';position:absolute;bottom:28%;right:6%;font-size:1.3rem;color:rgba(255,255,255,.75);animation:sd-twinkle 2.5s ease-in-out infinite .8s;pointer-events:none;text-shadow:0 0 10px rgba(255,255,255,.7);}
+@keyframes sd-twinkle{0%,100%{opacity:.3;transform:scale(.7);}50%{opacity:1;transform:scale(1.4);}}
+.sd-hero-avatar img{width:90%;height:90%;object-fit:contain;filter:drop-shadow(0 0 35px rgba(255,255,255,.7)) drop-shadow(0 0 70px rgba(255,255,255,.35));}
+.sd-hero-avatar-label{display:none;}
 </style>
 <style>
 /* -- SECTION HEADING -- */
@@ -100,20 +102,21 @@
 
 /* -- PERSONALITY RECOMMENDATION BANNER -- */
 .sd-rec-banner{border-radius:var(--border-radius-xl);padding:var(--space-xl);
-    display:flex;align-items:center;gap:var(--space-lg);position:relative;overflow:hidden;}
-.sd-rec-banner::after{content:'';position:absolute;width:200px;height:200px;border-radius:50%;
-    background:rgba(255,255,255,.08);right:-40px;bottom:-60px;pointer-events:none;}
-.sd-rec-banner-icon{width:72px;height:72px;border-radius:var(--border-radius-xl);
-    background:rgba(255,255,255,.22);border:2px solid rgba(255,255,255,.35);
+    display:flex;align-items:center;gap:var(--space-lg);position:relative;overflow:hidden;
+    border:2px solid rgba(0,0,0,.06);box-shadow:0 6px 24px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.7);}
+.sd-rec-banner::after{content:'';position:absolute;inset:0;
+    background:linear-gradient(135deg,rgba(255,255,255,.5) 0%,transparent 50%);pointer-events:none;border-radius:inherit;}
+.sd-rec-banner-icon{width:160px;height:160px;border-radius:50%;
+    background:none;border:none;
     display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;
-    overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.12);}
-.sd-rec-banner-icon img{width:100%;height:100%;object-fit:cover;}
+    overflow:visible;box-shadow:none;margin:-40px 0 -40px -20px;position:relative;z-index:2;}
+.sd-rec-banner-icon img{width:130%;height:130%;object-fit:contain;filter:drop-shadow(0 0 14px rgba(255,255,255,.5));opacity:1;}
 .sd-rec-banner-body{flex:1;position:relative;z-index:1;}
 .sd-rec-banner-label{font-size:.75rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;
-    opacity:.8;margin-bottom:4px;}
+    color:var(--color-text-muted);margin-bottom:4px;}
 .sd-rec-banner-title{font-family:var(--font-primary);font-size:1.25rem;font-weight:800;
-    color:#fff;line-height:1.25;margin-bottom:6px;}
-.sd-rec-banner-sub{font-size:.9rem;color:rgba(255,255,255,.85);margin-bottom:var(--space-md);line-height:1.5;}
+    color:var(--color-text);line-height:1.25;margin-bottom:6px;}
+.sd-rec-banner-sub{font-size:.9rem;color:var(--color-text-secondary);margin-bottom:var(--space-md);line-height:1.5;}
 </style>
 <style>
 /* -- CONTINUE LEARNING -- */
@@ -208,7 +211,7 @@
 }
 @media(max-width:767px){
     .sd-hero{flex-direction:column;padding:var(--space-xl) var(--space-lg);}
-    .sd-hero-avatar{width:180px;height:180px;font-size:3.5rem;margin:0 auto;}
+    .sd-hero-avatar{width:200px;height:200px;font-size:3.5rem;margin:0 auto;}
     .sd-hero-greeting{font-size:1.75rem;}
     .sd-hero-right{align-self:center;}
     .sd-stats{grid-template-columns:repeat(2,1fr);}

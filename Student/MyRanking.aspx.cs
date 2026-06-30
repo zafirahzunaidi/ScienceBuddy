@@ -99,6 +99,11 @@ namespace ScienceBuddy.Student
             litNavBack.Text         = T("Back to Progress &amp; Rewards", "Kembali ke Kemajuan &amp; Ganjaran");
             litNavLearn.Text        = T("Continue Learning", "Teruskan Pembelajaran");
             litNavPractice.Text     = T("Practice Library", "Perpustakaan Latihan");
+            litPodiumTitle.Text     = T("Top 3 Champions", "3 Juara Teratas");
+            litFilterLabel.Text    = T("Filter leaderboard", "Tapis papan kedudukan");
+            litFAll.Text           = T("All Students", "Semua Pelajar");
+            litFLevel.Text         = T("My Level", "Tahap Saya");
+            litFPers.Text          = T("My Personality", "Personaliti Saya");
         }
 
         // ── Load page data ────────────────────────────────────────────
@@ -127,7 +132,7 @@ namespace ScienceBuddy.Student
                     : "0";
 
                 string sql = string.Format(@"
-                    SELECT s.studentId, s.name, s.nickname, s.XP, s.currentlevelId,
+                    SELECT s.studentId, s.name, s.nickname, s.XP, s.currentlevelId, s.personalityId,
                            l.levelNameEN, l.levelNameBM,
                            {0} AS badgeCount,
                            ROW_NUMBER() OVER (ORDER BY s.XP DESC, s.studentId) AS rankPos
@@ -156,6 +161,8 @@ namespace ScienceBuddy.Student
                 string myLevelName = "—";
                 int myBadgeCount = 0;
                 string myInitial = "S";
+                string currentLevelId = "";
+                string personalityId = "";
 
                 foreach (DataRow row in dt.Rows)
                 {
@@ -170,6 +177,8 @@ namespace ScienceBuddy.Student
                             ? (row["levelNameBM"]?.ToString() ?? row["levelNameEN"]?.ToString() ?? "—")
                             : (row["levelNameEN"]?.ToString() ?? "—");
                         myBadgeCount = Convert.ToInt32(row["badgeCount"]);
+                        currentLevelId = row["currentlevelId"]?.ToString() ?? "";
+                        personalityId = row["personalityId"]?.ToString() ?? "";
                         myInitial = !string.IsNullOrWhiteSpace(myName) ? myName[0].ToString().ToUpper() : "S";
                         break;
                     }
@@ -188,14 +197,28 @@ namespace ScienceBuddy.Student
                 litPersonalLevel.Text = HttpUtility.HtmlEncode(myLevelName);
                 litPersonalBadges.Text = myBadgeCount.ToString();
 
-                // 7. Build top 10 leaderboard
+                // 7. Build top 10 leaderboard (with filter support)
+                string rankFilter = ViewState["RankFilter"] as string ?? "all";
                 var leaderboard = new List<object>();
                 int count = 0;
+                int filteredRank = 0;
                 foreach (DataRow row in dt.Rows)
                 {
-                    if (count >= 10) break;
+                    // Apply filter
+                    if (rankFilter == "level" && !string.IsNullOrEmpty(currentLevelId))
+                    {
+                        string rowLevel = row["currentlevelId"]?.ToString() ?? "";
+                        if (rowLevel != currentLevelId) continue;
+                    }
+                    else if (rankFilter == "personality" && !string.IsNullOrEmpty(personalityId))
+                    {
+                        string rowPers = row["personalityId"]?.ToString() ?? "";
+                        if (rowPers != personalityId) continue;
+                    }
 
-                    int rank = Convert.ToInt32(row["rankPos"]);
+                    filteredRank++;
+                    if (count >= 10) continue; // still count for rank but don't add to display
+
                     string nickname = row["nickname"]?.ToString();
                     string name = row["name"]?.ToString();
                     string displayName = !string.IsNullOrWhiteSpace(nickname) ? nickname : name;
@@ -210,7 +233,7 @@ namespace ScienceBuddy.Student
 
                     leaderboard.Add(new
                     {
-                        Rank = rank,
+                        Rank = filteredRank,
                         DisplayName = HttpUtility.HtmlEncode(displayName),
                         LevelName = HttpUtility.HtmlEncode(levelName),
                         XP = xp.ToString("N0"),
@@ -224,6 +247,9 @@ namespace ScienceBuddy.Student
 
                 rptLeaderboard.DataSource = leaderboard;
                 rptLeaderboard.DataBind();
+
+                // 7b. Build Top 3 Podium
+                BuildPodium(dt, studentId);
 
                 // 8. If logged-in student is NOT in top 10, show "Your Position" card
                 if (myRank > 10)
@@ -239,6 +265,49 @@ namespace ScienceBuddy.Student
             }
         }
 
+        // ── Build Top 3 Podium ───────────────────────────────────────
+        private void BuildPodium(DataTable dt, string currentStudentId)
+        {
+            if (dt.Rows.Count == 0) { litPodium.Text = ""; return; }
+
+            // Get top 3 rows (already ordered by rankPos)
+            var top3 = new List<DataRow>();
+            for (int i = 0; i < Math.Min(3, dt.Rows.Count); i++) top3.Add(dt.Rows[i]);
+
+            // Build podium in visual order: #2, #1, #3
+            string html = "<div class=\"rk-podium\">";
+
+            // Render in order: second (index 1), first (index 0), third (index 2)
+            int[] order = top3.Count >= 3 ? new[] { 1, 0, 2 } : top3.Count == 2 ? new[] { 1, 0 } : new[] { 0 };
+            string[] classes = { "first", "second", "third" };
+
+            foreach (int idx in order)
+            {
+                if (idx >= top3.Count) continue;
+                var row = top3[idx];
+                int rank = idx + 1;
+                string placeClass = classes[idx];
+                string nickname = row["nickname"]?.ToString();
+                string name = row["name"]?.ToString();
+                string displayName = !string.IsNullOrWhiteSpace(nickname) ? nickname : name;
+                string initial = !string.IsNullOrWhiteSpace(displayName) ? displayName[0].ToString().ToUpper() : "S";
+                int xp = row["XP"] == DBNull.Value ? 0 : Convert.ToInt32(row["XP"]);
+                bool isMe = row["studentId"].ToString() == currentStudentId;
+
+                html += "<div class=\"rk-podium-player " + placeClass + "\">";
+                if (rank == 1) html += "<div class=\"rk-podium-crown\"><i class=\"bi bi-trophy-fill\"></i></div>";
+                if (isMe) html += "<div class=\"rk-podium-you\">" + T("You", "Anda") + "</div>";
+                html += "<div class=\"rk-podium-avatar\">" + HttpUtility.HtmlEncode(initial) + "</div>";
+                html += "<div class=\"rk-podium-name\">" + HttpUtility.HtmlEncode(displayName) + "</div>";
+                html += "<div class=\"rk-podium-xp\">" + xp.ToString("N0") + " XP</div>";
+                html += "<div class=\"rk-podium-block\"><span>" + rank + "</span></div>";
+                html += "</div>";
+            }
+
+            html += "</div>";
+            litPodium.Text = html;
+        }
+
         // ── Get student ID from userId ────────────────────────────────
         private string GetStudentId(SqlConnection conn, string userId)
         {
@@ -249,6 +318,22 @@ namespace ScienceBuddy.Student
                 object result = cmd.ExecuteScalar();
                 return result != null && result != DBNull.Value ? result.ToString() : null;
             }
+        }
+
+        // ── Filter click handler ──────────────────────────────────────
+        protected void btnFilter_Click(object sender, EventArgs e)
+        {
+            var btn = (System.Web.UI.WebControls.LinkButton)sender;
+            ViewState["RankFilter"] = btn.CommandArgument;
+            InitLang();
+            SetLabels();
+            LoadPage();
+
+            // Update active chip styles
+            string filter = btn.CommandArgument;
+            btnFilterAll.CssClass = filter == "all" ? "rk-filter-chip active" : "rk-filter-chip";
+            btnFilterLevel.CssClass = filter == "level" ? "rk-filter-chip active" : "rk-filter-chip";
+            btnFilterPers.CssClass = filter == "personality" ? "rk-filter-chip active" : "rk-filter-chip";
         }
 
         // ── Motivational message based on rank ────────────────────────

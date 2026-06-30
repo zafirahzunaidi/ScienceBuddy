@@ -53,6 +53,50 @@
 .rk-personal-stat-val{font-family:var(--font-primary);font-size:1.25rem;font-weight:800;color:var(--rk-indigo);}
 .rk-personal-stat-lbl{font-size:.75rem;color:var(--color-text-muted);font-weight:600;}
 
+/* ══ PODIUM ══ */
+.rk-podium-section{margin-bottom:var(--space-lg);}
+.rk-podium-title{font-family:var(--font-primary);font-size:1.125rem;font-weight:800;
+    color:var(--color-text);margin-bottom:12px;text-align:center;
+    display:flex;align-items:center;justify-content:center;gap:8px;}
+.rk-podium{display:flex;align-items:flex-end;justify-content:center;gap:var(--space-md);padding-top:8px;}
+.rk-podium-player{display:flex;flex-direction:column;align-items:center;text-align:center;transition:transform .2s;}
+.rk-podium-player:hover{transform:translateY(-6px);}
+.rk-podium-crown{font-size:1.75rem;margin-bottom:4px;color:#FACC15;filter:drop-shadow(0 2px 6px rgba(250,204,21,.5));animation:rk-sparkle 2s ease-in-out infinite;}
+@keyframes rk-sparkle{0%,100%{transform:scale(1);filter:drop-shadow(0 2px 6px rgba(250,204,21,.5));}50%{transform:scale(1.1);filter:drop-shadow(0 4px 12px rgba(250,204,21,.8));}}
+.rk-podium-avatar{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:1.25rem;font-weight:800;color:#fff;margin-bottom:6px;border:3px solid #fff;}
+.rk-podium-player.first .rk-podium-avatar{width:68px;height:68px;font-size:1.6rem;
+    background:linear-gradient(135deg,#FACC15,#F59E0B);box-shadow:0 0 20px rgba(250,204,21,.5),0 4px 16px rgba(250,204,21,.35);}
+.rk-podium-player.second .rk-podium-avatar{background:linear-gradient(135deg,#CBD5E1,#94A3B8);box-shadow:0 0 12px rgba(148,163,184,.4);}
+.rk-podium-player.third .rk-podium-avatar{background:linear-gradient(135deg,#FDBA74,#CD7F32);box-shadow:0 0 12px rgba(205,127,50,.4);}
+.rk-podium-name{font-size:.8rem;font-weight:700;color:var(--color-text);margin-bottom:2px;max-width:90px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rk-podium-xp{font-size:.7rem;font-weight:700;color:var(--rk-purple);margin-bottom:6px;}
+.rk-podium-you{font-size:.6rem;font-weight:700;padding:2px 8px;border-radius:var(--border-radius-full);
+    background:linear-gradient(135deg,#FACC15,#F59E0B);color:#fff;margin-bottom:4px;box-shadow:0 2px 6px rgba(250,204,21,.3);}
+.rk-podium-block{width:90px;border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-primary);font-size:1.75rem;font-weight:800;color:#fff;position:relative;overflow:hidden;}
+.rk-podium-block::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.2) 0%,transparent 50%);pointer-events:none;}
+.rk-podium-player.first .rk-podium-block{height:140px;width:105px;
+    background:linear-gradient(180deg,#FACC15,#D97706);box-shadow:0 -6px 24px rgba(250,204,21,.35),0 4px 20px rgba(217,119,6,.2);}
+.rk-podium-player.second .rk-podium-block{height:105px;
+    background:linear-gradient(180deg,#E2E8F0,#64748B);box-shadow:0 -4px 16px rgba(100,116,139,.2);}
+.rk-podium-player.third .rk-podium-block{height:80px;
+    background:linear-gradient(180deg,#FDBA74,#92400E);box-shadow:0 -4px 16px rgba(146,64,14,.2);}
+
+/* ══ FILTERS ══ */
+.rk-filters{margin-bottom:var(--space-lg);text-align:center;}
+.rk-filters-label{font-size:.75rem;font-weight:600;color:var(--color-text-muted);margin-bottom:8px;}
+.rk-filter-chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.rk-filter-chip{padding:8px 18px;border-radius:var(--border-radius-full);font-size:.8rem;font-weight:700;
+    border:1.5px solid var(--border-color);background:#fff;color:var(--color-text-secondary);
+    cursor:pointer;transition:all .2s;text-decoration:none;}
+.rk-filter-chip:hover{border-color:var(--rk-indigo);color:var(--rk-indigo);text-decoration:none;}
+.rk-filter-chip.active{background:linear-gradient(135deg,var(--rk-blue),var(--rk-purple));color:#fff;border-color:transparent;
+    box-shadow:0 3px 12px rgba(79,70,229,.25);}
+
+@media(max-width:479px){.rk-podium{gap:var(--space-sm);}.rk-podium-block{width:70px;}.rk-podium-player.first .rk-podium-block{width:80px;height:110px;}.rk-podium-player.second .rk-podium-block{height:85px;}.rk-podium-player.third .rk-podium-block{height:65px;}.rk-podium-avatar{width:40px;height:40px;font-size:1rem;}.rk-podium-player.first .rk-podium-avatar{width:50px;height:50px;}}
+
 /* ══ LEADERBOARD ══ */
 .rk-board{background:var(--color-white);border-radius:var(--border-radius-xl);
     border:1.5px solid var(--border-color);box-shadow:var(--shadow-md);
@@ -257,6 +301,22 @@
                 <span class="rk-personal-stat-lbl"><asp:Literal ID="litPersonalBadgesLbl" runat="server" Text="Badges" /></span>
             </div>
         </div>
+    </div>
+</div>
+
+<%-- ── TOP 3 PODIUM ── --%>
+<div class="rk-podium-section">
+    <div class="rk-podium-title"><i class="bi bi-trophy-fill" style="color:var(--rk-gold);"></i> <asp:Literal ID="litPodiumTitle" runat="server" Text="Top 3 Champions" /></div>
+    <asp:Literal ID="litPodium" runat="server" />
+</div>
+
+<%-- ── FILTERS ── --%>
+<div class="rk-filters">
+    <div class="rk-filters-label"><asp:Literal ID="litFilterLabel" runat="server" Text="Filter leaderboard" /></div>
+    <div class="rk-filter-chips">
+        <asp:LinkButton ID="btnFilterAll" runat="server" CssClass="rk-filter-chip active" OnClick="btnFilter_Click" CommandArgument="all" CausesValidation="false"><asp:Literal ID="litFAll" runat="server" Text="All Students" /></asp:LinkButton>
+        <asp:LinkButton ID="btnFilterLevel" runat="server" CssClass="rk-filter-chip" OnClick="btnFilter_Click" CommandArgument="level" CausesValidation="false"><asp:Literal ID="litFLevel" runat="server" Text="My Level" /></asp:LinkButton>
+        <asp:LinkButton ID="btnFilterPers" runat="server" CssClass="rk-filter-chip" OnClick="btnFilter_Click" CommandArgument="personality" CausesValidation="false"><asp:Literal ID="litFPers" runat="server" Text="My Personality" /></asp:LinkButton>
     </div>
 </div>
 

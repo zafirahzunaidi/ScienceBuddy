@@ -242,7 +242,8 @@
             <div class="mp-pers-name"><asp:Literal ID="litPersName" runat="server" Text="—" /></div>
             <div class="mp-pers-desc"><asp:Literal ID="litPersDesc" runat="server" Text="—" /></div>
             <div class="mp-pers-style"><asp:Literal ID="litPersStyleLbl" runat="server" Text="Learning Style" />: <asp:Literal ID="litPersStyle" runat="server" Text="—" /></div>
-            <span class="mp-pers-retake"><i class="bi bi-arrow-repeat"></i> <asp:Literal ID="litRetakeBtn" runat="server" Text="Retake Personality Test" /> — <asp:Literal ID="litComingSoon" runat="server" Text="Coming Soon" /></span>
+            <a href="<%: ResolveUrl("~/Student/PersonalityTest.aspx") %>" class="mp-pers-retake" style="text-decoration:none;color:var(--color-primary);cursor:pointer;"><i class="bi bi-arrow-repeat"></i> <asp:Literal ID="litRetakeBtn" runat="server" Text="Retake Personality Test" /></a>
+            <asp:Literal ID="litComingSoon" runat="server" Visible="false" />
         </div>
     </div>
 </div>

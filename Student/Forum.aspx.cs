@@ -35,10 +35,12 @@ namespace ScienceBuddy.Student
 
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
 
+            // Always init language and set labels (fixes tab text disappearing on postback)
+            InitLang();
+            SetLabels();
+
             if (!IsPostBack)
             {
-                InitLang();
-                SetLabels();
                 BuildFilters();
                 LoadDiscussions();
             }
@@ -92,9 +94,9 @@ namespace ScienceBuddy.Student
             litSubtitle.Text        = T("Ask questions, share ideas, and learn Science together.",
                                         "Tanya soalan, kongsi idea, dan belajar Sains bersama-sama.");
 
-            // Tab labels
-            litTabPublic.Text       = T("Public", "Awam");
-            litTabPrivate.Text      = T("Student-Parent", "Murid-Ibu Bapa");
+            // Tab labels (include icon HTML so it persists on postback)
+            litTabPublic.Text       = "<i class=\"bi bi-globe\"></i> " + T("Public", "Awam");
+            litTabPrivate.Text      = "<i class=\"bi bi-people-fill\"></i> " + T("Student-Parent", "Murid-Ibu Bapa");
 
             // Summary card labels based on selected tab
             if (isPrivate)
@@ -110,16 +112,15 @@ namespace ScienceBuddy.Student
                 litTotalRepliesLbl.Text = T("Total Replies", "Jumlah Balasan");
             }
 
-            litCTAText.Text         = T("Have a Science question?", "Ada soalan Sains?");
-            litCTABtn.Text          = T("Create Discussion", "Cipta Perbincangan");
-
-            // Empty state labels based on selected tab
+            // Empty state labels and CTA based on selected tab
             if (isPrivate)
             {
                 litEmptyTitle.Text  = T("No private parent-student discussions yet.",
                                         "Tiada perbincangan peribadi murid-ibu bapa lagi.");
-                litEmptyDesc.Text   = T("No parent-linked discussions are available yet.",
-                                        "Tiada perbincangan berkaitan ibu bapa tersedia buat masa ini.");
+                litEmptyDesc.Text   = T("Start a private discussion with your linked parent. Only you and your parent can see these conversations.",
+                                        "Mulakan perbincangan peribadi dengan ibu bapa anda yang dipautkan. Hanya anda dan ibu bapa anda boleh melihat perbualan ini.");
+                litCTAText.Text     = T("Want to chat with your parent privately?", "Ingin berbual dengan ibu bapa anda secara peribadi?");
+                litCTABtn.Text      = T("Create Private Discussion", "Cipta Perbincangan Peribadi");
             }
             else
             {
@@ -127,6 +128,8 @@ namespace ScienceBuddy.Student
                                         "Tiada perbincangan awam lagi.");
                 litEmptyDesc.Text   = T("Be the first to ask a Science question!",
                                         "Jadilah yang pertama bertanya soalan Sains!");
+                litCTAText.Text     = T("Have a Science question?", "Ada soalan Sains?");
+                litCTABtn.Text      = T("Create Discussion", "Cipta Perbincangan");
             }
 
             // Sort dropdown bilingual
