@@ -109,6 +109,8 @@
     <Content Include="Admin\ParentManagement.aspx" />
     <Content Include="Admin\TeacherManagement.aspx" />
     <Content Include="Admin\SystemActivityLogs.aspx" />
+    <Content Include="Admin\LiveSessions.aspx" />
+    <Content Include="Admin\CertificateManagement.aspx" />
     <Content Include="Contact.aspx" />
     <Content Include="Content\bootstrap-grid.css" />
     <Content Include="Content\bootstrap-grid.min.css" />
@@ -288,6 +290,20 @@
     </Compile>
     <Compile Include="Admin\SystemActivityLogs.aspx.designer.cs">
       <DependentUpon>SystemActivityLogs.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\LiveSessions.aspx.cs">
+      <DependentUpon>LiveSessions.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\LiveSessions.aspx.designer.cs">
+      <DependentUpon>LiveSessions.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\CertificateManagement.aspx.cs">
+      <DependentUpon>CertificateManagement.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\CertificateManagement.aspx.designer.cs">
+      <DependentUpon>CertificateManagement.aspx</DependentUpon>
     </Compile>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="About.aspx.cs">
