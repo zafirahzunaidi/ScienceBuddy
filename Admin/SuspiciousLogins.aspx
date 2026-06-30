@@ -50,9 +50,7 @@
         <a href="<%: ResolveUrl("~/Admin/GamificationManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-trophy item-icon"></i><span class="item-label">Gamification</span></a>
     </div>
     <div class="sb-nav-section"><div class="sb-nav-section-label">Configuration</div>
-        <a href="#" class="sb-sidebar-item"><i class="bi bi-gear item-icon"></i><span class="item-label">Quiz Settings</span></a>
-        <a href="#" class="sb-sidebar-item"><i class="bi bi-shield-lock item-icon"></i><span class="item-label">Security Settings</span></a>
-        <a href="#" class="sb-sidebar-item"><i class="bi bi-sliders item-icon"></i><span class="item-label">XP Settings</span></a>
+        <a href="<%: ResolveUrl("~/Admin/SystemSettings.aspx") %>" class="sb-sidebar-item"><i class="bi bi-gear item-icon"></i><span class="item-label">System Settings</span></a>
     </div>
     <div class="sb-nav-section"><div class="sb-nav-section-label">Logs</div>
         <a href="<%: ResolveUrl("~/Admin/SystemActivityLogs.aspx") %>" class="sb-sidebar-item"><i class="bi bi-clock-history item-icon"></i><span class="item-label">Activity Logs</span></a>
@@ -101,7 +99,7 @@
             <table class="sb-table"><thead><tr>
                 <th><%= T("User", "Pengguna") %></th><th><%= T("Action", "Tindakan") %></th><th><%= T("Description", "Penerangan") %></th><th><%= T("Date", "Tarikh") %></th><th><%= T("Status", "Status") %></th>
             </tr></thead><tbody>
-                <asp:Repeater ID="rptLogs" runat="server">
+                <asp:Repeater ID="rptLogs" runat="server" OnItemCommand="rptLogs_ItemCommand">
                     <ItemTemplate>
                         <tr>
                             <td data-label="User"><strong><%# HttpUtility.HtmlEncode(Eval("username")) %></strong></td>
@@ -109,6 +107,14 @@
                             <td data-label="Description"><span style="font-size:.8125rem;color:var(--color-text-secondary);"><%# HttpUtility.HtmlEncode(Eval("description")) %></span></td>
                             <td data-label="Date"><span style="font-size:.8125rem;color:var(--color-text-muted);"><%# Eval("dateStr") %></span></td>
                             <td data-label="Status"><span class='sb-badge <%# Eval("statusCls") %>'><%# HttpUtility.HtmlEncode(Eval("statusLabel")) %></span></td>
+                            <td class="col-actions">
+                                <asp:LinkButton ID="lnkBlock" runat="server" CssClass="sb-btn sb-btn-danger sb-btn-xs"
+                                    CommandName="BlockUser" CommandArgument='<%# Eval("userId") %>'
+                                    Visible='<%# Convert.ToBoolean(Eval("canBlock")) %>'
+                                    OnClientClick="return confirm('Block this user?');">
+                                    <i class="bi bi-lock"></i> <%= T("Block", "Sekat") %>
+                                </asp:LinkButton>
+                            </td>
                         </tr>
                     </ItemTemplate>
                 </asp:Repeater>
@@ -117,6 +123,41 @@
     </asp:Panel>
     <asp:Panel ID="pnlEmpty" runat="server">
         <div class="sl-empty"><div class="sl-empty-ico"><i class="bi bi-shield-check"></i></div><div class="sl-empty-msg"><%= T("No suspicious activity detected.", "Tiada aktiviti mencurigakan dikesan.") %></div></div>
+    </asp:Panel>
+</div>
+
+<%-- ══ ADMINISTRATOR SECURITY ACTIONS ══ --%>
+<div class="sl-card" style="margin-top:var(--space-xl);">
+    <div class="sl-card-hdr"><i class="bi bi-shield-fill-check" style="color:var(--sl-purple);"></i> <%= T("Administrator Security Actions", "Tindakan Keselamatan Pentadbir") %></div>
+    <asp:Panel ID="pnlActions" runat="server" Visible="false">
+        <div class="sb-table-wrapper" style="border:none;border-radius:0;box-shadow:none;">
+            <table class="sb-table"><thead><tr>
+                <th><%= T("User", "Pengguna") %></th><th><%= T("Action", "Tindakan") %></th><th><%= T("Reason", "Sebab") %></th><th><%= T("Admin", "Pentadbir") %></th><th><%= T("Date", "Tarikh") %></th><th></th>
+            </tr></thead><tbody>
+                <asp:Repeater ID="rptActions" runat="server" OnItemCommand="rptActions_ItemCommand">
+                    <ItemTemplate>
+                        <tr>
+                            <td data-label="User"><strong><%# HttpUtility.HtmlEncode(Eval("targetUser")) %></strong></td>
+                            <td data-label="Action"><span class='sb-badge <%# Eval("typeCls") %>'><%# HttpUtility.HtmlEncode(Eval("typeLabel")) %></span></td>
+                            <td data-label="Reason"><span style="font-size:.8125rem;color:var(--color-text-secondary);"><%# HttpUtility.HtmlEncode(Eval("reason")) %></span></td>
+                            <td data-label="Admin"><%# HttpUtility.HtmlEncode(Eval("adminUser")) %></td>
+                            <td data-label="Date"><span style="font-size:.8125rem;color:var(--color-text-muted);"><%# Eval("dateStr") %></span></td>
+                            <td class="col-actions">
+                                <asp:LinkButton ID="lnkUnblock" runat="server" CssClass="sb-btn sb-btn-success sb-btn-xs"
+                                    CommandName="UnblockUser" CommandArgument='<%# Eval("userId") %>'
+                                    Visible='<%# Eval("actionType").ToString()=="Blocked" %>'
+                                    OnClientClick="return confirm('Unblock this user?');">
+                                    <i class="bi bi-unlock"></i> <%= T("Unblock", "Nyahsekat") %>
+                                </asp:LinkButton>
+                            </td>
+                        </tr>
+                    </ItemTemplate>
+                </asp:Repeater>
+            </tbody></table>
+        </div>
+    </asp:Panel>
+    <asp:Panel ID="pnlNoActions" runat="server">
+        <div class="sl-empty"><div class="sl-empty-ico"><i class="bi bi-shield-fill-check"></i></div><div class="sl-empty-msg"><%= T("No security actions recorded.", "Tiada tindakan keselamatan direkodkan.") %></div></div>
     </asp:Panel>
 </div>
 </asp:Content>

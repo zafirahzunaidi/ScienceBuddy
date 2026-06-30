@@ -18,5 +18,8 @@ namespace ScienceBuddy.Admin
         protected global::System.Web.UI.WebControls.Panel pnlLogs;
         protected global::System.Web.UI.WebControls.Repeater rptLogs;
         protected global::System.Web.UI.WebControls.Panel pnlEmpty;
+        protected global::System.Web.UI.WebControls.Panel pnlActions;
+        protected global::System.Web.UI.WebControls.Repeater rptActions;
+        protected global::System.Web.UI.WebControls.Panel pnlNoActions;
     }
 }
