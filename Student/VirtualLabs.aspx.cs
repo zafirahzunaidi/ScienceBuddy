@@ -135,7 +135,7 @@ namespace ScienceBuddy.Student
 
                     string statusText = isDone ? T("Completed", "Selesai") : T("Not Started", "Belum Mula");
                     string badgeClass = isDone ? "vl-badge-done" : "vl-badge-new";
-                    string btnText = isDone ? T("View", "Lihat") : T("Start Lab", "Mula Makmal");
+                    string btnText = isDone ? T("Redo Lab", "Ulang Makmal") : T("Start Lab", "Mula Makmal");
                     string btnClass = isDone ? "sb-btn-light" : "sb-btn-primary";
                     string diffClass = diff.Equals("Easy", StringComparison.OrdinalIgnoreCase) ? "easy"
                         : diff.Equals("Hard", StringComparison.OrdinalIgnoreCase) ? "hard" : "medium";

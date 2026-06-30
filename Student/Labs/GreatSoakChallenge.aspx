@@ -6,7 +6,9 @@
 :root{--student:#FF6B2C;--student-light:#FFF0E8;--lab-color:#0EA5E9;--lab-light:#E0F2FE;}
 .lab-hero{background:linear-gradient(135deg,#0EA5E9 0%,#38BDF8 100%);border-radius:var(--border-radius-xl);
     padding:var(--space-2xl);color:#fff;position:relative;overflow:hidden;margin-bottom:var(--space-xl);}
-.lab-hero::before{content:'💧';position:absolute;font-size:6rem;opacity:.1;top:10px;right:40px;}
+.lab-hero::before{content:'';position:absolute;font-size:6rem;opacity:.1;top:10px;right:40px;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M8 16a6 6 0 0 0 6-6c0-1.655-.59-2.906-2.47-4.78S8 0 8 0 5.59 2.34 4.47 4.22C2.59 7.094 2 8.345 2 10a6 6 0 0 0 6 6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;width:80px;height:80px;}
 .lab-hero-back{display:inline-flex;align-items:center;gap:6px;font-size:.875rem;font-weight:600;
     color:rgba(255,255,255,.8);text-decoration:none;margin-bottom:var(--space-md);}
 .lab-hero-back:hover{color:#fff;text-decoration:none;}
@@ -115,19 +117,19 @@
 
     <div class="material-cards" id="materialCards">
         <div class="material-card" data-mat="sponge" data-abs="95" onclick="selectMaterial(this)">
-            <div class="mat-icon">🧽</div><div class="mat-name"><asp:Literal ID="litMatSponge" runat="server" Text="Sponge" /></div>
+            <div class="mat-icon"><i class="bi bi-moisture" style="color:#0EA5E9;"></i></div><div class="mat-name"><asp:Literal ID="litMatSponge" runat="server" Text="Sponge" /></div>
         </div>
         <div class="material-card" data-mat="tissue" data-abs="80" onclick="selectMaterial(this)">
-            <div class="mat-icon">🧻</div><div class="mat-name"><asp:Literal ID="litMatTissue" runat="server" Text="Tissue" /></div>
+            <div class="mat-icon"><i class="bi bi-file-earmark" style="color:#64748B;"></i></div><div class="mat-name"><asp:Literal ID="litMatTissue" runat="server" Text="Tissue" /></div>
         </div>
         <div class="material-card" data-mat="cotton" data-abs="70" onclick="selectMaterial(this)">
-            <div class="mat-icon">☁️</div><div class="mat-name"><asp:Literal ID="litMatCotton" runat="server" Text="Cotton" /></div>
+            <div class="mat-icon"><i class="bi bi-cloud-fill" style="color:#94A3B8;"></i></div><div class="mat-name"><asp:Literal ID="litMatCotton" runat="server" Text="Cotton" /></div>
         </div>
         <div class="material-card" data-mat="plastic" data-abs="5" onclick="selectMaterial(this)">
-            <div class="mat-icon">🥤</div><div class="mat-name"><asp:Literal ID="litMatPlastic" runat="server" Text="Plastic" /></div>
+            <div class="mat-icon"><i class="bi bi-cup-straw" style="color:#F97316;"></i></div><div class="mat-name"><asp:Literal ID="litMatPlastic" runat="server" Text="Plastic" /></div>
         </div>
         <div class="material-card" data-mat="foil" data-abs="3" onclick="selectMaterial(this)">
-            <div class="mat-icon">🪩</div><div class="mat-name"><asp:Literal ID="litMatFoil" runat="server" Text="Foil" /></div>
+            <div class="mat-icon"><i class="bi bi-diamond-fill" style="color:#A1A1AA;"></i></div><div class="mat-name"><asp:Literal ID="litMatFoil" runat="server" Text="Foil" /></div>
         </div>
     </div>
 
