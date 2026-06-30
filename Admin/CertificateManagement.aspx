@@ -48,6 +48,9 @@
 .cert-footer-col strong{display:block;font-size:.75rem;color:#1E293B;margin-bottom:1px;}
 .cert-seal{width:48px;height:48px;border-radius:50%;border:2.5px solid #C8A96E;background:linear-gradient(135deg,#1D4ED8,#2563EB);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.125rem;box-shadow:0 0 0 2px #fff,0 0 0 4px #C8A96E;}
 </style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="<%: ResolveUrl("~/Scripts/admin-signout.js") %>"></script>
 </asp:Content>
 
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
@@ -69,7 +72,7 @@
         <a href="<%: ResolveUrl("~/Admin/CertificateManagement.aspx") %>" class="sb-sidebar-item active"><i class="bi bi-award item-icon"></i><span class="item-label">Certificates</span></a>
     </div>
     <div class="sb-nav-section"><div class="sb-nav-section-label">Gamification</div>
-        <a href="<%: ResolveUrl("~/Admin/GamificationManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-trophy item-icon"></i><span class="item-label">Gamification</span></a>
+        <a href="<%: ResolveUrl("~/Admin/GamificationManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-trophy item-icon"></i><span class="item-label">Student Performance</span></a>
     </div>
     <div class="sb-nav-section"><div class="sb-nav-section-label">Configuration</div>
         <a href="<%: ResolveUrl("~/Admin/SystemSettings.aspx") %>" class="sb-sidebar-item"><i class="bi bi-gear item-icon"></i><span class="item-label">System Settings</span></a>
@@ -82,7 +85,7 @@
     <div class="sb-nav-section"><div class="sb-nav-section-label">Account</div>
         <a href="<%: ResolveUrl("~/Admin/Notifications.aspx") %>" class="sb-sidebar-item"><i class="bi bi-bell item-icon"></i><span class="item-label">Notifications</span></a>
         <a href="<%: ResolveUrl("~/Admin/Profile.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person item-icon"></i><span class="item-label">My Profile</span></a>
-        <a href="<%: ResolveUrl("~/Logout.aspx") %>" class="sb-sidebar-item" onclick="return confirm('Are you sure you want to sign out?');"><i class="bi bi-box-arrow-right item-icon"></i><span class="item-label">Sign Out</span></a>
+        <a href="javascript:;" class="sb-sidebar-item" onclick="showSignOutModal()"><i class="bi bi-box-arrow-right item-icon"></i><span class="item-label">Sign Out</span></a>
     </div>
 </asp:Content>
 

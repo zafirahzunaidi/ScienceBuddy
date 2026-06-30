@@ -8,8 +8,8 @@ namespace ScienceBuddy.Admin
         protected global::System.Web.UI.WebControls.Literal litToday;
         protected global::System.Web.UI.WebControls.Literal litBadge;
         protected global::System.Web.UI.WebControls.TextBox txtSearch;
-        protected global::System.Web.UI.HtmlControls.HtmlSelect fStatus;
-        protected global::System.Web.UI.HtmlControls.HtmlSelect fDifficulty;
+        protected global::System.Web.UI.WebControls.DropDownList fStatus;
+        protected global::System.Web.UI.WebControls.DropDownList fDifficulty;
         protected global::System.Web.UI.WebControls.Button btnSearch;
         protected global::System.Web.UI.WebControls.Button btnReset;
         protected global::System.Web.UI.WebControls.Panel pnlPending;

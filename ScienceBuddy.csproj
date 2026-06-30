@@ -115,6 +115,7 @@
     <Content Include="Admin\LoginLogs.aspx" />
     <Content Include="Admin\SystemSettings.aspx" />
     <Content Include="Admin\TeacherMaterials.aspx" />
+    <Content Include="Admin\QuestionRequests.aspx" />
     <Content Include="Contact.aspx" />
     <Content Include="Content\bootstrap-grid.css" />
     <Content Include="Content\bootstrap-grid.min.css" />
@@ -367,6 +368,13 @@
     </Compile>
     <Compile Include="Admin\TeacherMaterials.aspx.designer.cs">
       <DependentUpon>TeacherMaterials.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\QuestionRequests.aspx.cs">
+      <DependentUpon>QuestionRequests.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\QuestionRequests.aspx.designer.cs">
+      <DependentUpon>QuestionRequests.aspx</DependentUpon>
     </Compile>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="About.aspx.cs">

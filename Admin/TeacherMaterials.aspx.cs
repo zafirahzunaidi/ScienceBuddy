@@ -117,18 +117,18 @@ namespace ScienceBuddy.Admin
                         DateTime createdDate = row["createdDate"] != DBNull.Value ? Convert.ToDateTime(row["createdDate"]) : DateTime.MinValue;
                         string reviewedDate = row["reviewedDate"] != DBNull.Value ? Convert.ToDateTime(row["reviewedDate"]).ToString("dd MMM yyyy") : "";
 
-                        // Build JSON for JS
+                        // Build JSON for JS (using double-quoted strings)
                         string json = "{" +
-                            "id:'" + EscapeJs(matId) + "'," +
-                            "title:'" + EscapeJs(title) + "'," +
-                            "type:'" + EscapeJs(type) + "'," +
-                            "fileUrl:'" + EscapeJs(ResolveUrl("~/" + fileUrl)) + "'," +
-                            "status:'" + EscapeJs(status) + "'," +
-                            "lang:'" + EscapeJs(lang) + "'," +
-                            "teacher:'" + EscapeJs(teacher) + "'," +
-                            "subtopic:'" + EscapeJs(subtopic) + "'," +
-                            "date:'" + (createdDate != DateTime.MinValue ? createdDate.ToString("dd MMM yyyy") : "-") + "'," +
-                            "reviewed:'" + EscapeJs(reviewedDate) + "'" +
+                            "\"id\":\"" + EscapeJson(matId) + "\"," +
+                            "\"title\":\"" + EscapeJson(title) + "\"," +
+                            "\"type\":\"" + EscapeJson(type) + "\"," +
+                            "\"fileUrl\":\"" + EscapeJson(ResolveUrl("~/" + fileUrl)) + "\"," +
+                            "\"status\":\"" + EscapeJson(status) + "\"," +
+                            "\"lang\":\"" + EscapeJson(lang) + "\"," +
+                            "\"teacher\":\"" + EscapeJson(teacher) + "\"," +
+                            "\"subtopic\":\"" + EscapeJson(subtopic) + "\"," +
+                            "\"date\":\"" + (createdDate != DateTime.MinValue ? createdDate.ToString("dd MMM yyyy") : "-") + "\"," +
+                            "\"reviewed\":\"" + EscapeJson(reviewedDate) + "\"" +
                             "}";
 
                         list.Add(new
@@ -284,7 +284,6 @@ namespace ScienceBuddy.Admin
             }
             else if (s == "Approved")
             {
-                html += "<a class='tm-abtn tm-abtn-download' href='javascript:;' onclick='downloadMaterial(this.closest(\".tm-card\").querySelector(\".tm-card-preview\")&&\"\")'><i class='bi bi-download'></i> " + T("Download", "Muat Turun") + "</a>";
             }
             else if (s == "Rejected")
             {
