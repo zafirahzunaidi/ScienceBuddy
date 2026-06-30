@@ -199,6 +199,7 @@
     <Content Include="Scripts\WebForms\WebUIValidation.js" />
     <Content Include="Site.Master" />
     <Content Include="Student\AIStudyCompanion.aspx" />
+    <Content Include="Student\Chat.aspx" />
     <Content Include="Student\CreateForumPost.aspx" />
     <Content Include="Student\Dashboard.aspx" />
     <Content Include="Student\Forum.aspx" />
@@ -214,6 +215,7 @@
     <Content Include="Student\Lesson.aspx" />
     <Content Include="Student\LevelDetails.aspx" />
     <Content Include="Student\LiveSessions.aspx" />
+    <Content Include="Student\Messages.aspx" />
     <Content Include="Student\MyLearning.aspx" />
     <Content Include="Student\MyProfile.aspx" />
     <Content Include="Student\MyRanking.aspx" />
@@ -377,6 +379,13 @@
     <Compile Include="Student\AIStudyCompanion.aspx.designer.cs">
       <DependentUpon>AIStudyCompanion.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Student\Chat.aspx.cs">
+      <DependentUpon>Chat.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\Chat.aspx.designer.cs">
+      <DependentUpon>Chat.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Student\CreateForumPost.aspx.cs">
       <DependentUpon>CreateForumPost.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -481,6 +490,13 @@
     </Compile>
     <Compile Include="Student\LiveSessions.aspx.designer.cs">
       <DependentUpon>LiveSessions.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Student\Messages.aspx.cs">
+      <DependentUpon>Messages.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\Messages.aspx.designer.cs">
+      <DependentUpon>Messages.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\MyLearning.aspx.cs">
       <DependentUpon>MyLearning.aspx</DependentUpon>

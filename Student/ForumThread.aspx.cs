@@ -12,7 +12,7 @@ namespace ScienceBuddy.Student
     {
         // ── Connection string ─────────────────────────────────────────
         private string ConnStr =>
-            ConfigurationManager.ConnectionStrings["ScienceBuddyDB"].ConnectionString;
+            ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
         // ── Language helper ────────────────────────────────────────────
         public string CurrentLanguage = "EN";
