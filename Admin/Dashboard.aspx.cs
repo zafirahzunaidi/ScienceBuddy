@@ -66,9 +66,9 @@ namespace ScienceBuddy.Admin
                 litLessons.Text         = SafeCount(conn, "SELECT COUNT(*) FROM dbo.[Lesson]").ToString();
                 litQuizzes.Text         = SafeCount(conn, "SELECT COUNT(*) FROM dbo.[Quiz]").ToString();
 
-                // Pending content requests count (Material + Practice Quiz)
+                // Pending question requests count
                 int pendingCount = SafeCount(conn,
-                    "SELECT (SELECT COUNT(*) FROM dbo.[Material] WHERE [status]='Pending') + (SELECT COUNT(*) FROM dbo.[Quiz] WHERE [status]='Pending' AND [quizType]='Practice')");
+                    "SELECT COUNT(*) FROM dbo.[Question] WHERE [status]='Pending'");
                 litPendingRequests.Text = pendingCount.ToString();
 
                 // Load pending requests table (latest 5)
@@ -116,32 +116,19 @@ namespace ScienceBuddy.Admin
         // ── Pending content requests (latest 5) ──────────────────────
         private void LoadPendingRequests(SqlConnection conn)
         {
-            // Union Material + Practice Quiz where status = 'Pending'
+            // Pending Questions awaiting approval
             const string sql = @"
-                SELECT TOP 5 * FROM (
-                    SELECT
-                        m.[materialId]   AS requestId,
-                        'Material'       AS requestType,
-                        m.[materialTitle] AS title,
-                        ISNULL(t.[name], u.[username]) AS requestedBy,
-                        m.[createdDate]  AS submittedDate
-                    FROM dbo.[Material] m
-                    LEFT JOIN dbo.[User] u ON u.[userId] = m.[createdByUserId]
-                    LEFT JOIN dbo.[Teacher] t ON t.[userId] = m.[createdByUserId]
-                    WHERE m.[status] = 'Pending'
-                    UNION ALL
-                    SELECT
-                        q.[quizId]       AS requestId,
-                        'Practice Quiz'  AS requestType,
-                        ISNULL(q.[quizTitleEN], q.[quizTitleBM]) AS title,
-                        ISNULL(t.[name], u.[username]) AS requestedBy,
-                        q.[createdAt]    AS submittedDate
-                    FROM dbo.[Quiz] q
-                    LEFT JOIN dbo.[User] u ON u.[userId] = q.[createdByUserId]
-                    LEFT JOIN dbo.[Teacher] t ON t.[userId] = q.[createdByUserId]
-                    WHERE q.[status] = 'Pending' AND q.[quizType] = 'Practice'
-                ) AS combined
-                ORDER BY submittedDate DESC";
+                SELECT TOP 5
+                    q.[questionId]   AS requestId,
+                    'Question'       AS requestType,
+                    ISNULL(q.[questionTextEN], q.[questionTextBM]) AS title,
+                    ISNULL(t.[name], u.[username]) AS requestedBy,
+                    q.[createdAt]    AS submittedDate
+                FROM dbo.[Question] q
+                LEFT JOIN dbo.[User] u ON u.[userId] = q.[createdByUserId]
+                LEFT JOIN dbo.[Teacher] t ON t.[userId] = q.[createdByUserId]
+                WHERE q.[status] = 'Pending'
+                ORDER BY q.[createdAt] DESC";
 
             using (var cmd = new SqlCommand(sql, conn))
             {

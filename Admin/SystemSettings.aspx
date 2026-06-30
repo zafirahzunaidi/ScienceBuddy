@@ -142,17 +142,17 @@
             <i class="bi bi-question-circle item-icon"></i>
             <span class="item-label">Questions</span>
         </a>
-        <a href="#" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Admin/TeacherMaterials.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-file-earmark-text item-icon"></i>
-            <span class="item-label">Teacher Materials</span>
+            <span class="item-label">Material Requests</span>
         </a>
         <a href="<%: ResolveUrl("~/Admin/LiveSessions.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-camera-video item-icon"></i>
             <span class="item-label">Live Sessions</span>
         </a>
-        <a href="<%: ResolveUrl("~/Admin/ContentRequests.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-inbox item-icon"></i>
-            <span class="item-label">Content Requests</span>
+        <a href="<%: ResolveUrl("~/Admin/QuestionRequests.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-clipboard-check item-icon"></i>
+            <span class="item-label">Question Requests</span>
         </a>
         <a href="<%: ResolveUrl("~/Admin/CertificateManagement.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-award item-icon"></i>
