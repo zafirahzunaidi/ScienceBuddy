@@ -44,6 +44,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=2.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System" />
@@ -94,11 +97,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform">
-      <HintPath>packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="About.aspx" />
     <Content Include="Admin\Dashboard.aspx" />
     <Content Include="Admin\ContentRequests.aspx" />
@@ -133,6 +131,12 @@
     <Content Include="favicon.ico" />
     <Content Include="ForgotPassword.aspx" />
     <Content Include="Global.asax" />
+    <Content Include="Images\Personality\achiever.png" />
+    <Content Include="Images\Personality\chill-learner.png" />
+    <Content Include="Images\Personality\creative.png" />
+    <Content Include="Images\Personality\gogetter.png" />
+    <Content Include="Images\Personality\socializer.png" />
+    <Content Include="Images\Personality\thinker.png" />
     <Content Include="Login.aspx" />
     <Content Include="Logout.aspx" />
     <Content Include="Parent\Dashboard.aspx" />
@@ -197,6 +201,7 @@
     <Content Include="Scripts\WebForms\WebUIValidation.js" />
     <Content Include="Site.Master" />
     <Content Include="Student\AIStudyCompanion.aspx" />
+    <Content Include="Student\Chat.aspx" />
     <Content Include="Student\CreateForumPost.aspx" />
     <Content Include="Student\Dashboard.aspx" />
     <Content Include="Student\Forum.aspx" />
@@ -212,6 +217,7 @@
     <Content Include="Student\Lesson.aspx" />
     <Content Include="Student\LevelDetails.aspx" />
     <Content Include="Student\LiveSessions.aspx" />
+    <Content Include="Student\Messages.aspx" />
     <Content Include="Student\MyLearning.aspx" />
     <Content Include="Student\MyProfile.aspx" />
     <Content Include="Student\MyRanking.aspx" />
@@ -222,6 +228,7 @@
     <Content Include="Student\VirtualLab.aspx" />
     <Content Include="Student\VirtualLabs.aspx" />
     <Content Include="Teacher\Dashboard.aspx" />
+    <Content Include="Teacher\manageMaterials.aspx" />
     <Content Include="ViewSwitcher.ascx" />
     <Content Include="Web.config" />
     <Content Include="Bundle.config" />
@@ -388,6 +395,13 @@
     <Compile Include="Student\AIStudyCompanion.aspx.designer.cs">
       <DependentUpon>AIStudyCompanion.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Student\Chat.aspx.cs">
+      <DependentUpon>Chat.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\Chat.aspx.designer.cs">
+      <DependentUpon>Chat.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Student\CreateForumPost.aspx.cs">
       <DependentUpon>CreateForumPost.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -493,6 +507,13 @@
     <Compile Include="Student\LiveSessions.aspx.designer.cs">
       <DependentUpon>LiveSessions.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Student\Messages.aspx.cs">
+      <DependentUpon>Messages.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\Messages.aspx.designer.cs">
+      <DependentUpon>Messages.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Student\MyLearning.aspx.cs">
       <DependentUpon>MyLearning.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -563,6 +584,13 @@
     <Compile Include="Teacher\Dashboard.aspx.designer.cs">
       <DependentUpon>Dashboard.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Teacher\manageMaterials.aspx.cs">
+      <DependentUpon>manageMaterials.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Teacher\manageMaterials.aspx.designer.cs">
+      <DependentUpon>manageMaterials.aspx</DependentUpon>
+    </Compile>
     <Compile Include="ViewSwitcher.ascx.cs">
       <DependentUpon>ViewSwitcher.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -579,7 +607,6 @@
     <Folder Include="Images\Lesson\" />
     <Folder Include="Images\Level\" />
     <Folder Include="Images\Material\" />
-    <Folder Include="Images\Personality\" />
     <Folder Include="Images\PrivateMessage\" />
     <Folder Include="Images\Question\" />
     <Folder Include="Images\Teacher\" />

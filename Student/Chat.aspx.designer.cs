@@ -7,173 +7,137 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace ScienceBuddy.Teacher
+namespace ScienceBuddy.Student
 {
 
 
-    public partial class Dashboard
+    public partial class ChatPage
     {
 
         /// <summary>
-        /// pnlPending control.
+        /// litBack control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlPending;
+        protected global::System.Web.UI.WebControls.Literal litBack;
 
         /// <summary>
-        /// pnlRejected control.
+        /// pnlError control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlRejected;
+        protected global::System.Web.UI.WebControls.Panel pnlError;
 
         /// <summary>
-        /// pnlDenied control.
+        /// litError control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlDenied;
+        protected global::System.Web.UI.WebControls.Literal litError;
 
         /// <summary>
-        /// pnlDashboard control.
+        /// pnlChat control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlDashboard;
+        protected global::System.Web.UI.WebControls.Panel pnlChat;
 
         /// <summary>
-        /// litTeacherName control.
+        /// litHeaderInitials control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litTeacherName;
+        protected global::System.Web.UI.WebControls.Literal litHeaderInitials;
 
         /// <summary>
-        /// litTotalLessons control.
+        /// litHeaderName control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litTotalLessons;
+        protected global::System.Web.UI.WebControls.Literal litHeaderName;
 
         /// <summary>
-        /// litTotalQuizzes control.
+        /// litHeaderQual control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litTotalQuizzes;
+        protected global::System.Web.UI.WebControls.Literal litHeaderQual;
 
         /// <summary>
-        /// litUpcomingSessions control.
+        /// litHeaderStatus control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litUpcomingSessions;
+        protected global::System.Web.UI.WebControls.Literal litHeaderStatus;
 
         /// <summary>
-        /// litTotalStudents control.
+        /// pnlMessages control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litTotalStudents;
+        protected global::System.Web.UI.WebControls.Panel pnlMessages;
 
         /// <summary>
-        /// pnlSessions control.
+        /// rptMessages control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlSessions;
+        protected global::System.Web.UI.WebControls.Repeater rptMessages;
 
         /// <summary>
-        /// rptSessions control.
+        /// pnlMessagesEmpty control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptSessions;
+        protected global::System.Web.UI.WebControls.Panel pnlMessagesEmpty;
 
         /// <summary>
-        /// pnlSessionsEmpty control.
+        /// litEmptyMsg control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlSessionsEmpty;
+        protected global::System.Web.UI.WebControls.Literal litEmptyMsg;
 
         /// <summary>
-        /// pnlNotifs control.
+        /// txtMessage control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlNotifs;
+        protected global::System.Web.UI.WebControls.TextBox txtMessage;
 
         /// <summary>
-        /// rptNotifs control.
+        /// btnSend control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptNotifs;
-
-        /// <summary>
-        /// pnlNotifsEmpty control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlNotifsEmpty;
-
-        /// <summary>
-        /// litAvgQuizScore control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litAvgQuizScore;
-
-        /// <summary>
-        /// litLessonCompletionRate control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litLessonCompletionRate;
-
-        /// <summary>
-        /// litCompletedToday control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litCompletedToday;
+        protected global::System.Web.UI.WebControls.Button btnSend;
     }
 }

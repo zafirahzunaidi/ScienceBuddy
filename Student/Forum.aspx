@@ -37,6 +37,17 @@
 .fm-stat-val{font-family:var(--font-primary);font-size:1.75rem;font-weight:800;color:var(--color-text);}
 .fm-stat-lbl{font-size:.8125rem;color:var(--color-text-secondary);font-weight:600;}
 
+/* ══ CATEGORY TABS ══ */
+.fm-category-tabs{display:flex;align-items:center;gap:var(--space-sm);margin-bottom:var(--space-xl);}
+.fm-cat-tab{display:inline-flex;align-items:center;gap:6px;padding:10px 22px;
+    border-radius:var(--border-radius-full);font-weight:700;font-size:.9375rem;
+    background:var(--color-white);color:var(--color-text-secondary);
+    border:1.5px solid var(--border-color);cursor:pointer;transition:all .2s;text-decoration:none;}
+.fm-cat-tab:hover{background:var(--fm-light);color:var(--fm-primary);border-color:#BFDBFE;text-decoration:none;}
+.fm-cat-tab.active{background:var(--fm-primary);color:#fff;border-color:var(--fm-primary);
+    box-shadow:0 4px 12px rgba(37,99,235,.3);}
+.fm-cat-tab.active:hover{background:var(--fm-dark);text-decoration:none;color:#fff;}
+
 /* ══ CTA CARD ══ */
 .fm-cta{background:linear-gradient(135deg,#EFF6FF,#DBEAFE);border-radius:var(--border-radius-xl);
     border:2px solid #BFDBFE;padding:var(--space-xl);display:flex;align-items:center;
@@ -79,6 +90,7 @@
 .fm-disc-badge{display:inline-block;padding:2px 8px;border-radius:var(--border-radius-full);
     font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
 .fm-disc-badge.public{background:#DCFCE7;color:#15803D;}
+.fm-disc-badge.private{background:#FEF3C7;color:#92400E;}
 .fm-disc-preview{font-size:.875rem;color:var(--color-text-secondary);line-height:1.5;
     margin-bottom:var(--space-sm);display:-webkit-box;-webkit-line-clamp:2;
     -webkit-box-orient:vertical;overflow:hidden;}
@@ -117,6 +129,7 @@
     .fm-filters{flex-direction:column;align-items:stretch;}
     .fm-filters select,.fm-filters input[type="text"]{min-width:100%;}
     .fm-disc-footer{flex-direction:column;align-items:flex-start;}
+    .fm-category-tabs{flex-wrap:wrap;}
 }
 </style>
 </asp:Content>
@@ -203,10 +216,21 @@
     </div>
 </div>
 
+<%-- ── CATEGORY TABS ── --%>
+<div class="fm-category-tabs">
+    <asp:LinkButton ID="btnTabPublic" runat="server" CssClass="fm-cat-tab active" OnClick="btnTabPublic_Click">
+        <i class="bi bi-globe"></i> <asp:Literal ID="litTabPublic" runat="server" Text="Public" />
+    </asp:LinkButton>
+    <asp:LinkButton ID="btnTabPrivate" runat="server" CssClass="fm-cat-tab" OnClick="btnTabPrivate_Click">
+        <i class="bi bi-people-fill"></i> <asp:Literal ID="litTabPrivate" runat="server" Text="Student-Parent" />
+    </asp:LinkButton>
+    <asp:HiddenField ID="hfCategory" runat="server" Value="public" />
+</div>
+
 <%-- ── CREATE DISCUSSION CTA ── --%>
 <div class="fm-cta">
     <div class="fm-cta-text"><asp:Literal ID="litCTAText" runat="server" Text="Have a Science question?" /></div>
-    <a href="<%: ResolveUrl("~/Student/CreateForumPost.aspx") %>" class="fm-cta-btn">
+    <a href="<%= ResolveUrl("~/Student/CreateForumPost.aspx?type=" + (hfCategory.Value == "private" ? "Private" : "Public")) %>" class="fm-cta-btn">
         <i class="bi bi-plus-circle-fill"></i> <asp:Literal ID="litCTABtn" runat="server" Text="Create Discussion" />
     </a>
 </div>
@@ -237,7 +261,7 @@
                                 <span><%# Server.HtmlEncode(Eval("CreatorName").ToString()) %></span>
                                 <span>•</span>
                                 <span><%# Eval("Date") %></span>
-                                <span class="fm-disc-badge public"><%# Eval("DiscussionType") %></span>
+                                <span class='<%# Eval("BadgeCss") %>'><%# Eval("DiscussionType") %></span>
                             </div>
                         </div>
                     </div>

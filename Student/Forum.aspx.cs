@@ -85,18 +85,49 @@ namespace ScienceBuddy.Student
         // ── Bilingual labels ──────────────────────────────────────────
         private void SetLabels()
         {
+            bool isPrivate = hfCategory.Value == "private";
+
             litPageTitle.Text       = T("Forum", "Forum");
             litTitle.Text           = T("Forum", "Forum");
             litSubtitle.Text        = T("Ask questions, share ideas, and learn Science together.",
                                         "Tanya soalan, kongsi idea, dan belajar Sains bersama-sama.");
-            litTotalDiscLbl.Text    = T("Total Discussions", "Jumlah Perbincangan");
-            litMyDiscLbl.Text       = T("My Discussions", "Perbincangan Saya");
-            litTotalRepliesLbl.Text = T("Total Replies", "Jumlah Balasan");
+
+            // Tab labels
+            litTabPublic.Text       = T("Public", "Awam");
+            litTabPrivate.Text      = T("Student-Parent", "Murid-Ibu Bapa");
+
+            // Summary card labels based on selected tab
+            if (isPrivate)
+            {
+                litTotalDiscLbl.Text    = T("Private Discussions", "Perbincangan Peribadi");
+                litMyDiscLbl.Text       = T("My Discussions", "Perbincangan Saya");
+                litTotalRepliesLbl.Text = T("Total Replies", "Jumlah Balasan");
+            }
+            else
+            {
+                litTotalDiscLbl.Text    = T("Public Discussions", "Perbincangan Awam");
+                litMyDiscLbl.Text       = T("My Discussions", "Perbincangan Saya");
+                litTotalRepliesLbl.Text = T("Total Replies", "Jumlah Balasan");
+            }
+
             litCTAText.Text         = T("Have a Science question?", "Ada soalan Sains?");
             litCTABtn.Text          = T("Create Discussion", "Cipta Perbincangan");
-            litEmptyTitle.Text      = T("No discussions yet.", "Tiada perbincangan lagi.");
-            litEmptyDesc.Text       = T("Be the first to ask a Science question!",
+
+            // Empty state labels based on selected tab
+            if (isPrivate)
+            {
+                litEmptyTitle.Text  = T("No private parent-student discussions yet.",
+                                        "Tiada perbincangan peribadi murid-ibu bapa lagi.");
+                litEmptyDesc.Text   = T("No parent-linked discussions are available yet.",
+                                        "Tiada perbincangan berkaitan ibu bapa tersedia buat masa ini.");
+            }
+            else
+            {
+                litEmptyTitle.Text  = T("No public discussions yet.",
+                                        "Tiada perbincangan awam lagi.");
+                litEmptyDesc.Text   = T("Be the first to ask a Science question!",
                                         "Jadilah yang pertama bertanya soalan Sains!");
+            }
 
             // Sort dropdown bilingual
             ddlSort.Items.Clear();
@@ -107,6 +138,33 @@ namespace ScienceBuddy.Student
             // Search placeholder
             txtSearch.Attributes["placeholder"] = T("Search", "Cari");
             btnFilter.Text = T("Filter", "Tapis");
+
+            // Highlight active tab CSS
+            if (isPrivate)
+            {
+                btnTabPublic.CssClass  = "fm-cat-tab";
+                btnTabPrivate.CssClass = "fm-cat-tab active";
+            }
+            else
+            {
+                btnTabPublic.CssClass  = "fm-cat-tab active";
+                btnTabPrivate.CssClass = "fm-cat-tab";
+            }
+        }
+
+        // ── Tab click handlers ────────────────────────────────────────
+        protected void btnTabPublic_Click(object sender, EventArgs e)
+        {
+            hfCategory.Value = "public";
+            SetLabels();
+            LoadDiscussions();
+        }
+
+        protected void btnTabPrivate_Click(object sender, EventArgs e)
+        {
+            hfCategory.Value = "private";
+            SetLabels();
+            LoadDiscussions();
         }
 
         // ── Build filter dropdowns ────────────────────────────────────
@@ -142,6 +200,7 @@ namespace ScienceBuddy.Student
             string tagFilter = ddlTag.SelectedValue;
             string sortVal = ddlSort.SelectedValue;
             string search = txtSearch.Text.Trim();
+            bool isPrivate = hfCategory.Value == "private";
 
             using (var conn = new SqlConnection(ConnStr))
             {
@@ -151,6 +210,32 @@ namespace ScienceBuddy.Student
                 {
                     ShowEmpty();
                     return;
+                }
+
+                // ── Build WHERE clause based on category tab ──
+                string categoryWhere;
+                var extraParams = new List<SqlParameter>();
+
+                if (isPrivate)
+                {
+                    // Get linked parent userIds
+                    var allowedUserIds = new List<string> { userId };
+                    allowedUserIds.AddRange(GetLinkedParentUserIds(conn, userId));
+
+                    // Build IN clause with parameters
+                    var inParams = new List<string>();
+                    for (int i = 0; i < allowedUserIds.Count; i++)
+                    {
+                        string pName = "@allowedUid" + i;
+                        inParams.Add(pName);
+                        extraParams.Add(new SqlParameter(pName, allowedUserIds[i]));
+                    }
+
+                    categoryWhere = "f.discussionType = 'Private' AND f.createdBy IN (" + string.Join(",", inParams) + ")";
+                }
+                else
+                {
+                    categoryWhere = "(f.discussionType IS NULL OR f.discussionType <> 'Private')";
                 }
 
                 // Build SQL
@@ -164,10 +249,10 @@ namespace ScienceBuddy.Student
                     JOIN   [User] u ON u.userId = f.createdBy
                     LEFT JOIN Student s ON s.userId = f.createdBy
                     {0}
-                    WHERE  f.discussionType = 'Public'
-                    {1}
+                    WHERE  {1}
                     {2}
-                    {3}";
+                    {3}
+                    {4}";
 
                 string joinTag = "";
                 string whereTag = "";
@@ -201,7 +286,7 @@ namespace ScienceBuddy.Student
                         break;
                 }
 
-                sql = string.Format(sql, joinTag, whereTag, whereSearch, orderBy);
+                sql = string.Format(sql, joinTag, categoryWhere, whereTag, whereSearch, orderBy);
 
                 using (var cmd = new SqlCommand(sql, conn))
                 {
@@ -210,6 +295,10 @@ namespace ScienceBuddy.Student
                         cmd.Parameters.AddWithValue("@tagId", tagFilter);
                     if (!string.IsNullOrEmpty(search))
                         cmd.Parameters.AddWithValue("@search", search);
+
+                    // Add extra parameters for private tab IN clause
+                    foreach (var p in extraParams)
+                        cmd.Parameters.Add(p);
 
                     var da = new SqlDataAdapter(cmd);
                     var dt = new DataTable();
@@ -260,7 +349,8 @@ namespace ScienceBuddy.Student
                         int replyCount = Convert.ToInt32(row["replyCount"]);
                         int likeCount = Convert.ToInt32(row["likeCount"]);
                         bool isLiked = Convert.ToInt32(row["isLiked"]) > 0;
-                        string discType = row["discussionType"].ToString();
+                        string discType = row["discussionType"] == DBNull.Value
+                            ? "" : row["discussionType"].ToString();
                         string createdBy = row["createdBy"].ToString();
 
                         // Count my discussions
@@ -277,8 +367,19 @@ namespace ScienceBuddy.Student
                         // Tags
                         string tags = forumTags.ContainsKey(forumId) ? forumTags[forumId] : "";
 
-                        // Discussion type label
-                        string typeLabel = discType == "Public" ? T("Public", "Awam") : discType;
+                        // Discussion type label and badge CSS
+                        string typeLabel;
+                        string badgeCss;
+                        if (discType == "Private")
+                        {
+                            typeLabel = T("Private", "Peribadi");
+                            badgeCss = "fm-disc-badge private";
+                        }
+                        else
+                        {
+                            typeLabel = T("Public", "Awam");
+                            badgeCss = "fm-disc-badge public";
+                        }
 
                         list.Add(new
                         {
@@ -289,6 +390,7 @@ namespace ScienceBuddy.Student
                             CreatorInitial = initial,
                             Date = FormatDate(createdAt),
                             DiscussionType = typeLabel,
+                            BadgeCss = badgeCss,
                             ReplyCount = replyCount,
                             LikeCount = likeCount,
                             IsLiked = isLiked,
@@ -308,6 +410,37 @@ namespace ScienceBuddy.Student
                     litTotalReplies.Text = totalReplies.ToString();
                 }
             }
+        }
+
+        // ── Get linked parent userIds ─────────────────────────────────
+        private List<string> GetLinkedParentUserIds(SqlConnection conn, string userId)
+        {
+            var parentUserIds = new List<string>();
+
+            if (!Tbl(conn, "StudentParent") || !Tbl(conn, "Parent") || !Tbl(conn, "Student"))
+                return parentUserIds;
+
+            const string sql = @"
+                SELECT p.userId
+                FROM Parent p
+                JOIN StudentParent sp ON sp.parentId = p.parentId
+                JOIN Student s ON s.studentId = sp.studentId
+                WHERE s.userId = @userId";
+
+            using (var cmd = new SqlCommand(sql, conn))
+            {
+                cmd.Parameters.AddWithValue("@userId", userId);
+                using (var rdr = cmd.ExecuteReader())
+                {
+                    while (rdr.Read())
+                    {
+                        if (rdr["userId"] != DBNull.Value)
+                            parentUserIds.Add(rdr["userId"].ToString());
+                    }
+                }
+            }
+
+            return parentUserIds;
         }
 
         // ── Filter button click ───────────────────────────────────────
