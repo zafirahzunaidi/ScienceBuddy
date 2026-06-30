@@ -268,9 +268,9 @@
             <i class="bi bi-book item-icon"></i>
             <span class="item-label"><%: T("Manage Materials","Urus Bahan Pembelajaran") %></span>
         </a>
-        <a href="#" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-patch-question item-icon"></i>
-            <span class="item-label"><%: T("Create Quiz","Cipta Kuiz") %></span>
+            <span class="item-label"><%: T("Manage Quiz","Urus Kuiz") %></span>
         </a>
         <a href="#" class="sb-sidebar-item">
             <i class="bi bi-bar-chart item-icon"></i>
@@ -368,10 +368,10 @@
         </div>
         <span class="td-quick-arrow"><i class="bi bi-chevron-right"></i></span>
     </a>
-    <a href="<%: ResolveUrl("~/Teacher/CreateQuiz.aspx") %>" class="td-quick-card">
+    <a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx") %>" class="td-quick-card">
         <div class="td-quick-ico" style="background:#FEF3C7;color:#D97706;"><i class="bi bi-patch-question"></i></div>
         <div class="td-quick-content">
-            <div class="td-quick-lbl"><%: T("Create Quiz","Cipta Kuiz") %></div>
+            <div class="td-quick-lbl"><%: T("Manage Quiz","Urus Kuiz") %></div>
             <div class="td-quick-desc"><%: T("Build a new practice quiz","Bina kuiz latihan baharu") %></div>
         </div>
         <span class="td-quick-arrow"><i class="bi bi-chevron-right"></i></span>

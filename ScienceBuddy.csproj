@@ -230,6 +230,8 @@
     <Content Include="Teacher\Dashboard.aspx" />
     <Content Include="Teacher\manageMaterials.aspx" />
     <Content Include="Teacher\uploadMaterial.aspx" />
+    <Content Include="Teacher\manageQuiz.aspx" />
+    <Content Include="Teacher\createUnitLevelQuiz.aspx" />
     <Content Include="ViewSwitcher.ascx" />
     <Content Include="Web.config" />
     <Content Include="Bundle.config" />
@@ -598,6 +600,20 @@
     </Compile>
     <Compile Include="Teacher\uploadMaterial.aspx.designer.cs">
       <DependentUpon>uploadMaterial.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Teacher\manageQuiz.aspx.cs">
+      <DependentUpon>manageQuiz.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Teacher\manageQuiz.aspx.designer.cs">
+      <DependentUpon>manageQuiz.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Teacher\createUnitLevelQuiz.aspx.cs">
+      <DependentUpon>createUnitLevelQuiz.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Teacher\createUnitLevelQuiz.aspx.designer.cs">
+      <DependentUpon>createUnitLevelQuiz.aspx</DependentUpon>
     </Compile>
     <Compile Include="ViewSwitcher.ascx.cs">
       <DependentUpon>ViewSwitcher.ascx</DependentUpon>
