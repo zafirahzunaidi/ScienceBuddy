@@ -214,13 +214,13 @@
                     </div>
 
                     <%-- Notification bell --%>
-                    <button type="button"
+                    <a href="<%: ResolveUrl("~/Admin/Notifications.aspx") %>"
                             class="sb-nav-notification"
                             aria-label="Notifications"
                             data-tooltip="Notifications">
                         <i class="bi bi-bell"></i>
                         <asp:Panel ID="pnlNotifDot" runat="server" CssClass="notification-dot" Visible="false" />
-                    </button>
+                    </a>
 
                     <%-- User avatar / dropdown trigger --%>
                     <div class="sb-dropdown">
@@ -251,14 +251,15 @@
                         <div class="sb-dropdown-menu" id="userDropdown" role="menu" aria-label="User menu">
                             <asp:ContentPlaceHolder ID="UserDropdownMenu" runat="server">
                                 <%-- Default items; role-specific pages can override --%>
-                                <a runat="server" href="#" class="sb-dropdown-item" role="menuitem">
+                                <a runat="server" href="~/Admin/Profile.aspx" class="sb-dropdown-item" role="menuitem">
                                     <i class="bi bi-person"></i> My Profile
                                 </a>
-                                <a runat="server" href="#" class="sb-dropdown-item" role="menuitem">
+                                <a runat="server" href="~/Admin/Settings.aspx" class="sb-dropdown-item" role="menuitem">
                                     <i class="bi bi-gear"></i> Settings
                                 </a>
                                 <div class="sb-dropdown-divider"></div>
-                                <a runat="server" href="~/Logout" class="sb-dropdown-item danger" role="menuitem">
+                                <a runat="server" href="~/Logout.aspx" class="sb-dropdown-item danger" role="menuitem"
+                                    onclick="return confirm('Are you sure you want to sign out?');">
                                     <i class="bi bi-box-arrow-right"></i> Sign Out
                                 </a>
                             </asp:ContentPlaceHolder>

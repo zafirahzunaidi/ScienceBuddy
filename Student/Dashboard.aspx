@@ -237,22 +237,22 @@
         <a href="<%: ResolveUrl("~/Student/MyLearning.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-book item-icon"></i><span class="item-label">My Learning</span>
         </a>
-        <a href="<%: ResolveUrl("~/Student/Quiz.aspx") %>" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Student/PracticeLibrary.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-patch-question item-icon"></i><span class="item-label">Practice Library</span>
         </a>
-        <a href="#" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Student/VirtualLabs.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-eyedropper item-icon"></i><span class="item-label">Virtual Labs</span>
         </a>
-        <a href="#" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Student/LiveSessions.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-camera-video item-icon"></i><span class="item-label">Live Sessions</span>
         </a>
-        <a href="#" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Student/AIStudyCompanion.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-robot item-icon"></i><span class="item-label">AI Study Companion</span>
         </a>
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Progress</div>
-        <a href="<%: ResolveUrl("~/Student/Progress.aspx") %>" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Student/ProgressRewards.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-bar-chart-line item-icon"></i><span class="item-label">Progress &amp; Rewards</span>
         </a>
         <a href="<%: ResolveUrl("~/Student/Forum.aspx") %>" class="sb-sidebar-item">
@@ -439,12 +439,12 @@
                 <div class="sd-quick-label"><asp:Literal ID="litQALearn" runat="server" Text="My Learning" /></div>
                 <div class="sd-quick-desc"><asp:Literal ID="litQALearnDesc" runat="server" Text="Lessons, subtopics &amp; units" /></div>
             </a>
-            <a href="<%: ResolveUrl("~/Student/Quiz.aspx") %>" class="sd-quick-card qc-quiz">
+            <a href="<%: ResolveUrl("~/Student/PracticeLibrary.aspx") %>" class="sd-quick-card qc-quiz">
                 <div class="sd-quick-icon" style="background:#FFFBEB;color:#B45309;"><i class="bi bi-patch-question-fill"></i></div>
                 <div class="sd-quick-label"><asp:Literal ID="litQAPractice" runat="server" Text="Practice Library" /></div>
                 <div class="sd-quick-desc"><asp:Literal ID="litQAPracticeDesc" runat="server" Text="Quizzes &amp; self-assessment" /></div>
             </a>
-            <a href="#" class="sd-quick-card qc-lab">
+            <a href="<%: ResolveUrl("~/Student/VirtualLabs.aspx") %>" class="sd-quick-card qc-lab">
                 <div class="sd-quick-icon" style="background:#DCFCE7;color:#15803D;"><i class="bi bi-eyedropper"></i></div>
                 <div class="sd-quick-label"><asp:Literal ID="litQALab" runat="server" Text="Virtual Labs" /></div>
                 <div class="sd-quick-desc"><asp:Literal ID="litQALabDesc" runat="server" Text="Interactive science experiments" /></div>
@@ -454,12 +454,12 @@
                 <div class="sd-quick-label"><asp:Literal ID="litQALive" runat="server" Text="Live Sessions" /></div>
                 <div class="sd-quick-desc"><asp:Literal ID="litQALiveDesc" runat="server" Text="Join teacher-led classes" /></div>
             </a>
-            <a href="#" class="sd-quick-card qc-ai">
+            <a href="<%: ResolveUrl("~/Student/AIStudyCompanion.aspx") %>" class="sd-quick-card qc-ai">
                 <div class="sd-quick-icon" style="background:#F3E8FF;color:#7C3AED;"><i class="bi bi-robot"></i></div>
                 <div class="sd-quick-label"><asp:Literal ID="litQAAI" runat="server" Text="AI Study Companion" /></div>
                 <div class="sd-quick-desc"><asp:Literal ID="litQAAIDesc" runat="server" Text="Personalised help &amp; hints" /></div>
             </a>
-            <a href="<%: ResolveUrl("~/Student/Progress.aspx") %>" class="sd-quick-card qc-progress">
+            <a href="<%: ResolveUrl("~/Student/ProgressRewards.aspx") %>" class="sd-quick-card qc-progress">
                 <div class="sd-quick-icon" style="background:#FFF0E8;color:#FF6B2C;"><i class="bi bi-trophy-fill"></i></div>
                 <div class="sd-quick-label"><asp:Literal ID="litQAProgress" runat="server" Text="Progress &amp; Rewards" /></div>
                 <div class="sd-quick-desc"><asp:Literal ID="litQAProgressDesc" runat="server" Text="XP, badges &amp; achievements" /></div>
