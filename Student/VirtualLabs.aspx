@@ -100,14 +100,7 @@
     <div class="vl-title"><asp:Literal ID="litTitle" runat="server" /></div>
     <div class="vl-subtitle"><asp:Literal ID="litSubtitle" runat="server" /></div>
 </div>
-<div class="vl-summary">
-    <div class="vl-sum"><div class="vl-sum-icon" style="background:#DCFCE7;color:#15803D;"><i class="bi bi-eyedropper"></i></div>
-        <div><div class="vl-sum-val"><asp:Literal ID="litAvailable" runat="server" Text="0" /></div><div class="vl-sum-lbl"><asp:Literal ID="litAvailableLbl" runat="server" /></div></div></div>
-    <div class="vl-sum"><div class="vl-sum-icon" style="background:#DBEAFE;color:#1D4ED8;"><i class="bi bi-check2-circle"></i></div>
-        <div><div class="vl-sum-val"><asp:Literal ID="litCompleted" runat="server" Text="0" /></div><div class="vl-sum-lbl"><asp:Literal ID="litCompletedLbl" runat="server" /></div></div></div>
-    <div class="vl-sum"><div class="vl-sum-icon" style="background:#FEF3C7;color:#B45309;"><i class="bi bi-hourglass-split"></i></div>
-        <div><div class="vl-sum-val"><asp:Literal ID="litInProgress" runat="server" Text="0" /></div><div class="vl-sum-lbl"><asp:Literal ID="litInProgressLbl" runat="server" /></div></div></div>
-</div>
+<asp:Literal ID="litAvailable" runat="server" Visible="false" /><asp:Literal ID="litAvailableLbl" runat="server" Visible="false" /><asp:Literal ID="litCompleted" runat="server" Visible="false" /><asp:Literal ID="litCompletedLbl" runat="server" Visible="false" /><asp:Literal ID="litInProgress" runat="server" Visible="false" /><asp:Literal ID="litInProgressLbl" runat="server" Visible="false" />
 <div class="vl-filters">
     <asp:DropDownList ID="ddlLevel" runat="server" AutoPostBack="true" OnSelectedIndexChanged="Filter_Changed" />
     <asp:DropDownList ID="ddlDifficulty" runat="server" AutoPostBack="true" OnSelectedIndexChanged="Filter_Changed" />

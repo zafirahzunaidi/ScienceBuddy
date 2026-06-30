@@ -183,24 +183,10 @@
     <div class="lss-subtitle"><asp:Literal ID="litSubtitle" runat="server" Text="Join teacher-led learning sessions and ask questions in real time." /></div>
 </div>
 
-<%-- ── SUMMARY CARDS ── --%>
-<div class="lss-summary">
-    <div class="lss-summary-card">
-        <div class="lss-summary-icon"><i class="bi bi-calendar-event"></i></div>
-        <div class="lss-summary-count"><asp:Literal ID="litUpcoming" runat="server" Text="0" /></div>
-        <div class="lss-summary-label"><asp:Literal ID="litUpcomingLbl" runat="server" Text="Upcoming Sessions" /></div>
-    </div>
-    <div class="lss-summary-card">
-        <div class="lss-summary-icon"><i class="bi bi-person-check"></i></div>
-        <div class="lss-summary-count"><asp:Literal ID="litJoined" runat="server" Text="0" /></div>
-        <div class="lss-summary-label"><asp:Literal ID="litJoinedLbl" runat="server" Text="Joined Sessions" /></div>
-    </div>
-    <div class="lss-summary-card">
-        <div class="lss-summary-icon"><i class="bi bi-check-circle"></i></div>
-        <div class="lss-summary-count"><asp:Literal ID="litCompleted" runat="server" Text="0" /></div>
-        <div class="lss-summary-label"><asp:Literal ID="litCompletedLbl" runat="server" Text="Completed Sessions" /></div>
-    </div>
-</div>
+<%-- Stats (hidden - kept for code-behind compatibility) --%>
+<asp:Literal ID="litUpcoming" runat="server" Visible="false" /><asp:Literal ID="litUpcomingLbl" runat="server" Visible="false" />
+<asp:Literal ID="litJoined" runat="server" Visible="false" /><asp:Literal ID="litJoinedLbl" runat="server" Visible="false" />
+<asp:Literal ID="litCompleted" runat="server" Visible="false" /><asp:Literal ID="litCompletedLbl" runat="server" Visible="false" />
 
 <%-- ── FILTER TABS ── --%>
 <div class="lss-filters">

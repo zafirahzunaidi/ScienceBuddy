@@ -287,6 +287,10 @@
             <i class="bi bi-chat-dots item-icon"></i>
             <span class="item-label"><%: T("Forum","Forum") %></span>
         </a>
+        <a href="<%: ResolveUrl("~/Teacher/privateMessages.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-envelope item-icon"></i>
+            <span class="item-label"><%: T("Private Message","Mesej Peribadi") %></span>
+        </a>
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label"><%: T("Account","Akaun") %></div>
