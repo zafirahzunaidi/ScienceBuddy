@@ -468,17 +468,17 @@ namespace ScienceBuddy.Student
                 else
                 {
                     // Like — generate sequential ID
-                    string likeId = "LK001";
+                    string likeId = "FL001";
                     const string seqSql = @"
                         SELECT ISNULL(MAX(CAST(SUBSTRING(likeId, 3, LEN(likeId) - 2) AS INT)), 0)
-                        FROM ForumLike WHERE likeId LIKE 'LK[0-9]%'";
+                        FROM ForumLike WHERE likeId LIKE 'FL[0-9]%'";
                     using (var seqCmd = new SqlCommand(seqSql, conn))
                     {
                         object lastVal = seqCmd.ExecuteScalar();
                         if (lastVal != null && lastVal != DBNull.Value)
                         {
                             int lastNum = Convert.ToInt32(lastVal);
-                            likeId = "LK" + (lastNum + 1).ToString("D3");
+                            likeId = "FL" + (lastNum + 1).ToString("D3");
                         }
                     }
 

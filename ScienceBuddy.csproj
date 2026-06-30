@@ -224,6 +224,10 @@
     <Content Include="Student\Notifications.aspx" />
     <Content Include="Student\PracticeLibrary.aspx" />
     <Content Include="Student\ProgressRewards.aspx" />
+    <Content Include="Student\Quiz.aspx" />
+    <Content Include="Student\QuizHistory.aspx" />
+    <Content Include="Student\QuizResult.aspx" />
+    <Content Include="Student\QuizReview.aspx" />
     <Content Include="Student\UnitDetails.aspx" />
     <Content Include="Student\VirtualLab.aspx" />
     <Content Include="Student\VirtualLabs.aspx" />
@@ -556,6 +560,34 @@
     </Compile>
     <Compile Include="Student\ProgressRewards.aspx.designer.cs">
       <DependentUpon>ProgressRewards.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Student\Quiz.aspx.cs">
+      <DependentUpon>Quiz.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\Quiz.aspx.designer.cs">
+      <DependentUpon>Quiz.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Student\QuizHistory.aspx.cs">
+      <DependentUpon>QuizHistory.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\QuizHistory.aspx.designer.cs">
+      <DependentUpon>QuizHistory.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Student\QuizResult.aspx.cs">
+      <DependentUpon>QuizResult.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\QuizResult.aspx.designer.cs">
+      <DependentUpon>QuizResult.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Student\QuizReview.aspx.cs">
+      <DependentUpon>QuizReview.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\QuizReview.aspx.designer.cs">
+      <DependentUpon>QuizReview.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\UnitDetails.aspx.cs">
       <DependentUpon>UnitDetails.aspx</DependentUpon>

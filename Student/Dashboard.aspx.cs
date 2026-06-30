@@ -177,6 +177,8 @@ namespace ScienceBuddy.Student
             litQAAIDesc.Text        = T("Personalised help &amp; hints", "Bantuan &amp; petunjuk peribadi");
             litQAProgress.Text      = T("Progress &amp; Rewards", "Kemajuan &amp; Ganjaran");
             litQAProgressDesc.Text  = T("XP, badges &amp; achievements", "XP, lencana &amp; pencapaian");
+            litQAHistory.Text       = T("Quiz History", "Sejarah Kuiz");
+            litQAHistoryDesc.Text   = T("Past attempts &amp; scores", "Percubaan &amp; skor terdahulu");
 
             // Continue learning card
             litContinueHeader.Text  = T("Pick up where you left off", "Sambung dari tempat anda berhenti");

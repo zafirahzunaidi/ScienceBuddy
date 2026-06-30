@@ -209,8 +209,12 @@
     <div class="ud-quiz">
         <div class="ud-quiz-icon"><i class="bi bi-patch-question-fill"></i></div>
         <div class="ud-quiz-body"><div class="ud-quiz-title"><asp:Literal ID="litQuizTitle" runat="server" /></div><div class="ud-quiz-sub"><asp:Literal ID="litQuizSub" runat="server" /></div></div>
-        <a href="#" class="sb-btn sb-btn-white sb-btn-sm"><i class="bi bi-play-fill"></i> <asp:Literal ID="litQuizBtn" runat="server" /></a>
+        <a id="lnkQuizStart" runat="server" class="sb-btn sb-btn-white sb-btn-sm"><i class="bi bi-play-fill"></i> <asp:Literal ID="litQuizBtn" runat="server" /></a>
     </div>
+    <asp:Panel ID="pnlQuizResult" runat="server" Visible="false" style="margin-top:var(--space-sm);display:flex;gap:8px;flex-wrap:wrap;">
+        <a id="lnkQuizResult" runat="server" class="sb-btn sb-btn-outline-primary sb-btn-sm" style="font-size:.75rem;"><i class="bi bi-eye"></i> <asp:Literal ID="litQuizResultBtn" runat="server" /></a>
+        <a id="lnkQuizReview" runat="server" class="sb-btn sb-btn-outline-primary sb-btn-sm" style="font-size:.75rem;"><i class="bi bi-search"></i> <asp:Literal ID="litQuizReviewBtn" runat="server" /></a>
+    </asp:Panel>
 </asp:Panel>
 <asp:Panel ID="pnlQuizEmpty" runat="server" Visible="false">
     <div class="sb-alert sb-alert-info mb-lg"><i class="bi bi-info-circle-fill alert-icon"></i><div class="alert-content"><asp:Literal ID="litQuizEmpty" runat="server" /></div></div>
