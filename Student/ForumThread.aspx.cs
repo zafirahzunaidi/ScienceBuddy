@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -90,6 +91,10 @@ namespace ScienceBuddy.Student
             litErrorDesc.Text       = T("This discussion does not exist or you don't have access.",
                                         "Perbincangan ini tidak wujud atau anda tiada akses.");
             litErrorBtn.Text        = T("Back", "Kembali");
+            litRestrictedTitle.Text = T("Private Discussion", "Perbincangan Peribadi");
+            litRestrictedDesc.Text  = T("This private discussion is not available for your account.",
+                                        "Perbincangan peribadi ini tidak tersedia untuk akaun anda.");
+            litRestrictedBtn.Text   = T("Back to Forum", "Kembali ke Forum");
             litLikesLabel.Text      = T("likes", "suka");
             litRepliesLabel.Text    = T("replies", "balasan");
             litRepliesTitle.Text    = T("Replies", "Balasan");
@@ -97,11 +102,12 @@ namespace ScienceBuddy.Student
             litReplySuccess.Text    = T("Reply posted successfully!", "Balasan berjaya dihantar!");
             litReplyError.Text      = T("Please write something before posting.",
                                         "Sila tulis sesuatu sebelum menghantar.");
+            litOrigMsgLabel.Text    = T("Original Message", "Mesej Asal");
+            litNoReplies.Text       = T("No replies yet. Be the first to respond!", "Belum ada balasan. Jadilah yang pertama!");
+            litPrivateNotice.Text   = T("This is a private Student-Parent discussion. Only you and your linked parent can view this.",
+                                        "Ini adalah perbincangan peribadi Murid-Ibu Bapa. Hanya anda dan ibu bapa yang dipautkan boleh melihat ini.");
 
-            // Reply textarea placeholder
             txtReply.Attributes["placeholder"] = T("Write your reply...", "Tulis balasan anda...");
-
-            // Button text
             btnReply.Text = T("Post Reply", "Hantar Balasan");
         }
 
@@ -128,7 +134,7 @@ namespace ScienceBuddy.Student
                 }
 
                 // ── Load Forum record ──
-                string forumSql = @"
+                const string forumSql = @"
                     SELECT f.forumId, f.title, f.message, f.discussionType, f.createdBy, f.createdAt
                     FROM   Forum f
                     WHERE  f.forumId = @forumId";
@@ -148,40 +154,21 @@ namespace ScienceBuddy.Student
                     forumRow = dt.Rows[0];
                 }
 
-                string title = forumRow["title"].ToString();
-                string message = forumRow["message"].ToString();
-                string discussionType = forumRow["discussionType"].ToString();
-                string createdBy = forumRow["createdBy"].ToString();
+                string title = forumRow["title"] != DBNull.Value ? forumRow["title"].ToString() : "";
+                string message = forumRow["message"] != DBNull.Value ? forumRow["message"].ToString() : "";
+                string discussionType = forumRow["discussionType"] != DBNull.Value ? forumRow["discussionType"].ToString() : "Public";
+                string createdBy = forumRow["createdBy"] != DBNull.Value ? forumRow["createdBy"].ToString() : "";
                 DateTime createdAt = forumRow["createdAt"] == DBNull.Value
                     ? DateTime.Now : Convert.ToDateTime(forumRow["createdAt"]);
 
                 // ── Private access check ──
                 if (discussionType.Equals("Private", StringComparison.OrdinalIgnoreCase))
                 {
-                    bool hasAccess = false;
-
-                    // Check if creator
-                    if (createdBy == userId)
-                    {
-                        hasAccess = true;
-                    }
-                    else if (Tbl(conn, "ForumChat"))
-                    {
-                        // Check if user has participated
-                        const string accessSql = @"
-                            SELECT COUNT(*) FROM ForumChat
-                            WHERE  forumId = @forumId AND senderUserId = @userId";
-                        using (var accessCmd = new SqlCommand(accessSql, conn))
-                        {
-                            accessCmd.Parameters.AddWithValue("@forumId", forumId);
-                            accessCmd.Parameters.AddWithValue("@userId", userId);
-                            hasAccess = (int)accessCmd.ExecuteScalar() > 0;
-                        }
-                    }
+                    bool hasAccess = CheckPrivateAccess(conn, userId, createdBy);
 
                     if (!hasAccess)
                     {
-                        ShowError();
+                        ShowRestricted();
                         return;
                     }
                 }
@@ -206,7 +193,7 @@ namespace ScienceBuddy.Student
                             while (rdr.Read())
                             {
                                 tagsHtml += "<span class='ft-tag'>" +
-                                    Server.HtmlEncode(rdr["tagName"].ToString()) + "</span>";
+                                    HttpUtility.HtmlEncode(rdr["tagName"].ToString()) + "</span>";
                             }
                         }
                     }
@@ -250,16 +237,29 @@ namespace ScienceBuddy.Student
                 // ── Set header display ──
                 pnlMain.Visible = true;
                 pnlError.Visible = false;
+                pnlRestricted.Visible = false;
 
-                litThreadTitle.Text = Server.HtmlEncode(title);
-                litDiscType.Text = discussionType == "Public"
-                    ? T("Public", "Awam") : T("Private", "Peribadi");
-                litCreatorName.Text = Server.HtmlEncode(creatorName);
-                litCreatorDate.Text = T("Posted on", "Dihantar pada") + " " + createdAt.ToString("d MMM yyyy, h:mm tt");
+                litThreadTitle.Text = HttpUtility.HtmlEncode(title);
+                litCreatorName.Text = HttpUtility.HtmlEncode(creatorName);
+                litCreatorDate.Text = T("Posted on ", "Dihantar pada ") + createdAt.ToString("d MMM yyyy, h:mm tt");
                 litTags.Text = tagsHtml;
                 litLikeCount.Text = likeCount.ToString();
                 litReplyCount.Text = replyCount.ToString();
-                litOrigMessage.Text = Server.HtmlEncode(message);
+                litOrigMessage.Text = HttpUtility.HtmlEncode(message);
+
+                // Discussion type badge
+                SetDiscussionBadge(discussionType);
+
+                // Private notice
+                if (discussionType.Equals("Private", StringComparison.OrdinalIgnoreCase))
+                {
+                    pnlPrivateNotice.Visible = true;
+                    divHeader.Attributes["class"] = "ft-header private-thread";
+                }
+                else
+                {
+                    divHeader.Attributes["class"] = "ft-header public-thread";
+                }
 
                 // Like button state
                 if (isLiked)
@@ -273,13 +273,79 @@ namespace ScienceBuddy.Student
                     litLikeText.Text = T("Like", "Suka");
                 }
 
-                // Discussion type badge class
-                // Update badge CSS class based on type
-                // (handled in markup with public class, we update if private)
-
                 // ── Load replies ──
                 LoadReplies(conn, forumId);
             }
+        }
+
+        // ── Private access logic ──────────────────────────────────────
+        /// <summary>
+        /// Checks if the student has access to a Private discussion.
+        /// Access is granted if:
+        /// 1. Student's userId == Forum.createdBy (student created it)
+        /// 2. Forum.createdBy belongs to a parent linked to this student
+        ///    (Student → StudentParent → Parent → Parent.userId == createdBy)
+        /// </summary>
+        private bool CheckPrivateAccess(SqlConnection conn, string studentUserId, string createdBy)
+        {
+            // Case 1: Student is the creator
+            if (createdBy == studentUserId)
+                return true;
+
+            // Case 2: Creator is linked parent
+            if (Tbl(conn, "Student") && Tbl(conn, "StudentParent") && Tbl(conn, "Parent"))
+            {
+                const string sql = @"
+                    SELECT COUNT(*)
+                    FROM   Student s
+                    JOIN   StudentParent sp ON sp.studentId = s.studentId
+                    JOIN   Parent p ON p.parentId = sp.parentId
+                    WHERE  s.userId = @studentUserId
+                    AND    p.userId = @createdBy";
+
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@studentUserId", studentUserId);
+                    cmd.Parameters.AddWithValue("@createdBy", createdBy);
+                    return (int)cmd.ExecuteScalar() > 0;
+                }
+            }
+
+            return false;
+        }
+
+        // ── Set discussion badge ──────────────────────────────────────
+        private void SetDiscussionBadge(string discussionType)
+        {
+            string badgeClass = "ft-disc-badge ";
+            string badgeText = "";
+
+            switch ((discussionType ?? "").ToLower())
+            {
+                case "private":
+                    badgeClass += "private";
+                    badgeText = "<i class=\"bi bi-lock-fill\"></i> " + T("Private", "Peribadi");
+                    break;
+                case "question":
+                    badgeClass += "question";
+                    badgeText = "<i class=\"bi bi-question-circle-fill\"></i> " + T("Question", "Soalan");
+                    break;
+                case "sharing":
+                    badgeClass += "sharing";
+                    badgeText = "<i class=\"bi bi-share-fill\"></i> " + T("Sharing", "Perkongsian");
+                    break;
+                case "help":
+                    badgeClass += "help";
+                    badgeText = "<i class=\"bi bi-life-preserver\"></i> " + T("Help", "Bantuan");
+                    break;
+                default:
+                    badgeClass += "public";
+                    badgeText = "<i class=\"bi bi-globe\"></i> " + T("Public", "Awam");
+                    break;
+            }
+
+            spnDiscBadge.Attributes["class"] = badgeClass;
+            litDiscType.Text = badgeText;
         }
 
         // ── Load Replies ──────────────────────────────────────────────
@@ -287,8 +353,7 @@ namespace ScienceBuddy.Student
         {
             if (!Tbl(conn, "ForumChat"))
             {
-                rptReplies.DataSource = null;
-                rptReplies.DataBind();
+                pnlNoReplies.Visible = true;
                 return;
             }
 
@@ -308,7 +373,7 @@ namespace ScienceBuddy.Student
                     while (rdr.Read())
                     {
                         string senderUserId = rdr["senderUserId"].ToString();
-                        string msg = rdr["message"].ToString();
+                        string msg = rdr["message"] != DBNull.Value ? rdr["message"].ToString() : "";
                         DateTime date = rdr["createdAt"] == DBNull.Value
                             ? DateTime.Now : Convert.ToDateTime(rdr["createdAt"]);
 
@@ -322,6 +387,12 @@ namespace ScienceBuddy.Student
                 }
             }
 
+            if (replies.Count == 0)
+            {
+                pnlNoReplies.Visible = true;
+                return;
+            }
+
             // Build display list with names
             var displayList = new List<object>();
             foreach (dynamic reply in replies)
@@ -329,7 +400,7 @@ namespace ScienceBuddy.Student
                 string senderName = GetDisplayName(conn, reply.SenderUserId);
                 string senderRole = GetUserRole(conn, reply.SenderUserId);
                 string senderInitial = !string.IsNullOrWhiteSpace(senderName)
-                    ? senderName[0].ToString().ToUpper() : "?";
+                    ? senderName[0].ToString().ToUpper() : "U";
 
                 string roleLabel = "";
                 switch (senderRole)
@@ -396,8 +467,21 @@ namespace ScienceBuddy.Student
                 }
                 else
                 {
-                    // Like
-                    string likeId = "LK" + DateTime.Now.ToString("yyyyMMddHHmmss");
+                    // Like — generate sequential ID
+                    string likeId = "LK001";
+                    const string seqSql = @"
+                        SELECT ISNULL(MAX(CAST(SUBSTRING(likeId, 3, LEN(likeId) - 2) AS INT)), 0)
+                        FROM ForumLike WHERE likeId LIKE 'LK[0-9]%'";
+                    using (var seqCmd = new SqlCommand(seqSql, conn))
+                    {
+                        object lastVal = seqCmd.ExecuteScalar();
+                        if (lastVal != null && lastVal != DBNull.Value)
+                        {
+                            int lastNum = Convert.ToInt32(lastVal);
+                            likeId = "LK" + (lastNum + 1).ToString("D3");
+                        }
+                    }
+
                     const string insSql = @"
                         INSERT INTO ForumLike (likeId, forumId, senderUserId, createdAt)
                         VALUES (@likeId, @forumId, @userId, @now)";
@@ -431,18 +515,58 @@ namespace ScienceBuddy.Student
             if (string.IsNullOrEmpty(replyMsg))
             {
                 pnlReplyError.Visible = true;
-                litReplyError.Text = T("Please write something before posting.",
-                                       "Sila tulis sesuatu sebelum menghantar.");
                 return;
             }
 
+            // Re-check access for Private threads before allowing reply
             using (var conn = new SqlConnection(ConnStr))
             {
                 conn.Open();
 
-                if (!Tbl(conn, "ForumChat")) return;
+                if (!Tbl(conn, "Forum") || !Tbl(conn, "ForumChat")) return;
 
-                string forumChatId = "FC" + DateTime.Now.ToString("yyyyMMddHHmmss");
+                // Verify private access
+                const string typeSql = "SELECT discussionType, createdBy FROM Forum WHERE forumId = @forumId";
+                string discType = "Public";
+                string createdBy = "";
+                using (var typeCmd = new SqlCommand(typeSql, conn))
+                {
+                    typeCmd.Parameters.AddWithValue("@forumId", forumId);
+                    using (var rdr = typeCmd.ExecuteReader())
+                    {
+                        if (rdr.Read())
+                        {
+                            discType = rdr["discussionType"] != DBNull.Value ? rdr["discussionType"].ToString() : "Public";
+                            createdBy = rdr["createdBy"] != DBNull.Value ? rdr["createdBy"].ToString() : "";
+                        }
+                    }
+                }
+
+                if (discType.Equals("Private", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!CheckPrivateAccess(conn, userId, createdBy))
+                    {
+                        pnlReplyError.Visible = true;
+                        litReplyError.Text = T("You do not have access to reply to this private discussion.",
+                                               "Anda tidak mempunyai akses untuk membalas perbincangan peribadi ini.");
+                        return;
+                    }
+                }
+
+                // Generate sequential forumChatId
+                string forumChatId = "FC001";
+                const string seqSql = @"
+                    SELECT ISNULL(MAX(CAST(SUBSTRING(forumChatId, 3, LEN(forumChatId) - 2) AS INT)), 0)
+                    FROM ForumChat WHERE forumChatId LIKE 'FC[0-9]%'";
+                using (var seqCmd = new SqlCommand(seqSql, conn))
+                {
+                    object lastVal = seqCmd.ExecuteScalar();
+                    if (lastVal != null && lastVal != DBNull.Value)
+                    {
+                        int lastNum = Convert.ToInt32(lastVal);
+                        forumChatId = "FC" + (lastNum + 1).ToString("D3");
+                    }
+                }
 
                 const string sql = @"
                     INSERT INTO ForumChat (forumChatId, forumId, senderUserId, message, createdAt)
@@ -473,6 +597,14 @@ namespace ScienceBuddy.Student
         {
             pnlError.Visible = true;
             pnlMain.Visible = false;
+            pnlRestricted.Visible = false;
+        }
+
+        private void ShowRestricted()
+        {
+            pnlRestricted.Visible = true;
+            pnlMain.Visible = false;
+            pnlError.Visible = false;
         }
 
         /// <summary>
@@ -480,13 +612,9 @@ namespace ScienceBuddy.Student
         /// </summary>
         private string GetDisplayName(SqlConnection conn, string userId)
         {
-            // Try Student (nickname > name)
             if (Tbl(conn, "Student"))
             {
-                const string sql = @"
-                    SELECT s.nickname, s.name
-                    FROM   Student s
-                    WHERE  s.userId = @userId";
+                const string sql = "SELECT nickname, name FROM Student WHERE userId = @userId";
                 using (var cmd = new SqlCommand(sql, conn))
                 {
                     cmd.Parameters.AddWithValue("@userId", userId);
@@ -503,13 +631,9 @@ namespace ScienceBuddy.Student
                 }
             }
 
-            // Try Teacher
             if (Tbl(conn, "Teacher"))
             {
-                const string sql = @"
-                    SELECT t.name
-                    FROM   Teacher t
-                    WHERE  t.userId = @userId";
+                const string sql = "SELECT name FROM Teacher WHERE userId = @userId";
                 using (var cmd = new SqlCommand(sql, conn))
                 {
                     cmd.Parameters.AddWithValue("@userId", userId);
@@ -524,13 +648,9 @@ namespace ScienceBuddy.Student
                 }
             }
 
-            // Try Parent
             if (Tbl(conn, "Parent"))
             {
-                const string sql = @"
-                    SELECT p.name
-                    FROM   Parent p
-                    WHERE  p.userId = @userId";
+                const string sql = "SELECT name FROM Parent WHERE userId = @userId";
                 using (var cmd = new SqlCommand(sql, conn))
                 {
                     cmd.Parameters.AddWithValue("@userId", userId);
@@ -545,7 +665,6 @@ namespace ScienceBuddy.Student
                 }
             }
 
-            // Fallback to username
             const string userSql = "SELECT username FROM [User] WHERE userId = @userId";
             using (var cmd = new SqlCommand(userSql, conn))
             {
@@ -555,9 +674,6 @@ namespace ScienceBuddy.Student
             }
         }
 
-        /// <summary>
-        /// Gets user role from the User table.
-        /// </summary>
         private string GetUserRole(SqlConnection conn, string userId)
         {
             const string sql = "SELECT role FROM [User] WHERE userId = @userId";
@@ -579,10 +695,6 @@ namespace ScienceBuddy.Student
             return dt.ToString("d MMM yyyy");
         }
 
-        /// <summary>
-        /// Returns true if the given table exists in the current database.
-        /// Uses INFORMATION_SCHEMA so it never throws on a missing table.
-        /// </summary>
         private static bool Tbl(SqlConnection conn, string tableName)
         {
             const string sql = @"
