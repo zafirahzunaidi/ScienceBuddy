@@ -290,7 +290,7 @@
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label"><%: T("Account","Akaun") %></div>
-        <a href="#" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Teacher/MyProfile.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-person item-icon"></i>
             <span class="item-label"><%: T("My Profile","Profil Saya") %></span>
         </a>
