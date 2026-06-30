@@ -12,6 +12,17 @@ namespace ScienceBuddy.Teacher
 {
     public partial class manageMaterials : Page
     {
+        // ── Language support ─────────────────────────────────────────
+        protected string CurrentLanguage
+        {
+            get
+            {
+                string lang = Session["preferredLanguage"] as string;
+                return string.IsNullOrEmpty(lang) ? "EN" : lang;
+            }
+        }
+        protected string T(string en, string bm) { return CurrentLanguage == "BM" ? bm : en; }
+
         private string ConnStr =>
             ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
@@ -19,17 +30,11 @@ namespace ScienceBuddy.Teacher
             StringComparer.OrdinalIgnoreCase)
         { ".pdf", ".doc", ".docx", ".ppt", ".pptx", ".jpg", ".jpeg", ".png" };
 
-        private const int MaxFileSize = 10 * 1024 * 1024; // 10 MB
+        private const int MaxFileSize = 10 * 1024 * 1024;
 
-        // ── Page Load ────────────────────────────────────────────────
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["userId"] == null)
-            {
-                Response.Redirect("~/Login.aspx", false);
-                Context.ApplicationInstance.CompleteRequest(); return;
-            }
-            if (Session["role"] == null || Session["role"].ToString() != "Teacher")
+            if (Session["userId"] == null || Session["role"]?.ToString() != "Teacher")
             {
                 Response.Redirect("~/Login.aspx", false);
                 Context.ApplicationInstance.CompleteRequest(); return;
@@ -37,6 +42,16 @@ namespace ScienceBuddy.Teacher
 
             var master = (ScienceBuddy.SiteMaster)Master;
             master.LayoutMode = "Sidebar";
+
+            // Handle edit modal postback
+            string eventTarget = Request["__EVENTTARGET"];
+            string eventArg = Request["__EVENTARGUMENT"];
+            if (eventTarget == "LoadEdit" && !string.IsNullOrEmpty(eventArg))
+            {
+                LoadEditForm(eventArg, Session["userId"].ToString());
+                if (!IsPostBack) { LoadFilterDropdowns(); LoadMaterials(); }
+                return;
+            }
 
             if (!IsPostBack)
             {
@@ -46,7 +61,6 @@ namespace ScienceBuddy.Teacher
             }
         }
 
-        // ── Authorization ────────────────────────────────────────────
         private bool AuthorizeTeacher()
         {
             string userId = Session["userId"].ToString();
@@ -55,20 +69,14 @@ namespace ScienceBuddy.Teacher
                 using (var conn = new SqlConnection(ConnStr))
                 {
                     conn.Open();
-                    const string sql = @"SELECT [status] FROM dbo.[Teacher] WHERE [userId] = @userId";
-                    using (var cmd = new SqlCommand(sql, conn))
+                    using (var cmd = new SqlCommand("SELECT [status] FROM dbo.[Teacher] WHERE [userId]=@u", conn))
                     {
-                        cmd.Parameters.AddWithValue("@userId", userId);
+                        cmd.Parameters.AddWithValue("@u", userId);
                         var val = cmd.ExecuteScalar();
-                        if (val == null || val == DBNull.Value)
-                        { pnlDenied.Visible = true; return false; }
-
-                        string status = val.ToString();
-                        if (string.Equals(status, "Certified", StringComparison.OrdinalIgnoreCase))
-                        { pnlMain.Visible = true; return true; }
-                        if (string.Equals(status, "Pending", StringComparison.OrdinalIgnoreCase))
-                        { pnlPending.Visible = true; return false; }
-
+                        if (val == null || val == DBNull.Value) { pnlDenied.Visible = true; return false; }
+                        string s = val.ToString();
+                        if (s.Equals("Certified", StringComparison.OrdinalIgnoreCase)) { pnlMain.Visible = true; return true; }
+                        if (s.Equals("Pending", StringComparison.OrdinalIgnoreCase)) { pnlPending.Visible = true; return false; }
                         pnlDenied.Visible = true; return false;
                     }
                 }
@@ -76,47 +84,54 @@ namespace ScienceBuddy.Teacher
             catch { pnlDenied.Visible = true; return false; }
         }
 
-        // ── Load filter dropdowns ────────────────────────────────────
         private void LoadFilterDropdowns()
         {
             using (var conn = new SqlConnection(ConnStr))
             {
                 conn.Open();
-                // Level filter
                 ddlFilterLevel.Items.Clear();
-                ddlFilterLevel.Items.Add(new ListItem("All Levels", ""));
-                const string sqlLevels = "SELECT [levelId],[levelNameEN] FROM dbo.[Level] ORDER BY [levelId]";
-                using (var cmd = new SqlCommand(sqlLevels, conn))
-                using (var rdr = cmd.ExecuteReader())
-                {
-                    while (rdr.Read())
-                        ddlFilterLevel.Items.Add(new ListItem(rdr["levelNameEN"].ToString(), rdr["levelId"].ToString()));
-                }
+                ddlFilterLevel.Items.Add(new ListItem(T("All Levels","Semua Tahap"), ""));
+                using (var cmd = new SqlCommand("SELECT [levelId],[levelNameEN] FROM dbo.[Level] ORDER BY [levelId]", conn))
+                using (var r = cmd.ExecuteReader()) while (r.Read()) ddlFilterLevel.Items.Add(new ListItem(r["levelNameEN"].ToString(), r["levelId"].ToString()));
+
+                ddlFilterUnit.Items.Clear();
+                ddlFilterUnit.Items.Add(new ListItem(T("All Units","Semua Unit"), ""));
+
+                ddlFilterType.Items.Clear();
+                ddlFilterType.Items.Add(new ListItem(T("All Types","Semua Jenis"), ""));
+                ddlFilterType.Items.Add(new ListItem("PDF", "PDF"));
+                ddlFilterType.Items.Add(new ListItem(T("Document","Dokumen"), "Document"));
+                ddlFilterType.Items.Add(new ListItem("PPTX", "PPTX"));
+                ddlFilterType.Items.Add(new ListItem(T("Image","Imej"), "Image"));
+
+                ddlFilterStatus.Items.Clear();
+                ddlFilterStatus.Items.Add(new ListItem(T("All Status","Semua Status"), ""));
+                ddlFilterStatus.Items.Add(new ListItem(T("Pending","Menunggu"), "Pending"));
+                ddlFilterStatus.Items.Add(new ListItem(T("Approved","Diluluskan"), "Approved"));
+                ddlFilterStatus.Items.Add(new ListItem(T("Rejected","Ditolak"), "Rejected"));
+
+                // Set search placeholder
+                txtSearch.Attributes["placeholder"] = T("Search materials...","Cari bahan...");
+                btnSearch.Text = T("Search","Cari");
             }
         }
 
-        // ── Load materials ───────────────────────────────────────────
         private void LoadMaterials()
         {
             string userId = Session["userId"].ToString();
             string search = txtSearch.Text.Trim();
-            string levelFilter = ddlFilterLevel.SelectedValue;
+            string lvl = ddlFilterLevel.SelectedValue, unit = ddlFilterUnit.SelectedValue;
+            string type = ddlFilterType.SelectedValue, status = ddlFilterStatus.SelectedValue;
 
-            string sql = @"
-                SELECT m.[materialId], m.[materialTitle], m.[materialContent],
-                       m.[materialType], m.[fileUrl], m.[createdDate],
-                       m.[status], m.[language],
-                       ISNULL(st.[subtopicTitleEN],'—') AS subtopicName
-                FROM dbo.[Material] m
-                LEFT JOIN dbo.[Subtopic] st ON st.[subtopicId] = m.[subtopicId]
-                LEFT JOIN dbo.[Unit] u ON u.[unitId] = st.[unitId]
-                WHERE m.[createdByUserId] = @userId";
-
-            if (!string.IsNullOrEmpty(search))
-                sql += " AND (m.[materialTitle] LIKE @search OR m.[materialContent] LIKE @search)";
-            if (!string.IsNullOrEmpty(levelFilter))
-                sql += " AND u.[levelId] = @levelId";
-
+            string sql = @"SELECT m.[materialId],m.[materialTitle],m.[materialContent],m.[materialType],
+                m.[fileUrl],m.[createdDate],m.[status],m.[language],ISNULL(st.[subtopicTitleEN],'—') AS subtopicName
+                FROM dbo.[Material] m LEFT JOIN dbo.[Subtopic] st ON st.[subtopicId]=m.[subtopicId]
+                LEFT JOIN dbo.[Unit] u ON u.[unitId]=st.[unitId] WHERE m.[createdByUserId]=@userId";
+            if (!string.IsNullOrEmpty(search)) sql += " AND (m.[materialTitle] LIKE @s OR m.[materialContent] LIKE @s)";
+            if (!string.IsNullOrEmpty(lvl)) sql += " AND u.[levelId]=@lvl";
+            if (!string.IsNullOrEmpty(unit)) sql += " AND u.[unitId]=@unit";
+            if (!string.IsNullOrEmpty(type)) sql += " AND m.[materialType]=@type";
+            if (!string.IsNullOrEmpty(status)) sql += " AND m.[status]=@status";
             sql += " ORDER BY m.[createdDate] DESC";
 
             using (var conn = new SqlConnection(ConnStr))
@@ -125,116 +140,115 @@ namespace ScienceBuddy.Teacher
                 using (var cmd = new SqlCommand(sql, conn))
                 {
                     cmd.Parameters.AddWithValue("@userId", userId);
-                    if (!string.IsNullOrEmpty(search))
-                        cmd.Parameters.AddWithValue("@search", "%" + search + "%");
-                    if (!string.IsNullOrEmpty(levelFilter))
-                        cmd.Parameters.AddWithValue("@levelId", levelFilter);
-
-                    var da = new SqlDataAdapter(cmd);
-                    var dt = new DataTable();
-                    da.Fill(dt);
-
-                    if (dt.Rows.Count > 0)
-                    {
-                        pnlMaterials.Visible = true;
-                        pnlEmpty.Visible = false;
-                        rptMaterials.DataSource = dt;
-                        rptMaterials.DataBind();
-                    }
-                    else
-                    {
-                        pnlMaterials.Visible = false;
-                        pnlEmpty.Visible = true;
-                    }
+                    if (!string.IsNullOrEmpty(search)) cmd.Parameters.AddWithValue("@s", "%" + search + "%");
+                    if (!string.IsNullOrEmpty(lvl)) cmd.Parameters.AddWithValue("@lvl", lvl);
+                    if (!string.IsNullOrEmpty(unit)) cmd.Parameters.AddWithValue("@unit", unit);
+                    if (!string.IsNullOrEmpty(type)) cmd.Parameters.AddWithValue("@type", type);
+                    if (!string.IsNullOrEmpty(status)) cmd.Parameters.AddWithValue("@status", status);
+                    var dt = new DataTable(); new SqlDataAdapter(cmd).Fill(dt);
+                    pnlMaterials.Visible = dt.Rows.Count > 0;
+                    pnlEmpty.Visible = dt.Rows.Count == 0;
+                    if (dt.Rows.Count > 0) { rptMaterials.DataSource = dt; rptMaterials.DataBind(); }
                 }
             }
         }
 
-        // ── Show upload form ─────────────────────────────────────────
-        protected void btnShowUpload_Click(object sender, EventArgs e)
-        {
-            ResetForm();
-            litFormTitle.Text = "Upload New Material";
-            litFileRequired.Text = "*";
-            pnlCurrentFile.Visible = false;
-            pnlForm.Visible = true;
-            LoadFormDropdowns(null, null, null);
-        }
-
-        // ── Cancel form ──────────────────────────────────────────────
-        protected void btnCancel_Click(object sender, EventArgs e)
-        {
-            pnlForm.Visible = false;
-            LoadMaterials();
-        }
-
-        // ── Search ───────────────────────────────────────────────────
+        // ── Filter events ────────────────────────────────────────────
         protected void btnSearch_Click(object sender, EventArgs e) { LoadMaterials(); }
-        protected void btnClear_Click(object sender, EventArgs e)
+        protected void ddlFilterLevel_Changed(object sender, EventArgs e)
         {
-            txtSearch.Text = "";
-            ddlFilterLevel.SelectedIndex = 0;
+            ddlFilterUnit.Items.Clear();
+            ddlFilterUnit.Items.Add(new ListItem(T("All Units","Semua Unit"), ""));
+            string lid = ddlFilterLevel.SelectedValue;
+            if (!string.IsNullOrEmpty(lid))
+            {
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand("SELECT [unitId],[unitNameEN] FROM dbo.[Unit] WHERE [levelId]=@l ORDER BY [orderNo]", conn))
+                    { cmd.Parameters.AddWithValue("@l", lid); using (var r = cmd.ExecuteReader()) while (r.Read()) ddlFilterUnit.Items.Add(new ListItem(r["unitNameEN"].ToString(), r["unitId"].ToString())); }
+                }
+            }
             LoadMaterials();
         }
-        protected void ddlFilterLevel_Changed(object sender, EventArgs e) { LoadMaterials(); }
+        protected void ddlFilterUnit_Changed(object sender, EventArgs e) { LoadMaterials(); }
+        protected void ddlFilterType_Changed(object sender, EventArgs e) { LoadMaterials(); }
+        protected void ddlFilterStatus_Changed(object sender, EventArgs e) { LoadMaterials(); }
 
-        // ── Form dropdowns (Level → Unit → Subtopic) ─────────────────
-        private void LoadFormDropdowns(string selectedLevel, string selectedUnit, string selectedSubtopic)
+        // ── Edit modal load ──────────────────────────────────────────
+        private void LoadEditForm(string materialId, string userId)
         {
-            using (var conn = new SqlConnection(ConnStr))
+            pnlMain.Visible = true;
+            try
             {
-                conn.Open();
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    const string sql = @"SELECT m.*,st.[unitId],u.[levelId] FROM dbo.[Material] m
+                        LEFT JOIN dbo.[Subtopic] st ON st.[subtopicId]=m.[subtopicId]
+                        LEFT JOIN dbo.[Unit] u ON u.[unitId]=st.[unitId]
+                        WHERE m.[materialId]=@id AND m.[createdByUserId]=@uid";
+                    using (var cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", materialId);
+                        cmd.Parameters.AddWithValue("@uid", userId);
+                        using (var r = cmd.ExecuteReader())
+                        {
+                            if (!r.Read()) return;
+                            hidMaterialId.Value = materialId;
+                            txtTitle.Text = r["materialTitle"]?.ToString() ?? "";
+                            txtDescription.Text = r["materialContent"]?.ToString() ?? "";
+                            try { ddlLanguage.SelectedValue = r["language"]?.ToString() ?? "EN"; } catch { }
+                            string levelId = r["levelId"]?.ToString();
+                            string unitId = r["unitId"]?.ToString();
+                            string subtopicId = r["subtopicId"]?.ToString();
+                            string fileUrl = r["fileUrl"]?.ToString();
+                            string matStatus = r["status"]?.ToString() ?? "";
+                            r.Close();
 
-                // Levels
-                ddlLevel.Items.Clear();
-                ddlLevel.Items.Add(new ListItem("— Select Level —", ""));
-                using (var cmd = new SqlCommand("SELECT [levelId],[levelNameEN] FROM dbo.[Level] ORDER BY [levelId]", conn))
-                using (var rdr = cmd.ExecuteReader())
-                    while (rdr.Read())
-                        ddlLevel.Items.Add(new ListItem(rdr["levelNameEN"].ToString(), rdr["levelId"].ToString()));
-                if (!string.IsNullOrEmpty(selectedLevel))
-                    ddlLevel.SelectedValue = selectedLevel;
+                            // Load form dropdowns
+                            LoadFormDropdowns(conn, levelId, unitId, subtopicId);
 
-                // Units
-                LoadUnits(conn, ddlLevel.SelectedValue);
-                if (!string.IsNullOrEmpty(selectedUnit))
-                    try { ddlUnit.SelectedValue = selectedUnit; } catch { }
+                            // File info
+                            if (!string.IsNullOrEmpty(fileUrl))
+                            { pnlCurrentFile.Visible = true; litCurrentFile.Text = HttpUtility.HtmlEncode(Path.GetFileName(fileUrl)); }
 
-                // Subtopics
-                LoadSubtopics(conn, ddlUnit.SelectedValue);
-                if (!string.IsNullOrEmpty(selectedSubtopic))
-                    try { ddlSubtopic.SelectedValue = selectedSubtopic; } catch { }
+                            // Modal title
+                            bool isResubmit = matStatus.Equals("Rejected", StringComparison.OrdinalIgnoreCase);
+                            litFormTitle.Text = isResubmit ? "Resubmit Material" : "Edit Material";
+                            litSaveBtnText.Text = isResubmit ? "Resubmit Material" : "Update Material";
+
+                            hidShowEditModal.Value = "1";
+                        }
+                    }
+                }
             }
+            catch { }
+            LoadMaterials();
         }
 
-        private void LoadUnits(SqlConnection conn, string levelId)
+        private void LoadFormDropdowns(SqlConnection conn, string selLevel, string selUnit, string selSubtopic)
         {
-            ddlUnit.Items.Clear();
-            ddlUnit.Items.Add(new ListItem("— Select Unit —", ""));
-            if (string.IsNullOrEmpty(levelId)) return;
-            const string sql = "SELECT [unitId],[unitNameEN] FROM dbo.[Unit] WHERE [levelId] = @lid ORDER BY [orderNo]";
-            using (var cmd = new SqlCommand(sql, conn))
-            {
-                cmd.Parameters.AddWithValue("@lid", levelId);
-                using (var rdr = cmd.ExecuteReader())
-                    while (rdr.Read())
-                        ddlUnit.Items.Add(new ListItem(rdr["unitNameEN"].ToString(), rdr["unitId"].ToString()));
-            }
-        }
+            ddlLevel.Items.Clear(); ddlLevel.Items.Add(new ListItem("— Select Level —", ""));
+            using (var cmd = new SqlCommand("SELECT [levelId],[levelNameEN] FROM dbo.[Level] ORDER BY [levelId]", conn))
+            using (var r = cmd.ExecuteReader()) while (r.Read()) ddlLevel.Items.Add(new ListItem(r["levelNameEN"].ToString(), r["levelId"].ToString()));
+            if (!string.IsNullOrEmpty(selLevel)) try { ddlLevel.SelectedValue = selLevel; } catch { }
 
-        private void LoadSubtopics(SqlConnection conn, string unitId)
-        {
-            ddlSubtopic.Items.Clear();
-            ddlSubtopic.Items.Add(new ListItem("— Select Subtopic —", ""));
-            if (string.IsNullOrEmpty(unitId)) return;
-            const string sql = "SELECT [subtopicId],[subtopicTitleEN] FROM dbo.[Subtopic] WHERE [unitId] = @uid ORDER BY [orderNo]";
-            using (var cmd = new SqlCommand(sql, conn))
+            ddlUnit.Items.Clear(); ddlUnit.Items.Add(new ListItem("— Select Unit —", ""));
+            if (!string.IsNullOrEmpty(selLevel))
             {
-                cmd.Parameters.AddWithValue("@uid", unitId);
-                using (var rdr = cmd.ExecuteReader())
-                    while (rdr.Read())
-                        ddlSubtopic.Items.Add(new ListItem(rdr["subtopicTitleEN"].ToString(), rdr["subtopicId"].ToString()));
+                using (var cmd = new SqlCommand("SELECT [unitId],[unitNameEN] FROM dbo.[Unit] WHERE [levelId]=@l ORDER BY [orderNo]", conn))
+                { cmd.Parameters.AddWithValue("@l", selLevel); using (var r = cmd.ExecuteReader()) while (r.Read()) ddlUnit.Items.Add(new ListItem(r["unitNameEN"].ToString(), r["unitId"].ToString())); }
             }
+            if (!string.IsNullOrEmpty(selUnit)) try { ddlUnit.SelectedValue = selUnit; } catch { }
+
+            ddlSubtopic.Items.Clear(); ddlSubtopic.Items.Add(new ListItem("— Select Subtopic —", ""));
+            if (!string.IsNullOrEmpty(selUnit))
+            {
+                using (var cmd = new SqlCommand("SELECT [subtopicId],[subtopicTitleEN] FROM dbo.[Subtopic] WHERE [unitId]=@u ORDER BY [orderNo]", conn))
+                { cmd.Parameters.AddWithValue("@u", selUnit); using (var r = cmd.ExecuteReader()) while (r.Read()) ddlSubtopic.Items.Add(new ListItem(r["subtopicTitleEN"].ToString(), r["subtopicId"].ToString())); }
+            }
+            if (!string.IsNullOrEmpty(selSubtopic)) try { ddlSubtopic.SelectedValue = selSubtopic; } catch { }
         }
 
         protected void ddlLevel_Changed(object sender, EventArgs e)
@@ -242,9 +256,14 @@ namespace ScienceBuddy.Teacher
             using (var conn = new SqlConnection(ConnStr))
             {
                 conn.Open();
-                LoadUnits(conn, ddlLevel.SelectedValue);
-                LoadSubtopics(conn, "");
+                ddlUnit.Items.Clear(); ddlUnit.Items.Add(new ListItem("— Select Unit —", ""));
+                string lid = ddlLevel.SelectedValue;
+                if (!string.IsNullOrEmpty(lid))
+                    using (var cmd = new SqlCommand("SELECT [unitId],[unitNameEN] FROM dbo.[Unit] WHERE [levelId]=@l ORDER BY [orderNo]", conn))
+                    { cmd.Parameters.AddWithValue("@l", lid); using (var r = cmd.ExecuteReader()) while (r.Read()) ddlUnit.Items.Add(new ListItem(r["unitNameEN"].ToString(), r["unitId"].ToString())); }
+                ddlSubtopic.Items.Clear(); ddlSubtopic.Items.Add(new ListItem("— Select Subtopic —", ""));
             }
+            hidShowEditModal.Value = "1";
         }
 
         protected void ddlUnit_Changed(object sender, EventArgs e)
@@ -252,298 +271,128 @@ namespace ScienceBuddy.Teacher
             using (var conn = new SqlConnection(ConnStr))
             {
                 conn.Open();
-                LoadSubtopics(conn, ddlUnit.SelectedValue);
+                ddlSubtopic.Items.Clear(); ddlSubtopic.Items.Add(new ListItem("— Select Subtopic —", ""));
+                string uid = ddlUnit.SelectedValue;
+                if (!string.IsNullOrEmpty(uid))
+                    using (var cmd = new SqlCommand("SELECT [subtopicId],[subtopicTitleEN] FROM dbo.[Subtopic] WHERE [unitId]=@u ORDER BY [orderNo]", conn))
+                    { cmd.Parameters.AddWithValue("@u", uid); using (var r = cmd.ExecuteReader()) while (r.Read()) ddlSubtopic.Items.Add(new ListItem(r["subtopicTitleEN"].ToString(), r["subtopicId"].ToString())); }
             }
+            hidShowEditModal.Value = "1";
         }
 
-        // ── Save (Insert or Update) ──────────────────────────────────
+        // ── Save (update) ────────────────────────────────────────────
         protected void btnSave_Click(object sender, EventArgs e)
         {
-            string title = txtTitle.Text.Trim();
-            string description = txtDescription.Text.Trim();
-            string language = ddlLanguage.SelectedValue;
-            string subtopicId = ddlSubtopic.SelectedValue;
             string materialId = hidMaterialId.Value;
-            bool isEdit = !string.IsNullOrEmpty(materialId);
+            string userId = Session["userId"].ToString();
+            string title = txtTitle.Text.Trim();
+            string desc = txtDescription.Text.Trim();
+            string lang = ddlLanguage.SelectedValue;
+            string subtopicId = ddlSubtopic.SelectedValue;
 
-            if (string.IsNullOrEmpty(title))
-            { ShowMessage("Title is required.", true); return; }
-            if (string.IsNullOrEmpty(subtopicId))
-            { ShowMessage("Please select a subtopic.", true); return; }
+            if (string.IsNullOrEmpty(title) || string.IsNullOrEmpty(subtopicId))
+            { hidToast.Value = "Please fill in required fields."; hidShowEditModal.Value = "1"; LoadMaterials(); return; }
 
-            // File handling
-            string fileUrl = null;
-            string materialType = null;
-
+            string fileUrl = null; string materialType = null;
             if (fuFile.HasFile)
             {
                 string ext = Path.GetExtension(fuFile.FileName).ToLower();
-                if (!AllowedExtensions.Contains(ext))
-                { ShowMessage("Invalid file type. Accepted: PDF, DOC, DOCX, PPT, PPTX, JPG, JPEG, PNG.", true); return; }
-                if (fuFile.PostedFile.ContentLength > MaxFileSize)
-                { ShowMessage("File size exceeds 10 MB limit.", true); return; }
-
+                if (!AllowedExtensions.Contains(ext)) { hidToast.Value = "Invalid file type."; hidShowEditModal.Value = "1"; LoadMaterials(); return; }
+                if (fuFile.PostedFile.ContentLength > MaxFileSize) { hidToast.Value = "File exceeds 10 MB."; hidShowEditModal.Value = "1"; LoadMaterials(); return; }
                 materialType = GetMaterialType(ext);
-                string fileName = Guid.NewGuid().ToString("N").Substring(0, 12) + ext;
-                string relativePath = "Images/Material/" + fileName;
-                string physicalDir = Server.MapPath("~/Images/Material/");
-                if (!Directory.Exists(physicalDir))
-                    Directory.CreateDirectory(physicalDir);
-                fuFile.SaveAs(Path.Combine(physicalDir, fileName));
-                fileUrl = relativePath;
+                string fn = Guid.NewGuid().ToString("N").Substring(0, 12) + ext;
+                string dir = Server.MapPath("~/Images/Material/");
+                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                fuFile.SaveAs(Path.Combine(dir, fn));
+                fileUrl = "Images/Material/" + fn;
             }
-            else if (!isEdit)
-            {
-                ShowMessage("Please select a file to upload.", true); return;
-            }
-
-            string userId = Session["userId"].ToString();
 
             try
             {
                 using (var conn = new SqlConnection(ConnStr))
                 {
                     conn.Open();
+                    if (!VerifyOwnership(conn, materialId, userId)) { hidToast.Value = "Permission denied."; LoadMaterials(); return; }
 
-                    if (isEdit)
+                    string sql = @"UPDATE dbo.[Material] SET [materialTitle]=@t,[materialContent]=@d,[language]=@l,[subtopicId]=@st,[status]='Pending'"
+                        + (fileUrl != null ? ",[fileUrl]=@f,[materialType]=@mt" : "") + " WHERE [materialId]=@id AND [createdByUserId]=@uid";
+                    using (var cmd = new SqlCommand(sql, conn))
                     {
-                        // Verify ownership
-                        if (!VerifyOwnership(conn, materialId, userId))
-                        { ShowMessage("You do not have permission to edit this material.", true); return; }
-
-                        string sqlUpdate = @"
-                            UPDATE dbo.[Material] SET
-                                [materialTitle] = @title,
-                                [materialContent] = @desc,
-                                [language] = @lang,
-                                [subtopicId] = @subtopicId"
-                            + (fileUrl != null ? ", [fileUrl] = @fileUrl, [materialType] = @mType" : "")
-                            + " WHERE [materialId] = @id AND [createdByUserId] = @userId";
-
-                        using (var cmd = new SqlCommand(sqlUpdate, conn))
-                        {
-                            cmd.Parameters.AddWithValue("@title", title);
-                            cmd.Parameters.AddWithValue("@desc", (object)description ?? DBNull.Value);
-                            cmd.Parameters.AddWithValue("@lang", language);
-                            cmd.Parameters.AddWithValue("@subtopicId", subtopicId);
-                            cmd.Parameters.AddWithValue("@id", materialId);
-                            cmd.Parameters.AddWithValue("@userId", userId);
-                            if (fileUrl != null)
-                            {
-                                cmd.Parameters.AddWithValue("@fileUrl", fileUrl);
-                                cmd.Parameters.AddWithValue("@mType", materialType);
-                            }
-                            cmd.ExecuteNonQuery();
-                        }
-                        ShowMessage("Material updated successfully.", false);
-                    }
-                    else
-                    {
-                        string newId = GenerateNewId(conn);
-                        const string sqlInsert = @"
-                            INSERT INTO dbo.[Material]
-                                ([materialId],[subtopicId],[createdByUserId],[materialTitle],
-                                 [materialType],[fileUrl],[materialContent],[createdDate],
-                                 [status],[language])
-                            VALUES
-                                (@id,@subtopicId,@userId,@title,
-                                 @mType,@fileUrl,@desc,@createdDate,
-                                 @status,@lang)";
-
-                        using (var cmd = new SqlCommand(sqlInsert, conn))
-                        {
-                            cmd.Parameters.AddWithValue("@id", newId);
-                            cmd.Parameters.AddWithValue("@subtopicId", subtopicId);
-                            cmd.Parameters.AddWithValue("@userId", userId);
-                            cmd.Parameters.AddWithValue("@title", title);
-                            cmd.Parameters.AddWithValue("@mType", materialType);
-                            cmd.Parameters.AddWithValue("@fileUrl", fileUrl);
-                            cmd.Parameters.AddWithValue("@desc", (object)description ?? DBNull.Value);
-                            cmd.Parameters.AddWithValue("@createdDate", DateTime.Now.ToString("yyyy-MM-dd"));
-                            cmd.Parameters.AddWithValue("@status", "Pending");
-                            cmd.Parameters.AddWithValue("@lang", language);
-                            cmd.ExecuteNonQuery();
-                        }
-                        ShowMessage("Material uploaded successfully! It will be reviewed by admin.", false);
+                        cmd.Parameters.AddWithValue("@t", title);
+                        cmd.Parameters.AddWithValue("@d", (object)desc ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@l", lang);
+                        cmd.Parameters.AddWithValue("@st", subtopicId);
+                        cmd.Parameters.AddWithValue("@id", materialId);
+                        cmd.Parameters.AddWithValue("@uid", userId);
+                        if (fileUrl != null) { cmd.Parameters.AddWithValue("@f", fileUrl); cmd.Parameters.AddWithValue("@mt", materialType); }
+                        cmd.ExecuteNonQuery();
                     }
                 }
+                hidToast.Value = T("Material updated successfully.","Bahan berjaya dikemas kini.");
             }
-            catch
-            {
-                ShowMessage("An error occurred. Please try again.", true);
-            }
-
-            pnlForm.Visible = false;
+            catch { hidToast.Value = "An error occurred. Please try again."; }
             LoadMaterials();
         }
 
-        // ── Repeater item command (Edit / Delete) ────────────────────
-        protected void rptMaterials_ItemCommand(object source, RepeaterCommandEventArgs e)
+        // ── Delete ───────────────────────────────────────────────────
+        protected void btnConfirmDelete_Click(object sender, EventArgs e)
         {
-            string materialId = e.CommandArgument.ToString();
+            string materialId = hidDeleteId.Value;
             string userId = Session["userId"].ToString();
-
-            if (e.CommandName == "DeleteMaterial")
-            {
-                try
-                {
-                    using (var conn = new SqlConnection(ConnStr))
-                    {
-                        conn.Open();
-                        if (!VerifyOwnership(conn, materialId, userId))
-                        { ShowMessage("You cannot delete this material.", true); return; }
-
-                        const string sql = "DELETE FROM dbo.[Material] WHERE [materialId] = @id AND [createdByUserId] = @userId";
-                        using (var cmd = new SqlCommand(sql, conn))
-                        {
-                            cmd.Parameters.AddWithValue("@id", materialId);
-                            cmd.Parameters.AddWithValue("@userId", userId);
-                            cmd.ExecuteNonQuery();
-                        }
-                    }
-                    ShowMessage("Material deleted.", false);
-                }
-                catch { ShowMessage("Could not delete material.", true); }
-                LoadMaterials();
-            }
-            else if (e.CommandName == "EditMaterial")
-            {
-                LoadEditForm(materialId, userId);
-            }
-        }
-
-        private void LoadEditForm(string materialId, string userId)
-        {
             try
             {
                 using (var conn = new SqlConnection(ConnStr))
                 {
                     conn.Open();
-                    const string sql = @"
-                        SELECT m.[materialId], m.[materialTitle], m.[materialContent],
-                               m.[materialType], m.[fileUrl], m.[language], m.[subtopicId],
-                               st.[unitId], u.[levelId]
-                        FROM dbo.[Material] m
-                        LEFT JOIN dbo.[Subtopic] st ON st.[subtopicId] = m.[subtopicId]
-                        LEFT JOIN dbo.[Unit] u ON u.[unitId] = st.[unitId]
-                        WHERE m.[materialId] = @id AND m.[createdByUserId] = @userId";
-
-                    using (var cmd = new SqlCommand(sql, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@id", materialId);
-                        cmd.Parameters.AddWithValue("@userId", userId);
-                        using (var rdr = cmd.ExecuteReader())
-                        {
-                            if (!rdr.Read())
-                            { ShowMessage("Material not found.", true); return; }
-
-                            hidMaterialId.Value = materialId;
-                            txtTitle.Text = rdr["materialTitle"]?.ToString() ?? "";
-                            txtDescription.Text = rdr["materialContent"]?.ToString() ?? "";
-                            ddlLanguage.SelectedValue = rdr["language"]?.ToString() ?? "EN";
-
-                            string levelId = rdr["levelId"]?.ToString();
-                            string unitId = rdr["unitId"]?.ToString();
-                            string subtopicId = rdr["subtopicId"]?.ToString();
-                            string fileUrl = rdr["fileUrl"]?.ToString();
-
-                            rdr.Close();
-
-                            LoadFormDropdowns(levelId, unitId, subtopicId);
-
-                            litFormTitle.Text = "Edit Material";
-                            litFileRequired.Text = "(optional — leave blank to keep current file)";
-                            if (!string.IsNullOrEmpty(fileUrl))
-                            {
-                                pnlCurrentFile.Visible = true;
-                                litCurrentFile.Text = HttpUtility.HtmlEncode(
-                                    Path.GetFileName(fileUrl));
-                            }
-                            pnlForm.Visible = true;
-                        }
-                    }
+                    if (!VerifyOwnership(conn, materialId, userId)) { hidToast.Value = "Permission denied."; LoadMaterials(); return; }
+                    using (var cmd = new SqlCommand("DELETE FROM dbo.[Material] WHERE [materialId]=@id AND [createdByUserId]=@uid", conn))
+                    { cmd.Parameters.AddWithValue("@id", materialId); cmd.Parameters.AddWithValue("@uid", userId); cmd.ExecuteNonQuery(); }
                 }
+                hidToast.Value = T("Material deleted successfully.","Bahan berjaya dipadam.");
             }
-            catch { ShowMessage("Could not load material for editing.", true); }
+            catch { hidToast.Value = "Could not delete material."; }
+            LoadMaterials();
         }
 
-        // ── Utility methods ──────────────────────────────────────────
-        private bool VerifyOwnership(SqlConnection conn, string materialId, string userId)
-        {
-            const string sql = "SELECT COUNT(*) FROM dbo.[Material] WHERE [materialId] = @id AND [createdByUserId] = @userId";
-            using (var cmd = new SqlCommand(sql, conn))
-            {
-                cmd.Parameters.AddWithValue("@id", materialId);
-                cmd.Parameters.AddWithValue("@userId", userId);
-                return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
-            }
-        }
+        // ── Repeater (not used for commands now but kept for compatibility) ──
+        protected void rptMaterials_ItemCommand(object source, RepeaterCommandEventArgs e) { }
 
-        private string GenerateNewId(SqlConnection conn)
+        // ── Utilities ────────────────────────────────────────────────
+        private bool VerifyOwnership(SqlConnection conn, string id, string userId)
         {
-            const string sql = "SELECT MAX(CAST(SUBSTRING([materialId],2,LEN([materialId])-1) AS INT)) FROM dbo.[Material]";
-            using (var cmd = new SqlCommand(sql, conn))
-            {
-                var val = cmd.ExecuteScalar();
-                int next = (val != null && val != DBNull.Value) ? Convert.ToInt32(val) + 1 : 1;
-                return "M" + next.ToString("D3");
-            }
-        }
-
-        private void ResetForm()
-        {
-            hidMaterialId.Value = "";
-            txtTitle.Text = "";
-            txtDescription.Text = "";
-            ddlLanguage.SelectedIndex = 0;
-            pnlCurrentFile.Visible = false;
-        }
-
-        private void ShowMessage(string msg, bool isError)
-        {
-            pnlMessage.Visible = true;
-            string bg = isError ? "background:#FEF2F2;color:#DC2626;border:1px solid #FEE2E2;"
-                                : "background:#ECFDF5;color:#059669;border:1px solid #D1FAE5;";
-            litMessage.Text = "<div style='" + bg + "padding:.75rem 1rem;border-radius:10px;font-size:.85rem;font-weight:600;'>"
-                + HttpUtility.HtmlEncode(msg) + "</div>";
+            using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.[Material] WHERE [materialId]=@id AND [createdByUserId]=@u", conn))
+            { cmd.Parameters.AddWithValue("@id", id); cmd.Parameters.AddWithValue("@u", userId); return Convert.ToInt32(cmd.ExecuteScalar()) > 0; }
         }
 
         private static string GetMaterialType(string ext)
         {
-            switch (ext.ToLower())
-            {
-                case ".pdf": return "PDF";
-                case ".doc": case ".docx": return "Document";
-                case ".ppt": case ".pptx": return "PPTX";
-                case ".jpg": case ".jpeg": case ".png": return "Image";
-                default: return "Other";
-            }
+            switch (ext) { case ".pdf": return "PDF"; case ".doc": case ".docx": return "Document"; case ".ppt": case ".pptx": return "PPTX"; case ".jpg": case ".jpeg": case ".png": return "Image"; default: return "Other"; }
         }
 
-        protected string GetFileIcon(string materialType)
+        protected string GetFileIcon(string t)
         {
-            if (string.IsNullOrEmpty(materialType)) return "bi-file-earmark";
-            string t = materialType.ToLower();
-            if (t.Contains("pdf")) return "bi-file-earmark-pdf-fill";
-            if (t.Contains("doc")) return "bi-file-earmark-word-fill";
-            if (t.Contains("ppt")) return "bi-file-earmark-slides-fill";
-            if (t.Contains("image") || t.Contains("jpg") || t.Contains("png")) return "bi-file-earmark-image-fill";
+            if (string.IsNullOrEmpty(t)) return "bi-file-earmark";
+            string l = t.ToLower();
+            if (l.Contains("pdf")) return "bi-file-earmark-pdf-fill";
+            if (l.Contains("doc")) return "bi-file-earmark-word-fill";
+            if (l.Contains("ppt")) return "bi-file-earmark-slides-fill";
+            if (l.Contains("image")) return "bi-file-earmark-image-fill";
             return "bi-file-earmark-fill";
         }
 
-        protected string GetStatusStyle(string status)
+        protected string GetStatusCss(string s)
         {
-            if (string.IsNullOrEmpty(status)) return "background:#F3F4F6;color:#6B7280;";
-            string s = status.ToLower();
-            if (s == "approved") return "background:#D1FAE5;color:#059669;";
-            if (s == "rejected") return "background:#FEE2E2;color:#DC2626;";
-            return "background:#FEF3C7;color:#D97706;"; // Pending
+            if (string.IsNullOrEmpty(s)) return "mm-badge-pending";
+            string l = s.ToLower();
+            if (l == "approved") return "mm-badge-approved";
+            if (l == "rejected") return "mm-badge-rejected";
+            return "mm-badge-pending";
         }
 
-        protected string TruncateText(string text, int maxLength)
+        protected string TruncateText(string text, int max)
         {
             if (string.IsNullOrEmpty(text)) return "No description";
-            return text.Length <= maxLength ? text : text.Substring(0, maxLength) + "…";
+            return text.Length <= max ? text : text.Substring(0, max) + "…";
         }
     }
 }

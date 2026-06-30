@@ -79,6 +79,7 @@
     </div>
     <div class="sb-nav-section"><div class="sb-nav-section-label">Learning Content</div>
         <a href="<%: ResolveUrl("~/Admin/ContentRequests.aspx") %>" class="sb-sidebar-item"><i class="bi bi-inbox item-icon"></i><span class="item-label">Content Requests</span></a>
+        <a href="<%: ResolveUrl("~/Admin/CertificateManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-award item-icon"></i><span class="item-label">Certificates</span></a>
     </div>
     <div class="sb-nav-section"><div class="sb-nav-section-label">Logs</div>
         <a href="<%: ResolveUrl("~/Admin/SystemActivityLogs.aspx") %>" class="sb-sidebar-item active"><i class="bi bi-clock-history item-icon"></i><span class="item-label">Activity Logs</span></a>
