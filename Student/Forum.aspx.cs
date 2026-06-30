@@ -488,8 +488,21 @@ namespace ScienceBuddy.Student
                 }
                 else
                 {
-                    // Like
-                    string likeId = "LK" + DateTime.Now.ToString("yyyyMMddHHmmss");
+                    // Like — generate sequential ID (likeId is NVARCHAR(10))
+                    string likeId = "LK001";
+                    const string seqSql = @"
+                        SELECT ISNULL(MAX(CAST(SUBSTRING(likeId, 3, LEN(likeId) - 2) AS INT)), 0)
+                        FROM ForumLike WHERE likeId LIKE 'LK[0-9]%'";
+                    using (var seqCmd = new SqlCommand(seqSql, conn))
+                    {
+                        object lastVal = seqCmd.ExecuteScalar();
+                        if (lastVal != null && lastVal != DBNull.Value)
+                        {
+                            int lastNum = Convert.ToInt32(lastVal);
+                            likeId = "LK" + (lastNum + 1).ToString("D3");
+                        }
+                    }
+
                     const string insSql = @"
                         INSERT INTO ForumLike (likeId, forumId, senderUserId, createdAt)
                         VALUES (@likeId, @forumId, @userId, @now)";

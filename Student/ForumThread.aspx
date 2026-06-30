@@ -17,16 +17,21 @@
 .ft-header{background:var(--color-white);border-radius:var(--border-radius-xl);
     border:1.5px solid var(--border-color);box-shadow:var(--shadow-sm);
     padding:var(--space-xl);margin-bottom:var(--space-lg);position:relative;overflow:hidden;}
-.ft-header::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;
+.ft-header.public-thread::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;
     background:linear-gradient(90deg,#2563EB,#60A5FA);border-radius:var(--border-radius-xl) var(--border-radius-xl) 0 0;}
+.ft-header.private-thread::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;
+    background:linear-gradient(90deg,#FF6B2C,#A78BFA);border-radius:var(--border-radius-xl) var(--border-radius-xl) 0 0;}
 .ft-header-title{font-family:var(--font-primary);font-size:1.5rem;font-weight:800;
     color:var(--color-text);line-height:1.3;margin-bottom:var(--space-sm);}
 .ft-header-meta{display:flex;align-items:center;gap:var(--space-sm);flex-wrap:wrap;
     margin-bottom:var(--space-md);font-size:.8125rem;color:var(--color-text-secondary);}
-.ft-disc-badge{display:inline-block;padding:3px 10px;border-radius:var(--border-radius-full);
+.ft-disc-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:var(--border-radius-full);
     font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
 .ft-disc-badge.public{background:#DCFCE7;color:#15803D;}
 .ft-disc-badge.private{background:#FEF3C7;color:#92400E;}
+.ft-disc-badge.question{background:#DBEAFE;color:#1D4ED8;}
+.ft-disc-badge.sharing{background:#E0F2FE;color:#0369A1;}
+.ft-disc-badge.help{background:#FCE7F3;color:#9D174D;}
 .ft-header-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:var(--space-md);}
 .ft-tag{background:#F0F7FF;color:var(--ft-primary);padding:3px 10px;
     border-radius:var(--border-radius-full);font-size:.75rem;font-weight:600;}
@@ -40,6 +45,12 @@
     cursor:pointer;transition:all .2s;text-decoration:none;}
 .ft-like-btn:hover{background:#DBEAFE;border-color:var(--ft-primary);}
 .ft-like-btn.liked{background:var(--ft-primary);color:#fff;border-color:var(--ft-primary);}
+
+/* ══ PRIVATE NOTICE ══ */
+.ft-private-notice{display:flex;align-items:center;gap:var(--space-sm);padding:var(--space-md) var(--space-lg);
+    background:#FEF9F0;border:1.5px solid #FDE68A;border-radius:var(--border-radius-lg);
+    margin-bottom:var(--space-lg);font-size:.8125rem;color:#92400E;font-weight:600;}
+.ft-private-notice i{font-size:1.1rem;color:#D97706;}
 
 /* ══ ORIGINAL MESSAGE ══ */
 .ft-message{background:var(--color-white);border-radius:var(--border-radius-xl);
@@ -171,7 +182,10 @@
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Account</div>
-        <a href="<%: ResolveUrl("~/Student/Profile.aspx") %>" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Student/Messages.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-envelope item-icon"></i><span class="item-label">Messages</span>
+        </a>
+        <a href="<%: ResolveUrl("~/Student/MyProfile.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-person item-icon"></i><span class="item-label">My Profile</span>
         </a>
         <a href="<%: ResolveUrl("~/Logout.aspx") %>" class="sb-sidebar-item">
@@ -190,11 +204,23 @@
 <%-- ── ERROR PANEL ── --%>
 <asp:Panel ID="pnlError" runat="server" Visible="false">
     <div class="ft-error">
-        <div class="ft-error-icon">🔍</div>
+        <div class="ft-error-icon"><i class="bi bi-shield-lock" style="color:var(--ft-primary);"></i></div>
         <div class="ft-error-title"><asp:Literal ID="litErrorTitle" runat="server" Text="Discussion not found" /></div>
         <div class="ft-error-desc"><asp:Literal ID="litErrorDesc" runat="server" Text="This discussion does not exist or you don't have access." /></div>
         <a href="<%: ResolveUrl("~/Student/Forum.aspx") %>" class="ft-error-btn">
             <i class="bi bi-arrow-left"></i> <asp:Literal ID="litErrorBtn" runat="server" Text="Back" />
+        </a>
+    </div>
+</asp:Panel>
+
+<%-- ── RESTRICTED PANEL ── --%>
+<asp:Panel ID="pnlRestricted" runat="server" Visible="false">
+    <div class="ft-error">
+        <div class="ft-error-icon"><i class="bi bi-lock-fill" style="color:#D97706;"></i></div>
+        <div class="ft-error-title"><asp:Literal ID="litRestrictedTitle" runat="server" Text="Private Discussion" /></div>
+        <div class="ft-error-desc"><asp:Literal ID="litRestrictedDesc" runat="server" /></div>
+        <a href="<%: ResolveUrl("~/Student/Forum.aspx") %>" class="ft-error-btn">
+            <i class="bi bi-arrow-left"></i> <asp:Literal ID="litRestrictedBtn" runat="server" Text="Back to Forum" />
         </a>
     </div>
 </asp:Panel>
@@ -207,21 +233,29 @@
         <i class="bi bi-arrow-left"></i> <asp:Literal ID="litBack" runat="server" Text="Back to Forum" />
     </a>
 
+    <%-- Private Notice --%>
+    <asp:Panel ID="pnlPrivateNotice" runat="server" Visible="false">
+        <div class="ft-private-notice">
+            <i class="bi bi-lock-fill"></i>
+            <asp:Literal ID="litPrivateNotice" runat="server" />
+        </div>
+    </asp:Panel>
+
     <%-- Thread Header --%>
-    <div class="ft-header">
+    <div class="ft-header" id="divHeader" runat="server">
         <div class="ft-header-title"><asp:Literal ID="litThreadTitle" runat="server" /></div>
         <div class="ft-header-meta">
-            <span class="ft-disc-badge public"><asp:Literal ID="litDiscType" runat="server" /></span>
-            <span><asp:Literal ID="litCreatorName" runat="server" /></span>
-            <span>•</span>
-            <span><asp:Literal ID="litCreatorDate" runat="server" /></span>
+            <span class="ft-disc-badge" id="spnDiscBadge" runat="server"><asp:Literal ID="litDiscType" runat="server" /></span>
+            <span><i class="bi bi-person-fill"></i> <asp:Literal ID="litCreatorName" runat="server" /></span>
+            <span>&#8226;</span>
+            <span><i class="bi bi-clock"></i> <asp:Literal ID="litCreatorDate" runat="server" /></span>
         </div>
         <div class="ft-header-tags">
             <asp:Literal ID="litTags" runat="server" />
         </div>
         <div class="ft-header-stats">
-            <span class="ft-stat"><i class="bi bi-heart-fill"></i> <asp:Literal ID="litLikeCount" runat="server" Text="0" /> <asp:Literal ID="litLikesLabel" runat="server" Text="likes" /></span>
-            <span class="ft-stat"><i class="bi bi-chat-left-text"></i> <asp:Literal ID="litReplyCount" runat="server" Text="0" /> <asp:Literal ID="litRepliesLabel" runat="server" Text="replies" /></span>
+            <span class="ft-stat"><i class="bi bi-heart-fill" style="color:#EF4444;"></i> <asp:Literal ID="litLikeCount" runat="server" Text="0" /> <asp:Literal ID="litLikesLabel" runat="server" Text="likes" /></span>
+            <span class="ft-stat"><i class="bi bi-chat-left-text" style="color:var(--ft-primary);"></i> <asp:Literal ID="litReplyCount" runat="server" Text="0" /> <asp:Literal ID="litRepliesLabel" runat="server" Text="replies" /></span>
             <asp:LinkButton ID="btnLike" runat="server" CssClass="ft-like-btn" OnClick="btnLike_Click">
                 <i class="bi bi-heart"></i> <asp:Literal ID="litLikeText" runat="server" Text="Like" />
             </asp:LinkButton>
@@ -230,7 +264,7 @@
 
     <%-- Original Message --%>
     <div class="ft-message">
-        <div class="ft-message-label"><i class="bi bi-chat-square-text"></i> Original Message</div>
+        <div class="ft-message-label"><i class="bi bi-chat-square-text"></i> <asp:Literal ID="litOrigMsgLabel" runat="server" Text="Original Message" /></div>
         <div class="ft-message-body"><asp:Literal ID="litOrigMessage" runat="server" /></div>
     </div>
 
@@ -248,13 +282,19 @@
                                     <%# Server.HtmlEncode(Eval("SenderName").ToString()) %>
                                     <span class='ft-reply-role <%# Eval("SenderRole").ToString().ToLower() %>'><%# Eval("SenderRoleLabel") %></span>
                                 </div>
-                                <div class="ft-reply-date"><%# Eval("Date") %></div>
+                                <div class="ft-reply-date"><i class="bi bi-clock"></i> <%# Eval("Date") %></div>
                             </div>
                         </div>
                         <div class="ft-reply-body"><%# Server.HtmlEncode(Eval("Message").ToString()) %></div>
                     </div>
                 </ItemTemplate>
             </asp:Repeater>
+            <asp:Panel ID="pnlNoReplies" runat="server" Visible="false">
+                <div class="ft-no-replies">
+                    <i class="bi bi-chat-square" style="font-size:1.5rem;display:block;margin-bottom:8px;"></i>
+                    <asp:Literal ID="litNoReplies" runat="server" Text="No replies yet. Be the first to respond!" />
+                </div>
+            </asp:Panel>
         </div>
     </div>
 
@@ -280,7 +320,6 @@
             placeholder="Write your reply..." />
         <asp:Button ID="btnReply" runat="server" CssClass="ft-reply-submit" OnClick="btnReply_Click"
             Text="Post Reply" />
-        <asp:Literal ID="litReplyBtn" runat="server" Visible="false" />
     </div>
 
 </asp:Panel>
