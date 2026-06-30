@@ -197,6 +197,7 @@ namespace ScienceBuddy.Student
             if (!TblOK("Quiz")) { pnlQuiz.Visible = false; pnlQuizNone.Visible = true; return; }
 
             bool bm = CurrentLanguage == "BM";
+            string quizId = null;
             using (var cmd = new SqlCommand("SELECT TOP 1 quizId,quizTitleEN,quizTitleBM FROM Quiz WHERE levelId=@l AND quizType='Level' ORDER BY createdAt DESC", conn))
             {
                 cmd.Parameters.AddWithValue("@l", levelId);
@@ -204,14 +205,35 @@ namespace ScienceBuddy.Student
                 {
                     if (rdr.Read())
                     {
+                        quizId = rdr["quizId"].ToString();
                         string t = bm ? rdr["quizTitleBM"].ToString() : rdr["quizTitleEN"].ToString();
                         if (string.IsNullOrWhiteSpace(t)) t = rdr["quizTitleEN"].ToString();
                         pnlQuiz.Visible = true; pnlQuizNone.Visible = false;
                         litQuizTitle.Text = HttpUtility.HtmlEncode(t);
                         litQuizSub.Text = T("Recommended after completing all units.","Disyorkan selepas menyelesaikan semua unit.");
                         litQuizBtn.Text = T("Start Level Quiz","Mula Kuiz Tahap");
+                        lnkQuizStart.HRef = ResolveUrl("~/Student/Quiz.aspx?quizId=" + quizId);
                     }
-                    else { pnlQuiz.Visible = false; pnlQuizNone.Visible = true; }
+                    else { pnlQuiz.Visible = false; pnlQuizNone.Visible = true; return; }
+                }
+            }
+
+            // Check previous attempt
+            if (!string.IsNullOrEmpty(quizId) && TblOK("QuizResult"))
+            {
+                using (var cmd = new SqlCommand("SELECT TOP 1 resultId FROM QuizResult WHERE studentId=@s AND quizId=@q ORDER BY attemptedDate DESC", conn))
+                {
+                    cmd.Parameters.AddWithValue("@s", studentId); cmd.Parameters.AddWithValue("@q", quizId);
+                    object r = cmd.ExecuteScalar();
+                    if (r != null && r != DBNull.Value)
+                    {
+                        string rid = r.ToString();
+                        pnlQuizResult.Visible = true;
+                        litQuizResultBtn.Text = T("View Last Result", "Lihat Keputusan Terkini");
+                        litQuizReviewBtn.Text = T("Review Answers", "Semak Jawapan");
+                        lnkQuizResult.HRef = ResolveUrl("~/Student/QuizResult.aspx?resultId=" + rid);
+                        lnkQuizReview.HRef = ResolveUrl("~/Student/QuizReview.aspx?resultId=" + rid);
+                    }
                 }
             }
         }

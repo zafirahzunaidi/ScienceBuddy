@@ -48,6 +48,151 @@ Do not run insert scripts before table creation. If SQL Server says `Invalid obj
   - `Quiz.language`: `EN`, `BM`, `BOTH`
   - `Material.language`: `EN`, `BM`, `BOTH`
 
+## 3A. ID Generation Rules
+
+IMPORTANT:
+All primary key IDs must follow the fixed prefix + 3-digit running number format unless the seed script already uses a different official format.
+
+Do NOT generate IDs using:
+
+* Date/time ticks
+* GUID
+* Random numbers
+* Current timestamp
+* Student ID + date
+* Long IDs such as QR20260630001
+* Auto-increment integer IDs
+
+Most ID columns are `NVARCHAR(10)`, so generated IDs must stay short.
+
+### Required ID Format
+
+Use this format:
+
+PREFIX + 3-digit number
+
+Examples:
+
+* U001
+* S001
+* P001
+* T001
+* QR001
+* QA001
+* LP001
+
+### How to Generate New ID in Website Code
+
+When inserting a new record:
+
+1. Find the current highest ID for that table.
+2. Extract the numeric part after the prefix.
+3. Add 1.
+4. Pad the number to 3 digits.
+5. Combine with the prefix.
+
+Example:
+If the highest `resultId` is `QR022`, the next ID must be:
+
+QR023
+
+Example SQL idea:
+
+```sql
+SELECT ISNULL(MAX(CAST(SUBSTRING(resultId, 3, 3) AS INT)), 0) + 1
+FROM dbo.QuizResult
+WHERE resultId LIKE 'QR%'
+```
+
+Then format in C#:
+
+```csharp
+string newId = "QR" + nextNumber.ToString("D3");
+```
+
+### ID Prefix Table
+
+Use these prefixes when inserting new records:
+
+| Table                   | ID Column       | Prefix | Example |
+| ----------------------- | --------------- | -----: | ------- |
+| User                    | userId          |      U | U001    |
+| Student                 | studentId       |      S | S001    |
+| Parent                  | parentId        |      P | P001    |
+| Teacher                 | teacherId       |      T | T001    |
+| StudentParent           | studentParentId |     SP | SP001   |
+| Level                   | levelId         |     LV | LV001   |
+| Personality             | personalityId   |    PER | PER001  |
+| Badge                   | badgeId         |      B | B001    |
+| StudentBadge            | studentBadgeId  |     SB | SB001   |
+| Unit                    | unitId          |     UN | UN001   |
+| Subtopic                | subtopicId      |     ST | ST001   |
+| Enrollment              | enrollmentId    |    ENR | ENR001  |
+| Lesson                  | lessonId        |      L | L001    |
+| Quiz                    | quizId          |      Q | Q001    |
+| Material                | materialId      |      M | M001    |
+| Forum                   | forumId         |      F | F001    |
+| ForumChat               | forumChatId     |     FC | FC001   |
+| Tag                     | tagId           |     TG | TG001   |
+| ForumTag                | forumTagId      |     FT | FT001   |
+| ForumLike               | likeId          |     FL | FL001   |
+| Question                | questionId      |    QST | QST001  |
+| QuizResult              | resultId        |     QR | QR001   |
+| QuizAnswer              | answerId        |     QA | QA001   |
+| XPAction                | xpActionId      |     XA | XA001   |
+| XPTransaction           | xpTransactionId |     XT | XT001   |
+| LessonProgress          | progressId      |     LP | LP001   |
+| Certificate             | certificateId   |   CERT | CERT001 |
+| Log                     | logId           |    LOG | LOG001  |
+| Notification            | notificationId  |      N | N001    |
+| VirtualLab              | labId           |    LAB | LAB001  |
+| LabProgress             | labProgressId   |    LPR | LPR001  |
+| LiveConsultationSession | sessionId       |     LS | LS001   |
+| LiveSessionParticipant  | participantId   |    LSP | LSP001  |
+| UserStatusAction        | actionId        |    USA | USA001  |
+| ConfigurationSetting    | configId        |    CFG | CFG001  |
+| AILearningAnalysis      | analysisId      |     AI | AI001   |
+| StudyPlan               | studyPlanId     |    SPN | SPN001  |
+| SPTask                  | spTaskId        |    SPT | SPT001  |
+| SPReward                | rewardId        |    SPR | SPR001  |
+| userChat                | chatId          |     CH | CH001   |
+| privateMessage          | privateMsgId    |     PM | PM001   |
+
+### Important Exception
+
+`certificateCode` is NOT the same as `certificateId`.
+
+* `certificateId` must follow the short sequential format, for example CERT001.
+* `certificateCode` may be a longer unique verification code, for example CERT-S005-LV001-20260630.
+
+Do not use `certificateCode` format for primary key IDs.
+
+### C# Helper Rule
+
+When Kiro generates insert logic, it should create or reuse a helper method like:
+
+```csharp
+private string GenerateNextId(SqlConnection conn, SqlTransaction tran, string tableName, string idColumn, string prefix)
+{
+    string sql = $@"
+        SELECT ISNULL(MAX(CAST(SUBSTRING({idColumn}, LEN(@prefix) + 1, 10) AS INT)), 0) + 1
+        FROM {tableName}
+        WHERE {idColumn} LIKE @prefix + '%'";
+
+    using (SqlCommand cmd = new SqlCommand(sql, conn, tran))
+    {
+        cmd.Parameters.AddWithValue("@prefix", prefix);
+        int nextNumber = Convert.ToInt32(cmd.ExecuteScalar());
+        return prefix + nextNumber.ToString("D3");
+    }
+}
+```
+
+Use this helper before INSERT statements.
+
+Do not use timestamps, GUIDs, or random values for primary key IDs.
+
+
 ---
 
 ## 4. File and Image Path Rules
