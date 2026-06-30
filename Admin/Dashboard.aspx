@@ -223,7 +223,7 @@
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Learning Content</div>
-        <a href="#" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Admin/LessonManagement.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-book item-icon"></i>
             <span class="item-label">Lessons</span>
         </a>
