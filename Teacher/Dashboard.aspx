@@ -256,52 +256,52 @@
 <%-- ════ SIDEBAR MENU ════ --%>
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
     <div class="sb-nav-section">
-        <div class="sb-nav-section-label">Main</div>
+        <div class="sb-nav-section-label"><%: T("Main","Utama") %></div>
         <a href="<%: ResolveUrl("~/Teacher/Dashboard.aspx") %>" class="sb-sidebar-item active">
             <i class="bi bi-speedometer2 item-icon"></i>
-            <span class="item-label">Dashboard</span>
+            <span class="item-label"><%: T("Dashboard","Papan Pemuka") %></span>
         </a>
     </div>
     <div class="sb-nav-section">
-        <div class="sb-nav-section-label">Teaching</div>
-        <a href="#" class="sb-sidebar-item">
+        <div class="sb-nav-section-label"><%: T("Teaching","Pengajaran") %></div>
+        <a href="<%: ResolveUrl("~/Teacher/manageMaterials.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-book item-icon"></i>
-            <span class="item-label">Manage Lessons</span>
+            <span class="item-label"><%: T("Manage Materials","Urus Bahan Pembelajaran") %></span>
         </a>
         <a href="#" class="sb-sidebar-item">
             <i class="bi bi-patch-question item-icon"></i>
-            <span class="item-label">Create Quiz</span>
+            <span class="item-label"><%: T("Create Quiz","Cipta Kuiz") %></span>
         </a>
         <a href="#" class="sb-sidebar-item">
             <i class="bi bi-bar-chart item-icon"></i>
-            <span class="item-label">Student Progress</span>
+            <span class="item-label"><%: T("Student Progress","Kemajuan Pelajar") %></span>
         </a>
         <a href="#" class="sb-sidebar-item">
             <i class="bi bi-camera-video item-icon"></i>
-            <span class="item-label">Schedule Live Class</span>
+            <span class="item-label"><%: T("Schedule Live Class","Jadual Kelas Langsung") %></span>
         </a>
     </div>
     <div class="sb-nav-section">
-        <div class="sb-nav-section-label">Community</div>
+        <div class="sb-nav-section-label"><%: T("Community","Komuniti") %></div>
         <a href="#" class="sb-sidebar-item">
             <i class="bi bi-chat-dots item-icon"></i>
-            <span class="item-label">Forum</span>
+            <span class="item-label"><%: T("Forum","Forum") %></span>
         </a>
     </div>
     <div class="sb-nav-section">
-        <div class="sb-nav-section-label">Account</div>
+        <div class="sb-nav-section-label"><%: T("Account","Akaun") %></div>
         <a href="#" class="sb-sidebar-item">
             <i class="bi bi-person item-icon"></i>
-            <span class="item-label">My Profile</span>
+            <span class="item-label"><%: T("My Profile","Profil Saya") %></span>
         </a>
         <a href="<%: ResolveUrl("~/Logout.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-box-arrow-right item-icon"></i>
-            <span class="item-label">Sign Out</span>
+            <span class="item-label"><%: T("Sign Out","Log Keluar") %></span>
         </a>
     </div>
 </asp:Content>
 
-<asp:Content ID="cPageTitle" ContentPlaceHolderID="PageTitle" runat="server">Teacher Dashboard</asp:Content>
+<asp:Content ID="cPageTitle" ContentPlaceHolderID="PageTitle" runat="server"><%: T("Teacher Dashboard","Papan Pemuka Guru") %></asp:Content>
 
 <%-- ════ MAIN CONTENT ════ --%>
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
@@ -360,35 +360,35 @@
     <div class="td-sec-title"><i class="bi bi-lightning-fill" style="color:var(--tc-primary);"></i> Quick Actions</div>
 </div>
 <div class="td-quick">
-    <a href="<%: ResolveUrl("~/Teacher/manageMaterials.aspx") %>" class="td-quick-card">
+    <a href="<%: ResolveUrl("~/Teacher/uploadMaterial.aspx") %>" class="td-quick-card">
         <div class="td-quick-ico" style="background:#EDE9FE;color:#6C63FF;"><i class="bi bi-file-earmark-plus"></i></div>
         <div class="td-quick-content">
-            <div class="td-quick-lbl">Create Lesson</div>
-            <div class="td-quick-desc">Add a new science lesson</div>
+            <div class="td-quick-lbl"><%: T("Upload Material","Muat Naik Bahan") %></div>
+            <div class="td-quick-desc"><%: T("Add a new science lesson","Tambah bahan pembelajaran baharu") %></div>
         </div>
         <span class="td-quick-arrow"><i class="bi bi-chevron-right"></i></span>
     </a>
     <a href="<%: ResolveUrl("~/Teacher/CreateQuiz.aspx") %>" class="td-quick-card">
         <div class="td-quick-ico" style="background:#FEF3C7;color:#D97706;"><i class="bi bi-patch-question"></i></div>
         <div class="td-quick-content">
-            <div class="td-quick-lbl">Create Quiz</div>
-            <div class="td-quick-desc">Build a new practice quiz</div>
+            <div class="td-quick-lbl"><%: T("Create Quiz","Cipta Kuiz") %></div>
+            <div class="td-quick-desc"><%: T("Build a new practice quiz","Bina kuiz latihan baharu") %></div>
         </div>
         <span class="td-quick-arrow"><i class="bi bi-chevron-right"></i></span>
     </a>
     <a href="<%: ResolveUrl("~/Teacher/ScheduleClass.aspx") %>" class="td-quick-card">
         <div class="td-quick-ico" style="background:#DBEAFE;color:#2563EB;"><i class="bi bi-calendar-plus"></i></div>
         <div class="td-quick-content">
-            <div class="td-quick-lbl">Schedule Live Class</div>
-            <div class="td-quick-desc">Plan an online learning session</div>
+            <div class="td-quick-lbl"><%: T("Schedule Live Class","Jadual Kelas Langsung") %></div>
+            <div class="td-quick-desc"><%: T("Plan an online learning session","Rancang sesi pembelajaran dalam talian") %></div>
         </div>
         <span class="td-quick-arrow"><i class="bi bi-chevron-right"></i></span>
     </a>
     <a href="<%: ResolveUrl("~/Teacher/StudentProgress.aspx") %>" class="td-quick-card">
         <div class="td-quick-ico" style="background:#D1FAE5;color:#059669;"><i class="bi bi-graph-up-arrow"></i></div>
         <div class="td-quick-content">
-            <div class="td-quick-lbl">Student Progress</div>
-            <div class="td-quick-desc">Review student learning data</div>
+            <div class="td-quick-lbl"><%: T("Student Progress","Kemajuan Pelajar") %></div>
+            <div class="td-quick-desc"><%: T("Review student learning data","Semak data pembelajaran pelajar") %></div>
         </div>
         <span class="td-quick-arrow"><i class="bi bi-chevron-right"></i></span>
     </a>
