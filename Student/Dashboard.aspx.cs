@@ -15,6 +15,9 @@ namespace ScienceBuddy.Student
         // ── Language helper ────────────────────────────────────────────
         private string CurrentLanguage = "EN";
 
+        // ── Personality colour for ASPX hero styling ──────────────────
+        public string PersonalityColour = "#2563EB";
+
         private string T(string en, string bm)
         {
             return CurrentLanguage == "BM" ? bm : en;
@@ -401,6 +404,9 @@ namespace ScienceBuddy.Student
                               string personalityEN, string avatar, string colour,
                               string personalityId, string lang)
         {
+            // Set personality colour for hero gradient
+            if (!string.IsNullOrWhiteSpace(colour)) PersonalityColour = colour;
+
             string displayName  = string.IsNullOrWhiteSpace(nickname) ? name : nickname;
             litGreeting.Text    = T("Hi, ", "Hai, ") + System.Web.HttpUtility.HtmlEncode(displayName) + "! 👋";
             litMotivation.Text  = GetMotivation(personalityId);
@@ -410,15 +416,19 @@ namespace ScienceBuddy.Student
 
             if (!string.IsNullOrWhiteSpace(avatar))
             {
-                imgPersonalityAvatar.ImageUrl = ResolveUrl("~/Images/Personality/" + avatar);
+                // Avatar path from DB may already include "Images/Personality/" or just the filename
+                string avatarPath = avatar.StartsWith("~/") ? avatar
+                    : avatar.StartsWith("Images/") ? "~/" + avatar
+                    : "~/Images/Personality/" + avatar;
+                imgPersonalityAvatar.ImageUrl = ResolveUrl(avatarPath);
                 imgPersonalityAvatar.Visible  = true;
-                litAvatarFallback.Visible     = false;
+                // Keep fallback rendered but hidden so JS onerror can show it
+                litAvatarFallback.Text = "<span style=\"display:none;\"><i class=\"bi bi-person-hearts\" style=\"font-size:2.5rem;\"></i></span>";
             }
             else
             {
                 imgPersonalityAvatar.Visible = false;
-                litAvatarFallback.Text       = "🔬";
-                litAvatarFallback.Visible    = true;
+                litAvatarFallback.Text = "<i class=\"bi bi-person-hearts\" style=\"font-size:2.5rem;\"></i>";
             }
         }
 
@@ -464,15 +474,17 @@ namespace ScienceBuddy.Student
 
             if (!string.IsNullOrWhiteSpace(avatar))
             {
-                imgPersonalityThumb.ImageUrl = ResolveUrl("~/Images/Personality/" + avatar);
+                string avatarPath = avatar.StartsWith("~/") ? avatar
+                    : avatar.StartsWith("Images/") ? "~/" + avatar
+                    : "~/Images/Personality/" + avatar;
+                imgPersonalityThumb.ImageUrl = ResolveUrl(avatarPath);
                 imgPersonalityThumb.Visible  = true;
-                litPersonalityThumbFallback.Visible = false;
+                litPersonalityThumbFallback.Text = "<span style=\"display:none;\"><i class=\"bi bi-person-hearts\" style=\"font-size:1.5rem;\"></i></span>";
             }
             else
             {
                 imgPersonalityThumb.Visible = false;
-                litPersonalityThumbFallback.Text    = "🧠";
-                litPersonalityThumbFallback.Visible = true;
+                litPersonalityThumbFallback.Text = "<i class=\"bi bi-person-hearts\" style=\"font-size:1.5rem;\"></i>";
             }
 
             // Recommendation text and link per personality

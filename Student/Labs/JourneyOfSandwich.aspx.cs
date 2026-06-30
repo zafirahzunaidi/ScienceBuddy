@@ -8,7 +8,7 @@ namespace ScienceBuddy.Student.Labs
 {
     public partial class JourneyOfSandwich : Page
     {
-        private string ConnStr => ConfigurationManager.ConnectionStrings["ScienceBuddyDB"].ConnectionString;
+        private string ConnStr => ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
         public string CurrentLanguage = "EN";
         public string T(string en, string bm) { return CurrentLanguage == "BM" ? bm : en; }
         private string _studentId;

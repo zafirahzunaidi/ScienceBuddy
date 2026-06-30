@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Dashboard.aspx.cs"
+ï»¿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Dashboard.aspx.cs"
     Inherits="ScienceBuddy.Student.Dashboard" MasterPageFile="~/Site.Master"
     Title="Dashboard" %>
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
@@ -8,15 +8,18 @@
 
 /* -- HERO -- */
 .sd-hero{
-    background:linear-gradient(135deg,#1D4ED8 0%,#2563EB 40%,#4DA8FF 100%);
+    background:linear-gradient(135deg, <%= PersonalityColour %> 0%, <%= PersonalityColour %>99 40%, #4DA8FF 100%);
     border-radius:var(--border-radius-xl);padding:var(--space-2xl) var(--space-2xl);
     color:#fff;display:flex;align-items:center;justify-content:space-between;
     gap:var(--space-xl);position:relative;overflow:hidden;margin-bottom:var(--space-xl);
-    box-shadow:0 12px 40px rgba(37,99,235,.30);
+    box-shadow:0 16px 48px rgba(0,0,0,.18);
+    min-height:240px;
 }
-/* decorative science blobs */
-.sd-hero::before{content:'??';position:absolute;font-size:7rem;opacity:.07;
-    top:-16px;right:200px;pointer-events:none;line-height:1;}
+/* decorative floating shapes */
+.sd-hero::before{content:'';position:absolute;width:200px;height:200px;border-radius:50%;
+    background:rgba(255,255,255,.06);top:-60px;right:180px;pointer-events:none;
+    animation:sd-float 6s ease-in-out infinite;}
+@keyframes sd-float{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
 .sd-hero-blob1{position:absolute;width:320px;height:320px;border-radius:50%;
     background:rgba(255,255,255,.06);top:-100px;right:-60px;pointer-events:none;}
 .sd-hero-blob2{position:absolute;width:180px;height:180px;border-radius:50%;
@@ -26,8 +29,8 @@
 .sd-hero-left{position:relative;z-index:1;flex:1;}
 .sd-hero-eyebrow{font-size:.75rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
     opacity:.75;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
-.sd-hero-greeting{font-family:var(--font-primary);font-size:2.125rem;font-weight:800;
-    line-height:1.15;margin-bottom:var(--space-sm);}
+.sd-hero-greeting{font-family:var(--font-primary);font-size:2.5rem;font-weight:800;
+    line-height:1.1;margin-bottom:var(--space-sm);text-shadow:0 2px 12px rgba(0,0,0,.15);}
 .sd-hero-sub{font-size:1rem;opacity:.88;margin-bottom:var(--space-lg);max-width:460px;line-height:1.55;}
 .sd-hero-chips{display:flex;gap:var(--space-sm);flex-wrap:wrap;align-items:center;}
 .sd-hero-chip{background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.30);
@@ -36,22 +39,25 @@
     backdrop-filter:blur(6px);}
 .sd-hero-chip.xp-chip{background:rgba(255,216,77,.22);border-color:rgba(255,216,77,.45);color:#FFF3B0;}
 .sd-hero-cta{margin-top:var(--space-lg);display:flex;gap:var(--space-sm);flex-wrap:wrap;}
-.sd-hero-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 22px;
-    border-radius:var(--border-radius-full);font-weight:700;font-size:.9375rem;
-    text-decoration:none;transition:all .2s;border:2px solid transparent;}
+.sd-hero-btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;
+    border-radius:var(--border-radius-full);font-weight:800;font-size:1rem;
+    text-decoration:none;transition:all .25s;border:2px solid transparent;
+    box-shadow:0 4px 16px rgba(0,0,0,.12);}
 .sd-hero-btn-primary{background:#fff;color:var(--color-primary);}
-.sd-hero-btn-primary:hover{background:#DBEAFE;color:var(--color-primary-dark);transform:translateY(-2px);
-    box-shadow:0 6px 20px rgba(0,0,0,.15);text-decoration:none;}
-.sd-hero-btn-secondary{background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.35);}
-.sd-hero-btn-secondary:hover{background:rgba(255,255,255,.25);transform:translateY(-2px);text-decoration:none;}
+.sd-hero-btn-primary:hover{background:#DBEAFE;color:var(--color-primary-dark);transform:translateY(-3px) scale(1.02);
+    box-shadow:0 8px 28px rgba(0,0,0,.2);text-decoration:none;}
+.sd-hero-btn-secondary{background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.4);
+    backdrop-filter:blur(8px);}
+.sd-hero-btn-secondary:hover{background:rgba(255,255,255,.3);transform:translateY(-3px) scale(1.02);text-decoration:none;}
 .sd-hero-right{position:relative;z-index:1;flex-shrink:0;}
-.sd-hero-avatar{width:130px;height:130px;border-radius:var(--border-radius-xl);
-    background:rgba(255,255,255,.15);border:3px solid rgba(255,255,255,.35);
-    display:flex;align-items:center;justify-content:center;font-size:3.75rem;
-    overflow:hidden;box-shadow:0 10px 36px rgba(0,0,0,.20);}
-.sd-hero-avatar img{width:100%;height:100%;object-fit:cover;}
-.sd-hero-avatar-label{text-align:center;margin-top:var(--space-sm);font-size:.8125rem;
-    font-weight:700;opacity:.85;}
+.sd-hero-avatar{width:280px;height:280px;border-radius:50%;
+    background:rgba(255,255,255,.08);border:none;
+    display:flex;align-items:center;justify-content:center;font-size:5rem;
+    overflow:hidden;box-shadow:0 0 60px rgba(255,255,255,.15);
+    animation:sd-float 5s ease-in-out infinite;margin:-40px -20px -40px 0;}
+.sd-hero-avatar img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 8px 24px rgba(0,0,0,.2));}
+.sd-hero-avatar-label{text-align:center;margin-top:0;font-size:.875rem;
+    font-weight:700;opacity:.9;}
 </style>
 <style>
 /* -- SECTION HEADING -- */
@@ -78,8 +84,10 @@
 .sd-stat-card.sc-badge::before{background:linear-gradient(90deg,#FFD84D,#FFAB2C);}
 .sd-stat-card.sc-lesson::before{background:linear-gradient(90deg,#22C55E,#4ADE80);}
 .sd-stat-top{display:flex;align-items:center;justify-content:space-between;}
-.sd-stat-icon{width:44px;height:44px;border-radius:var(--border-radius);
-    display:flex;align-items:center;justify-content:center;font-size:1.375rem;}
+.sd-stat-icon{width:52px;height:52px;border-radius:var(--border-radius);
+    display:flex;align-items:center;justify-content:center;font-size:1.5rem;
+    transition:transform .2s;}
+.sd-stat-card:hover .sd-stat-icon{transform:scale(1.1);}
 .sd-stat-badge-pill{font-size:.6875rem;font-weight:800;padding:2px 8px;
     border-radius:var(--border-radius-full);}
 .sd-stat-val{font-family:var(--font-primary);font-size:2rem;font-weight:800;
@@ -200,8 +208,8 @@
 }
 @media(max-width:767px){
     .sd-hero{flex-direction:column;padding:var(--space-xl) var(--space-lg);}
-    .sd-hero-avatar{width:96px;height:96px;font-size:2.75rem;}
-    .sd-hero-greeting{font-size:1.625rem;}
+    .sd-hero-avatar{width:180px;height:180px;font-size:3.5rem;margin:0 auto;}
+    .sd-hero-greeting{font-size:1.75rem;}
     .sd-hero-right{align-self:center;}
     .sd-stats{grid-template-columns:repeat(2,1fr);}
     .sd-quick-grid{grid-template-columns:repeat(2,1fr);}
@@ -210,7 +218,8 @@
 }
 @media(max-width:479px){
     .sd-hero{padding:var(--space-lg) var(--space-md);}
-    .sd-hero-greeting{font-size:1.375rem;}
+    .sd-hero-greeting{font-size:1.5rem;}
+    .sd-hero-avatar{width:140px;height:140px;}
     .sd-stats{gap:var(--space-sm);}
     .sd-quick-grid{grid-template-columns:repeat(2,1fr);gap:var(--space-sm);}
     .sd-hero-cta .sd-hero-btn{width:100%;justify-content:center;}
@@ -283,8 +292,8 @@
         <div class="sd-hero-greeting"><asp:Literal ID="litGreeting" runat="server" Text="Hi there! ??" /></div>
         <div class="sd-hero-sub"><asp:Literal ID="litMotivation" runat="server" Text="Ready to explore science today?" /></div>
         <div class="sd-hero-chips">
-            <span class="sd-hero-chip"><i class="bi bi-bar-chart-fill"></i> <asp:Literal ID="litHeroLevel" runat="server" Text="Level: —" /></span>
-            <span class="sd-hero-chip"><i class="bi bi-stars"></i> <asp:Literal ID="litHeroPersonality" runat="server" Text="—" /></span>
+            <span class="sd-hero-chip"><i class="bi bi-bar-chart-fill"></i> <asp:Literal ID="litHeroLevel" runat="server" Text="Level: ï¿½" /></span>
+            <span class="sd-hero-chip"><i class="bi bi-stars"></i> <asp:Literal ID="litHeroPersonality" runat="server" Text="ï¿½" /></span>
             <span class="sd-hero-chip xp-chip"><i class="bi bi-lightning-charge-fill"></i> <asp:Literal ID="litHeroXP" runat="server" Text="0 XP" /></span>
         </div>
         <div class="sd-hero-cta">
@@ -299,7 +308,7 @@
     <div class="sd-hero-right">
         <div class="sd-hero-avatar">
             <asp:Image ID="imgPersonalityAvatar" runat="server" AlternateText="Personality avatar"
-                onerror="this.style.display='none';this.parentElement.innerHTML='??';" />
+                onerror="this.style.display='none';var fb=this.nextElementSibling;if(fb&&fb.firstChild)fb.firstChild.style.display='inline';" />
             <asp:Literal ID="litAvatarFallback" runat="server" />
         </div>
         <div class="sd-hero-avatar-label"><asp:Literal ID="litHeroPersonality2" runat="server" /></div>
@@ -325,16 +334,16 @@
 <div class="sd-stats" style="margin-bottom:var(--space-xl);">
     <div class="sd-stat-card sc-level">
         <div class="sd-stat-top">
-            <div class="sd-stat-icon" style="background:#DBEAFE;color:#1D4ED8;">??</div>
+            <div class="sd-stat-icon" style="background:#DBEAFE;color:#1D4ED8;"><i class="bi bi-mortarboard-fill"></i></div>
             <span class="sd-stat-badge-pill" style="background:#DBEAFE;color:#1D4ED8;">Level</span>
         </div>
-        <div class="sd-stat-val"><asp:Literal ID="litStatLevel" runat="server" Text="—" /></div>
+        <div class="sd-stat-val"><asp:Literal ID="litStatLevel" runat="server" Text="ï¿½" /></div>
         <div class="sd-stat-lbl"><asp:Literal ID="litStatLevelLbl" runat="server" Text="Current Level" /></div>
         <div class="sd-stat-sub"><asp:Literal ID="litStatLevelSub" runat="server" Text="Keep going to advance!" /></div>
     </div>
     <div class="sd-stat-card sc-xp">
         <div class="sd-stat-top">
-            <div class="sd-stat-icon" style="background:#FFF0E8;color:#FF6B2C;">?</div>
+            <div class="sd-stat-icon" style="background:#FFF0E8;color:#FF6B2C;"><i class="bi bi-lightning-charge-fill"></i></div>
             <span class="sd-stat-badge-pill" style="background:#FFF0E8;color:#FF6B2C;">XP</span>
         </div>
         <div class="sd-stat-val"><asp:Literal ID="litStatXP" runat="server" Text="0" /></div>
@@ -343,7 +352,7 @@
     </div>
     <div class="sd-stat-card sc-badge">
         <div class="sd-stat-top">
-            <div class="sd-stat-icon" style="background:#FFFBEB;color:#B45309;">??</div>
+            <div class="sd-stat-icon" style="background:#FFFBEB;color:#B45309;"><i class="bi bi-award-fill"></i></div>
             <span class="sd-stat-badge-pill" style="background:#FFFBEB;color:#B45309;">Badges</span>
         </div>
         <div class="sd-stat-val"><asp:Literal ID="litStatBadges" runat="server" Text="0" /></div>
@@ -352,7 +361,7 @@
     </div>
     <div class="sd-stat-card sc-lesson">
         <div class="sd-stat-top">
-            <div class="sd-stat-icon" style="background:#DCFCE7;color:#15803D;">?</div>
+            <div class="sd-stat-icon" style="background:#DCFCE7;color:#15803D;"><i class="bi bi-check-circle-fill"></i></div>
             <span class="sd-stat-badge-pill" style="background:#DCFCE7;color:#15803D;">Done</span>
         </div>
         <div class="sd-stat-val"><asp:Literal ID="litStatLessons" runat="server" Text="0" /></div>
@@ -370,7 +379,7 @@
         <div class="sd-rec-banner" id="divRecBanner" runat="server">
             <div class="sd-rec-banner-icon" id="divPersonalityAvatar" runat="server">
                 <asp:Image ID="imgPersonalityThumb" runat="server" AlternateText="Personality"
-                    onerror="this.style.display='none';this.parentElement.innerHTML='??';" />
+                    onerror="this.style.display='none';var fb=this.nextElementSibling;if(fb&&fb.firstChild)fb.firstChild.style.display='inline';" />
                 <asp:Literal ID="litPersonalityThumbFallback" runat="server" />
             </div>
             <div class="sd-rec-banner-body">
