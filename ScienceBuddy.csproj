@@ -115,7 +115,12 @@
     <Content Include="Admin\LoginLogs.aspx" />
     <Content Include="Admin\SystemSettings.aspx" />
     <Content Include="Admin\TeacherMaterials.aspx" />
+    <Content Include="Admin\ForumDiscussions.aspx" />
     <Content Include="Admin\QuestionRequests.aspx" />
+    <Content Include="Admin\QuestionBank.aspx" />
+    <Content Include="Admin\StudentDetails.aspx" />
+    <Content Include="Admin\ParentDetails.aspx" />
+    <Content Include="Admin\TeacherDetails.aspx" />
     <Content Include="Contact.aspx" />
     <Content Include="Content\bootstrap-grid.css" />
     <Content Include="Content\bootstrap-grid.min.css" />
@@ -371,12 +376,47 @@
     <Compile Include="Admin\TeacherMaterials.aspx.designer.cs">
       <DependentUpon>TeacherMaterials.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Admin\ForumDiscussions.aspx.cs">
+      <DependentUpon>ForumDiscussions.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\ForumDiscussions.aspx.designer.cs">
+      <DependentUpon>ForumDiscussions.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Admin\QuestionRequests.aspx.cs">
       <DependentUpon>QuestionRequests.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Admin\QuestionRequests.aspx.designer.cs">
       <DependentUpon>QuestionRequests.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\QuestionBank.aspx.cs">
+      <DependentUpon>QuestionBank.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\QuestionBank.aspx.designer.cs">
+      <DependentUpon>QuestionBank.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\StudentDetails.aspx.cs">
+      <DependentUpon>StudentDetails.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\StudentDetails.aspx.designer.cs">
+      <DependentUpon>StudentDetails.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\ParentDetails.aspx.cs">
+      <DependentUpon>ParentDetails.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\ParentDetails.aspx.designer.cs">
+      <DependentUpon>ParentDetails.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\TeacherDetails.aspx.cs">
+      <DependentUpon>TeacherDetails.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\TeacherDetails.aspx.designer.cs">
+      <DependentUpon>TeacherDetails.aspx</DependentUpon>
     </Compile>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="About.aspx.cs">

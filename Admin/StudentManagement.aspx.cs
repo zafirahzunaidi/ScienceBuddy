@@ -24,6 +24,10 @@ namespace ScienceBuddy.Admin
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            // AJAX CRUD handler
+            if (Request.QueryString["handler"] == "StudentCRUD" && Request.HttpMethod == "POST")
+            { HandleAjax(); return; }
+
             if (Session["userId"] == null)
             { Response.Redirect("~/Login.aspx", false); return; }
             if (Session["role"] == null || Session["role"].ToString() != "Admin")
@@ -346,5 +350,165 @@ namespace ScienceBuddy.Admin
                 return (parts[0][0].ToString() + parts[parts.Length - 1][0].ToString()).ToUpper();
             return name.Substring(0, Math.Min(2, name.Length)).ToUpper();
         }
+
+        // ══════════════════════════════════════════════════════════════
+        // AJAX CRUD HANDLERS
+        // ══════════════════════════════════════════════════════════════
+        private void HandleAjax()
+        {
+            Response.ContentType = "application/json";
+            try
+            {
+                if (Session["userId"] == null || Session["role"]?.ToString() != "Admin")
+                { Response.Write("{\"success\":false,\"msg\":\"Unauthorized\"}"); Response.End(); return; }
+                string action = Request.QueryString["action"] ?? "";
+                string adminId = Session["userId"].ToString();
+                switch (action)
+                {
+                    case "add": HandleAdd(adminId); break;
+                    case "edit": HandleEdit(adminId); break;
+                    case "changeStatus": HandleChangeStatus(adminId); break;
+                    case "archive": HandleArchive(adminId); break;
+                    case "getStudent": HandleGetStudent(); break;
+                    default: Response.Write("{\"success\":false,\"msg\":\"Unknown action\"}"); break;
+                }
+            }
+            catch (Exception ex) { Response.Write("{\"success\":false,\"msg\":\"" + EscJson(ex.Message) + "\"}"); }
+            Response.End();
+        }
+
+        private void HandleGetStudent()
+        {
+            string sid = Request.QueryString["studentId"] ?? "";
+            using (var conn = new SqlConnection(ConnStr))
+            {
+                conn.Open();
+                using (var cmd = new SqlCommand(@"SELECT s.[studentId],s.[name],s.[phoneNumber],s.[currentLevelId],u.[email],u.[username],u.[status]
+                    FROM dbo.[Student] s LEFT JOIN dbo.[User] u ON u.[userId]=s.[userId] WHERE s.[studentId]=@sid", conn))
+                {
+                    cmd.Parameters.AddWithValue("@sid", sid);
+                    using (var rd = cmd.ExecuteReader())
+                    {
+                        if (!rd.Read()) { Response.Write("{\"success\":false,\"msg\":\"Not found\"}"); return; }
+                        Response.Write("{\"success\":true,\"data\":{\"studentId\":\"" + EscJson(NullSafe(rd["studentId"])) +
+                            "\",\"name\":\"" + EscJson(NullSafe(rd["name"])) +
+                            "\",\"email\":\"" + EscJson(NullSafe(rd["email"])) +
+                            "\",\"phone\":\"" + EscJson(NullSafe(rd["phoneNumber"])) +
+                            "\",\"levelId\":\"" + EscJson(NullSafe(rd["currentLevelId"])) +
+                            "\",\"username\":\"" + EscJson(NullSafe(rd["username"])) +
+                            "\",\"status\":\"" + EscJson(NullSafe(rd["status"])) + "\"}}");
+                    }
+                }
+            }
+        }
+
+        private void HandleAdd(string adminId)
+        {
+            string name = Request.QueryString["name"] ?? "";
+            string username = Request.QueryString["username"] ?? "";
+            string password = Request.QueryString["password"] ?? "";
+            string email = Request.QueryString["email"] ?? "";
+            string phone = Request.QueryString["phone"] ?? "";
+            string levelId = Request.QueryString["levelId"] ?? "";
+            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(email))
+            { Response.Write("{\"success\":false,\"msg\":\"Name, username and email are required.\"}"); return; }
+            using (var conn = new SqlConnection(ConnStr))
+            {
+                conn.Open();
+                using (var chk = new SqlCommand("SELECT COUNT(*) FROM dbo.[User] WHERE [email]=@e OR [username]=@u", conn))
+                { chk.Parameters.AddWithValue("@e", email); chk.Parameters.AddWithValue("@u", username);
+                  if (Convert.ToInt32(chk.ExecuteScalar()) > 0) { Response.Write("{\"success\":false,\"msg\":\"Username or email already exists.\"}"); return; } }
+
+                string userId = GenId(conn, "User", "userId", "U");
+                string studentId = GenId(conn, "Student", "studentId", "S");
+                using (var cmd = new SqlCommand("INSERT INTO dbo.[User]([userId],[username],[password],[email],[role],[preferredLanguage],[status]) VALUES(@uid,@un,@pw,@em,'Student','EN','Active')", conn))
+                { cmd.Parameters.AddWithValue("@uid", userId); cmd.Parameters.AddWithValue("@un", username); cmd.Parameters.AddWithValue("@pw", password); cmd.Parameters.AddWithValue("@em", email); cmd.ExecuteNonQuery(); }
+                using (var cmd = new SqlCommand("INSERT INTO dbo.[Student]([studentId],[userId],[name],[phoneNumber],[currentLevelId],[XP],[parentCode]) VALUES(@sid,@uid,@name,@ph,@lv,0,@pc)", conn))
+                { cmd.Parameters.AddWithValue("@sid", studentId); cmd.Parameters.AddWithValue("@uid", userId); cmd.Parameters.AddWithValue("@name", name);
+                  cmd.Parameters.AddWithValue("@ph", string.IsNullOrEmpty(phone) ? (object)DBNull.Value : phone);
+                  cmd.Parameters.AddWithValue("@lv", string.IsNullOrEmpty(levelId) ? "LV001" : levelId);
+                  cmd.Parameters.AddWithValue("@pc", "PC" + DateTime.Now.ToString("yyMMddHHmmss")); cmd.ExecuteNonQuery(); }
+
+                InsertLog(conn, adminId, "Added Student", "Created student: " + name + " (" + studentId + ").", "Success");
+                InsertNotif(conn, userId, "Account Created", "Akaun Dicipta", "Your ScienceBuddy student account has been created.", "Akaun pelajar ScienceBuddy anda telah dicipta.");
+            }
+            Response.Write("{\"success\":true}");
+        }
+
+        private void HandleEdit(string adminId)
+        {
+            string studentId = Request.QueryString["studentId"] ?? "";
+            string name = Request.QueryString["name"] ?? "";
+            string email = Request.QueryString["email"] ?? "";
+            string phone = Request.QueryString["phone"] ?? "";
+            string levelId = Request.QueryString["levelId"] ?? "";
+            using (var conn = new SqlConnection(ConnStr))
+            {
+                conn.Open();
+                string userId = ""; using (var cmd = new SqlCommand("SELECT [userId] FROM dbo.[Student] WHERE [studentId]=@sid", conn))
+                { cmd.Parameters.AddWithValue("@sid", studentId); var v = cmd.ExecuteScalar(); userId = v?.ToString() ?? ""; }
+                if (string.IsNullOrEmpty(userId)) { Response.Write("{\"success\":false,\"msg\":\"Not found.\"}"); return; }
+                using (var cmd = new SqlCommand("UPDATE dbo.[Student] SET [name]=@n,[phoneNumber]=@p,[currentLevelId]=@lv WHERE [studentId]=@sid", conn))
+                { cmd.Parameters.AddWithValue("@n", name); cmd.Parameters.AddWithValue("@p", string.IsNullOrEmpty(phone) ? (object)DBNull.Value : phone); cmd.Parameters.AddWithValue("@lv", string.IsNullOrEmpty(levelId) ? "LV001" : levelId); cmd.Parameters.AddWithValue("@sid", studentId); cmd.ExecuteNonQuery(); }
+                if (!string.IsNullOrEmpty(email)) { using (var cmd = new SqlCommand("UPDATE dbo.[User] SET [email]=@e WHERE [userId]=@uid", conn)) { cmd.Parameters.AddWithValue("@e", email); cmd.Parameters.AddWithValue("@uid", userId); cmd.ExecuteNonQuery(); } }
+                InsertLog(conn, adminId, "Updated Student", "Updated student " + name + " (" + studentId + ").", "Success");
+                InsertNotif(conn, userId, "Account Updated", "Akaun Dikemas Kini", "Your account information has been updated.", "Maklumat akaun anda telah dikemas kini.");
+            }
+            Response.Write("{\"success\":true}");
+        }
+
+        private void HandleChangeStatus(string adminId)
+        {
+            string studentId = Request.QueryString["studentId"] ?? "";
+            string newStatus = Request.QueryString["newStatus"] ?? "";
+            string reason = Request.QueryString["reason"] ?? "";
+            using (var conn = new SqlConnection(ConnStr))
+            {
+                conn.Open();
+                string userId = ""; using (var cmd = new SqlCommand("SELECT [userId] FROM dbo.[Student] WHERE [studentId]=@sid", conn))
+                { cmd.Parameters.AddWithValue("@sid", studentId); var v = cmd.ExecuteScalar(); userId = v?.ToString() ?? ""; }
+                if (string.IsNullOrEmpty(userId)) { Response.Write("{\"success\":false,\"msg\":\"Not found.\"}"); return; }
+                using (var cmd = new SqlCommand("UPDATE dbo.[User] SET [status]=@s WHERE [userId]=@uid", conn))
+                { cmd.Parameters.AddWithValue("@s", newStatus); cmd.Parameters.AddWithValue("@uid", userId); cmd.ExecuteNonQuery(); }
+                string aId = GenId(conn, "UserStatusAction", "actionId", "USA");
+                using (var cmd = new SqlCommand("INSERT INTO dbo.[UserStatusAction]([actionId],[userId],[actionType],[reason],[actionDate],[performedBy]) VALUES(@a,@u,@t,@r,@d,@p)", conn))
+                { cmd.Parameters.AddWithValue("@a", aId); cmd.Parameters.AddWithValue("@u", userId); cmd.Parameters.AddWithValue("@t", newStatus); cmd.Parameters.AddWithValue("@r", string.IsNullOrEmpty(reason) ? "Status changed by administrator." : reason); cmd.Parameters.AddWithValue("@d", DateTime.Today); cmd.Parameters.AddWithValue("@p", adminId); cmd.ExecuteNonQuery(); }
+                InsertLog(conn, adminId, "Student Status Changed", "Changed " + studentId + " to " + newStatus + ".", "Success");
+                string tEN = newStatus == "Active" ? "Account Restored" : "Account " + newStatus;
+                string tBM = newStatus == "Active" ? "Akaun Dipulihkan" : "Akaun " + newStatus;
+                InsertNotif(conn, userId, tEN, tBM, "Your account status has been changed to " + newStatus + ".", "Status akaun anda telah ditukar kepada " + newStatus + ".");
+            }
+            Response.Write("{\"success\":true}");
+        }
+
+        private void HandleArchive(string adminId)
+        {
+            string studentId = Request.QueryString["studentId"] ?? "";
+            using (var conn = new SqlConnection(ConnStr))
+            {
+                conn.Open();
+                string userId = ""; using (var cmd = new SqlCommand("SELECT [userId] FROM dbo.[Student] WHERE [studentId]=@sid", conn))
+                { cmd.Parameters.AddWithValue("@sid", studentId); var v = cmd.ExecuteScalar(); userId = v?.ToString() ?? ""; }
+                if (string.IsNullOrEmpty(userId)) { Response.Write("{\"success\":false,\"msg\":\"Not found.\"}"); return; }
+                using (var cmd = new SqlCommand("UPDATE dbo.[User] SET [status]='Deleted' WHERE [userId]=@uid", conn))
+                { cmd.Parameters.AddWithValue("@uid", userId); cmd.ExecuteNonQuery(); }
+                string aId = GenId(conn, "UserStatusAction", "actionId", "USA");
+                using (var cmd = new SqlCommand("INSERT INTO dbo.[UserStatusAction]([actionId],[userId],[actionType],[reason],[actionDate],[performedBy]) VALUES(@a,@u,'Deleted','Archived by administrator.',@d,@p)", conn))
+                { cmd.Parameters.AddWithValue("@a", aId); cmd.Parameters.AddWithValue("@u", userId); cmd.Parameters.AddWithValue("@d", DateTime.Today); cmd.Parameters.AddWithValue("@p", adminId); cmd.ExecuteNonQuery(); }
+                InsertLog(conn, adminId, "Archived Student", "Archived student " + studentId + ".", "Success");
+            }
+            Response.Write("{\"success\":true}");
+        }
+
+        private void InsertLog(SqlConnection c, string uid, string action, string desc, string status)
+        { string id = GenId(c, "Log", "logId", "LOG"); using (var cmd = new SqlCommand("INSERT INTO dbo.[Log]([logId],[userId],[action],[description],[logDateTime],[status]) VALUES(@a,@b,@c,@d,@e,@f)", c)) { cmd.Parameters.AddWithValue("@a", id); cmd.Parameters.AddWithValue("@b", uid); cmd.Parameters.AddWithValue("@c", action); cmd.Parameters.AddWithValue("@d", desc.Length > 900 ? desc.Substring(0, 900) : desc); cmd.Parameters.AddWithValue("@e", DateTime.Now); cmd.Parameters.AddWithValue("@f", status); cmd.ExecuteNonQuery(); } }
+
+        private void InsertNotif(SqlConnection c, string toUid, string tEN, string tBM, string mEN, string mBM)
+        { if (string.IsNullOrEmpty(toUid)) return; string id = GenId(c, "Notification", "notificationId", "N"); using (var cmd = new SqlCommand("INSERT INTO dbo.[Notification]([notificationId],[toUserId],[titleEN],[titleBM],[messageEN],[messageBM],[isRead],[createdAt]) VALUES(@a,@b,@c,@d,@e,@f,0,@g)", c)) { cmd.Parameters.AddWithValue("@a", id); cmd.Parameters.AddWithValue("@b", toUid); cmd.Parameters.AddWithValue("@c", tEN); cmd.Parameters.AddWithValue("@d", tBM); cmd.Parameters.AddWithValue("@e", mEN); cmd.Parameters.AddWithValue("@f", mBM); cmd.Parameters.AddWithValue("@g", DateTime.Now); cmd.ExecuteNonQuery(); } }
+
+        private string GenId(SqlConnection c, string tbl, string col, string pfx)
+        { using (var cmd = new SqlCommand(string.Format("SELECT TOP 1 [{0}] FROM dbo.[{1}] ORDER BY [{0}] DESC", col, tbl), c)) { var v = cmd.ExecuteScalar(); if (v == null || v == DBNull.Value) return pfx + "001"; string l = v.ToString(); int n; int.TryParse(l.Substring(pfx.Length), out n); n++; return pfx + n.ToString().PadLeft(l.Length - pfx.Length, '0'); } }
+
+        private static string EscJson(string s) { return (s ?? "").Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", ""); }
     }
 }

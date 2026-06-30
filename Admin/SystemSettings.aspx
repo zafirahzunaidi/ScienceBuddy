@@ -139,9 +139,9 @@
             <i class="bi bi-patch-question item-icon"></i>
             <span class="item-label">Quizzes</span>
         </a>
-        <a href="#" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Admin/QuestionBank.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-question-circle item-icon"></i>
-            <span class="item-label">Questions</span>
+            <span class="item-label">Question Bank</span>
         </a>
         <a href="<%: ResolveUrl("~/Admin/TeacherMaterials.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-file-earmark-text item-icon"></i>
@@ -158,6 +158,13 @@
         <a href="<%: ResolveUrl("~/Admin/CertificateManagement.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-award item-icon"></i>
             <span class="item-label">Certificates</span>
+        </a>
+    </div>
+    <div class="sb-nav-section">
+        <div class="sb-nav-section-label">Community</div>
+        <a href="<%: ResolveUrl("~/Admin/ForumDiscussions.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-chat-dots item-icon"></i>
+            <span class="item-label">Forum Discussions</span>
         </a>
     </div>
     <div class="sb-nav-section">
