@@ -21,6 +21,13 @@ namespace ScienceBuddy.Student
         protected global::System.Web.UI.WebControls.Literal litTotalReplies;
         protected global::System.Web.UI.WebControls.Literal litTotalRepliesLbl;
 
+        // ── Category Tabs ───────────────────────────────────────
+        protected global::System.Web.UI.WebControls.LinkButton  btnTabPublic;
+        protected global::System.Web.UI.WebControls.Literal     litTabPublic;
+        protected global::System.Web.UI.WebControls.LinkButton  btnTabPrivate;
+        protected global::System.Web.UI.WebControls.Literal     litTabPrivate;
+        protected global::System.Web.UI.WebControls.HiddenField hfCategory;
+
         // ── CTA ─────────────────────────────────────────────────
         protected global::System.Web.UI.WebControls.Literal litCTAText;
         protected global::System.Web.UI.WebControls.Literal litCTABtn;

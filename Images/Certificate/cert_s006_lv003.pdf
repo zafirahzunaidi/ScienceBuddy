@@ -1,0 +1,78 @@
+﻿<!DOCTYPE html><html><head><meta charset='utf-8'/>
+<title>ScienceBuddy Certificate - Faris Iman Bin Fauzi</title>
+<link href='https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Playfair+Display:wght@700;800;900&family=Poppins:wght@400;600;700&display=swap' rel='stylesheet'/>
+<style>
+@page{size:297mm 210mm;margin:0;}
+@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:297mm;height:210mm;overflow:hidden;background:#EDE8E0;}
+body{display:flex;align-items:center;justify-content:center;}
+.page{width:285mm;height:198mm;position:relative;background:linear-gradient(170deg,#FFFDF9 0%,#FBF8F2 40%,#F9F5ED 100%);box-shadow:0 8px 40px rgba(0,0,0,.12);}
+/* Borders */
+.bdr-out{position:absolute;inset:5mm;border:2.5px solid #8B6914;}
+.bdr-in{position:absolute;inset:8mm;border:1px solid #8B6914;opacity:.5;}
+/* Corner ornaments */
+.corner{position:absolute;width:28px;height:28px;z-index:2;}
+.corner svg{width:100%;height:100%;}
+.c-tl{top:5mm;left:5mm;}.c-tr{top:5mm;right:5mm;transform:scaleX(-1);}.c-bl{bottom:5mm;left:5mm;transform:scaleY(-1);}.c-br{bottom:5mm;right:5mm;transform:scale(-1);}
+/* Watermark */
+.wm{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Cinzel',serif;font-size:72px;font-weight:900;color:rgba(0,0,0,.03);letter-spacing:12px;white-space:nowrap;pointer-events:none;}
+/* Content */
+.content{position:relative;z-index:1;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14mm 24mm;text-align:center;}
+/* Header */
+.logo{height:52px;margin-bottom:4px;}
+.brand{font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;letter-spacing:1.5px;color:#333;margin-bottom:12px;}
+.brand-s{color:#2563EB;}.brand-b{color:#FF6B2C;}
+/* Title */
+.title{font-family:'Cinzel',serif;font-size:30px;font-weight:800;color:#1E3A5F;letter-spacing:4px;text-transform:uppercase;margin-bottom:6px;}
+.ornament{width:240px;height:12px;margin:0 auto 14px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='12'%3E%3Cpath d='M0 6 Q60 0 120 6 Q180 12 240 6' stroke='%23C9A84C' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='120' cy='6' r='3' fill='%23C9A84C'/%3E%3C/svg%3E") no-repeat center;}
+/* Body */
+.presented{font-family:'Cormorant Garamond',serif;font-size:15px;color:#6B7280;font-style:italic;margin-bottom:14px;}
+.student-name{font-family:'Playfair Display',serif;font-size:36px;font-weight:800;color:#111827;margin-bottom:4px;}
+.gold-line{width:180px;height:2px;background:linear-gradient(90deg,transparent,#8B6914 20%,#8B6914 80%,transparent);margin:6px auto 14px;}
+.for-text{font-family:'Cormorant Garamond',serif;font-size:14px;color:#6B7280;margin-bottom:6px;}
+/* Ribbon */
+.ribbon{display:inline-block;padding:7px 32px;border-radius:4px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;background:linear-gradient(135deg,#92711A,#D4A843);color:#1E3A5F;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:12px;}
+.desc{font-family:'Cormorant Garamond',serif;font-size:13px;color:#4B5563;max-width:420px;line-height:1.7;margin-bottom:16px;}
+/* Footer */
+.footer{width:100%;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;align-items:end;padding-top:14px;border-top:1px solid #E5DDD0;margin-top:auto;}
+.fcol{text-align:center;}
+.fval{font-family:'Poppins',sans-serif;font-size:10px;font-weight:600;color:#1F2937;margin-bottom:2px;}
+.flbl{font-family:'Poppins',sans-serif;font-size:7.5px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.7px;}
+/* Seal */
+.seal{width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#1E3A5F,#2C5282);border:2.5px solid #8B6914;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;margin:0 auto 3px;box-shadow:0 0 0 2px #FFFDF9,0 0 0 4.5px #8B6914,0 4px 12px rgba(0,0,0,.1);}
+.seal-top{font-size:4.5px;text-transform:uppercase;letter-spacing:1.2px;opacity:.8;}
+.seal-mid{font-size:14px;font-weight:900;line-height:1;}
+.seal-bot{font-size:4.5px;text-transform:uppercase;letter-spacing:1.2px;opacity:.8;}
+/* Signature */
+.sig{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;color:#1E293B;border-top:1px solid #94A3B8;padding-top:3px;display:inline-block;}
+/* Page footer */
+.page-foot{position:absolute;bottom:3mm;left:0;right:0;text-align:center;font-family:'Poppins',sans-serif;font-size:6.5px;color:#CBD5E1;letter-spacing:.5px;}
+</style></head><body>
+<div class='page'>
+<div class='bdr-out'></div><div class='bdr-in'></div>
+<div class='corner c-tl'><svg viewBox='0 0 28 28'><path d='M0 0 L0 20 Q0 0 20 0 Z' fill='#8B6914' opacity='0.6'/></svg></div>
+<div class='corner c-tr'><svg viewBox='0 0 28 28'><path d='M0 0 L0 20 Q0 0 20 0 Z' fill='#8B6914' opacity='0.6'/></svg></div>
+<div class='corner c-bl'><svg viewBox='0 0 28 28'><path d='M0 0 L0 20 Q0 0 20 0 Z' fill='#8B6914' opacity='0.6'/></svg></div>
+<div class='corner c-br'><svg viewBox='0 0 28 28'><path d='M0 0 L0 20 Q0 0 20 0 Z' fill='#8B6914' opacity='0.6'/></svg></div>
+<div class='wm'>SCIENCEBUDDY</div>
+<div class='content'>
+<img src='/Images/Logo/sciencebuddy-logo.png' alt='ScienceBuddy' class='logo' onerror="this.style.display='none'"/>
+<div class='brand'><span class='brand-s'>Science</span><span class='brand-b'>Buddy</span></div>
+<div class='title'>Certificate of Completion</div>
+<div class='ornament'></div>
+<div class='presented'>This certificate is proudly presented to</div>
+<div class='student-name'>Faris Iman Bin Fauzi</div>
+<div class='gold-line'></div>
+<div class='for-text'>For successfully completing</div>
+<div class='ribbon'>ADVANCED</div>
+<div class='desc'>Awarded for successfully completing all Advanced Science learning units and demonstrating mastery of advanced science concepts.</div>
+<div class='footer'>
+<div class='fcol'><div class='fval'>SCI-ADV-S006</div><div class='flbl'>Certificate No.</div></div>
+<div class='fcol'><div class='fval'>30 June 2026</div><div class='flbl'>Issue Date</div></div>
+<div class='fcol'><div class='seal'><div class='seal-top'>Official</div><div class='seal-mid'>SB</div><div class='seal-bot'>Certificate</div></div><div class='flbl'>Verified</div></div>
+<div class='fcol'><div class='sig'>ScienceBuddy</div><div class='flbl'>Administrator</div></div>
+</div>
+</div>
+<div class='page-foot'>ScienceBuddy &copy; 2026 &bull; www.sciencebuddy.com &bull; Electronically Generated &amp; Verified Certificate</div>
+</div></body></html>
