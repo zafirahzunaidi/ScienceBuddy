@@ -5,9 +5,10 @@
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
 <style>
 :root{--sl-accent:#DC2626;--sl-blue:#2563EB;--sl-purple:#7C3AED;--sl-green:#059669;}
-.sl-header{margin-bottom:var(--space-xl);padding-bottom:var(--space-md);border-bottom:1.5px solid var(--border-color);}
-.sl-title{font-family:var(--font-primary);font-size:1.75rem;font-weight:800;color:var(--color-text);display:flex;align-items:center;gap:var(--space-sm);margin-bottom:var(--space-xs);}
-.sl-sub{font-size:.9375rem;color:var(--color-text-secondary);max-width:520px;line-height:1.5;}
+.sl-header{margin-bottom:var(--space-xl);background:linear-gradient(135deg,#1E3A5F 0%,#DC2626 60%,#EF4444 100%);border-radius:var(--border-radius-xl);padding:var(--space-xl) var(--space-2xl);color:#fff;position:relative;overflow:hidden;box-shadow:0 12px 40px rgba(220,38,38,.2);}
+.sl-header::before{content:'';position:absolute;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.04);top:-100px;right:-60px;}
+.sl-title{font-family:var(--font-primary);font-size:1.75rem;font-weight:800;color:#fff;display:flex;align-items:center;gap:var(--space-sm);margin-bottom:var(--space-xs);}
+.sl-sub{font-size:.9375rem;color:rgba(255,255,255,.85);max-width:520px;line-height:1.5;}
 .sl-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-md);margin-bottom:var(--space-xl);}
 .sl-stat{background:var(--color-white);border-radius:var(--border-radius-xl);border:1.5px solid var(--border-color);box-shadow:var(--shadow-sm);padding:var(--space-lg);display:flex;flex-direction:column;gap:var(--space-xs);transition:transform .25s,box-shadow .25s;position:relative;overflow:hidden;}
 .sl-stat:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);}
@@ -18,6 +19,9 @@
 .sl-search .sb-input{flex:1;min-width:160px;max-width:260px;}.sl-search .sb-select{max-width:140px;}
 .sl-card{background:var(--color-white);border-radius:var(--border-radius-xl);border:1.5px solid var(--border-color);box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:var(--space-xl);}
 .sl-card-hdr{padding:var(--space-md) var(--space-lg);border-bottom:1px solid var(--border-color);font-family:var(--font-primary);font-weight:800;font-size:.9375rem;display:flex;align-items:center;gap:var(--space-sm);}
+.sl-card .sb-table-wrapper{overflow-x:auto;}
+.sl-card .sb-table{width:100%;table-layout:auto;}
+.sl-card .sb-table thead th:last-child,.sl-card .sb-table tbody td:last-child,.sl-card .col-actions{text-align:center;}
 .sl-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:var(--space-2xl);}
 .sl-empty-ico{font-size:3rem;margin-bottom:var(--space-md);opacity:.35;color:var(--sl-accent);}.sl-empty-msg{font-size:1rem;font-weight:700;color:var(--color-text-secondary);}
 .sl-modal-wrap .sb-modal-overlay{left:var(--sidebar-width);animation:sl-ov .2s ease both;}.sidebar-collapsed .sl-modal-wrap .sb-modal-overlay{left:var(--sidebar-collapsed);}
@@ -43,11 +47,14 @@
     <div class="sb-nav-section"><div class="sb-nav-section-label">Learning Content</div>
         <a href="<%: ResolveUrl("~/Admin/LessonManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-book item-icon"></i><span class="item-label">Lessons</span></a>
         <a href="<%: ResolveUrl("~/Admin/QuizManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-patch-question item-icon"></i><span class="item-label">Quizzes</span></a>
-        <a href="#" class="sb-sidebar-item"><i class="bi bi-question-circle item-icon"></i><span class="item-label">Questions</span></a>
+        <a href="<%: ResolveUrl("~/Admin/QuestionBank.aspx") %>" class="sb-sidebar-item"><i class="bi bi-question-circle item-icon"></i><span class="item-label">Question Bank</span></a>
         <a href="<%: ResolveUrl("~/Admin/TeacherMaterials.aspx") %>" class="sb-sidebar-item"><i class="bi bi-file-earmark-text item-icon"></i><span class="item-label">Material Requests</span></a>
         <a href="<%: ResolveUrl("~/Admin/LiveSessions.aspx") %>" class="sb-sidebar-item"><i class="bi bi-camera-video item-icon"></i><span class="item-label">Live Sessions</span></a>
         <a href="<%: ResolveUrl("~/Admin/QuestionRequests.aspx") %>" class="sb-sidebar-item"><i class="bi bi-clipboard-check item-icon"></i><span class="item-label">Question Requests</span></a>
         <a href="<%: ResolveUrl("~/Admin/CertificateManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-award item-icon"></i><span class="item-label">Certificates</span></a>
+    </div>
+    <div class="sb-nav-section"><div class="sb-nav-section-label">Community</div>
+        <a href="<%: ResolveUrl("~/Admin/ForumDiscussions.aspx") %>" class="sb-sidebar-item"><i class="bi bi-chat-dots item-icon"></i><span class="item-label">Forum Discussions</span></a>
     </div>
     <div class="sb-nav-section"><div class="sb-nav-section-label">Gamification</div>
         <a href="<%: ResolveUrl("~/Admin/GamificationManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-trophy item-icon"></i><span class="item-label">Student Performance</span></a>
@@ -57,7 +64,7 @@
     </div>
     <div class="sb-nav-section"><div class="sb-nav-section-label">Logs</div>
         <a href="<%: ResolveUrl("~/Admin/SystemActivityLogs.aspx") %>" class="sb-sidebar-item"><i class="bi bi-clock-history item-icon"></i><span class="item-label">Activity Logs</span></a>
-        <a href="#" class="sb-sidebar-item"><i class="bi bi-box-arrow-in-right item-icon"></i><span class="item-label">Login Logs</span></a>
+        <a href="<%: ResolveUrl("~/Admin/LoginLogs.aspx") %>" class="sb-sidebar-item"><i class="bi bi-box-arrow-in-right item-icon"></i><span class="item-label">Login Logs</span></a>
         <a href="<%: ResolveUrl("~/Admin/SuspiciousLogins.aspx") %>" class="sb-sidebar-item active"><i class="bi bi-exclamation-triangle item-icon"></i><span class="item-label">Suspicious Logins</span></a>
     </div>
     <div class="sb-nav-section"><div class="sb-nav-section-label">Account</div>
@@ -98,9 +105,9 @@
 <div class="sl-card">
     <div class="sl-card-hdr"><i class="bi bi-exclamation-triangle-fill" style="color:var(--sl-accent);"></i> <%= T("Security Events", "Peristiwa Keselamatan") %></div>
     <asp:Panel ID="pnlLogs" runat="server" Visible="false">
-        <div class="sb-table-wrapper" style="border:none;border-radius:0;box-shadow:none;">
-            <table class="sb-table"><thead><tr>
-                <th><%= T("User", "Pengguna") %></th><th><%= T("Action", "Tindakan") %></th><th><%= T("Description", "Penerangan") %></th><th><%= T("Date", "Tarikh") %></th><th><%= T("Status", "Status") %></th>
+        <div class="sb-table-wrapper" style="border:none;border-radius:0;box-shadow:none;overflow-x:auto;">
+            <table class="sb-table" style="width:100%;"><thead><tr>
+                <th><%= T("User", "Pengguna") %></th><th><%= T("Action", "Tindakan") %></th><th><%= T("Description", "Penerangan") %></th><th><%= T("Date", "Tarikh") %></th><th style="text-align:center;"><%= T("Status", "Status") %></th>
             </tr></thead><tbody>
                 <asp:Repeater ID="rptLogs" runat="server" OnItemCommand="rptLogs_ItemCommand">
                     <ItemTemplate>
@@ -109,7 +116,7 @@
                             <td data-label="Action"><%# HttpUtility.HtmlEncode(Eval("action")) %></td>
                             <td data-label="Description"><span style="font-size:.8125rem;color:var(--color-text-secondary);"><%# HttpUtility.HtmlEncode(Eval("description")) %></span></td>
                             <td data-label="Date"><span style="font-size:.8125rem;color:var(--color-text-muted);"><%# Eval("dateStr") %></span></td>
-                            <td data-label="Status"><span class='sb-badge <%# Eval("statusCls") %>'><%# HttpUtility.HtmlEncode(Eval("statusLabel")) %></span></td>
+                            <td data-label="Status" style="text-align:center;"><span class='sb-badge <%# Eval("statusCls") %>'><%# HttpUtility.HtmlEncode(Eval("statusLabel")) %></span></td>
                             <td class="col-actions">
                                 <asp:LinkButton ID="lnkBlock" runat="server" CssClass="sb-btn sb-btn-danger sb-btn-xs"
                                     CommandName="BlockUser" CommandArgument='<%# Eval("userId") %>'
@@ -133,9 +140,9 @@
 <div class="sl-card" style="margin-top:var(--space-xl);">
     <div class="sl-card-hdr"><i class="bi bi-shield-fill-check" style="color:var(--sl-purple);"></i> <%= T("Administrator Security Actions", "Tindakan Keselamatan Pentadbir") %></div>
     <asp:Panel ID="pnlActions" runat="server" Visible="false">
-        <div class="sb-table-wrapper" style="border:none;border-radius:0;box-shadow:none;">
-            <table class="sb-table"><thead><tr>
-                <th><%= T("User", "Pengguna") %></th><th><%= T("Action", "Tindakan") %></th><th><%= T("Reason", "Sebab") %></th><th><%= T("Admin", "Pentadbir") %></th><th><%= T("Date", "Tarikh") %></th><th></th>
+        <div class="sb-table-wrapper" style="border:none;border-radius:0;box-shadow:none;overflow-x:auto;">
+            <table class="sb-table" style="width:100%;"><thead><tr>
+                <th><%= T("User", "Pengguna") %></th><th><%= T("Action", "Tindakan") %></th><th><%= T("Reason", "Sebab") %></th><th><%= T("Admin", "Pentadbir") %></th><th><%= T("Date", "Tarikh") %></th><th style="text-align:center;"><%= T("Actions", "Tindakan") %></th>
             </tr></thead><tbody>
                 <asp:Repeater ID="rptActions" runat="server" OnItemCommand="rptActions_ItemCommand">
                     <ItemTemplate>

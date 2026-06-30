@@ -14,5 +14,9 @@ namespace ScienceBuddy.Admin
         protected global::System.Web.UI.WebControls.Literal litRole;
         protected global::System.Web.UI.WebControls.Literal litLanguage;
         protected global::System.Web.UI.WebControls.Literal litStatus;
+        protected global::System.Web.UI.WebControls.Literal litUsernameVal;
+        protected global::System.Web.UI.WebControls.Literal litEmailVal;
+        protected global::System.Web.UI.WebControls.Literal litRoleVal;
+        protected global::System.Web.UI.WebControls.Literal litLangVal;
     }
 }
