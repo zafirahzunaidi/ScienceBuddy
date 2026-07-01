@@ -7,13 +7,40 @@ namespace ScienceBuddy.Teacher
 {
     public partial class liveSession
     {
-        protected global::System.Web.UI.WebControls.Literal litMonth;
-        protected global::System.Web.UI.WebControls.Button btnPrevMonth;
-        protected global::System.Web.UI.WebControls.Button btnNextMonth;
-        protected global::System.Web.UI.WebControls.Literal litCalendar;
-        protected global::System.Web.UI.WebControls.Panel pnlSessions;
+        protected global::System.Web.UI.WebControls.Literal litUpcoming;
+        protected global::System.Web.UI.WebControls.Literal litCompleted;
+        protected global::System.Web.UI.WebControls.Literal litAvgAttendance;
+        protected global::System.Web.UI.WebControls.Literal litTotalStudents;
+        protected global::System.Web.UI.WebControls.Button btnTabUpcoming;
+        protected global::System.Web.UI.WebControls.Button btnTabHistory;
+        protected global::System.Web.UI.WebControls.Panel pnlList;
         protected global::System.Web.UI.WebControls.Repeater rptSessions;
         protected global::System.Web.UI.WebControls.Panel pnlEmpty;
+        protected global::System.Web.UI.WebControls.Literal litEmptyTitle;
+        protected global::System.Web.UI.WebControls.Literal litEmptySub;
+        protected global::System.Web.UI.WebControls.Literal litRescTitle;
+        protected global::System.Web.UI.WebControls.Literal litRescCurrent;
+        protected global::System.Web.UI.WebControls.HiddenField hidRescId;
+        protected global::System.Web.UI.WebControls.TextBox txtRescDate;
+        protected global::System.Web.UI.WebControls.TextBox txtRescStart;
+        protected global::System.Web.UI.WebControls.TextBox txtRescEnd;
+        protected global::System.Web.UI.WebControls.Panel pnlRescError;
+        protected global::System.Web.UI.WebControls.Literal litRescError;
+        protected global::System.Web.UI.WebControls.Button btnSaveReschedule;
+        protected global::System.Web.UI.WebControls.Literal litCancelTitle;
+        protected global::System.Web.UI.WebControls.Literal litCancelTime;
+        protected global::System.Web.UI.WebControls.HiddenField hidCancelId;
+        protected global::System.Web.UI.WebControls.Button btnConfirmCancel;
+        protected global::System.Web.UI.WebControls.HiddenField hidShowRescModal;
+        protected global::System.Web.UI.WebControls.HiddenField hidShowCancelModal;
+        protected global::System.Web.UI.WebControls.TextBox txtInstantTitle;
+        protected global::System.Web.UI.WebControls.TextBox txtInstantDesc;
+        protected global::System.Web.UI.WebControls.DropDownList ddlInstantSubtopic;
+        protected global::System.Web.UI.WebControls.DropDownList ddlInstantPlatform;
+        protected global::System.Web.UI.WebControls.Panel pnlInstantError;
+        protected global::System.Web.UI.WebControls.Literal litInstantError;
+        protected global::System.Web.UI.WebControls.Button btnStartLive;
+        protected global::System.Web.UI.WebControls.HiddenField hidShowInstantModal;
         protected global::System.Web.UI.WebControls.TextBox txtTitle;
         protected global::System.Web.UI.WebControls.TextBox txtDate;
         protected global::System.Web.UI.WebControls.TextBox txtStart;
@@ -26,6 +53,5 @@ namespace ScienceBuddy.Teacher
         protected global::System.Web.UI.WebControls.Button btnSchedule;
         protected global::System.Web.UI.WebControls.HiddenField hidToast;
         protected global::System.Web.UI.WebControls.HiddenField hidShowModal;
-        protected global::System.Web.UI.WebControls.HiddenField hidCalMonth;
     }
 }
