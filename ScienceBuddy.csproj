@@ -240,6 +240,8 @@
     <Content Include="Teacher\Dashboard.aspx" />
     <Content Include="Teacher\manageMaterials.aspx" />
     <Content Include="Teacher\privateMessages.aspx" />
+    <Content Include="Teacher\Notifications.aspx" />
+    <Content Include="Teacher\liveSession.aspx" />
     <Content Include="Teacher\uploadMaterial.aspx" />
     <Content Include="Teacher\manageQuiz.aspx" />
     <Content Include="Teacher\createUnitLevelQuiz.aspx" />
@@ -682,6 +684,20 @@
     </Compile>
     <Compile Include="Teacher\privateMessages.aspx.designer.cs">
       <DependentUpon>privateMessages.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Teacher\Notifications.aspx.cs">
+      <DependentUpon>Notifications.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Teacher\Notifications.aspx.designer.cs">
+      <DependentUpon>Notifications.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Teacher\liveSession.aspx.cs">
+      <DependentUpon>liveSession.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Teacher\liveSession.aspx.designer.cs">
+      <DependentUpon>liveSession.aspx</DependentUpon>
     </Compile>
     <Compile Include="Teacher\uploadMaterial.aspx.cs">
       <DependentUpon>uploadMaterial.aspx</DependentUpon>

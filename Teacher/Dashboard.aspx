@@ -184,6 +184,16 @@
 .td-badge-upcoming { background: #EDE9FE; color: var(--tc-primary); }
 .td-badge-active { background: #D1FAE5; color: #059669; }
 
+/* Mini Calendar */
+.td-cal-row{display:flex;gap:1rem;align-items:flex-start;}
+.td-mini-cal{background:var(--tc-light-bg);border-radius:12px;padding:.75rem;min-width:180px;}
+.td-cal-month{font-size:.78rem;font-weight:700;color:var(--tc-text);text-align:center;margin-bottom:.5rem;}
+.td-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;font-size:.65rem;color:var(--tc-muted);}
+.td-cal-grid .cal-day{padding:3px 2px;border-radius:4px;}
+.td-cal-grid .cal-today{background:var(--tc-primary);color:#fff;font-weight:700;border-radius:50%;}
+.td-cal-grid .cal-session{background:#EDE9FE;color:var(--tc-primary);font-weight:700;border-radius:50%;}
+.td-cal-grid .cal-header{font-weight:700;color:var(--tc-text);font-size:.6rem;}
+
 /* Performance cards */
 .td-perf-card {
     background: var(--tc-card-bg); border-radius: 16px;
@@ -255,54 +265,19 @@
 
 <%-- ════ SIDEBAR MENU ════ --%>
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
-    <div class="sb-nav-section">
-        <div class="sb-nav-section-label"><%: T("Main","Utama") %></div>
-        <a href="<%: ResolveUrl("~/Teacher/Dashboard.aspx") %>" class="sb-sidebar-item active">
-            <i class="bi bi-speedometer2 item-icon"></i>
-            <span class="item-label"><%: T("Dashboard","Papan Pemuka") %></span>
-        </a>
-    </div>
-    <div class="sb-nav-section">
-        <div class="sb-nav-section-label"><%: T("Teaching","Pengajaran") %></div>
-        <a href="<%: ResolveUrl("~/Teacher/manageMaterials.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-book item-icon"></i>
-            <span class="item-label"><%: T("Manage Materials","Urus Bahan Pembelajaran") %></span>
-        </a>
-        <a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-patch-question item-icon"></i>
-            <span class="item-label"><%: T("Manage Quiz","Urus Kuiz") %></span>
-        </a>
-        <a href="#" class="sb-sidebar-item">
-            <i class="bi bi-bar-chart item-icon"></i>
-            <span class="item-label"><%: T("Student Progress","Kemajuan Pelajar") %></span>
-        </a>
-        <a href="#" class="sb-sidebar-item">
-            <i class="bi bi-camera-video item-icon"></i>
-            <span class="item-label"><%: T("Schedule Live Class","Jadual Kelas Langsung") %></span>
-        </a>
-    </div>
-    <div class="sb-nav-section">
-        <div class="sb-nav-section-label"><%: T("Community","Komuniti") %></div>
-        <a href="#" class="sb-sidebar-item">
-            <i class="bi bi-chat-dots item-icon"></i>
-            <span class="item-label"><%: T("Forum","Forum") %></span>
-        </a>
-        <a href="<%: ResolveUrl("~/Teacher/privateMessages.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-envelope item-icon"></i>
-            <span class="item-label"><%: T("Private Message","Mesej Peribadi") %></span>
-        </a>
-    </div>
-    <div class="sb-nav-section">
-        <div class="sb-nav-section-label"><%: T("Account","Akaun") %></div>
-        <a href="<%: ResolveUrl("~/Teacher/MyProfile.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-person item-icon"></i>
-            <span class="item-label"><%: T("My Profile","Profil Saya") %></span>
-        </a>
-        <a href="<%: ResolveUrl("~/Logout.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-box-arrow-right item-icon"></i>
-            <span class="item-label"><%: T("Sign Out","Log Keluar") %></span>
-        </a>
-    </div>
+    <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Main","Utama") %></div>
+        <a href="<%: ResolveUrl("~/Teacher/Dashboard.aspx") %>" class="sb-sidebar-item active"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label"><%: T("Dashboard","Papan Pemuka") %></span></a></div>
+    <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Teaching","Pengajaran") %></div>
+        <a href="<%: ResolveUrl("~/Teacher/manageMaterials.aspx") %>" class="sb-sidebar-item"><i class="bi bi-book item-icon"></i><span class="item-label"><%: T("Manage Materials","Bahan Pembelajaran") %></span></a>
+        <a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx") %>" class="sb-sidebar-item"><i class="bi bi-patch-question item-icon"></i><span class="item-label"><%: T("Manage Quiz","Kuiz") %></span></a>
+        <a href="<%: ResolveUrl("~/Teacher/studentProgress.aspx") %>" class="sb-sidebar-item"><i class="bi bi-bar-chart item-icon"></i><span class="item-label"><%: T("Student Progress","Prestasi Pelajar") %></span></a>
+        <a href="<%: ResolveUrl("~/Teacher/liveSession.aspx") %>" class="sb-sidebar-item"><i class="bi bi-camera-video item-icon"></i><span class="item-label"><%: T("Schedule Live Class","Kelas Langsung") %></span></a></div>
+    <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Community","Komuniti") %></div>
+        <a href="<%: ResolveUrl("~/Teacher/forum.aspx") %>" class="sb-sidebar-item"><i class="bi bi-chat-dots item-icon"></i><span class="item-label"><%: T("Forum","Forum") %></span></a>
+        <a href="<%: ResolveUrl("~/Teacher/privateMessages.aspx") %>" class="sb-sidebar-item"><i class="bi bi-envelope item-icon"></i><span class="item-label"><%: T("Private Message","Mesej Peribadi") %></span></a></div>
+    <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Account","Akaun") %></div>
+        <a href="<%: ResolveUrl("~/Teacher/MyProfile.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person item-icon"></i><span class="item-label"><%: T("My Profile","Profil Saya") %></span></a>
+        <a href="<%: ResolveUrl("~/Logout.aspx") %>" class="sb-sidebar-item"><i class="bi bi-box-arrow-right item-icon"></i><span class="item-label"><%: T("Sign Out","Log Keluar") %></span></a></div>
 </asp:Content>
 
 <asp:Content ID="cPageTitle" ContentPlaceHolderID="PageTitle" runat="server"><%: T("Teacher Dashboard","Papan Pemuka Guru") %></asp:Content>
@@ -375,24 +350,24 @@
     <a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx") %>" class="td-quick-card">
         <div class="td-quick-ico" style="background:#FEF3C7;color:#D97706;"><i class="bi bi-patch-question"></i></div>
         <div class="td-quick-content">
-            <div class="td-quick-lbl"><%: T("Manage Quiz","Urus Kuiz") %></div>
-            <div class="td-quick-desc"><%: T("Build a new practice quiz","Bina kuiz latihan baharu") %></div>
+            <div class="td-quick-lbl"><%: T("Manage Quiz","Kuiz") %></div>
+            <div class="td-quick-desc"><%: T("Build a new practice quiz","Cipta kuiz baharu") %></div>
         </div>
         <span class="td-quick-arrow"><i class="bi bi-chevron-right"></i></span>
     </a>
-    <a href="<%: ResolveUrl("~/Teacher/ScheduleClass.aspx") %>" class="td-quick-card">
+    <a href="<%: ResolveUrl("~/Teacher/liveSession.aspx") %>" class="td-quick-card">
         <div class="td-quick-ico" style="background:#DBEAFE;color:#2563EB;"><i class="bi bi-calendar-plus"></i></div>
         <div class="td-quick-content">
-            <div class="td-quick-lbl"><%: T("Schedule Live Class","Jadual Kelas Langsung") %></div>
-            <div class="td-quick-desc"><%: T("Plan an online learning session","Rancang sesi pembelajaran dalam talian") %></div>
+            <div class="td-quick-lbl"><%: T("Schedule Live Class","Kelas Langsung") %></div>
+            <div class="td-quick-desc"><%: T("Plan an online learning session","Rancang sesi kelas langsung") %></div>
         </div>
         <span class="td-quick-arrow"><i class="bi bi-chevron-right"></i></span>
     </a>
     <a href="<%: ResolveUrl("~/Teacher/StudentProgress.aspx") %>" class="td-quick-card">
         <div class="td-quick-ico" style="background:#D1FAE5;color:#059669;"><i class="bi bi-graph-up-arrow"></i></div>
         <div class="td-quick-content">
-            <div class="td-quick-lbl"><%: T("Student Progress","Kemajuan Pelajar") %></div>
-            <div class="td-quick-desc"><%: T("Review student learning data","Semak data pembelajaran pelajar") %></div>
+            <div class="td-quick-lbl"><%: T("Student Progress","Prestasi Pelajar") %></div>
+            <div class="td-quick-desc"><%: T("Review student learning data","Semak prestasi pelajar") %></div>
         </div>
         <span class="td-quick-arrow"><i class="bi bi-chevron-right"></i></span>
     </a>
@@ -425,48 +400,56 @@
     </a>
 </div>
 
-<%-- ── 4. UPCOMING LIVE SESSIONS ── --%>
+<%-- ── 4. UPCOMING LIVE SESSIONS + NOTIFICATIONS ── --%>
 <div class="td-row2">
 <div>
     <div class="td-sec-hd">
-        <div class="td-sec-title"><i class="bi bi-broadcast" style="color:var(--tc-info);"></i> Upcoming Live Sessions</div>
+        <div class="td-sec-title"><i class="bi bi-broadcast" style="color:var(--tc-info);"></i> <%: T("Upcoming Live Sessions","Sesi Langsung Akan Datang") %></div>
     </div>
     <div class="td-card">
         <asp:Panel ID="pnlSessions" runat="server" Visible="false">
             <div class="td-card-body">
-                <div class="td-session-list">
-                    <asp:Repeater ID="rptSessions" runat="server">
-                        <ItemTemplate>
-                            <div class="td-session-item">
-                                <div class="td-session-ico"><i class="bi bi-broadcast"></i></div>
-                                <div class="td-session-body">
-                                    <div class="td-session-title"><%# HttpUtility.HtmlEncode(Eval("sessionTitle")) %></div>
-                                    <div class="td-session-meta">
-                                        <span><i class="bi bi-calendar-event"></i> <%# Eval("sessionDate") %></span>
-                                        <span><i class="bi bi-clock"></i> <%# Eval("sessionTime") %></span>
-                                        <span><i class="bi bi-people"></i> <%# Eval("participantCount") %> students</span>
-                                        <span class='td-session-badge <%# Eval("badgeClass") %>'><%# Eval("statusLabel") %></span>
+                <%-- Mini Calendar --%>
+                <div class="td-cal-row">
+                    <div class="td-mini-cal">
+                        <div class="td-cal-month"><asp:Literal ID="litCalMonth" runat="server" /></div>
+                        <div class="td-cal-grid"><asp:Literal ID="litCalDays" runat="server" /></div>
+                    </div>
+                    <div class="td-session-list" style="flex:1;">
+                        <asp:Repeater ID="rptSessions" runat="server">
+                            <ItemTemplate>
+                                <div class="td-session-item">
+                                    <div class="td-session-ico"><i class="bi bi-broadcast"></i></div>
+                                    <div class="td-session-body">
+                                        <div class="td-session-title"><%# HttpUtility.HtmlEncode(Eval("sessionTitle")) %></div>
+                                        <div class="td-session-meta">
+                                            <span><i class="bi bi-calendar-event"></i> <%# Eval("sessionDate") %></span>
+                                            <span><i class="bi bi-clock"></i> <%# Eval("sessionTime") %></span>
+                                            <span><i class="bi bi-people"></i> <%# Eval("participantCount") %> <%: T("students","pelajar") %></span>
+                                            <span class='td-session-badge <%# Eval("badgeClass") %>'><%# Eval("statusLabel") %></span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </ItemTemplate>
-                    </asp:Repeater>
+                            </ItemTemplate>
+                        </asp:Repeater>
+                    </div>
                 </div>
             </div>
         </asp:Panel>
         <asp:Panel ID="pnlSessionsEmpty" runat="server">
             <div class="td-empty">
                 <div class="td-empty-ico">📅</div>
-                <div class="td-empty-msg">No upcoming live sessions scheduled.</div>
+                <div class="td-empty-msg"><%: T("No upcoming live sessions.","Tiada sesi langsung akan datang.") %></div>
             </div>
         </asp:Panel>
     </div>
 </div>
 
-<%-- ── 6. NOTIFICATIONS ── --%>
+<%-- ── NOTIFICATIONS ── --%>
 <div>
     <div class="td-sec-hd">
-        <div class="td-sec-title"><i class="bi bi-bell-fill" style="color:var(--tc-warning);"></i> Notifications</div>
+        <div class="td-sec-title"><i class="bi bi-bell-fill" style="color:var(--tc-warning);"></i> <%: T("Notifications","Pemberitahuan") %></div>
+        <a href="<%: ResolveUrl("~/Teacher/Notifications.aspx") %>" style="font-size:.78rem;font-weight:600;color:var(--tc-primary);text-decoration:none;"><%: T("View All","Lihat Semua") %> →</a>
     </div>
     <div class="td-card">
         <asp:Panel ID="pnlNotifs" runat="server" Visible="false">
@@ -488,7 +471,7 @@
         <asp:Panel ID="pnlNotifsEmpty" runat="server">
             <div class="td-empty">
                 <div class="td-empty-ico">🔔</div>
-                <div class="td-empty-msg">No new notifications.</div>
+                <div class="td-empty-msg"><%: T("No new notifications.","Tiada pemberitahuan baharu.") %></div>
             </div>
         </asp:Panel>
     </div>

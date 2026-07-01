@@ -86,6 +86,9 @@ namespace ScienceBuddy.Teacher
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litUpcomingSessions;
 
+        protected global::System.Web.UI.WebControls.Literal litCalMonth;
+        protected global::System.Web.UI.WebControls.Literal litCalDays;
+
         /// <summary>
         /// litTotalStudents control.
         /// </summary>

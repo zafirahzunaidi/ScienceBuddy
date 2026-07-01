@@ -271,7 +271,42 @@ namespace ScienceBuddy.Teacher
                 pnlSessionsEmpty.Visible = false;
                 rptSessions.DataSource = list;
                 rptSessions.DataBind();
+
+                // Generate mini calendar
+                var sessionDates = new HashSet<int>();
+                foreach (DataRow row in dt.Rows)
+                {
+                    if (row["startDateTime"] != DBNull.Value)
+                    {
+                        var d = Convert.ToDateTime(row["startDateTime"]);
+                        if (d.Month == DateTime.Now.Month && d.Year == DateTime.Now.Year)
+                            sessionDates.Add(d.Day);
+                    }
+                }
+                GenerateCalendar(sessionDates);
             }
+        }
+
+        private void GenerateCalendar(HashSet<int> sessionDays)
+        {
+            var now = DateTime.Now;
+            litCalMonth.Text = now.ToString("MMMM yyyy");
+            var firstDay = new DateTime(now.Year, now.Month, 1);
+            int daysInMonth = DateTime.DaysInMonth(now.Year, now.Month);
+            int startDow = (int)firstDay.DayOfWeek; // 0=Sun
+
+            var sb = new System.Text.StringBuilder();
+            string[] headers = { "S", "M", "T", "W", "T", "F", "S" };
+            foreach (var h in headers) sb.Append("<span class='cal-header'>" + h + "</span>");
+            for (int i = 0; i < startDow; i++) sb.Append("<span></span>");
+            for (int d = 1; d <= daysInMonth; d++)
+            {
+                string cls = "cal-day";
+                if (d == now.Day) cls += " cal-today";
+                else if (sessionDays.Contains(d)) cls += " cal-session";
+                sb.Append("<span class='" + cls + "'>" + d + "</span>");
+            }
+            litCalDays.Text = sb.ToString();
         }
 
         // ── Load student performance ─────────────────────────────────
@@ -356,8 +391,8 @@ namespace ScienceBuddy.Teacher
         private void LoadNotifications(SqlConnection conn, string userId)
         {
             const string sql = @"
-                SELECT TOP 5
-                    [notificationId], [titleEN], [messageEN],
+                SELECT TOP 3
+                    [notificationId], [titleEN], [titleBM], [messageEN], [messageBM],
                     [isRead], [createdAt]
                 FROM dbo.[Notification]
                 WHERE [toUserId] = @userId
@@ -380,8 +415,12 @@ namespace ScienceBuddy.Teacher
                 var list = new List<object>();
                 foreach (DataRow row in dt.Rows)
                 {
-                    string title = row["titleEN"]?.ToString() ?? "(No title)";
-                    string message = row["messageEN"]?.ToString() ?? "";
+                    string title = CurrentLanguage == "BM"
+                        ? (row["titleBM"]?.ToString() ?? row["titleEN"]?.ToString() ?? "")
+                        : (row["titleEN"]?.ToString() ?? "");
+                    string message = CurrentLanguage == "BM"
+                        ? (row["messageBM"]?.ToString() ?? row["messageEN"]?.ToString() ?? "")
+                        : (row["messageEN"]?.ToString() ?? "");
                     bool isRead = row["isRead"] != DBNull.Value
                         && Convert.ToBoolean(row["isRead"]);
                     DateTime createdAt = row["createdAt"] == DBNull.Value
