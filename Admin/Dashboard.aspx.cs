@@ -71,6 +71,10 @@ namespace ScienceBuddy.Admin
                     "SELECT COUNT(*) FROM dbo.[Question] WHERE [status]='Pending'");
                 litPendingRequests.Text = pendingCount.ToString();
 
+                // Pending by type
+                litPendingQ.Text = pendingCount.ToString();
+                litPendingM.Text = SafeCount(conn, "SELECT COUNT(*) FROM dbo.[Material] WHERE [status]='Pending'").ToString();
+
                 // Load pending requests table (latest 5)
                 LoadPendingRequests(conn);
 

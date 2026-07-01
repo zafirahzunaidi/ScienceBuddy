@@ -269,7 +269,8 @@ namespace ScienceBuddy.Student
                             MsgText = HttpUtility.HtmlEncode(msgText),
                             SentAt = sentAt.ToString("dd MMM yyyy, h:mm tt"),
                             IsMine = isMine,
-                            SenderName = isMine ? T("You", "Anda") : litHeaderName.Text
+                            SenderName = isMine ? T("You", "Anda") : litHeaderName.Text,
+                            SenderInitial = isMine ? "Y" : (litHeaderInitials.Text.Length > 0 ? litHeaderInitials.Text : "T")
                         });
                     }
                 }
@@ -389,9 +390,9 @@ namespace ScienceBuddy.Student
         {
             litBack.Text = T("Back to Messages", "Kembali ke Mesej");
             litError.Text = T("Chat not found or access denied.", "Chat tidak ditemui atau akses ditolak.");
-            litEmptyMsg.Text = T("No messages yet. Start the conversation!", "Tiada mesej lagi. Mulakan perbualan!");
+            litEmptyTitle.Text = T("No messages yet", "Tiada mesej lagi");
+            litEmptyMsg.Text = T("Start the conversation!", "Mulakan perbualan!");
             litHeaderStatus.Text = T("Certified", "Bertauliah");
-            btnSend.Text = T("Send", "Hantar");
             txtMessage.Attributes["placeholder"] = T("Type your message...", "Taip mesej anda...");
         }
 

@@ -56,10 +56,16 @@ namespace ScienceBuddy.Admin
                             litEmail.Text    = HttpUtility.HtmlEncode(email);
                             litRole.Text     = T("Administrator", "Pentadbir");
                             litLanguage.Text = lang == "BM" ? "Bahasa Melayu" : "English";
-                            litStatus.Text   = HttpUtility.HtmlEncode(status);
+                            litStatus.Text   = "<span class='ap-status'><span class='ap-status-dot'></span>" + HttpUtility.HtmlEncode(status) + "</span>";
                             litInitials.Text = username.Length >= 2
                                 ? username.Substring(0, 2).ToUpper()
                                 : username.ToUpper();
+
+                            // Duplicate fields for the card layout
+                            litUsernameVal.Text = HttpUtility.HtmlEncode(username);
+                            litEmailVal.Text = HttpUtility.HtmlEncode(email);
+                            litRoleVal.Text = T("Administrator", "Pentadbir");
+                            litLangVal.Text = lang == "BM" ? "Bahasa Melayu" : "English";
 
                             // Master user widget
                             string ini = username.Length >= 2 ? username.Substring(0, 2).ToUpper() : username.ToUpper();

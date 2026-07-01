@@ -35,6 +35,12 @@ namespace ScienceBuddy.Admin
         /// <summary>litPendingRequests control.</summary>
         protected global::System.Web.UI.WebControls.Literal litPendingRequests;
 
+        /// <summary>litPendingQ control.</summary>
+        protected global::System.Web.UI.WebControls.Literal litPendingQ;
+
+        /// <summary>litPendingM control.</summary>
+        protected global::System.Web.UI.WebControls.Literal litPendingM;
+
         /// <summary>pnlRequests control.</summary>
         protected global::System.Web.UI.WebControls.Panel pnlRequests;
 

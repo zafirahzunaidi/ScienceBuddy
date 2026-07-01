@@ -72,8 +72,7 @@
 .tm-abtn-reject:hover{background:#FEF2F2;}
 .tm-abtn-reconsider{border-color:#D97706;color:#D97706;}
 .tm-abtn-reconsider:hover{background:#FFFBEB;}
-.tm-abtn-download{border-color:#6366F1;color:#6366F1;}
-.tm-abtn-download:hover{background:#EEF2FF;}
+.tm-abtn-reconsider{border-color:#D97706;color:#D97706;}
 
 /* Modal */
 .tm-modal-overlay{display:none;position:fixed;top:0;left:var(--sidebar-width,0px);right:0;bottom:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;padding:var(--space-xl);}
@@ -114,6 +113,7 @@
 @media(max-width:1279px){.tm-grid{grid-template-columns:repeat(2,1fr);}.tm-stats{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:767px){.tm-grid{grid-template-columns:1fr;}.tm-stats{grid-template-columns:1fr 1fr;}.tm-toolbar{flex-direction:column;}.tm-modal-info{grid-template-columns:1fr;}}
 </style>
+<script src="<%: ResolveUrl("~/Scripts/admin-signout.js") %>"></script>
 </asp:Content>
 
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
@@ -131,15 +131,19 @@
         <div class="sb-nav-section-label">Learning Content</div>
         <a href="<%: ResolveUrl("~/Admin/LessonManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-book item-icon"></i><span class="item-label">Lessons</span></a>
         <a href="<%: ResolveUrl("~/Admin/QuizManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-patch-question item-icon"></i><span class="item-label">Quizzes</span></a>
-        <a href="#" class="sb-sidebar-item"><i class="bi bi-question-circle item-icon"></i><span class="item-label">Questions</span></a>
+        <a href="<%: ResolveUrl("~/Admin/QuestionBank.aspx") %>" class="sb-sidebar-item"><i class="bi bi-question-circle item-icon"></i><span class="item-label">Question Bank</span></a>
         <a href="<%: ResolveUrl("~/Admin/TeacherMaterials.aspx") %>" class="sb-sidebar-item active"><i class="bi bi-file-earmark-text item-icon"></i><span class="item-label">Material Requests</span></a>
         <a href="<%: ResolveUrl("~/Admin/LiveSessions.aspx") %>" class="sb-sidebar-item"><i class="bi bi-camera-video item-icon"></i><span class="item-label">Live Sessions</span></a>
         <a href="<%: ResolveUrl("~/Admin/QuestionRequests.aspx") %>" class="sb-sidebar-item"><i class="bi bi-clipboard-check item-icon"></i><span class="item-label">Question Requests</span></a>
         <a href="<%: ResolveUrl("~/Admin/CertificateManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-award item-icon"></i><span class="item-label">Certificates</span></a>
     </div>
     <div class="sb-nav-section">
+        <div class="sb-nav-section-label">Community</div>
+        <a href="<%: ResolveUrl("~/Admin/ForumDiscussions.aspx") %>" class="sb-sidebar-item"><i class="bi bi-chat-dots item-icon"></i><span class="item-label">Forum Discussions</span></a>
+    </div>
+    <div class="sb-nav-section">
         <div class="sb-nav-section-label">Gamification</div>
-        <a href="<%: ResolveUrl("~/Admin/GamificationManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-trophy item-icon"></i><span class="item-label">Gamification</span></a>
+        <a href="<%: ResolveUrl("~/Admin/GamificationManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-trophy item-icon"></i><span class="item-label">Student Performance</span></a>
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Configuration</div>
@@ -155,7 +159,7 @@
         <div class="sb-nav-section-label">Account</div>
         <a href="<%: ResolveUrl("~/Admin/Notifications.aspx") %>" class="sb-sidebar-item"><i class="bi bi-bell item-icon"></i><span class="item-label">Notifications</span></a>
         <a href="<%: ResolveUrl("~/Admin/Profile.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person item-icon"></i><span class="item-label">My Profile</span></a>
-        <a href="<%: ResolveUrl("~/Logout.aspx") %>" class="sb-sidebar-item" onclick="return confirm('Are you sure you want to sign out?');"><i class="bi bi-box-arrow-right item-icon"></i><span class="item-label">Sign Out</span></a>
+        <a href="javascript:;" class="sb-sidebar-item" onclick="showSignOutModal()"><i class="bi bi-box-arrow-right item-icon"></i><span class="item-label">Sign Out</span></a>
     </div>
 </asp:Content>
 
@@ -210,7 +214,7 @@
                         <span><i class="bi bi-translate"></i> <%# Eval("language") %></span>
                     </div>
                     <div class="tm-card-actions">
-                        <a class="tm-abtn tm-abtn-view" href="javascript:;" onclick='viewMaterial(<%# Eval("jsonData") %>)'><i class="bi bi-eye"></i> <%= T("View", "Lihat") %></a>
+                        <a class="tm-abtn tm-abtn-view" href="javascript:;" data-mat='<%# HttpUtility.HtmlAttributeEncode(Eval("jsonData").ToString()) %>' onclick="viewMaterial(JSON.parse(this.getAttribute('data-mat')))"><i class="bi bi-eye"></i> <%= T("View", "Lihat") %></a>
                         <%# GetActionButtons(Eval("status"), Eval("materialId")) %>
                     </div>
                 </div>
@@ -323,10 +327,6 @@ function reconsiderMaterial(matId){
     Swal.fire({title:'<%= T("Reconsider this material?","Pertimbang semula bahan ini?") %>',text:'<%= T("Status will change back to Pending.","Status akan bertukar semula ke Tertunggak.") %>',icon:'question',showCancelButton:true,confirmButtonColor:'#D97706',confirmButtonText:'<%= T("Reconsider","Pertimbang Semula") %>'}).then(function(r){
         if(r.isConfirmed){ajaxAction('reconsider',matId,'','',function(){Swal.fire({icon:'success',title:'<%= T("Done!","Selesai!") %>',confirmButtonColor:'#D97706',timer:2000,timerProgressBar:true});setTimeout(function(){location.reload();},2100);});}
     });
-}
-
-function downloadMaterial(url){
-    if(url){window.open(url,'_blank');}
 }
 
 function ajaxAction(action,matId,reason,desc,cb){

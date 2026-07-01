@@ -5,9 +5,10 @@
 @page{size:297mm 210mm;margin:0;}
 @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
 *{margin:0;padding:0;box-sizing:border-box;}
-html,body{width:297mm;height:210mm;overflow:hidden;background:#EDE8E0;}
-body{display:flex;align-items:center;justify-content:center;}
-.page{width:285mm;height:198mm;position:relative;background:linear-gradient(170deg,#FFFDF9 0%,#FBF8F2 40%,#F9F5ED 100%);box-shadow:0 8px 40px rgba(0,0,0,.12);}
+html,body{width:100%;height:100%;overflow:hidden;background:#EDE8E0;}
+body{display:flex;align-items:center;justify-content:center;padding:8px;}
+.page{width:calc(100% - 16px);height:calc(100% - 16px);position:relative;background:linear-gradient(170deg,#FFFDF9 0%,#FBF8F2 40%,#F9F5ED 100%);box-shadow:0 8px 40px rgba(0,0,0,.12);}
+@media print{html,body{width:297mm;height:210mm;}.page{width:285mm;height:198mm;}}
 /* Borders */
 .bdr-out{position:absolute;inset:5mm;border:2.5px solid #2563EB;}
 .bdr-in{position:absolute;inset:8mm;border:1px solid #2563EB;opacity:.5;}
@@ -18,36 +19,36 @@ body{display:flex;align-items:center;justify-content:center;}
 /* Watermark */
 .wm{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Cinzel',serif;font-size:72px;font-weight:900;color:rgba(0,0,0,.03);letter-spacing:12px;white-space:nowrap;pointer-events:none;}
 /* Content */
-.content{position:relative;z-index:1;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14mm 24mm;text-align:center;}
+.content{position:relative;z-index:1;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14mm 24mm 18mm;text-align:center;}
 /* Header */
-.logo{height:52px;margin-bottom:4px;}
-.brand{font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;letter-spacing:1.5px;color:#333;margin-bottom:12px;}
+.logo{height:72px;margin-bottom:6px;}
+.brand{font-family:'Poppins',sans-serif;font-size:20px;font-weight:700;letter-spacing:1.5px;color:#333;margin-bottom:14px;}
 .brand-s{color:#2563EB;}.brand-b{color:#FF6B2C;}
 /* Title */
-.title{font-family:'Cinzel',serif;font-size:30px;font-weight:800;color:#1D4ED8;letter-spacing:4px;text-transform:uppercase;margin-bottom:6px;}
+.title{font-family:'Cinzel',serif;font-size:36px;font-weight:800;color:#1D4ED8;letter-spacing:5px;text-transform:uppercase;margin-bottom:8px;}
 .ornament{width:240px;height:12px;margin:0 auto 14px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='12'%3E%3Cpath d='M0 6 Q60 0 120 6 Q180 12 240 6' stroke='%23C9A84C' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='120' cy='6' r='3' fill='%23C9A84C'/%3E%3C/svg%3E") no-repeat center;}
 /* Body */
-.presented{font-family:'Cormorant Garamond',serif;font-size:15px;color:#6B7280;font-style:italic;margin-bottom:14px;}
-.student-name{font-family:'Playfair Display',serif;font-size:36px;font-weight:800;color:#111827;margin-bottom:4px;}
+.presented{font-family:'Cormorant Garamond',serif;font-size:17px;color:#6B7280;font-style:italic;margin-bottom:16px;}
+.student-name{font-family:'Playfair Display',serif;font-size:42px;font-weight:800;color:#111827;margin-bottom:6px;}
 .gold-line{width:180px;height:2px;background:linear-gradient(90deg,transparent,#2563EB 20%,#2563EB 80%,transparent);margin:6px auto 14px;}
-.for-text{font-family:'Cormorant Garamond',serif;font-size:14px;color:#6B7280;margin-bottom:6px;}
+.for-text{font-family:'Cormorant Garamond',serif;font-size:16px;color:#6B7280;margin-bottom:8px;}
 /* Ribbon */
-.ribbon{display:inline-block;padding:7px 32px;border-radius:4px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;background:linear-gradient(135deg,#2563EB,#60A5FA);color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:12px;}
-.desc{font-family:'Cormorant Garamond',serif;font-size:13px;color:#4B5563;max-width:420px;line-height:1.7;margin-bottom:16px;}
+.ribbon{display:inline-block;padding:9px 36px;border-radius:5px;font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;letter-spacing:4px;text-transform:uppercase;background:linear-gradient(135deg,#2563EB,#60A5FA);color:#fff;box-shadow:0 3px 10px rgba(0,0,0,.1);margin-bottom:16px;}
+.desc{font-family:'Cormorant Garamond',serif;font-size:15px;color:#4B5563;max-width:480px;line-height:1.7;margin-bottom:0;}
 /* Footer */
-.footer{width:100%;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;align-items:end;padding-top:14px;border-top:1px solid #E5DDD0;margin-top:auto;}
+.footer{width:100%;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;align-items:end;padding-top:16px;border-top:1.5px solid #E5DDD0;margin-top:auto;}
 .fcol{text-align:center;}
-.fval{font-family:'Poppins',sans-serif;font-size:10px;font-weight:600;color:#1F2937;margin-bottom:2px;}
-.flbl{font-family:'Poppins',sans-serif;font-size:7.5px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.7px;}
+.fval{font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:#1F2937;margin-bottom:3px;}
+.flbl{font-family:'Poppins',sans-serif;font-size:8px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.8px;}
 /* Seal */
-.seal{width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#1D4ED8,#3B82F6);border:2.5px solid #2563EB;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;margin:0 auto 3px;box-shadow:0 0 0 2px #FFFDF9,0 0 0 4.5px #2563EB,0 4px 12px rgba(0,0,0,.1);}
+.seal{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#1D4ED8,#3B82F6);border:3px solid #2563EB;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;margin:0 auto 4px;box-shadow:0 0 0 2.5px #FFFDF9,0 0 0 5px #2563EB,0 4px 14px rgba(0,0,0,.12);}
 .seal-top{font-size:4.5px;text-transform:uppercase;letter-spacing:1.2px;opacity:.8;}
 .seal-mid{font-size:14px;font-weight:900;line-height:1;}
 .seal-bot{font-size:4.5px;text-transform:uppercase;letter-spacing:1.2px;opacity:.8;}
 /* Signature */
 .sig{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;color:#1E293B;border-top:1px solid #94A3B8;padding-top:3px;display:inline-block;}
 /* Page footer */
-.page-foot{position:absolute;bottom:3mm;left:0;right:0;text-align:center;font-family:'Poppins',sans-serif;font-size:6.5px;color:#CBD5E1;letter-spacing:.5px;}
+.page-foot{position:absolute;bottom:8px;left:0;right:0;text-align:center;font-family:'Poppins',sans-serif;font-size:6.5px;color:#CBD5E1;letter-spacing:.5px;}
 </style></head><body>
 <div class='page'>
 <div class='bdr-out'></div><div class='bdr-in'></div>
@@ -59,7 +60,7 @@ body{display:flex;align-items:center;justify-content:center;}
 <div class='content'>
 <img src='/Images/Logo/sciencebuddy-logo.png' alt='ScienceBuddy' class='logo' onerror="this.style.display='none'"/>
 <div class='brand'><span class='brand-s'>Science</span><span class='brand-b'>Buddy</span></div>
-<div class='title'>Certificate of Completion</div>
+<div class='title'>Beginner Science Completion Certificate</div>
 <div class='ornament'></div>
 <div class='presented'>This certificate is proudly presented to</div>
 <div class='student-name'>Aiman Harris Bin Zulkarnain</div>

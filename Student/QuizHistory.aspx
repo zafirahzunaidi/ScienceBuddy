@@ -140,21 +140,11 @@
     <div class="qh-header-sub"><asp:Literal ID="litSubtitle" runat="server" /></div>
 </div>
 
-<%-- Stats --%>
-<div class="qh-stats">
-    <div class="qh-stat"><div class="qh-stat-icon" style="background:#EFF6FF;color:#2563EB;"><i class="bi bi-list-check"></i></div>
-        <div class="qh-stat-val"><asp:Literal ID="litStatTotal" runat="server" Text="0" /></div>
-        <div class="qh-stat-lbl"><asp:Literal ID="litStatTotalLbl" runat="server" /></div></div>
-    <div class="qh-stat"><div class="qh-stat-icon" style="background:#DCFCE7;color:#15803D;"><i class="bi bi-check-circle-fill"></i></div>
-        <div class="qh-stat-val"><asp:Literal ID="litStatPassed" runat="server" Text="0" /></div>
-        <div class="qh-stat-lbl"><asp:Literal ID="litStatPassedLbl" runat="server" /></div></div>
-    <div class="qh-stat"><div class="qh-stat-icon" style="background:#FFF0E8;color:#FF6B2C;"><i class="bi bi-trophy-fill"></i></div>
-        <div class="qh-stat-val"><asp:Literal ID="litStatBest" runat="server" Text="0%" /></div>
-        <div class="qh-stat-lbl"><asp:Literal ID="litStatBestLbl" runat="server" /></div></div>
-    <div class="qh-stat"><div class="qh-stat-icon" style="background:#F3E8FF;color:#7C3AED;"><i class="bi bi-calendar-check"></i></div>
-        <div class="qh-stat-val"><asp:Literal ID="litStatLatest" runat="server" Text="-" /></div>
-        <div class="qh-stat-lbl"><asp:Literal ID="litStatLatestLbl" runat="server" /></div></div>
-</div>
+<%-- Stats (hidden - kept for code-behind compatibility) --%>
+<asp:Literal ID="litStatTotal" runat="server" Visible="false" /><asp:Literal ID="litStatTotalLbl" runat="server" Visible="false" />
+<asp:Literal ID="litStatPassed" runat="server" Visible="false" /><asp:Literal ID="litStatPassedLbl" runat="server" Visible="false" />
+<asp:Literal ID="litStatBest" runat="server" Visible="false" /><asp:Literal ID="litStatBestLbl" runat="server" Visible="false" />
+<asp:Literal ID="litStatLatest" runat="server" Visible="false" /><asp:Literal ID="litStatLatestLbl" runat="server" Visible="false" />
 
 <%-- Filters --%>
 <div class="qh-filters">

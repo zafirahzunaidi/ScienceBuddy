@@ -207,31 +207,18 @@
 </div>
 
 <%-- ── SUMMARY CARDS ── --%>
-<div class="fm-stats">
-    <div class="fm-stat-card sc-total">
-        <div class="fm-stat-icon" style="background:#EFF6FF;color:#2563EB;">💬</div>
-        <div class="fm-stat-val"><asp:Literal ID="litTotalDisc" runat="server" Text="0" /></div>
-        <div class="fm-stat-lbl"><asp:Literal ID="litTotalDiscLbl" runat="server" Text="Total Discussions" /></div>
-    </div>
-    <div class="fm-stat-card sc-mine">
-        <div class="fm-stat-icon" style="background:#F3E8FF;color:#7C3AED;">✍️</div>
-        <div class="fm-stat-val"><asp:Literal ID="litMyDisc" runat="server" Text="0" /></div>
-        <div class="fm-stat-lbl"><asp:Literal ID="litMyDiscLbl" runat="server" Text="My Discussions" /></div>
-    </div>
-    <div class="fm-stat-card sc-replies">
-        <div class="fm-stat-icon" style="background:#DCFCE7;color:#15803D;">💡</div>
-        <div class="fm-stat-val"><asp:Literal ID="litTotalReplies" runat="server" Text="0" /></div>
-        <div class="fm-stat-lbl"><asp:Literal ID="litTotalRepliesLbl" runat="server" Text="Total Replies" /></div>
-    </div>
-</div>
+<%-- Stats hidden for cleaner UI --%>
+<asp:Literal ID="litTotalDisc" runat="server" Visible="false" /><asp:Literal ID="litTotalDiscLbl" runat="server" Visible="false" />
+<asp:Literal ID="litMyDisc" runat="server" Visible="false" /><asp:Literal ID="litMyDiscLbl" runat="server" Visible="false" />
+<asp:Literal ID="litTotalReplies" runat="server" Visible="false" /><asp:Literal ID="litTotalRepliesLbl" runat="server" Visible="false" />
 
 <%-- ── CATEGORY TABS ── --%>
 <div class="fm-category-tabs">
     <asp:LinkButton ID="btnTabPublic" runat="server" CssClass="fm-cat-tab active" OnClick="btnTabPublic_Click">
-        <i class="bi bi-globe"></i> <asp:Literal ID="litTabPublic" runat="server" Text="Public" />
+        <asp:Literal ID="litTabPublic" runat="server" />
     </asp:LinkButton>
     <asp:LinkButton ID="btnTabPrivate" runat="server" CssClass="fm-cat-tab" OnClick="btnTabPrivate_Click">
-        <i class="bi bi-people-fill"></i> <asp:Literal ID="litTabPrivate" runat="server" Text="Student-Parent" />
+        <asp:Literal ID="litTabPrivate" runat="server" />
     </asp:LinkButton>
     <asp:HiddenField ID="hfCategory" runat="server" Value="public" />
 </div>

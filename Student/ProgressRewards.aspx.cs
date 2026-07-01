@@ -370,7 +370,15 @@ namespace ScienceBuddy.Student
                         : (row["requirementDescriptionEN"] != DBNull.Value ? row["requirementDescriptionEN"].ToString() : "");
 
                     int xpReward = row["xpReward"] != DBNull.Value ? Convert.ToInt32(row["xpReward"]) : 0;
-                    string icon = row["badgeIcon"] != DBNull.Value ? row["badgeIcon"].ToString() : "🎖️";
+                    string icon = row["badgeIcon"] != DBNull.Value ? row["badgeIcon"].ToString() : "";
+                    // Resolve badge image path for proper rendering
+                    string iconUrl = "";
+                    if (!string.IsNullOrWhiteSpace(icon))
+                    {
+                        iconUrl = icon.StartsWith("~/") ? ResolveUrl(icon)
+                            : icon.StartsWith("Images/") ? ResolveUrl("~/" + icon)
+                            : ResolveUrl("~/Images/Badge/" + icon);
+                    }
                     string badgeType = row["badgeType"] != DBNull.Value ? row["badgeType"].ToString() : "";
 
                     string earnedDate = "";
@@ -385,7 +393,7 @@ namespace ScienceBuddy.Student
                         Description = HttpUtility.HtmlEncode(description),
                         Requirement = HttpUtility.HtmlEncode(requirement),
                         XpReward = xpReward,
-                        Icon = HttpUtility.HtmlEncode(icon),
+                        IconUrl = iconUrl,
                         IsEarned = isEarned,
                         EarnedDate = earnedDate,
                         BadgeType = HttpUtility.HtmlEncode(badgeType),

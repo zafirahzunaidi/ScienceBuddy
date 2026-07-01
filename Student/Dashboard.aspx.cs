@@ -462,10 +462,17 @@ namespace ScienceBuddy.Student
         private void SetPersonalityCard(string personalityId, string personalityEN,
                                         string avatar, string colour, string lang)
         {
-            // Banner gradient background based on personality colour
-            string bannerBg = string.IsNullOrWhiteSpace(colour)
-                ? "linear-gradient(135deg,#2563EB,#4DA8FF)"
-                : "linear-gradient(135deg," + colour + ",#4DA8FF)";
+            // Banner background - pastel shade of personality colour
+            string bannerBg = "#DBEAFE"; // default soft blue
+            switch (personalityId)
+            {
+                case "P001": bannerBg = "#FEF3C7"; break; // Achiever - soft gold
+                case "P002": bannerBg = "#FCE7F3"; break; // Creative - soft pink
+                case "P003": bannerBg = "#EDE9FE"; break; // Thinker - soft purple
+                case "P004": bannerBg = "#FFF7ED"; break; // Go-Getter - soft orange
+                case "P005": bannerBg = "#D1FAE5"; break; // Chill - soft mint
+                case "P006": bannerBg = "#CFFAFE"; break; // Socializer - soft cyan
+            }
             divRecBanner.Style["background"] = bannerBg;
 
             // Avatar background

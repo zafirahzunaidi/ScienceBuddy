@@ -103,6 +103,7 @@
 @media(max-width:767px){.ss-summary{grid-template-columns:1fr 1fr;}.ss-sec-body{grid-template-columns:1fr;}.ss-page-hdr{flex-direction:column;align-items:flex-start;}}
 @media(max-width:479px){.ss-summary{grid-template-columns:1fr;}}
 </style>
+<script src="<%: ResolveUrl("~/Scripts/admin-signout.js") %>"></script>
 </asp:Content>
 
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
@@ -138,9 +139,9 @@
             <i class="bi bi-patch-question item-icon"></i>
             <span class="item-label">Quizzes</span>
         </a>
-        <a href="#" class="sb-sidebar-item">
+        <a href="<%: ResolveUrl("~/Admin/QuestionBank.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-question-circle item-icon"></i>
-            <span class="item-label">Questions</span>
+            <span class="item-label">Question Bank</span>
         </a>
         <a href="<%: ResolveUrl("~/Admin/TeacherMaterials.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-file-earmark-text item-icon"></i>
@@ -160,10 +161,17 @@
         </a>
     </div>
     <div class="sb-nav-section">
+        <div class="sb-nav-section-label">Community</div>
+        <a href="<%: ResolveUrl("~/Admin/ForumDiscussions.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-chat-dots item-icon"></i>
+            <span class="item-label">Forum Discussions</span>
+        </a>
+    </div>
+    <div class="sb-nav-section">
         <div class="sb-nav-section-label">Gamification</div>
         <a href="<%: ResolveUrl("~/Admin/GamificationManagement.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-trophy item-icon"></i>
-            <span class="item-label">Gamification</span>
+            <span class="item-label">Student Performance</span>
         </a>
     </div>
     <div class="sb-nav-section">
@@ -198,8 +206,7 @@
             <i class="bi bi-person item-icon"></i>
             <span class="item-label">My Profile</span>
         </a>
-        <a href="<%: ResolveUrl("~/Logout.aspx") %>" class="sb-sidebar-item"
-            onclick="return confirm('Are you sure you want to sign out?');">
+        <a href="javascript:;" class="sb-sidebar-item" onclick="showSignOutModal()">
             <i class="bi bi-box-arrow-right item-icon"></i>
             <span class="item-label">Sign Out</span>
         </a>

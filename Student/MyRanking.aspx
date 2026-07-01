@@ -4,18 +4,18 @@
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
 <style>
 /* ── My Ranking Page ── */
-:root{--rk-gold:#FFD84D;--rk-orange:#FF6B2C;--rk-gold-light:#FFF8E1;--rk-bronze:#CD7F32;--rk-silver:#C0C0C0;}
+:root{--rk-gold:#FACC15;--rk-blue:#2563EB;--rk-indigo:#4F46E5;--rk-purple:#7C3AED;--rk-gold-light:#FEF3C7;--rk-bronze:#CD7F32;--rk-silver:#C0C0C0;}
 
 /* ══ HERO ══ */
 .rk-hero{
-    background:linear-gradient(135deg,#FFD84D 0%,#FFAB2C 40%,#FF6B2C 100%);
+    background:linear-gradient(135deg,#2563EB 0%,#4F46E5 45%,#7C3AED 100%);
     border-radius:var(--border-radius-xl);padding:var(--space-2xl);
     color:#fff;display:flex;align-items:center;justify-content:space-between;
     gap:var(--space-xl);position:relative;overflow:hidden;margin-bottom:var(--space-xl);
-    box-shadow:0 12px 40px rgba(255,107,44,.25);
+    box-shadow:0 12px 40px rgba(79,70,229,.25);
 }
-.rk-hero::before{content:'🏆';position:absolute;font-size:8rem;opacity:.08;
-    top:-20px;right:80px;pointer-events:none;line-height:1;}
+.rk-hero::before{content:'';position:absolute;width:100px;height:100px;border-radius:50%;
+    background:rgba(250,204,21,.12);top:-20px;right:80px;pointer-events:none;}
 .rk-hero-blob1{position:absolute;width:300px;height:300px;border-radius:50%;
     background:rgba(255,255,255,.08);top:-100px;right:-60px;pointer-events:none;}
 .rk-hero-blob2{position:absolute;width:160px;height:160px;border-radius:50%;
@@ -39,9 +39,9 @@
     padding:var(--space-xl);display:flex;align-items:center;gap:var(--space-lg);
     margin-bottom:var(--space-xl);position:relative;overflow:hidden;}
 .rk-personal::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;
-    background:linear-gradient(90deg,#FFD84D,#FF6B2C);border-radius:var(--border-radius-xl) var(--border-radius-xl) 0 0;}
+    background:linear-gradient(90deg,var(--rk-gold),var(--rk-indigo));border-radius:var(--border-radius-xl) var(--border-radius-xl) 0 0;}
 .rk-personal-avatar{width:64px;height:64px;border-radius:50%;
-    background:linear-gradient(135deg,#FFD84D,#FF6B2C);
+    background:linear-gradient(135deg,var(--rk-blue),var(--rk-purple));
     display:flex;align-items:center;justify-content:center;
     font-size:1.75rem;font-weight:800;color:#fff;flex-shrink:0;
     box-shadow:0 4px 16px rgba(255,107,44,.25);}
@@ -50,14 +50,58 @@
     color:var(--color-text);margin-bottom:4px;}
 .rk-personal-stats{display:flex;gap:var(--space-lg);flex-wrap:wrap;}
 .rk-personal-stat{display:flex;flex-direction:column;align-items:flex-start;}
-.rk-personal-stat-val{font-family:var(--font-primary);font-size:1.25rem;font-weight:800;color:var(--rk-orange);}
+.rk-personal-stat-val{font-family:var(--font-primary);font-size:1.25rem;font-weight:800;color:var(--rk-indigo);}
 .rk-personal-stat-lbl{font-size:.75rem;color:var(--color-text-muted);font-weight:600;}
+
+/* ══ PODIUM ══ */
+.rk-podium-section{margin-bottom:var(--space-lg);}
+.rk-podium-title{font-family:var(--font-primary);font-size:1.125rem;font-weight:800;
+    color:var(--color-text);margin-bottom:12px;text-align:center;
+    display:flex;align-items:center;justify-content:center;gap:8px;}
+.rk-podium{display:flex;align-items:flex-end;justify-content:center;gap:var(--space-md);padding-top:8px;}
+.rk-podium-player{display:flex;flex-direction:column;align-items:center;text-align:center;transition:transform .2s;}
+.rk-podium-player:hover{transform:translateY(-6px);}
+.rk-podium-crown{font-size:1.75rem;margin-bottom:4px;color:#FACC15;filter:drop-shadow(0 2px 6px rgba(250,204,21,.5));animation:rk-sparkle 2s ease-in-out infinite;}
+@keyframes rk-sparkle{0%,100%{transform:scale(1);filter:drop-shadow(0 2px 6px rgba(250,204,21,.5));}50%{transform:scale(1.1);filter:drop-shadow(0 4px 12px rgba(250,204,21,.8));}}
+.rk-podium-avatar{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:1.25rem;font-weight:800;color:#fff;margin-bottom:6px;border:3px solid #fff;}
+.rk-podium-player.first .rk-podium-avatar{width:68px;height:68px;font-size:1.6rem;
+    background:linear-gradient(135deg,#FACC15,#F59E0B);box-shadow:0 0 20px rgba(250,204,21,.5),0 4px 16px rgba(250,204,21,.35);}
+.rk-podium-player.second .rk-podium-avatar{background:linear-gradient(135deg,#CBD5E1,#94A3B8);box-shadow:0 0 12px rgba(148,163,184,.4);}
+.rk-podium-player.third .rk-podium-avatar{background:linear-gradient(135deg,#FDBA74,#CD7F32);box-shadow:0 0 12px rgba(205,127,50,.4);}
+.rk-podium-name{font-size:.8rem;font-weight:700;color:var(--color-text);margin-bottom:2px;max-width:90px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rk-podium-xp{font-size:.7rem;font-weight:700;color:var(--rk-purple);margin-bottom:6px;}
+.rk-podium-you{font-size:.6rem;font-weight:700;padding:2px 8px;border-radius:var(--border-radius-full);
+    background:linear-gradient(135deg,#FACC15,#F59E0B);color:#fff;margin-bottom:4px;box-shadow:0 2px 6px rgba(250,204,21,.3);}
+.rk-podium-block{width:90px;border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-primary);font-size:1.75rem;font-weight:800;color:#fff;position:relative;overflow:hidden;}
+.rk-podium-block::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.2) 0%,transparent 50%);pointer-events:none;}
+.rk-podium-player.first .rk-podium-block{height:140px;width:105px;
+    background:linear-gradient(180deg,#FACC15,#D97706);box-shadow:0 -6px 24px rgba(250,204,21,.35),0 4px 20px rgba(217,119,6,.2);}
+.rk-podium-player.second .rk-podium-block{height:105px;
+    background:linear-gradient(180deg,#E2E8F0,#64748B);box-shadow:0 -4px 16px rgba(100,116,139,.2);}
+.rk-podium-player.third .rk-podium-block{height:80px;
+    background:linear-gradient(180deg,#FDBA74,#92400E);box-shadow:0 -4px 16px rgba(146,64,14,.2);}
+
+/* ══ FILTERS ══ */
+.rk-filters{margin-bottom:var(--space-lg);text-align:center;}
+.rk-filters-label{font-size:.75rem;font-weight:600;color:var(--color-text-muted);margin-bottom:8px;}
+.rk-filter-chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.rk-filter-chip{padding:8px 18px;border-radius:var(--border-radius-full);font-size:.8rem;font-weight:700;
+    border:1.5px solid var(--border-color);background:#fff;color:var(--color-text-secondary);
+    cursor:pointer;transition:all .2s;text-decoration:none;}
+.rk-filter-chip:hover{border-color:var(--rk-indigo);color:var(--rk-indigo);text-decoration:none;}
+.rk-filter-chip.active{background:linear-gradient(135deg,var(--rk-blue),var(--rk-purple));color:#fff;border-color:transparent;
+    box-shadow:0 3px 12px rgba(79,70,229,.25);}
+
+@media(max-width:479px){.rk-podium{gap:var(--space-sm);}.rk-podium-block{width:70px;}.rk-podium-player.first .rk-podium-block{width:80px;height:110px;}.rk-podium-player.second .rk-podium-block{height:85px;}.rk-podium-player.third .rk-podium-block{height:65px;}.rk-podium-avatar{width:40px;height:40px;font-size:1rem;}.rk-podium-player.first .rk-podium-avatar{width:50px;height:50px;}}
 
 /* ══ LEADERBOARD ══ */
 .rk-board{background:var(--color-white);border-radius:var(--border-radius-xl);
     border:1.5px solid var(--border-color);box-shadow:var(--shadow-md);
     overflow:hidden;margin-bottom:var(--space-xl);}
-.rk-board-header{background:linear-gradient(135deg,#FFD84D 0%,#FFAB2C 100%);
+.rk-board-header{background:linear-gradient(135deg,var(--rk-blue) 0%,var(--rk-indigo) 100%);
     padding:var(--space-md) var(--space-xl);display:flex;align-items:center;gap:var(--space-sm);
     color:#fff;font-family:var(--font-primary);font-weight:800;font-size:1rem;}
 .rk-board-list{padding:var(--space-sm) 0;}
@@ -65,12 +109,12 @@
     padding:var(--space-sm) var(--space-xl);border-bottom:1px solid #FFF8E1;
     transition:background .2s;}
 .rk-board-row:last-child{border-bottom:none;}
-.rk-board-row:hover{background:#FFFDF5;}
-.rk-board-row.rk-current{background:#FFF8E1;border-left:4px solid var(--rk-orange);}
+.rk-board-row:hover{background:#F8FAFC;}
+.rk-board-row.rk-current{background:#EFF6FF;border-left:4px solid var(--rk-indigo);}
 .rk-board-rank{width:36px;height:36px;border-radius:50%;
     display:flex;align-items:center;justify-content:center;
     font-weight:800;font-size:.875rem;flex-shrink:0;}
-.rk-board-rank.rk-gold{background:linear-gradient(135deg,#FFD84D,#FFAB2C);color:#fff;box-shadow:0 3px 10px rgba(255,171,44,.3);}
+.rk-board-rank.rk-gold{background:linear-gradient(135deg,#FACC15,#F59E0B);color:#fff;box-shadow:0 3px 10px rgba(250,204,21,.3);}
 .rk-board-rank.rk-silver{background:linear-gradient(135deg,#E8E8E8,#C0C0C0);color:#555;box-shadow:0 3px 10px rgba(192,192,192,.3);}
 .rk-board-rank.rk-bronze{background:linear-gradient(135deg,#E8A96D,#CD7F32);color:#fff;box-shadow:0 3px 10px rgba(205,127,50,.3);}
 .rk-board-rank.rk-normal{background:#F5F5F5;color:var(--color-text-secondary);}
@@ -80,7 +124,7 @@
 .rk-board-name{flex:1;font-weight:700;font-size:.9375rem;color:var(--color-text);}
 .rk-board-level{font-size:.8125rem;color:var(--color-text-secondary);font-weight:600;min-width:80px;}
 .rk-board-xp{font-family:var(--font-primary);font-weight:800;font-size:.9375rem;
-    color:var(--rk-orange);min-width:70px;text-align:right;}
+    color:var(--rk-purple);min-width:70px;text-align:right;}
 .rk-board-badges{font-size:.8125rem;color:var(--color-text-muted);min-width:50px;text-align:center;
     display:flex;align-items:center;gap:4px;justify-content:center;}
 
@@ -90,9 +134,9 @@
     padding:var(--space-lg) var(--space-xl);margin-bottom:var(--space-xl);
     display:flex;align-items:center;gap:var(--space-lg);}
 .rk-yourpos-title{font-family:var(--font-primary);font-weight:800;font-size:.9375rem;
-    color:var(--rk-orange);margin-bottom:4px;}
+    color:var(--rk-indigo);margin-bottom:4px;}
 .rk-yourpos-info{display:flex;gap:var(--space-lg);align-items:center;flex-wrap:wrap;}
-.rk-yourpos-rank{font-family:var(--font-primary);font-size:1.5rem;font-weight:800;color:var(--rk-orange);}
+.rk-yourpos-rank{font-family:var(--font-primary);font-size:1.5rem;font-weight:800;color:var(--rk-indigo);}
 .rk-yourpos-name{font-weight:700;color:var(--color-text);}
 .rk-yourpos-xp{font-weight:700;color:var(--color-text-secondary);}
 
@@ -122,9 +166,9 @@
 .rk-nav-btn{display:inline-flex;align-items:center;gap:6px;padding:12px 24px;
     border-radius:var(--border-radius-full);font-weight:700;font-size:.9375rem;
     text-decoration:none;transition:all .2s;border:2px solid transparent;}
-.rk-nav-btn-primary{background:linear-gradient(135deg,#FFD84D,#FF6B2C);color:#fff;
-    box-shadow:0 4px 16px rgba(255,107,44,.25);}
-.rk-nav-btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(255,107,44,.35);text-decoration:none;color:#fff;}
+.rk-nav-btn-primary{background:linear-gradient(135deg,var(--rk-blue),var(--rk-purple));color:#fff;
+    box-shadow:0 4px 16px rgba(79,70,229,.25);}
+.rk-nav-btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(79,70,229,.35);text-decoration:none;color:#fff;}
 .rk-nav-btn-secondary{background:var(--color-white);color:var(--color-text);
     border-color:var(--border-color);box-shadow:var(--shadow-sm);}
 .rk-nav-btn-secondary:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);text-decoration:none;color:var(--color-text);}
@@ -222,7 +266,7 @@
 <div class="rk-hero">
     <div class="rk-hero-blob1"></div><div class="rk-hero-blob2"></div>
     <div class="rk-hero-left">
-        <div class="rk-hero-title">🏆 <asp:Literal ID="litHeroRank" runat="server" Text="#1" /></div>
+        <div class="rk-hero-title"><i class="bi bi-trophy-fill" style="color:var(--rk-gold);"></i> <asp:Literal ID="litHeroRank" runat="server" Text="#1" /></div>
         <div class="rk-hero-sub"><asp:Literal ID="litHeroMessage" runat="server" Text="See your position and keep improving step by step." /></div>
         <div class="rk-hero-chips">
             <span class="rk-hero-chip rk-rank-chip"><i class="bi bi-trophy-fill"></i> <asp:Literal ID="litHeroXP" runat="server" Text="0 XP" /></span>
@@ -230,7 +274,7 @@
         </div>
     </div>
     <div class="rk-hero-right">
-        <div class="rk-hero-trophy">🏆</div>
+        <div class="rk-hero-trophy"><i class="bi bi-trophy-fill" style="font-size:4.5rem;color:var(--rk-gold);filter:drop-shadow(0 4px 12px rgba(0,0,0,.2));"></i></div>
     </div>
 </div>
 
@@ -257,6 +301,22 @@
                 <span class="rk-personal-stat-lbl"><asp:Literal ID="litPersonalBadgesLbl" runat="server" Text="Badges" /></span>
             </div>
         </div>
+    </div>
+</div>
+
+<%-- ── TOP 3 PODIUM ── --%>
+<div class="rk-podium-section">
+    <div class="rk-podium-title"><i class="bi bi-trophy-fill" style="color:var(--rk-gold);"></i> <asp:Literal ID="litPodiumTitle" runat="server" Text="Top 3 Champions" /></div>
+    <asp:Literal ID="litPodium" runat="server" />
+</div>
+
+<%-- ── FILTERS ── --%>
+<div class="rk-filters">
+    <div class="rk-filters-label"><asp:Literal ID="litFilterLabel" runat="server" Text="Filter leaderboard" /></div>
+    <div class="rk-filter-chips">
+        <asp:LinkButton ID="btnFilterAll" runat="server" CssClass="rk-filter-chip active" OnClick="btnFilter_Click" CommandArgument="all" CausesValidation="false"><asp:Literal ID="litFAll" runat="server" Text="All Students" /></asp:LinkButton>
+        <asp:LinkButton ID="btnFilterLevel" runat="server" CssClass="rk-filter-chip" OnClick="btnFilter_Click" CommandArgument="level" CausesValidation="false"><asp:Literal ID="litFLevel" runat="server" Text="My Level" /></asp:LinkButton>
+        <asp:LinkButton ID="btnFilterPers" runat="server" CssClass="rk-filter-chip" OnClick="btnFilter_Click" CommandArgument="personality" CausesValidation="false"><asp:Literal ID="litFPers" runat="server" Text="My Personality" /></asp:LinkButton>
     </div>
 </div>
 
