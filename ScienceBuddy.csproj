@@ -151,7 +151,11 @@
     <Content Include="Images\Personality\thinker.png" />
     <Content Include="Login.aspx" />
     <Content Include="Logout.aspx" />
-    <Content Include="Parent\Dashboard.aspx" />
+    <Content Include="Parent\ParentDashboard.aspx" />
+    <Content Include="Parent\ParentProfile.aspx" />
+    <Content Include="Parent\LinkChildAccount.aspx" />
+    <Content Include="Parent\ChildProfile.aspx" />
+    <Content Include="Parent\EnrolledModules.aspx" />
     <Content Include="Register.aspx" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
@@ -467,12 +471,40 @@
     <Compile Include="Logout.aspx.designer.cs">
       <DependentUpon>Logout.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Parent\Dashboard.aspx.cs">
-      <DependentUpon>Dashboard.aspx</DependentUpon>
+    <Compile Include="Parent\ParentDashboard.aspx.cs">
+      <DependentUpon>ParentDashboard.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Parent\Dashboard.aspx.designer.cs">
-      <DependentUpon>Dashboard.aspx</DependentUpon>
+    <Compile Include="Parent\ParentDashboard.aspx.designer.cs">
+      <DependentUpon>ParentDashboard.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Parent\ParentProfile.aspx.cs">
+      <DependentUpon>ParentProfile.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Parent\ParentProfile.aspx.designer.cs">
+      <DependentUpon>ParentProfile.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Parent\LinkChildAccount.aspx.cs">
+      <DependentUpon>LinkChildAccount.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Parent\LinkChildAccount.aspx.designer.cs">
+      <DependentUpon>LinkChildAccount.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Parent\ChildProfile.aspx.cs">
+      <DependentUpon>ChildProfile.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Parent\ChildProfile.aspx.designer.cs">
+      <DependentUpon>ChildProfile.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Parent\EnrolledModules.aspx.cs">
+      <DependentUpon>EnrolledModules.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Parent\EnrolledModules.aspx.designer.cs">
+      <DependentUpon>EnrolledModules.aspx</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Register.aspx.cs">
