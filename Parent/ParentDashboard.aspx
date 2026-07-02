@@ -21,6 +21,11 @@
 }
 .pd-page { padding: 24px 0; }
 
+/* sidebar child dropdown */
+.sb-sidebar-child-ddl { width:100%; border:1.5px solid #E2E8F0; border-radius:10px; padding:8px 12px; font-size:0.82rem; font-weight:600; color:#1D4ED8; background:#EFF6FF; appearance:auto; cursor:pointer; }
+.sb-sidebar-child-ddl:focus { border-color:#2563EB; outline:none; }
+.sb-sidebar-child-ddl option { background:#fff; color:#1E293B; }
+
 /* ── Redesigned Hero Card ───────────────────────────────────── */
 .pd-hero {
     background: linear-gradient(135deg, #1D4ED8 0%, #2563EB 40%, #3B82F6 70%, #60A5FA 100%);
@@ -793,12 +798,14 @@
 <%-- ════ SIDEBAR MENU ════ --%>
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
 
-    <%-- Currently Viewing child name (populated from code-behind via litSidebarChild) --%>
+    <%-- Child Switcher Dropdown --%>
     <div style="padding:10px 16px 6px; font-size:0.72rem; color:#94A3B8; text-transform:uppercase; letter-spacing:1px; font-weight:700;">
-        <%: T("Currently viewing","Sedang melihat") %>
+        <%: T("Viewing Child","Anak Dilihat") %>
     </div>
-    <div style="padding:0 16px 12px; font-size:0.85rem; color:#2563EB; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-        <i class="bi bi-person-fill" style="margin-right:5px;"></i><asp:Literal ID="litSidebarChild" runat="server" Text="—" />
+    <div style="padding:0 16px 14px;">
+        <asp:DropDownList ID="ddlSidebarChild" runat="server"
+            AutoPostBack="true" OnSelectedIndexChanged="SidebarChildChanged"
+            CssClass="sb-sidebar-child-ddl" />
     </div>
 
     <div class="sb-nav-section">
@@ -821,7 +828,7 @@
         </a>
         <a href="<%: ResolveUrl("~/Parent/EnrolledModules.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-journal-bookmark item-icon"></i>
-            <span class="item-label"><%: T("Enrolled Modules","Modul Didaftarkan") %></span>
+            <span class="item-label"><%: T("Learning Journey","Perjalanan Pembelajaran") %></span>
         </a>
     </div>
 
@@ -944,16 +951,8 @@
                     </span>
                 </asp:Panel>
             </div>
-            <%-- action row: dropdown + link button side by side --%>
-            <div class="pd-hero-ddl-label">
-                <i class="bi bi-person-check-fill"></i>
-                <asp:Literal ID="litHeroDdlLabel" runat="server" />
-            </div>
+            <%-- action row: link button only (child switching moved to sidebar) --%>
             <div class="pd-hero-action-row">
-                <asp:DropDownList ID="ddlHeroChildren" runat="server"
-                    CssClass="pd-hero-ddl"
-                    AutoPostBack="true"
-                    OnSelectedIndexChanged="DdlHeroChildren_SelectedIndexChanged" />
                 <a href="<%: ResolveUrl("~/Parent/LinkChildAccount.aspx") %>" class="pd-hero-link-btn">
                     <i class="bi bi-plus-circle-fill"></i>
                     <asp:Literal ID="litHeroLinkChild" runat="server" />

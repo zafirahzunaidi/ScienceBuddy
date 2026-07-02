@@ -206,6 +206,15 @@
 
 <%-- ════ SIDEBAR (full Parent sidebar) ════ --%>
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
+    <%-- Child Switcher --%>
+    <div style="padding:10px 16px 6px; font-size:0.72rem; color:#94A3B8; text-transform:uppercase; letter-spacing:1px; font-weight:700;">
+        <%: T("Viewing Child","Anak Dilihat") %>
+    </div>
+    <div style="padding:0 16px 14px;">
+        <asp:DropDownList ID="ddlSidebarChild" runat="server"
+            AutoPostBack="true" OnSelectedIndexChanged="SidebarChildChanged"
+            style="width:100%;border:1.5px solid #E2E8F0;border-radius:10px;padding:8px 12px;font-size:0.82rem;font-weight:600;color:#1D4ED8;background:#EFF6FF;" />
+    </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label"><%: T("Main","Utama") %></div>
         <a href="<%: ResolveUrl("~/Parent/ParentDashboard.aspx") %>" class="sb-sidebar-item">
@@ -225,7 +234,7 @@
         </a>
         <a href="<%: ResolveUrl("~/Parent/EnrolledModules.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-journal-bookmark item-icon"></i>
-            <span class="item-label"><%: T("Enrolled Modules","Modul Didaftarkan") %></span>
+            <span class="item-label"><%: T("Learning Journey","Perjalanan Pembelajaran") %></span>
         </a>
     </div>
     <div class="sb-nav-section">

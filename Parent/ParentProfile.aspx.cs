@@ -45,8 +45,49 @@ namespace ScienceBuddy.Parent
 
             if (!IsPostBack)
             {
+                PopulateSidebarChild();
                 LoadProfile();
             }
+        }
+
+        private void PopulateSidebarChild()
+        {
+            ddlSidebarChild.Items.Clear();
+            try
+            {
+                string parentId = "";
+                using (var conn = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand("SELECT parentId FROM dbo.[Parent] WHERE userId=@u", conn))
+                { cmd.Parameters.AddWithValue("@u", _userId); conn.Open(); object r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) parentId = r.ToString(); }
+
+                if (string.IsNullOrEmpty(parentId)) return;
+                using (var conn = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand("SELECT sp.studentId, s.name, s.nickname FROM dbo.[StudentParent] sp INNER JOIN dbo.[Student] s ON s.studentId=sp.studentId WHERE sp.parentId=@p", conn))
+                {
+                    cmd.Parameters.AddWithValue("@p", parentId); conn.Open();
+                    using (var r = cmd.ExecuteReader())
+                    {
+                        while (r.Read())
+                        {
+                            string sid = r["studentId"]?.ToString() ?? "";
+                            string nm = r["nickname"]?.ToString() ?? "";
+                            string n = r["name"]?.ToString() ?? "";
+                            ddlSidebarChild.Items.Add(new System.Web.UI.WebControls.ListItem(!string.IsNullOrWhiteSpace(nm) ? nm : n, sid));
+                        }
+                    }
+                }
+                string sel = Session["selectedChildId"] as string;
+                if (!string.IsNullOrEmpty(sel) && ddlSidebarChild.Items.FindByValue(sel) != null)
+                    ddlSidebarChild.SelectedValue = sel;
+            }
+            catch (SqlException) { }
+        }
+
+        protected void SidebarChildChanged(object sender, EventArgs e)
+        {
+            Session["selectedChildId"] = ddlSidebarChild.SelectedValue;
+            Response.Redirect(Request.RawUrl, false);
+            Context.ApplicationInstance.CompleteRequest();
         }
 
         // ══════════════════════════════════════════════════════════════

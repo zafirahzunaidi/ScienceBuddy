@@ -62,18 +62,18 @@ namespace ScienceBuddy.Parent
                     string savedChild = Session["selectedChildId"] as string;
                     if (!string.IsNullOrEmpty(savedChild) && IsChildLinkedToParent(_parentId, savedChild))
                     {
-                        ddlHeroChildren.SelectedValue = savedChild;
+                        ddlSidebarChild.SelectedValue = savedChild;
                     }
                     else
                     {
-                        Session["selectedChildId"] = ddlHeroChildren.Items[0].Value;
+                        Session["selectedChildId"] = ddlSidebarChild.Items[0].Value;
                     }
 
                     pnlDashboard.Visible   = true;
                     pnlNoChild.Visible     = false;
                     pnlHeroNoChild.Visible = false;
                     pnlHeroViewing.Visible = true;
-                    LoadDashboardForChild(ddlHeroChildren.SelectedValue);
+                    LoadDashboardForChild(ddlSidebarChild.SelectedValue);
                 }
                 else
                 {
@@ -178,7 +178,6 @@ namespace ScienceBuddy.Parent
             // ── New hero labels ───────────────────────────────────────
             litHeroEyebrow.Text      = T("My Child's Science Journey", "Perjalanan Sains Anak Saya");
             litHeroGreeting.Text     = T("Hi, ", "Hai, ") + Server.HtmlEncode(_parentName) + "!";
-            litHeroDdlLabel.Text     = T("Viewing Child", "Anak Dilihat");
             litHeroLinkChild.Text      = T("Link New Child", "Paut Anak Baharu");
             litHeroLinkChildNoChild.Text = T("Link New Child", "Paut Anak Baharu");
             litHeroNoChild.Text  = T(
@@ -240,7 +239,7 @@ namespace ScienceBuddy.Parent
 
         private void LoadLinkedChildren()
         {
-            ddlHeroChildren.Items.Clear();
+            ddlSidebarChild.Items.Clear();
             _hasLinkedChildren = false;
 
             if (string.IsNullOrEmpty(_parentId))
@@ -271,14 +270,14 @@ namespace ScienceBuddy.Parent
                             string nickname    = reader["nickname"]?.ToString() ?? "";
                             string displayName = !string.IsNullOrWhiteSpace(nickname) ? nickname : name;
 
-                            ddlHeroChildren.Items.Add(new System.Web.UI.WebControls.ListItem(displayName, studentId));
+                            ddlSidebarChild.Items.Add(new System.Web.UI.WebControls.ListItem(displayName, studentId));
                         }
                     }
                 }
             }
             catch (SqlException) { }
 
-            if (ddlHeroChildren.Items.Count == 0)
+            if (ddlSidebarChild.Items.Count == 0)
             {
                 ShowNoLinkedChildState();
             }
@@ -292,22 +291,18 @@ namespace ScienceBuddy.Parent
         //  CHILD SELECTOR CHANGE
         // ══════════════════════════════════════════════════════════════
 
-        protected void DdlHeroChildren_SelectedIndexChanged(object sender, EventArgs e)
+        protected void SidebarChildChanged(object sender, EventArgs e)
         {
-            string selectedStudentId = ddlHeroChildren.SelectedValue;
+            string selectedStudentId = ddlSidebarChild.SelectedValue;
 
             if (!IsChildLinkedToParent(_parentId, selectedStudentId))
             {
-                ShowMessage(T("Access denied. This child is not linked to your account.",
-                              "Akses ditolak. Anak ini tidak dipautkan ke akaun anda."), true);
                 return;
             }
 
             Session["selectedChildId"] = selectedStudentId;
-            pnlDashboard.Visible       = true;
-            pnlHeroViewing.Visible     = true;
-            pnlHeroNoChild.Visible     = false;
-            LoadDashboardForChild(selectedStudentId);
+            Response.Redirect(Request.RawUrl, false);
+            Context.ApplicationInstance.CompleteRequest();
         }
 
         // ══════════════════════════════════════════════════════════════
@@ -403,7 +398,7 @@ namespace ScienceBuddy.Parent
                             litHeroXP.Text    = xp.ToString("N0") + " XP";
 
                             // ── Sidebar ──────────────────────────────
-                            litSidebarChild.Text = Server.HtmlEncode(sidebarName);
+                            // (sidebar now uses ddlSidebarChild, no literal needed)
 
                             // ── Child Snapshot card ───────────────────
                             // Initials

@@ -9,9 +9,9 @@ namespace ScienceBuddy.Parent
     public partial class ParentDashboard
     {
         /// <summary>
-        /// litSidebarChild control — shows selected child name in sidebar.
+        /// ddlSidebarChild — sidebar child switcher dropdown.
         /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litSidebarChild;
+        protected global::System.Web.UI.WebControls.DropDownList ddlSidebarChild;
 
         /// <summary>
         /// pnlMessage control.
@@ -49,8 +49,7 @@ namespace ScienceBuddy.Parent
         /// <summary>litHeroBadges — badges pill text.</summary>
         protected global::System.Web.UI.WebControls.Literal litHeroBadges;
 
-        /// <summary>ddlHeroChildren — child switcher dropdown.</summary>
-        protected global::System.Web.UI.WebControls.DropDownList ddlHeroChildren;
+        // (ddlHeroChildren removed — child switching moved to sidebar)
 
         /// <summary>pnlHeroNoChild — shown when no child linked.</summary>
         protected global::System.Web.UI.WebControls.Panel pnlHeroNoChild;
@@ -90,9 +89,7 @@ namespace ScienceBuddy.Parent
         // removed: litSelectChildLabel, ddlChildren, litChildInitials, litChildName,
         //          litChildMeta, litChildLevel, litChildLevelLabel, litChildXP, litChildXPLabel
 
-        // ── Hero dropdown label ───────────────────────────────────────
-        /// <summary>litHeroDdlLabel — "Viewing Child" label above hero dropdown.</summary>
-        protected global::System.Web.UI.WebControls.Literal litHeroDdlLabel;
+        // (litHeroDdlLabel removed — child switching moved to sidebar)
 
         // ── Child Snapshot card controls ──────────────────────────────
         /// <summary>litSnapshotTitle — "Child Snapshot"</summary>

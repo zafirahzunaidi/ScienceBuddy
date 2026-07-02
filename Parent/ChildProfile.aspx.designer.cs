@@ -9,6 +9,7 @@ namespace ScienceBuddy.Parent
     public partial class ChildProfile
     {
         protected global::System.Web.UI.WebControls.Panel pnlNoChild;
+        protected global::System.Web.UI.WebControls.DropDownList ddlSidebarChild;
         protected global::System.Web.UI.WebControls.Literal litNoChildMsg;
         protected global::System.Web.UI.WebControls.Literal litNoChildLink;
         protected global::System.Web.UI.WebControls.Panel pnlProfile;

@@ -29,10 +29,49 @@ namespace ScienceBuddy.Parent
 
             if (!IsPostBack)
             {
+                PopulateSidebarChild();
                 if (!string.IsNullOrEmpty(_studentId))
                 { pnlProfile.Visible = true; pnlNoChild.Visible = false; LoadAll(); }
                 else
                 { pnlProfile.Visible = false; pnlNoChild.Visible = true; }
+            }
+        }
+
+        private void PopulateSidebarChild()
+        {
+            ddlSidebarChild.Items.Clear();
+            if (string.IsNullOrEmpty(_parentId)) return;
+            try
+            {
+                using (var conn = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand("SELECT sp.studentId, s.name, s.nickname FROM dbo.[StudentParent] sp INNER JOIN dbo.[Student] s ON s.studentId=sp.studentId WHERE sp.parentId=@p", conn))
+                {
+                    cmd.Parameters.AddWithValue("@p", _parentId); conn.Open();
+                    using (var r = cmd.ExecuteReader())
+                    {
+                        while (r.Read())
+                        {
+                            string sid = r["studentId"]?.ToString() ?? "";
+                            string nm = r["nickname"]?.ToString() ?? "";
+                            string n = r["name"]?.ToString() ?? "";
+                            ddlSidebarChild.Items.Add(new System.Web.UI.WebControls.ListItem(!string.IsNullOrWhiteSpace(nm) ? nm : n, sid));
+                        }
+                    }
+                }
+                if (!string.IsNullOrEmpty(_studentId) && ddlSidebarChild.Items.FindByValue(_studentId) != null)
+                    ddlSidebarChild.SelectedValue = _studentId;
+            }
+            catch (SqlException) { }
+        }
+
+        protected void SidebarChildChanged(object sender, EventArgs e)
+        {
+            string sel = ddlSidebarChild.SelectedValue;
+            if (!string.IsNullOrEmpty(sel) && IsLinked(sel))
+            {
+                Session["selectedChildId"] = sel;
+                Response.Redirect(Request.RawUrl, false);
+                Context.ApplicationInstance.CompleteRequest();
             }
         }
 

@@ -10,6 +10,7 @@ namespace ScienceBuddy.Parent
     {
         protected global::System.Web.UI.WebControls.Panel pnlMessage;
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl divMsg;
+        protected global::System.Web.UI.WebControls.DropDownList ddlSidebarChild;
         protected global::System.Web.UI.WebControls.Literal litTitle;
         protected global::System.Web.UI.WebControls.Literal litSub;
         protected global::System.Web.UI.WebControls.Literal litLblUsername;

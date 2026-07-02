@@ -43,6 +43,7 @@ namespace ScienceBuddy.Parent
 
             // Always load linked children (dynamic controls must be recreated on every request)
             LoadLinkedChildren();
+            PopulateSidebarChild();
 
             if (!IsPostBack)
             {
@@ -122,6 +123,41 @@ namespace ScienceBuddy.Parent
             btnLink.Text            = T("Link Child", "Paut Anak");
             litLinkedTitle.Text     = T("Linked Children", "Anak Dipautkan");
             litNoLinked.Text        = T("No linked children yet.", "Tiada anak dipautkan lagi.");
+        }
+
+        private void PopulateSidebarChild()
+        {
+            ddlSidebarChild.Items.Clear();
+            if (string.IsNullOrEmpty(_parentId)) return;
+            try
+            {
+                using (var conn = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand("SELECT sp.studentId, s.name, s.nickname FROM dbo.[StudentParent] sp INNER JOIN dbo.[Student] s ON s.studentId=sp.studentId WHERE sp.parentId=@p", conn))
+                {
+                    cmd.Parameters.AddWithValue("@p", _parentId); conn.Open();
+                    using (var r = cmd.ExecuteReader())
+                    {
+                        while (r.Read())
+                        {
+                            string sid = r["studentId"]?.ToString() ?? "";
+                            string nm = r["nickname"]?.ToString() ?? "";
+                            string n = r["name"]?.ToString() ?? "";
+                            ddlSidebarChild.Items.Add(new System.Web.UI.WebControls.ListItem(!string.IsNullOrWhiteSpace(nm) ? nm : n, sid));
+                        }
+                    }
+                }
+                string sel = Session["selectedChildId"] as string;
+                if (!string.IsNullOrEmpty(sel) && ddlSidebarChild.Items.FindByValue(sel) != null)
+                    ddlSidebarChild.SelectedValue = sel;
+            }
+            catch (SqlException) { }
+        }
+
+        protected void SidebarChildChanged(object sender, EventArgs e)
+        {
+            Session["selectedChildId"] = ddlSidebarChild.SelectedValue;
+            Response.Redirect(Request.RawUrl, false);
+            Context.ApplicationInstance.CompleteRequest();
         }
 
         // ══════════════════════════════════════════════════════════════
