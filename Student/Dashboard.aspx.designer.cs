@@ -141,6 +141,15 @@ namespace ScienceBuddy.Student
         protected global::System.Web.UI.WebControls.Literal litXPBarLabel;
 
         /// <summary>
+        /// xpBarFill control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl xpBarFill;
+
+        /// <summary>
         /// litXPBarProgress control.
         /// </summary>
         /// <remarks>
@@ -157,15 +166,6 @@ namespace ScienceBuddy.Student
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litXPBarHint;
-
-        /// <summary>
-        /// litXPBarPct control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litXPBarPct;
 
         /// <summary>
         /// litStatLevel control.
@@ -620,11 +620,19 @@ namespace ScienceBuddy.Student
         /// <summary>
         /// litQAHistory control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litQAHistory;
 
         /// <summary>
         /// litQAHistoryDesc control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litQAHistoryDesc;
 
         /// <summary>

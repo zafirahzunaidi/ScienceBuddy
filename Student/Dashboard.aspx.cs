@@ -446,7 +446,7 @@ namespace ScienceBuddy.Student
             litXPBarLabel.Text = xp.ToString("N0") + " XP";
             int pct = Math.Min((xp % 500) * 100 / 500, 100);
             litXPBarHint.Text  = (500 - (xp % 500)) + T(" XP to next milestone", " XP ke pencapaian seterusnya");
-            litXPBarPct.Text   = pct.ToString();
+            xpBarFill.Attributes["data-pct"] = pct.ToString();
 
             // Bilingual stat labels
             litStatLevelLbl.Text   = T("Current Level", "Tahap Semasa");

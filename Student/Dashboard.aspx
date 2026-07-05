@@ -330,8 +330,7 @@
     <span class="sd-xp-bar-label"><i class="bi bi-lightning-charge-fill"></i> <asp:Literal ID="litXPBarLabel" runat="server" Text="0 XP" /></span>
     <div class="sd-xp-bar-wrap">
         <div class="sd-xp-bar">
-            <div class="sd-xp-bar-fill" id="xpBarFill" style="width:0%"
-                 data-pct="<asp:Literal ID='litXPBarPct' runat='server' Text='0' />"></div>
+            <div class="sd-xp-bar-fill" id="xpBarFill" runat="server" style="width:0%"></div>
         </div>
         <div class="sd-xp-bar-info">
             <span><asp:Literal ID="litXPBarProgress" runat="server" Text="Level Progress" /></span>
