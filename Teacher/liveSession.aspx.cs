@@ -245,5 +245,10 @@ namespace ScienceBuddy.Teacher
         }
 
         private void ShowError(string msg) { pnlError.Visible = true; litError.Text = HttpUtility.HtmlEncode(msg); hidShowModal.Value = "1"; }
+
+        protected void hidShowInstantModal_ValueChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }

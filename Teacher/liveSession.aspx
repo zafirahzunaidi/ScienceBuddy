@@ -213,7 +213,7 @@
         </div>
     </div>
 </div>
-<asp:HiddenField ID="hidShowInstantModal" runat="server" Value="" />
+<asp:HiddenField ID="hidShowInstantModal" runat="server" Value="" OnValueChanged="hidShowInstantModal_ValueChanged" />
 
 <%-- Reschedule Modal --%>
 <div id="rescheduleModal" class="ls-modal-overlay" style="display:none;">
