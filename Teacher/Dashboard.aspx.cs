@@ -210,13 +210,12 @@ namespace ScienceBuddy.Teacher
         private void LoadUpcomingSessions(SqlConnection conn, string teacherId)
         {
             const string sql = @"
-                SELECT TOP 5
+                SELECT TOP 1
                     lcs.[sessionId], lcs.[sessionTitle],
                     lcs.[startDateTime], lcs.[endDateTime], lcs.[status],
-                    (SELECT COUNT(*)
-                     FROM dbo.[LiveSessionParticipant]
-                     WHERE [sessionId] = lcs.[sessionId]) AS participantCount
+                    ISNULL(st.[subtopicTitleEN],'') AS subtopicName
                 FROM dbo.[LiveConsultationSession] lcs
+                LEFT JOIN dbo.[Subtopic] st ON st.[subtopicId] = lcs.[subtopicId]
                 WHERE lcs.[teacherId] = @teacherId
                   AND lcs.[startDateTime] > GETDATE()
                 ORDER BY lcs.[startDateTime] ASC";
@@ -224,54 +223,59 @@ namespace ScienceBuddy.Teacher
             using (var cmd = new SqlCommand(sql, conn))
             {
                 cmd.Parameters.AddWithValue("@teacherId", teacherId);
-                var da = new SqlDataAdapter(cmd);
-                var dt = new DataTable();
-                da.Fill(dt);
-
-                if (dt.Rows.Count == 0)
+                using (var r = cmd.ExecuteReader())
                 {
-                    pnlSessions.Visible = false;
-                    pnlSessionsEmpty.Visible = true;
-                    return;
-                }
-
-                var list = new List<object>();
-                foreach (DataRow row in dt.Rows)
-                {
-                    string title = row["sessionTitle"]?.ToString()
-                        ?? "Untitled Session";
-                    DateTime startDt = row["startDateTime"] == DBNull.Value
-                        ? DateTime.Now
-                        : Convert.ToDateTime(row["startDateTime"]);
-                    int participants = row["participantCount"] == DBNull.Value
-                        ? 0 : Convert.ToInt32(row["participantCount"]);
-                    string status = row["status"]?.ToString() ?? "Scheduled";
-
-                    string badgeClass = "td-badge-upcoming";
-                    string statusLabel = "Upcoming";
-                    if (string.Equals(status, "Active",
-                        StringComparison.OrdinalIgnoreCase))
+                    if (r.Read())
                     {
-                        badgeClass = "td-badge-active";
-                        statusLabel = "Active";
+                        pnlSessions.Visible = true; pnlSessionsEmpty.Visible = false;
+                        DateTime startDt = r["startDateTime"] != DBNull.Value ? Convert.ToDateTime(r["startDateTime"]) : DateTime.Now;
+                        litNextDay.Text = startDt.Day.ToString();
+                        litNextMonth.Text = startDt.ToString("MMM").ToUpper();
+                        litNextTitle.Text = HttpUtility.HtmlEncode(r["sessionTitle"]?.ToString() ?? "");
+                        litNextTime.Text = startDt.ToString("h:mm tt") + " - " + (r["endDateTime"] != DBNull.Value ? Convert.ToDateTime(r["endDateTime"]).ToString("h:mm tt") : "");
+                        litNextTopic.Text = HttpUtility.HtmlEncode(r["subtopicName"]?.ToString() ?? "");
                     }
-
-                    list.Add(new
+                    else
                     {
-                        sessionTitle = title,
-                        sessionDate = startDt.ToString("d MMM yyyy"),
-                        sessionTime = startDt.ToString("h:mm tt"),
-                        participantCount = participants,
-                        badgeClass = badgeClass,
-                        statusLabel = statusLabel
-                    });
+                        pnlSessions.Visible = false; pnlSessionsEmpty.Visible = true;
+                    }
                 }
-
-                pnlSessions.Visible = true;
-                pnlSessionsEmpty.Visible = false;
-                rptSessions.DataSource = list;
-                rptSessions.DataBind();
             }
+
+            // Get session dates for calendar
+            var sessionDates = new HashSet<int>();
+            var now = DateTime.Now;
+            using (var cmd = new SqlCommand("SELECT [startDateTime] FROM dbo.[LiveConsultationSession] WHERE [teacherId]=@t AND MONTH([startDateTime])=@m AND YEAR([startDateTime])=@y", conn))
+            {
+                cmd.Parameters.AddWithValue("@t", teacherId);
+                cmd.Parameters.AddWithValue("@m", now.Month);
+                cmd.Parameters.AddWithValue("@y", now.Year);
+                using (var r = cmd.ExecuteReader())
+                    while (r.Read()) if (r["startDateTime"] != DBNull.Value) sessionDates.Add(Convert.ToDateTime(r["startDateTime"]).Day);
+            }
+            GenerateCalendar(sessionDates);
+        }
+
+        private void GenerateCalendar(HashSet<int> sessionDays)
+        {
+            var now = DateTime.Now;
+            litCalMonth.Text = now.ToString("MMMM yyyy");
+            var firstDay = new DateTime(now.Year, now.Month, 1);
+            int daysInMonth = DateTime.DaysInMonth(now.Year, now.Month);
+            int startDow = (int)firstDay.DayOfWeek;
+
+            var sb = new System.Text.StringBuilder();
+            string[] headers = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+            foreach (var h in headers) sb.Append("<span class='cal-header'>" + h + "</span>");
+            for (int i = 0; i < startDow; i++) sb.Append("<span class='cal-day'></span>");
+            for (int d = 1; d <= daysInMonth; d++)
+            {
+                string cls = "cal-day";
+                if (d == now.Day) cls += " cal-today";
+                if (sessionDays.Contains(d)) cls += " cal-session";
+                sb.Append("<span class='" + cls + "'>" + d + "</span>");
+            }
+            litCalDays.Text = sb.ToString();
         }
 
         // ── Load student performance ─────────────────────────────────
@@ -356,8 +360,8 @@ namespace ScienceBuddy.Teacher
         private void LoadNotifications(SqlConnection conn, string userId)
         {
             const string sql = @"
-                SELECT TOP 5
-                    [notificationId], [titleEN], [messageEN],
+                SELECT TOP 3
+                    [notificationId], [titleEN], [titleBM], [messageEN], [messageBM],
                     [isRead], [createdAt]
                 FROM dbo.[Notification]
                 WHERE [toUserId] = @userId
@@ -380,8 +384,12 @@ namespace ScienceBuddy.Teacher
                 var list = new List<object>();
                 foreach (DataRow row in dt.Rows)
                 {
-                    string title = row["titleEN"]?.ToString() ?? "(No title)";
-                    string message = row["messageEN"]?.ToString() ?? "";
+                    string title = CurrentLanguage == "BM"
+                        ? (row["titleBM"]?.ToString() ?? row["titleEN"]?.ToString() ?? "")
+                        : (row["titleEN"]?.ToString() ?? "");
+                    string message = CurrentLanguage == "BM"
+                        ? (row["messageBM"]?.ToString() ?? row["messageEN"]?.ToString() ?? "")
+                        : (row["messageEN"]?.ToString() ?? "");
                     bool isRead = row["isRead"] != DBNull.Value
                         && Convert.ToBoolean(row["isRead"]);
                     DateTime createdAt = row["createdAt"] == DBNull.Value

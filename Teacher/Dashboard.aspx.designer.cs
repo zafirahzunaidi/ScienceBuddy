@@ -86,6 +86,9 @@ namespace ScienceBuddy.Teacher
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litUpcomingSessions;
 
+        protected global::System.Web.UI.WebControls.Literal litCalMonth;
+        protected global::System.Web.UI.WebControls.Literal litCalDays;
+
         /// <summary>
         /// litTotalStudents control.
         /// </summary>
@@ -104,14 +107,11 @@ namespace ScienceBuddy.Teacher
         /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlSessions;
 
-        /// <summary>
-        /// rptSessions control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptSessions;
+        protected global::System.Web.UI.WebControls.Literal litNextDay;
+        protected global::System.Web.UI.WebControls.Literal litNextMonth;
+        protected global::System.Web.UI.WebControls.Literal litNextTitle;
+        protected global::System.Web.UI.WebControls.Literal litNextTime;
+        protected global::System.Web.UI.WebControls.Literal litNextTopic;
 
         /// <summary>
         /// pnlSessionsEmpty control.
