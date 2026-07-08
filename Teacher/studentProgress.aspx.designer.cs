@@ -11,6 +11,7 @@ namespace ScienceBuddy.Teacher
         protected global::System.Web.UI.WebControls.Button btnSearch;
         protected global::System.Web.UI.WebControls.Button btnReset;
         protected global::System.Web.UI.WebControls.Panel pnlRankingEmpty;
+        protected global::System.Web.UI.WebControls.Panel pnlTable;
         protected global::System.Web.UI.WebControls.Repeater rptRanking;
     }
 }

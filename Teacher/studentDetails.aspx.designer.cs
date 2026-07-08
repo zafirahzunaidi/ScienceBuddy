@@ -17,15 +17,13 @@ namespace ScienceBuddy.Teacher
         protected global::System.Web.UI.WebControls.Literal litLessons;
         protected global::System.Web.UI.WebControls.Literal litUnitAvg;
         protected global::System.Web.UI.WebControls.Literal litLevelAvg;
-        protected global::System.Web.UI.WebControls.Literal litFailedQ;
-        protected global::System.Web.UI.WebControls.Literal litWeakSub;
         protected global::System.Web.UI.WebControls.Repeater rptLessons;
         protected global::System.Web.UI.WebControls.Repeater rptUnitQuiz;
         protected global::System.Web.UI.WebControls.Repeater rptLevelQuiz;
-        protected global::System.Web.UI.WebControls.Panel pnlFailedEmpty;
-        protected global::System.Web.UI.WebControls.Repeater rptFailed;
         protected global::System.Web.UI.WebControls.Panel pnlWeakEmpty;
         protected global::System.Web.UI.WebControls.Repeater rptWeak;
+        protected global::System.Web.UI.WebControls.Panel pnlCertEmpty;
+        protected global::System.Web.UI.WebControls.Repeater rptCerts;
         protected global::System.Web.UI.WebControls.Literal litInsight;
     }
 }
