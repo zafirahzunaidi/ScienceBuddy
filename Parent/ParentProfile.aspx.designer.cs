@@ -24,5 +24,7 @@ namespace ScienceBuddy.Parent
         protected global::System.Web.UI.WebControls.Literal litStatusStatus;
         protected global::System.Web.UI.WebControls.Literal litStatusLang;
         protected global::System.Web.UI.WebControls.Button btnSave;
+        protected global::System.Web.UI.WebControls.Literal litUnreadBadge;
+
     }
 }

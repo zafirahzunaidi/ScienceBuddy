@@ -33,5 +33,7 @@ namespace ScienceBuddy.Parent
         protected global::System.Web.UI.WebControls.Literal litBadgeCountLabel;
         protected global::System.Web.UI.WebControls.Panel pnlLatestBadge;
         protected global::System.Web.UI.WebControls.Literal litLatestBadge;
+        protected global::System.Web.UI.WebControls.Literal litUnreadBadge;
+
     }
 }

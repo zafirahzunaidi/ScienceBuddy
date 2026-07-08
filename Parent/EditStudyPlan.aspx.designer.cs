@@ -56,5 +56,7 @@ namespace ScienceBuddy.Parent
         protected global::System.Web.UI.WebControls.Panel pnlCreatePlan;
         protected global::System.Web.UI.WebControls.Literal litCreatePlanMsg;
         protected global::System.Web.UI.WebControls.Button btnCreatePlan;
+        protected global::System.Web.UI.WebControls.Literal litUnreadBadge;
+
     }
 }

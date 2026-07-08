@@ -46,5 +46,7 @@ namespace ScienceBuddy.Parent
         protected global::System.Web.UI.WebControls.TextBox txtSuggestedAction;
         protected global::System.Web.UI.WebControls.Literal litBtnCancel;
         protected global::System.Web.UI.WebControls.Button btnAddTask;
+        protected global::System.Web.UI.WebControls.Literal litUnreadBadge;
+
     }
 }

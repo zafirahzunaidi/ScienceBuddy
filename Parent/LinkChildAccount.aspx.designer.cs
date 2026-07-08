@@ -28,5 +28,7 @@ namespace ScienceBuddy.Parent
         protected global::System.Web.UI.WebControls.Literal litModalMsg;
         protected global::System.Web.UI.WebControls.Button btnCancelUnlink;
         protected global::System.Web.UI.WebControls.Button btnConfirmUnlink;
+        protected global::System.Web.UI.WebControls.Literal litUnreadBadge;
+
     }
 }

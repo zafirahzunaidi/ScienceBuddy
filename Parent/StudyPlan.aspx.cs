@@ -20,7 +20,7 @@ namespace ScienceBuddy.Parent
         {
             if (!EnsureAuth()) return;
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
-            LoadLang(); _parentUserId = Session["userId"].ToString(); LoadParent();
+            LoadLang(); LoadUnreadBadge(); _parentUserId = Session["userId"].ToString(); LoadParent();
             if (!IsPostBack) { LoadChildren(); if (!string.IsNullOrEmpty(_selectedChildId)) LoadPage(); else ShowNoChild(); }
             else { _selectedChildId = ddlSidebarChild.SelectedValue; _selectedChildName = ddlSidebarChild.SelectedItem != null ? ddlSidebarChild.SelectedItem.Text : ""; LoadSPId(); }
         }
@@ -205,5 +205,21 @@ namespace ScienceBuddy.Parent
 
         private class TaskInfo { public string Title; public string Action; public bool IsCompleted; }
         private class RewardInfo { public string Id; public string Name; public string ImageFile; public int RequiredProgress; public bool IsUnlocked; }
+        private void LoadUnreadBadge()
+        {
+            try
+            {
+                using (var c = new System.Data.SqlClient.SqlConnection(ConnStr))
+                using (var cmd = new System.Data.SqlClient.SqlCommand("SELECT COUNT(*) FROM dbo.Notification WHERE toUserId=@uid AND isRead=0", c))
+                {
+                    cmd.Parameters.AddWithValue("@uid", Session["userId"].ToString());
+                    c.Open();
+                    int count = (int)cmd.ExecuteScalar();
+                    if (count > 0) litUnreadBadge.Text = "<span class='pt-sidebar-badge'>" + count + "</span>";
+                    else litUnreadBadge.Text = "";
+                }
+            }
+            catch { }
+        }
     }
 }

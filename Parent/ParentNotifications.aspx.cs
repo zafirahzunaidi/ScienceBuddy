@@ -24,7 +24,7 @@ namespace ScienceBuddy.Parent
         {
             if (!EnsureAuth()) return;
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
-            LoadLang(); _parentUserId = Session["userId"].ToString(); LoadParent();
+            LoadLang(); LoadUnreadBadge(); _parentUserId = Session["userId"].ToString(); LoadParent();
             if (!IsPostBack) { LoadChildren(); if (_linkedChildIds.Count > 0) { pnlContent.Visible = true; LoadPage(); } else ShowNoChild(); }
             else { _selectedChildId = ddlSidebarChild.SelectedValue; _selectedChildName = ddlSidebarChild.SelectedItem != null ? ddlSidebarChild.SelectedItem.Text : ""; LoadLinkedChildIds(); }
         }
@@ -173,26 +173,28 @@ namespace ScienceBuddy.Parent
             foreach (var n in items)
             {
                 string group = GetDateGroup(n.CreatedAt);
-                if (group != lastGroup) { if (lastGroup != "") sb.Append("</div>"); sb.AppendFormat("<div class=\"pt-notification-group\"><div class=\"pt-notification-group-title\">{0}</div>", group); lastGroup = group; }
+                if (group != lastGroup) { if (lastGroup != "") sb.Append("</div>"); sb.AppendFormat("<div class=\"pt-notif-group\"><div class=\"pt-notif-group-title\">{0}</div>", group); lastGroup = group; }
 
-                string priorityClass = n.Priority == "urgent" ? "pt-priority-urgent" : n.Priority == "important" ? "pt-priority-important" : n.Priority == "celebration" ? "pt-priority-celebration" : "pt-priority-normal";
-                string unreadDot = !n.IsRead ? "<span class=\"pt-unread-dot\"></span>" : "";
-                string actionHtml = !string.IsNullOrEmpty(n.ActionUrl) ? string.Format("<a href=\"{0}\" class=\"pt-notification-action\">{1} <i class=\"bi bi-chevron-right\"></i></a>", n.ActionUrl, n.ActionText) : "";
-                string markBtn = !n.IsRead && !string.IsNullOrEmpty(n.Id) ? string.Format("<button type=\"button\" class=\"pt-notif-mark-btn\" onclick=\"document.getElementById('{0}').value='{1}';document.getElementById('{2}').click();return false;\" title=\"{3}\"><i class=\"bi bi-check2\"></i></button>", hidMarkReadId.ClientID, n.Id, btnMarkRead.ClientID, T("Mark as read", "Tandai dibaca")) : "";
+                string unreadDot = !n.IsRead ? "<span class=\"pt-notif-unread-dot\"></span>" : "";
+                string markBtn = !n.IsRead && !string.IsNullOrEmpty(n.Id)
+                    ? string.Format("<button type=\"button\" class=\"pt-notif-check-btn pt-notif-check-unread\" onclick=\"document.getElementById('{0}').value='{1}';document.getElementById('{2}').click();return false;\" title=\"{3}\"><i class=\"bi bi-circle\"></i></button>", hidMarkReadId.ClientID, n.Id, btnMarkRead.ClientID, T("Mark as read", "Tandai dibaca"))
+                    : !string.IsNullOrEmpty(n.Id)
+                    ? string.Format("<button type=\"button\" class=\"pt-notif-check-btn pt-notif-check-read\" onclick=\"document.getElementById('{0}').value='{1}';document.getElementById('{2}').click();return false;\" title=\"{3}\"><i class=\"bi bi-check-circle-fill\"></i></button>", hidMarkReadId.ClientID, n.Id, btnMarkRead.ClientID, T("Mark as unread", "Tandai belum dibaca"))
+                    : "";
                 string timeAgo = GetTimeAgo(n.CreatedAt);
+                string cardClass = !n.IsRead ? "pt-notif-card pt-notif-card-unread" : "pt-notif-card";
 
-                sb.AppendFormat(@"<div class=""pt-notification-card {0}"">
-                    {1}
-                    <div class=""pt-notification-icon"" style=""color:{2};background:{2}18;""><i class=""bi {3}""></i></div>
-                    <div class=""pt-notification-content"">
-                        <div class=""pt-notification-title"">{4}</div>
-                        <div class=""pt-notification-message"">{5}</div>
-                        <div class=""pt-notification-meta""><span>{6}</span>{7}</div>
+                sb.AppendFormat(@"<div class=""{0}"">
+                    <div class=""pt-notif-card-icon"" style=""background:{1}18;color:{1};""><i class=""bi {2}""></i></div>
+                    <div class=""pt-notif-card-content"">
+                        <div class=""pt-notif-card-title"">{3} {4}</div>
+                        <div class=""pt-notif-card-message"">{5}</div>
+                        <div class=""pt-notif-card-time""><i class=""bi bi-clock""></i> {6}</div>
                     </div>
-                    {8}
-                </div>", priorityClass, unreadDot, n.IconColor, n.Icon,
-                    System.Web.HttpUtility.HtmlEncode(n.Title), System.Web.HttpUtility.HtmlEncode(n.Message),
-                    timeAgo, markBtn, actionHtml);
+                    {7}
+                </div>", cardClass, n.IconColor, n.Icon,
+                    System.Web.HttpUtility.HtmlEncode(n.Title), unreadDot,
+                    System.Web.HttpUtility.HtmlEncode(n.Message), timeAgo, markBtn);
             }
             if (lastGroup != "") sb.Append("</div>");
             pnlFeed.Controls.Add(new LiteralControl(sb.ToString()));
@@ -230,7 +232,7 @@ namespace ScienceBuddy.Parent
         private void HighlightActiveFilter()
         {
             var chips = new[] { lnkAll, lnkRead, lnkUnread };
-            foreach (var chip in chips) chip.CssClass = chip.CommandArgument == ActiveFilter ? "pt-filter-chip active" : "pt-filter-chip";
+            foreach (var chip in chips) chip.CssClass = chip.CommandArgument == ActiveFilter ? "pt-notif-chip active" : "pt-notif-chip";
             lnkSortLatest.CssClass = SortOrder == "Latest" ? "pt-sort-btn active" : "pt-sort-btn";
             lnkSortOldest.CssClass = SortOrder == "Oldest" ? "pt-sort-btn active" : "pt-sort-btn";
         }
@@ -248,7 +250,19 @@ namespace ScienceBuddy.Parent
         {
             string id = hidMarkReadId.Value;
             if (!string.IsNullOrEmpty(id))
-            { try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("UPDATE dbo.Notification SET isRead=1 WHERE notificationId=@id AND toUserId=@uid", c)) { cmd.Parameters.AddWithValue("@id", id); cmd.Parameters.AddWithValue("@uid", _parentUserId); c.Open(); cmd.ExecuteNonQuery(); } } catch { } }
+            {
+                try
+                {
+                    using (var c = new SqlConnection(ConnStr))
+                    {
+                        c.Open();
+                        // Toggle: if read -> unread, if unread -> read
+                        using (var cmd = new SqlCommand("UPDATE dbo.Notification SET isRead = CASE WHEN isRead=1 THEN 0 ELSE 1 END WHERE notificationId=@id AND toUserId=@uid", c))
+                        { cmd.Parameters.AddWithValue("@id", id); cmd.Parameters.AddWithValue("@uid", _parentUserId); cmd.ExecuteNonQuery(); }
+                    }
+                }
+                catch { }
+            }
             LoadPage();
         }
 
@@ -265,6 +279,22 @@ namespace ScienceBuddy.Parent
             public string Priority = "normal";
             public string ActionUrl = "";
             public string ActionText = "";
+        }
+        private void LoadUnreadBadge()
+        {
+            try
+            {
+                using (var c = new System.Data.SqlClient.SqlConnection(ConnStr))
+                using (var cmd = new System.Data.SqlClient.SqlCommand("SELECT COUNT(*) FROM dbo.Notification WHERE toUserId=@uid AND isRead=0", c))
+                {
+                    cmd.Parameters.AddWithValue("@uid", Session["userId"].ToString());
+                    c.Open();
+                    int count = (int)cmd.ExecuteScalar();
+                    if (count > 0) litUnreadBadge.Text = "<span class='pt-sidebar-badge'>" + count + "</span>";
+                    else litUnreadBadge.Text = "";
+                }
+            }
+            catch { }
         }
     }
 }

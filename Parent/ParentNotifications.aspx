@@ -11,7 +11,8 @@
     <div style="padding:10px 16px 6px; font-size:0.72rem; color:#94A3B8; text-transform:uppercase; letter-spacing:1px; font-weight:700;"><%: T("Viewing Child","Anak Dilihat") %></div>
     <div style="padding:0 16px 14px;"><asp:DropDownList ID="ddlSidebarChild" runat="server" AutoPostBack="true" OnSelectedIndexChanged="SidebarChildChanged" CssClass="sb-sidebar-child-ddl" /></div>
     <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Main","Utama") %></div>
-        <a href="<%: ResolveUrl("~/Parent/ParentDashboard.aspx") %>" class="sb-sidebar-item"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label"><%: T("Dashboard","Papan Pemuka") %></span></a></div>
+        <a href="<%: ResolveUrl("~/Parent/ParentDashboard.aspx") %>" class="sb-sidebar-item"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label"><%: T("Dashboard","Papan Pemuka") %></span></a>
+        <a href="<%: ResolveUrl("~/Parent/ParentNotifications.aspx") %>" class="sb-sidebar-item"><i class="bi bi-bell item-icon"></i><span class="item-label"><%: T("Notifications","Notifikasi") %></span><asp:Literal ID="litUnreadBadge" runat="server" /></a></div>
     <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("My Children","Anak Saya") %></div>
         <a href="<%: ResolveUrl("~/Parent/LinkChildAccount.aspx") %>" class="sb-sidebar-item"><i class="bi bi-link-45deg item-icon"></i><span class="item-label"><%: T("Link Child Account","Paut Akaun Anak") %></span></a>
         <a href="<%: ResolveUrl("~/Parent/ChildProfile.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person-badge item-icon"></i><span class="item-label"><%: T("Child Profile","Profil Anak") %></span></a>
@@ -26,12 +27,8 @@
     <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Discussions","Perbincangan") %></div>
         <a href="<%: ResolveUrl("~/Parent/ParentTeacherCommunication.aspx") %>" class="sb-sidebar-item"><i class="bi bi-chat-dots item-icon"></i><span class="item-label"><%: T("Chat with Teachers","Sembang dengan Guru") %></span></a>
         <a href="<%: ResolveUrl("~/Parent/Forum.aspx") %>" class="sb-sidebar-item"><i class="bi bi-people item-icon"></i><span class="item-label"><%: T("Forum","Forum") %></span></a></div>
-    <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Notifications","Notifikasi") %></div>
-        <a href="<%: ResolveUrl("~/Parent/ParentNotifications.aspx") %>" class="sb-sidebar-item active"><i class="bi bi-bell item-icon"></i><span class="item-label"><%: T("Notifications","Notifikasi") %></span></a></div>
     <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Profile","Profil") %></div>
-        <a href="<%: ResolveUrl("~/Parent/ParentProfile.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person item-icon"></i><span class="item-label"><%: T("Edit Profile","Edit Profil") %></span></a>
-        <a href="<%: ResolveUrl("~/Parent/AccountSettings.aspx") %>" class="sb-sidebar-item"><i class="bi bi-gear item-icon"></i><span class="item-label"><%: T("Account Settings","Tetapan Akaun") %></span></a>
-        <a href="<%: ResolveUrl("~/Logout.aspx") %>" class="sb-sidebar-item"><i class="bi bi-box-arrow-right item-icon"></i><span class="item-label"><%: T("Logout","Log Keluar") %></span></a></div>
+        <a href="<%: ResolveUrl("~/Parent/ParentProfile.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person item-icon"></i><span class="item-label"><%: T("Edit Profile","Edit Profil") %></span></a>        <a href="<%: ResolveUrl("~/Logout.aspx") %>" class="sb-sidebar-item"><i class="bi bi-box-arrow-right item-icon"></i><span class="item-label"><%: T("Logout","Log Keluar") %></span></a></div>
 </asp:Content>
 
 <asp:Content ID="cPageTitle" ContentPlaceHolderID="PageTitle" runat="server"><%: T("Notifications","Notifikasi") %></asp:Content>
@@ -64,25 +61,28 @@
         </div>
 
         <%-- ══ FILTERS ══ --%>
-        <div class="pt-filter-row" style="margin-bottom:16px;">
-            <asp:TextBox ID="txtSearch" runat="server" CssClass="pt-filter-search" placeholder="Search..." AutoPostBack="true" OnTextChanged="Filter_Changed" />
-            <asp:LinkButton ID="lnkAll" runat="server" CssClass="pt-filter-chip active" OnClick="Filter_Changed" CommandArgument="All" CausesValidation="false"><%: T("All","Semua") %></asp:LinkButton>
-            <asp:LinkButton ID="lnkRead" runat="server" CssClass="pt-filter-chip" OnClick="Filter_Changed" CommandArgument="Read" CausesValidation="false"><%: T("Read","Dibaca") %></asp:LinkButton>
-            <asp:LinkButton ID="lnkUnread" runat="server" CssClass="pt-filter-chip" OnClick="Filter_Changed" CommandArgument="Unread" CausesValidation="false"><%: T("Unread","Belum Dibaca") %></asp:LinkButton>
+        <div class="pt-notif-toolbar">
+            <div class="pt-notif-search-wrap">
+                <i class="bi bi-search"></i>
+                <asp:TextBox ID="txtSearch" runat="server" CssClass="pt-notif-search-input" placeholder="Search notifications..." AutoPostBack="true" OnTextChanged="Filter_Changed" />
+            </div>
+            <div class="pt-notif-filter-group">
+                <asp:LinkButton ID="lnkAll" runat="server" CssClass="pt-notif-chip active" OnClick="Filter_Changed" CommandArgument="All" CausesValidation="false"><%: T("All","Semua") %></asp:LinkButton>
+                <asp:LinkButton ID="lnkUnread" runat="server" CssClass="pt-notif-chip" OnClick="Filter_Changed" CommandArgument="Unread" CausesValidation="false"><%: T("Unread","Belum Dibaca") %></asp:LinkButton>
+                <asp:LinkButton ID="lnkRead" runat="server" CssClass="pt-notif-chip" OnClick="Filter_Changed" CommandArgument="Read" CausesValidation="false"><%: T("Read","Dibaca") %></asp:LinkButton>
+            </div>
+            <asp:LinkButton ID="lnkMarkAllRead" runat="server" CssClass="pt-notif-mark-all-btn" OnClick="LnkMarkAllRead_Click" CausesValidation="false">
+                <i class="bi bi-check2-all"></i> <%: T("Mark All Read","Tandai Semua Dibaca") %>
+            </asp:LinkButton>
         </div>
 
-        <%-- Mark All as Read + Sort Order --%>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="display:flex;align-items:center;gap:12px;">
-                <asp:LinkButton ID="lnkSortLatest" runat="server" CssClass="pt-sort-btn active" OnClick="LnkSortLatest_Click" CausesValidation="false">
-                    <i class="bi bi-sort-down"></i> <%: T("Latest","Terkini") %>
-                </asp:LinkButton>
-                <asp:LinkButton ID="lnkSortOldest" runat="server" CssClass="pt-sort-btn" OnClick="LnkSortOldest_Click" CausesValidation="false">
-                    <i class="bi bi-sort-up"></i> <%: T("Oldest","Terlama") %>
-                </asp:LinkButton>
-            </div>
-            <asp:LinkButton ID="lnkMarkAllRead" runat="server" CssClass="pt-mark-all-read" OnClick="LnkMarkAllRead_Click" CausesValidation="false">
-                <i class="bi bi-check2-all"></i> <%: T("Mark all as read","Tandai semua dibaca") %>
+        <%-- Sort --%>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+            <asp:LinkButton ID="lnkSortLatest" runat="server" CssClass="pt-sort-btn active" OnClick="LnkSortLatest_Click" CausesValidation="false">
+                <i class="bi bi-sort-down"></i> <%: T("Latest","Terkini") %>
+            </asp:LinkButton>
+            <asp:LinkButton ID="lnkSortOldest" runat="server" CssClass="pt-sort-btn" OnClick="LnkSortOldest_Click" CausesValidation="false">
+                <i class="bi bi-sort-up"></i> <%: T("Oldest","Terlama") %>
             </asp:LinkButton>
         </div>
 

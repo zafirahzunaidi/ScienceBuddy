@@ -241,5 +241,7 @@ namespace ScienceBuddy.Parent
 
         /// <summary>litNoActivitiesMsg — "No recent activities yet."</summary>
         protected global::System.Web.UI.WebControls.Literal litNoActivitiesMsg;
+        protected global::System.Web.UI.WebControls.Literal litUnreadBadge;
+
     }
 }

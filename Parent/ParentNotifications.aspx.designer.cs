@@ -20,5 +20,7 @@ namespace ScienceBuddy.Parent
         protected global::System.Web.UI.WebControls.Literal litEmptyMsg;
         protected global::System.Web.UI.WebControls.HiddenField hidMarkReadId;
         protected global::System.Web.UI.WebControls.Button btnMarkRead;
+        protected global::System.Web.UI.WebControls.Literal litUnreadBadge;
+
     }
 }
