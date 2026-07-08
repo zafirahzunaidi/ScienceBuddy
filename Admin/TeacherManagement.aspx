@@ -155,7 +155,12 @@
         <p class="tm-header-sub"><%= T("Manage teacher accounts, monitor teaching activity and review educator performance.", "Urus akaun guru, pantau aktiviti pengajaran dan semak prestasi pendidik.") %></p>
         <span class="tm-header-badge"><i class="bi bi-mortarboard-fill"></i> <%= T("Educator Directory", "Direktori Pendidik") %></span>
     </div>
-    <div class="tm-header-icon"><i class="bi bi-person-workspace"></i></div>
+    <div style="display:flex;align-items:center;gap:var(--space-md);">
+        <div class="tm-header-icon"><i class="bi bi-person-workspace"></i></div>
+        <a href="javascript:;" onclick="openAddTeacher()" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:linear-gradient(135deg,#047857,#059669,#10B981);color:#fff;border-radius:12px;font-weight:700;font-size:.9rem;text-decoration:none;box-shadow:0 6px 20px rgba(5,150,105,.35);transition:all .25s;">
+            <i class="bi bi-person-plus-fill"></i> <%= T("+ Add Teacher", "+ Tambah Guru") %>
+        </a>
+    </div>
 </div>
 
 <div class="tm-insights">
@@ -291,4 +296,64 @@
 </div>
 </asp:Panel>
 
+<%-- ADD TEACHER MODAL --%>
+<div id="addTeacherOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:2000;align-items:center;justify-content:center;padding:20px;">
+<div style="background:#fff;border-radius:20px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.2);animation:tmIn .3s ease;">
+<style>@keyframes tmIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.tm-add-field{margin-bottom:14px;}.tm-add-label{font-size:.75rem;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;display:block;}
+.tm-add-input{width:100%;padding:10px 14px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:.9rem;transition:border-color .2s;}.tm-add-input:focus{outline:none;border-color:#059669;box-shadow:0 0 0 3px rgba(5,150,105,.1);}
+.tm-add-err{font-size:.75rem;color:#DC2626;margin-top:3px;display:none;}.tm-add-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+</style>
+<div style="padding:24px 28px;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;">
+    <div><div style="font-family:var(--font-primary);font-size:1.1rem;font-weight:800;display:flex;align-items:center;gap:8px;"><i class="bi bi-person-plus-fill" style="color:#059669;"></i> <%= T("Add New Teacher","Tambah Guru Baharu") %></div><div style="font-size:.8rem;color:#64748B;margin-top:2px;"><%= T("Create a new teacher account.","Cipta akaun guru baharu.") %></div></div>
+    <button onclick="closeAddTeacher()" style="width:36px;height:36px;border:none;background:#F1F5F9;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;"><i class="bi bi-x-lg"></i></button>
+</div>
+<div style="padding:24px 28px;">
+<div class="tm-add-grid">
+<div class="tm-add-field"><label class="tm-add-label"><%= T("Full Name *","Nama Penuh *") %></label><input id="t_name" class="tm-add-input" type="text" /><div class="tm-add-err" id="te_name"><%= T("Required","Diperlukan") %></div></div>
+<div class="tm-add-field"><label class="tm-add-label"><%= T("Username *","Nama Pengguna *") %></label><input id="t_username" class="tm-add-input" type="text" /><div class="tm-add-err" id="te_username"><%= T("Required","Diperlukan") %></div></div>
+<div class="tm-add-field"><label class="tm-add-label"><%= T("Email *","E-mel *") %></label><input id="t_email" class="tm-add-input" type="email" /><div class="tm-add-err" id="te_email"><%= T("Required","Diperlukan") %></div></div>
+<div class="tm-add-field"><label class="tm-add-label"><%= T("Phone Number","Nombor Telefon") %></label><input id="t_phone" class="tm-add-input" type="text" /></div>
+<div class="tm-add-field"><label class="tm-add-label"><%= T("Password *","Kata Laluan *") %></label><input id="t_pw" class="tm-add-input" type="password" /><div class="tm-add-err" id="te_pw"><%= T("Min 8 characters","Min 8 aksara") %></div></div>
+<div class="tm-add-field"><label class="tm-add-label"><%= T("Confirm Password *","Sahkan Kata Laluan *") %></label><input id="t_pw2" class="tm-add-input" type="password" /><div class="tm-add-err" id="te_pw2"><%= T("Passwords do not match","Kata laluan tidak sama") %></div></div>
+<div class="tm-add-field"><label class="tm-add-label"><%= T("Qualification","Kelayakan") %></label><input id="t_qual" class="tm-add-input" type="text" placeholder="<%= T("e.g. B.Ed (Science)","cth. B.Pend (Sains)") %>" /></div>
+<div class="tm-add-field"><label class="tm-add-label"><%= T("Preferred Language","Bahasa Pilihan") %></label><select id="t_lang" class="tm-add-input"><option value="EN">English</option><option value="BM">Bahasa Melayu</option></select></div>
+</div>
+<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid #F1F5F9;">
+<button onclick="closeAddTeacher()" style="padding:10px 22px;border-radius:10px;border:1.5px solid #E2E8F0;background:#fff;font-weight:600;cursor:pointer;"><%= T("Cancel","Batal") %></button>
+<button onclick="submitAddTeacher()" style="padding:10px 26px;border-radius:10px;border:none;background:linear-gradient(135deg,#047857,#059669);color:#fff;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(5,150,105,.3);"><i class="bi bi-person-plus-fill"></i> <%= T("Create Teacher","Cipta Guru") %></button>
+</div>
+</div></div></div>
+
+<script>
+function openAddTeacher(){document.getElementById('addTeacherOverlay').style.display='flex';}
+function closeAddTeacher(){document.getElementById('addTeacherOverlay').style.display='none';}
+function submitAddTeacher(){
+    var n=document.getElementById('t_name').value.trim(),u=document.getElementById('t_username').value.trim(),e=document.getElementById('t_email').value.trim(),pw=document.getElementById('t_pw').value,pw2=document.getElementById('t_pw2').value;
+    var ok=true;['te_name','te_username','te_email','te_pw','te_pw2'].forEach(function(id){document.getElementById(id).style.display='none';});
+    if(!n){document.getElementById('te_name').style.display='block';ok=false;}
+    if(!u){document.getElementById('te_username').style.display='block';ok=false;}
+    if(!e||e.indexOf('@')<0){document.getElementById('te_email').style.display='block';ok=false;}
+    if(pw.length<8){document.getElementById('te_pw').style.display='block';ok=false;}
+    if(pw!==pw2){document.getElementById('te_pw2').style.display='block';ok=false;}
+    if(!ok)return;
+    var ph=document.getElementById('t_phone').value.trim(),qual=document.getElementById('t_qual').value.trim(),lang=document.getElementById('t_lang').value;
+    closeAddTeacher();
+    Swal.fire({
+        title:'<%= T("Create this teacher?","Cipta guru ini?") %>',
+        html:'<div style="text-align:left;margin-top:8px;"><b><%= T("Name","Nama") %>:</b> '+n+'<br><b>Username:</b> '+u+'<br><b>Email:</b> '+e+'</div>',
+        icon:'question',showCancelButton:true,
+        confirmButtonText:'<i class="bi bi-person-plus-fill"></i> <%= T("Yes, Create","Ya, Cipta") %>',
+        cancelButtonText:'<%= T("Cancel","Batal") %>',
+        confirmButtonColor:'#059669',reverseButtons:true
+    }).then(function(r){
+        if(!r.isConfirmed){openAddTeacher();return;}
+        fetch(window.location.pathname+'?handler=TeacherCRUD&action=addTeacher&name='+encodeURIComponent(n)+'&username='+encodeURIComponent(u)+'&email='+encodeURIComponent(e)+'&password='+encodeURIComponent(pw)+'&phone='+encodeURIComponent(ph)+'&qualification='+encodeURIComponent(qual)+'&lang='+lang,{method:'POST',headers:{'X-Requested-With':'XMLHttpRequest'}})
+        .then(function(r){return r.json();}).then(function(d){
+            if(d.success){Swal.fire({icon:'success',title:'<%= T("Teacher Created!","Guru Dicipta!") %>',text:'<%= T("The account has been added.","Akaun telah ditambah.") %>',confirmButtonColor:'#059669',timer:3000,timerProgressBar:true}).then(function(){location.reload();});}
+            else{openAddTeacher();Swal.fire({icon:'error',title:'<%= T("Error","Ralat") %>',text:d.msg});}
+        }).catch(function(){openAddTeacher();Swal.fire({icon:'error',title:'Network Error',text:'Please try again.'});});
+    });
+}
+</script>
 </asp:Content>
