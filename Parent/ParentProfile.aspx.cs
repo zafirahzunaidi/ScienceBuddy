@@ -1,326 +1,249 @@
 using System;
 using System.Configuration;
 using System.Data.SqlClient;
-using System.Text.RegularExpressions;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 
 namespace ScienceBuddy.Parent
 {
     public partial class ParentProfile : Page
     {
-        // ── Connection string ─────────────────────────────────────────
-        private string ConnStr =>
-            ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
-
-        // ── Language ──────────────────────────────────────────────────
+        private string ConnStr => ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
         protected string CurrentLanguage = "EN";
-
-        protected string T(string en, string bm)
-        {
-            return CurrentLanguage == "BM" ? bm : en;
-        }
-
-        private string _userId = "";
-
-        // ══════════════════════════════════════════════════════════════
-        //  PAGE LOAD
-        // ══════════════════════════════════════════════════════════════
+        protected string T(string en, string bm) => CurrentLanguage == "BM" ? bm : en;
+        private string _parentUserId = "", _parentId = "";
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Authorization
-            if (Session["userId"] == null || Session["role"] == null ||
-                Session["role"].ToString() != "Parent")
-            {
-                Response.Redirect("~/Login.aspx", false);
-                Context.ApplicationInstance.CompleteRequest();
-                return;
-            }
-
+            if (!EnsureAuth()) return;
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
-
-            _userId = Session["userId"].ToString();
-            LoadCurrentLanguage();
-            SetLabels();
+            LoadLang();
+            _parentUserId = Session["userId"].ToString();
+            LoadParentId();
 
             if (!IsPostBack)
             {
-                PopulateSidebarChild();
+                SetLabels();
+                LoadChildren();
                 LoadProfile();
+            }
+            else
+            {
+                SetLabels();
             }
         }
 
-        private void PopulateSidebarChild()
+        private bool EnsureAuth()
+        {
+            if (Session["userId"] == null || Session["role"] == null || Session["role"].ToString() != "Parent")
+            { Response.Redirect("~/Login.aspx", false); Context.ApplicationInstance.CompleteRequest(); return false; }
+            return true;
+        }
+
+        private void LoadLang()
+        {
+            string l = Session["preferredLanguage"] as string;
+            if (!string.IsNullOrEmpty(l)) { CurrentLanguage = l; return; }
+            try
+            {
+                using (var c = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand("SELECT preferredLanguage FROM dbo.[User] WHERE userId=@u", c))
+                { cmd.Parameters.AddWithValue("@u", Session["userId"].ToString()); c.Open(); var r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) { CurrentLanguage = r.ToString(); Session["preferredLanguage"] = CurrentLanguage; } }
+            }
+            catch { }
+        }
+
+        private void LoadParentId()
+        {
+            try
+            {
+                using (var c = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand("SELECT parentId FROM dbo.[Parent] WHERE userId=@u", c))
+                { cmd.Parameters.AddWithValue("@u", _parentUserId); c.Open(); var r = cmd.ExecuteScalar(); if (r != null) _parentId = r.ToString(); }
+            }
+            catch { }
+        }
+
+        private void LoadChildren()
         {
             ddlSidebarChild.Items.Clear();
             try
             {
-                string parentId = "";
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand("SELECT parentId FROM dbo.[Parent] WHERE userId=@u", conn))
-                { cmd.Parameters.AddWithValue("@u", _userId); conn.Open(); object r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) parentId = r.ToString(); }
-
-                if (string.IsNullOrEmpty(parentId)) return;
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand("SELECT sp.studentId, s.name, s.nickname FROM dbo.[StudentParent] sp INNER JOIN dbo.[Student] s ON s.studentId=sp.studentId WHERE sp.parentId=@p", conn))
-                {
-                    cmd.Parameters.AddWithValue("@p", parentId); conn.Open();
-                    using (var r = cmd.ExecuteReader())
-                    {
-                        while (r.Read())
-                        {
-                            string sid = r["studentId"]?.ToString() ?? "";
-                            string nm = r["nickname"]?.ToString() ?? "";
-                            string n = r["name"]?.ToString() ?? "";
-                            ddlSidebarChild.Items.Add(new System.Web.UI.WebControls.ListItem(!string.IsNullOrWhiteSpace(nm) ? nm : n, sid));
-                        }
-                    }
-                }
-                string sel = Session["selectedChildId"] as string;
-                if (!string.IsNullOrEmpty(sel) && ddlSidebarChild.Items.FindByValue(sel) != null)
-                    ddlSidebarChild.SelectedValue = sel;
+                using (var c = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand("SELECT s.studentId, ISNULL(s.nickname,s.name) AS n FROM dbo.StudentParent sp INNER JOIN dbo.Student s ON sp.studentId=s.studentId WHERE sp.parentId=@p ORDER BY s.name", c))
+                { cmd.Parameters.AddWithValue("@p", _parentId); c.Open(); using (var r = cmd.ExecuteReader()) { while (r.Read()) ddlSidebarChild.Items.Add(new ListItem(r["n"].ToString(), r["studentId"].ToString())); } }
             }
-            catch (SqlException) { }
-        }
-
-        protected void SidebarChildChanged(object sender, EventArgs e)
-        {
-            Session["selectedChildId"] = ddlSidebarChild.SelectedValue;
-            Response.Redirect(Request.RawUrl, false);
-            Context.ApplicationInstance.CompleteRequest();
-        }
-
-        // ══════════════════════════════════════════════════════════════
-        //  LANGUAGE
-        // ══════════════════════════════════════════════════════════════
-
-        private void LoadCurrentLanguage()
-        {
-            string lang = Session["preferredLanguage"] as string;
-            if (!string.IsNullOrEmpty(lang))
+            catch { }
+            if (ddlSidebarChild.Items.Count > 0)
             {
-                CurrentLanguage = lang;
-                return;
+                string saved = Session["selectedChildId"] as string;
+                if (!string.IsNullOrEmpty(saved) && ddlSidebarChild.Items.FindByValue(saved) != null) ddlSidebarChild.SelectedValue = saved;
+                else Session["selectedChildId"] = ddlSidebarChild.Items[0].Value;
             }
-
-            try
-            {
-                const string sql = "SELECT preferredLanguage FROM dbo.[User] WHERE userId = @userId";
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@userId", _userId);
-                    conn.Open();
-                    object result = cmd.ExecuteScalar();
-                    if (result != null && result != DBNull.Value)
-                    {
-                        lang = result.ToString();
-                        Session["preferredLanguage"] = lang;
-                        CurrentLanguage = lang;
-                        return;
-                    }
-                }
-            }
-            catch (SqlException) { }
-
-            CurrentLanguage = "EN";
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  LABELS
-        // ══════════════════════════════════════════════════════════════
+        protected void SidebarChildChanged(object sender, EventArgs e) { Session["selectedChildId"] = ddlSidebarChild.SelectedValue; }
 
         private void SetLabels()
         {
-            litTitle.Text       = T("My Profile", "Profil Saya");
-            litSub.Text         = T("View and update your parent account details.",
-                                    "Lihat dan kemaskini butiran akaun ibu bapa anda.");
-            litLblUsername.Text  = T("Username", "Nama Pengguna");
-            litLblName.Text     = T("Full Name", "Nama Penuh");
-            litLblEmail.Text    = T("Email Address", "Alamat Emel");
-            litLblPhone.Text    = T("Phone Number", "Nombor Telefon");
-            litLblLang.Text     = T("Preferred Language", "Bahasa Pilihan");
-            btnSave.Text        = T("Save Changes", "Simpan Perubahan");
+            btnSave.Text = T("Save Changes", "Simpan Perubahan");
+            btnChangePwd.Text = T("Change Password", "Tukar Kata Laluan");
         }
-
-        // ══════════════════════════════════════════════════════════════
-        //  LOAD PROFILE
-        // ══════════════════════════════════════════════════════════════
 
         private void LoadProfile()
         {
             try
             {
-                const string sql = @"
-                    SELECT u.username, u.email, u.preferredLanguage,
-                           p.name, p.phoneNumber
-                    FROM dbo.[User] u
-                    INNER JOIN dbo.[Parent] p ON p.userId = u.userId
-                    WHERE u.userId = @userId";
-
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(sql, conn))
+                using (var c = new SqlConnection(ConnStr))
                 {
-                    cmd.Parameters.AddWithValue("@userId", _userId);
-                    conn.Open();
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            txtUsername.Text = reader["username"]?.ToString() ?? "";
-                            txtName.Text    = reader["name"]?.ToString() ?? "";
-                            txtEmail.Text   = reader["email"]?.ToString() ?? "";
-                            txtPhone.Text   = reader["phoneNumber"]?.ToString() ?? "";
+                    c.Open();
 
-                            string lang = reader["preferredLanguage"]?.ToString() ?? "EN";
-                            if (ddlLang.Items.FindByValue(lang) != null)
-                                ddlLang.SelectedValue = lang;
+                    // Load User data
+                    string username = "", email = "", role = "", status = "", lang = "";
+                    using (var cmd = new SqlCommand("SELECT username, email, role, status, preferredLanguage FROM dbo.[User] WHERE userId=@u", c))
+                    {
+                        cmd.Parameters.AddWithValue("@u", _parentUserId);
+                        using (var r = cmd.ExecuteReader())
+                        {
+                            if (r.Read())
+                            {
+                                username = r["username"] != DBNull.Value ? r["username"].ToString() : "";
+                                email = r["email"] != DBNull.Value ? r["email"].ToString() : "";
+                                role = r["role"] != DBNull.Value ? r["role"].ToString() : "";
+                                status = r["status"] != DBNull.Value ? r["status"].ToString() : "";
+                                lang = r["preferredLanguage"] != DBNull.Value ? r["preferredLanguage"].ToString() : "EN";
+                            }
                         }
                     }
+
+                    // Load Parent data
+                    string name = "", phone = "";
+                    using (var cmd = new SqlCommand("SELECT name, phoneNumber FROM dbo.[Parent] WHERE parentId=@p", c))
+                    {
+                        cmd.Parameters.AddWithValue("@p", _parentId);
+                        using (var r = cmd.ExecuteReader())
+                        {
+                            if (r.Read())
+                            {
+                                name = r["name"] != DBNull.Value ? r["name"].ToString() : "";
+                                phone = r["phoneNumber"] != DBNull.Value ? r["phoneNumber"].ToString() : "";
+                            }
+                        }
+                    }
+
+                    // Children count
+                    int childCount = 0;
+                    using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.StudentParent WHERE parentId=@p", c))
+                    { cmd.Parameters.AddWithValue("@p", _parentId); childCount = (int)cmd.ExecuteScalar(); }
+
+                    // Populate form
+                    txtUsername.Text = username;
+                    txtName.Text = name;
+                    txtEmail.Text = email;
+                    txtPhone.Text = phone;
+                    if (ddlLang.Items.FindByValue(lang) != null) ddlLang.SelectedValue = lang;
+
+                    // Hero
+                    litHeroName.Text = Server.HtmlEncode(name);
+                    litInitials.Text = GetInitials(name);
+                    litHeroEmail.Text = Server.HtmlEncode(email);
+                    litChildrenCount.Text = string.Format(T("{0} child(ren) linked", "{0} anak dipautkan"), childCount);
+
+                    // Account status
+                    litStatusRole.Text = role;
+                    litStatusStatus.Text = status;
+                    litStatusLang.Text = lang == "BM" ? "Bahasa Melayu" : "English";
                 }
             }
-            catch (SqlException)
-            {
-                ShowMessage(T("Unable to load profile.", "Gagal memuatkan profil."), true);
-            }
+            catch { }
+        }
+
+        private string GetInitials(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return "P";
+            var parts = name.Trim().Split(' ');
+            if (parts.Length >= 2) return (parts[0][0].ToString() + parts[parts.Length - 1][0].ToString()).ToUpper();
+            return parts[0][0].ToString().ToUpper();
         }
 
         // ══════════════════════════════════════════════════════════════
         //  SAVE PROFILE
         // ══════════════════════════════════════════════════════════════
-
         protected void BtnSave_Click(object sender, EventArgs e)
         {
-            string name  = txtName.Text.Trim();
+            string name = txtName.Text.Trim();
             string email = txtEmail.Text.Trim();
             string phone = txtPhone.Text.Trim();
-            string lang  = ddlLang.SelectedValue;
+            string lang = ddlLang.SelectedValue;
 
-            // ── Validation ────────────────────────────────────────────
-            if (string.IsNullOrEmpty(name))
-            {
-                ShowMessage(T("Name is required.", "Nama diperlukan."), true);
-                return;
-            }
+            if (string.IsNullOrEmpty(name)) { ShowMsg(T("Name cannot be empty.", "Nama tidak boleh kosong."), false); return; }
+            if (string.IsNullOrEmpty(email)) { ShowMsg(T("Email cannot be empty.", "E-mel tidak boleh kosong."), false); return; }
 
-            if (string.IsNullOrEmpty(email))
-            {
-                ShowMessage(T("Email is required.", "Emel diperlukan."), true);
-                return;
-            }
-
-            if (!Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
-            {
-                ShowMessage(T("Please enter a valid email address.", "Sila masukkan alamat emel yang sah."), true);
-                return;
-            }
-
-            if (!string.IsNullOrEmpty(phone))
-            {
-                if (!Regex.IsMatch(phone, @"^\d{10,12}$"))
-                {
-                    ShowMessage(T("Phone number must be 10-12 digits.", "Nombor telefon mesti 10-12 digit."), true);
-                    return;
-                }
-            }
-
-            if (lang != "EN" && lang != "BM")
-            {
-                ShowMessage(T("Invalid language selection.", "Pilihan bahasa tidak sah."), true);
-                return;
-            }
-
-            // ── Email uniqueness check ────────────────────────────────
             try
             {
-                const string checkSql = "SELECT COUNT(*) FROM dbo.[User] WHERE email = @email AND userId != @userId";
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(checkSql, conn))
+                using (var c = new SqlConnection(ConnStr))
                 {
-                    cmd.Parameters.AddWithValue("@email", email);
-                    cmd.Parameters.AddWithValue("@userId", _userId);
-                    conn.Open();
-                    int count = Convert.ToInt32(cmd.ExecuteScalar());
-                    if (count > 0)
-                    {
-                        ShowMessage(T("This email is already used by another account.",
-                                      "Emel ini sudah digunakan oleh akaun lain."), true);
-                        return;
-                    }
-                }
-            }
-            catch (SqlException)
-            {
-                ShowMessage(T("An error occurred. Please try again.",
-                              "Ralat berlaku. Sila cuba lagi."), true);
-                return;
-            }
+                    c.Open();
 
-            // ── Update ────────────────────────────────────────────────
-            try
-            {
-                using (var conn = new SqlConnection(ConnStr))
-                {
-                    conn.Open();
-                    using (var tran = conn.BeginTransaction())
-                    {
-                        // Update User
-                        const string userSql = @"
-                            UPDATE dbo.[User]
-                            SET email = @email, preferredLanguage = @lang
-                            WHERE userId = @userId";
+                    // Update Parent table
+                    using (var cmd = new SqlCommand("UPDATE dbo.[Parent] SET name=@n, phoneNumber=@ph WHERE parentId=@p", c))
+                    { cmd.Parameters.AddWithValue("@n", name); cmd.Parameters.AddWithValue("@ph", (object)phone ?? DBNull.Value); cmd.Parameters.AddWithValue("@p", _parentId); cmd.ExecuteNonQuery(); }
 
-                        using (var cmd = new SqlCommand(userSql, conn, tran))
-                        {
-                            cmd.Parameters.AddWithValue("@email", email);
-                            cmd.Parameters.AddWithValue("@lang", lang);
-                            cmd.Parameters.AddWithValue("@userId", _userId);
-                            cmd.ExecuteNonQuery();
-                        }
-
-                        // Update Parent
-                        const string parentSql = @"
-                            UPDATE dbo.[Parent]
-                            SET name = @name, phoneNumber = @phone
-                            WHERE userId = @userId";
-
-                        using (var cmd = new SqlCommand(parentSql, conn, tran))
-                        {
-                            cmd.Parameters.AddWithValue("@name", name);
-                            cmd.Parameters.AddWithValue("@phone", string.IsNullOrEmpty(phone) ? (object)DBNull.Value : phone);
-                            cmd.Parameters.AddWithValue("@userId", _userId);
-                            cmd.ExecuteNonQuery();
-                        }
-
-                        tran.Commit();
-                    }
+                    // Update User table (email + language)
+                    using (var cmd = new SqlCommand("UPDATE dbo.[User] SET email=@e, preferredLanguage=@l WHERE userId=@u", c))
+                    { cmd.Parameters.AddWithValue("@e", email); cmd.Parameters.AddWithValue("@l", lang); cmd.Parameters.AddWithValue("@u", _parentUserId); cmd.ExecuteNonQuery(); }
                 }
 
-                // Update session language
                 Session["preferredLanguage"] = lang;
                 CurrentLanguage = lang;
-
-                // Refresh labels with new language
-                SetLabels();
-
-                ShowMessage(T("Profile updated successfully.", "Profil berjaya dikemaskini."), false);
+                ShowMsg(T("Profile updated successfully!", "Profil berjaya dikemas kini!"), true);
+                LoadProfile();
             }
-            catch (SqlException)
-            {
-                ShowMessage(T("An error occurred while saving. Please try again.",
-                              "Ralat berlaku semasa menyimpan. Sila cuba lagi."), true);
-            }
+            catch { ShowMsg(T("An error occurred while saving.", "Ralat berlaku semasa menyimpan."), false); }
         }
 
         // ══════════════════════════════════════════════════════════════
-        //  MESSAGES
+        //  CHANGE PASSWORD
         // ══════════════════════════════════════════════════════════════
-
-        private void ShowMessage(string message, bool isError)
+        protected void BtnChangePwd_Click(object sender, EventArgs e)
         {
-            pnlMessage.Visible = true;
-            divMsg.InnerHtml = Server.HtmlEncode(message);
-            divMsg.Attributes["class"] = isError ? "pp-msg error" : "pp-msg success";
+            string current = txtCurrentPwd.Text;
+            string newPwd = txtNewPwd.Text;
+            string confirm = txtConfirmPwd.Text;
+
+            if (string.IsNullOrEmpty(current)) { ShowMsg(T("Please enter your current password.", "Sila masukkan kata laluan semasa anda."), false); return; }
+            if (string.IsNullOrEmpty(newPwd)) { ShowMsg(T("Please enter a new password.", "Sila masukkan kata laluan baharu."), false); return; }
+            if (newPwd.Length < 6) { ShowMsg(T("New password must be at least 6 characters.", "Kata laluan baharu mesti sekurang-kurangnya 6 aksara."), false); return; }
+            if (newPwd != confirm) { ShowMsg(T("New passwords do not match.", "Kata laluan baharu tidak sepadan."), false); return; }
+
+            try
+            {
+                using (var c = new SqlConnection(ConnStr))
+                {
+                    c.Open();
+
+                    // Verify current password
+                    string storedPwd = "";
+                    using (var cmd = new SqlCommand("SELECT password FROM dbo.[User] WHERE userId=@u", c))
+                    { cmd.Parameters.AddWithValue("@u", _parentUserId); var r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) storedPwd = r.ToString(); }
+
+                    if (storedPwd != current)
+                    { ShowMsg(T("Current password is incorrect.", "Kata laluan semasa tidak betul."), false); return; }
+
+                    // Update password
+                    using (var cmd = new SqlCommand("UPDATE dbo.[User] SET password=@p WHERE userId=@u", c))
+                    { cmd.Parameters.AddWithValue("@p", newPwd); cmd.Parameters.AddWithValue("@u", _parentUserId); cmd.ExecuteNonQuery(); }
+                }
+
+                txtCurrentPwd.Text = "";
+                txtNewPwd.Text = "";
+                txtConfirmPwd.Text = "";
+                ShowMsg(T("Password changed successfully!", "Kata laluan berjaya ditukar!"), true);
+            }
+            catch { ShowMsg(T("An error occurred while changing password.", "Ralat berlaku semasa menukar kata laluan."), false); }
         }
+
+        private void ShowMsg(string msg, bool ok) { pnlMessage.Visible = true; divMsg.InnerHtml = msg; iMsgIcon.Attributes["class"] = ok ? "bi bi-check-circle-fill" : "bi bi-exclamation-circle-fill"; }
+        protected void BtnCloseMsg_Click(object sender, EventArgs e) { pnlMessage.Visible = false; }
     }
 }
