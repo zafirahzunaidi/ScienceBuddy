@@ -274,5 +274,19 @@ namespace ScienceBuddy.Teacher
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.HiddenField hidToast;
+
+        // ── New controls for tabs and discover ──
+        protected global::System.Web.UI.WebControls.LinkButton btnTabMine;
+        protected global::System.Web.UI.WebControls.LinkButton btnTabDiscover;
+        protected global::System.Web.UI.WebControls.Panel pnlUploadBtn;
+        protected global::System.Web.UI.WebControls.Panel pnlStatusChips;
+        protected global::System.Web.UI.WebControls.LinkButton btnChipAll;
+        protected global::System.Web.UI.WebControls.LinkButton btnChipApproved;
+        protected global::System.Web.UI.WebControls.LinkButton btnChipPending;
+        protected global::System.Web.UI.WebControls.LinkButton btnChipRejected;
+        protected global::System.Web.UI.WebControls.Panel pnlDiscover;
+        protected global::System.Web.UI.WebControls.Repeater rptDiscover;
+        protected global::System.Web.UI.WebControls.Panel pnlDiscoverEmpty;
+        protected global::System.Web.UI.WebControls.HiddenField hidActiveTab;
     }
 }

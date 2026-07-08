@@ -13,6 +13,7 @@ namespace ScienceBuddy.Teacher
         protected global::System.Web.UI.WebControls.Button btnStudents;
         protected global::System.Web.UI.WebControls.Button btnParents;
         protected global::System.Web.UI.WebControls.Panel pnlNoConvs;
+        protected global::System.Web.UI.WebControls.Literal litNoConvMsg;
         protected global::System.Web.UI.WebControls.Repeater rptConvs;
         protected global::System.Web.UI.WebControls.Panel pnlNoChat;
         protected global::System.Web.UI.WebControls.Panel pnlCompose;

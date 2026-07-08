@@ -255,7 +255,7 @@ namespace ScienceBuddy.Teacher
             if (span.TotalDays    < 1)  return (int)span.TotalHours   + " hr ago";
             if (span.TotalDays    < 7)
                 return (int)span.TotalDays + " day" + ((int)span.TotalDays == 1 ? "" : "s") + " ago";
-            return dt.ToString("d MMM yyyy");
+            return dt.ToString("d MMM yyyy, h:mm tt");
         }
     }
 }

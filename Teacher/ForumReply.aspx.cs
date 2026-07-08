@@ -105,23 +105,10 @@ namespace ScienceBuddy.Teacher
                         litTitle.Text        = HttpUtility.HtmlEncode(r["title"]?.ToString()   ?? "");
                         litMessage.Text      = HttpUtility.HtmlEncode(r["message"]?.ToString() ?? "");
                         litReplyCount.Text   = replyCnt.ToString();
-                        litLikeCount.Text    = likeCnt.ToString();
                         litRepliesBadge.Text = replyCnt.ToString();
                         RenderLikeButton(liked, likeCnt);
                     }
                 }
-
-                // ── Current teacher initials for composer avatar ──────
-                string myName = userId;
-                using (var cmd = new SqlCommand(
-                    "SELECT COALESCE(t.[name], u.[username]) AS n FROM dbo.[User] u " +
-                    "LEFT JOIN dbo.[Teacher] t ON t.[userId]=u.[userId] WHERE u.[userId]=@u", conn))
-                {
-                    cmd.Parameters.AddWithValue("@u", userId);
-                    var v = cmd.ExecuteScalar();
-                    if (v != null && v != DBNull.Value) myName = v.ToString();
-                }
-                litMyInitials.Text = HttpUtility.HtmlEncode(BuildInitials(myName));
 
                 // ── 2. Replies ────────────────────────────────────────
                 const string sqlReplies = @"
@@ -136,10 +123,6 @@ namespace ScienceBuddy.Teacher
                     WHERE fc.[forumId]=@fid ORDER BY fc.[createdAt] ASC";
 
                 var replies = new List<object>();
-                // Track participants: creator first, then reply senders (distinct)
-                var participantIds  = new List<string>();
-                var participantRows = new List<object>();
-                if (creatorUserId != null) participantIds.Add(creatorUserId);
 
                 using (var cmd = new SqlCommand(sqlReplies, conn))
                 {
@@ -150,15 +133,11 @@ namespace ScienceBuddy.Teacher
                         {
                             string sName  = r["senderName"]?.ToString() ?? "User";
                             string sRole  = r["role"]?.ToString()       ?? "";
-                            string sId    = r["senderUserId"]?.ToString() ?? "";
                             DateTime sent = r["createdAt"] != DBNull.Value ? Convert.ToDateTime(r["createdAt"]) : DateTime.Now;
 
                             replies.Add(new { initials = BuildInitials(sName), senderName = sName,
                                 roleCss = RoleCss(sRole), roleLabel = RoleLabel(sRole),
                                 message = r["message"]?.ToString() ?? "", timeAgo = FormatTime(sent) });
-
-                            if (!string.IsNullOrEmpty(sId) && !participantIds.Contains(sId))
-                                participantIds.Add(sId);
                         }
                     }
                 }
@@ -167,37 +146,11 @@ namespace ScienceBuddy.Teacher
                 pnlRepliesEmpty.Visible = replies.Count == 0;
                 if (replies.Count > 0) { rptReplies.DataSource = replies; rptReplies.DataBind(); }
 
-                // ── 3. Build participants list ────────────────────────
-                // Re-query names for all participant userIds
-                foreach (string pid in participantIds)
-                {
-                    using (var cmd = new SqlCommand(
-                        "SELECT COALESCE(t.[name],s.[name],p.[name],u.[username]) AS n, u.[role] " +
-                        "FROM dbo.[User] u " +
-                        "LEFT JOIN dbo.[Teacher] t ON t.[userId]=u.[userId] " +
-                        "LEFT JOIN dbo.[Student] s ON s.[userId]=u.[userId] " +
-                        "LEFT JOIN dbo.[Parent]  p ON p.[userId]=u.[userId] " +
-                        "WHERE u.[userId]=@pid", conn))
-                    {
-                        cmd.Parameters.AddWithValue("@pid", pid);
-                        using (var r = cmd.ExecuteReader())
-                        {
-                            if (r.Read())
-                            {
-                                string pName = r["n"]?.ToString() ?? "User";
-                                string pRole = r["role"]?.ToString() ?? "";
-                                participantRows.Add(new { initials = BuildInitials(pName), name = pName,
-                                    roleCss = RoleCss(pRole), roleLabel = RoleLabel(pRole) });
-                            }
-                        }
-                    }
-                }
-                if (participantRows.Count > 0) { rptParticipants.DataSource = participantRows; rptParticipants.DataBind(); }
-
-                // ── 4. More Discussions (up to 5, excluding current) ──
+                // ── 3. More Discussions (up to 5, excluding current) ──
                 const string sqlMore = @"
                     SELECT TOP 5 f.[forumId], f.[title], f.[createdAt],
-                        COALESCE(t.[name], s.[name], p.[name], u.[username]) AS creatorName
+                        COALESCE(t.[name], s.[name], p.[name], u.[username]) AS creatorName,
+                        u.[role]
                     FROM dbo.[Forum] f
                     INNER JOIN dbo.[User]    u ON u.[userId]=f.[createdBy]
                     LEFT  JOIN dbo.[Teacher] t ON t.[userId]=u.[userId]
@@ -215,11 +168,13 @@ namespace ScienceBuddy.Teacher
                         while (r.Read())
                         {
                             string mn   = r["creatorName"]?.ToString() ?? "User";
+                            string mRole = r["role"]?.ToString() ?? "";
                             DateTime md = r["createdAt"] != DBNull.Value ? Convert.ToDateTime(r["createdAt"]) : DateTime.Now;
                             string mt   = r["title"]?.ToString() ?? "";
                             moreList.Add(new { forumId = r["forumId"].ToString(),
                                 title = mt.Length > 60 ? mt.Substring(0, 60) + "…" : mt,
-                                creatorName = mn, initials = BuildInitials(mn), timeAgo = FormatTime(md) });
+                                creatorName = mn, initials = BuildInitials(mn), timeAgo = FormatTime(md),
+                                roleCss = RoleCss(mRole) });
                         }
                     }
                 }
@@ -233,6 +188,8 @@ namespace ScienceBuddy.Teacher
         // ════════════════════════════════════════════════════════════
         //  LIKE / UNLIKE
         // ════════════════════════════════════════════════════════════
+        //  LIKE (no unlike — one like per user only)
+        // ════════════════════════════════════════════════════════════
         protected void btnLike_Click(object sender, EventArgs e)
         {
             string userId = Session["userId"].ToString();
@@ -240,17 +197,14 @@ namespace ScienceBuddy.Teacher
             using (var conn = new SqlConnection(ConnStr))
             {
                 conn.Open();
+                // Check if already liked — if so, do nothing
                 int exists;
                 using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.[ForumLike] WHERE [forumId]=@f AND [senderUserId]=@u", conn))
                 { cmd.Parameters.AddWithValue("@f", forumId); cmd.Parameters.AddWithValue("@u", userId); exists = Convert.ToInt32(cmd.ExecuteScalar()); }
 
-                if (exists > 0)
+                if (exists == 0)
                 {
-                    using (var cmd = new SqlCommand("DELETE FROM dbo.[ForumLike] WHERE [forumId]=@f AND [senderUserId]=@u", conn))
-                    { cmd.Parameters.AddWithValue("@f", forumId); cmd.Parameters.AddWithValue("@u", userId); cmd.ExecuteNonQuery(); }
-                }
-                else
-                {
+                    // Insert like
                     using (var txn = conn.BeginTransaction())
                     {
                         string newId;
@@ -261,6 +215,7 @@ namespace ScienceBuddy.Teacher
                         txn.Commit();
                     }
                 }
+                // If already liked, do nothing (no unlike)
             }
             LoadPage();
         }

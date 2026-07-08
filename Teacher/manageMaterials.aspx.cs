@@ -57,6 +57,7 @@ namespace ScienceBuddy.Teacher
             {
                 if (!AuthorizeTeacher()) return;
                 LoadFilterDropdowns();
+                SetTabUI();
                 LoadMaterials();
             }
         }
@@ -126,7 +127,7 @@ namespace ScienceBuddy.Teacher
             string sql = @"SELECT m.[materialId],m.[materialTitle],m.[materialContent],m.[materialType],
                 m.[fileUrl],m.[createdDate],m.[status],m.[language],ISNULL(st.[subtopicTitleEN],'—') AS subtopicName
                 FROM dbo.[Material] m LEFT JOIN dbo.[Subtopic] st ON st.[subtopicId]=m.[subtopicId]
-                LEFT JOIN dbo.[Unit] u ON u.[unitId]=st.[unitId] WHERE m.[createdByUserId]=@userId";
+                LEFT JOIN dbo.[Unit] u ON u.[unitId]=st.[unitId] WHERE m.[createdByUserId]=@userId AND (m.[status] IS NULL OR m.[status]<>'Deleted')";
             if (!string.IsNullOrEmpty(search)) sql += " AND (m.[materialTitle] LIKE @s OR m.[materialContent] LIKE @s)";
             if (!string.IsNullOrEmpty(lvl)) sql += " AND u.[levelId]=@lvl";
             if (!string.IsNullOrEmpty(unit)) sql += " AND u.[unitId]=@unit";
@@ -148,13 +149,75 @@ namespace ScienceBuddy.Teacher
                     var dt = new DataTable(); new SqlDataAdapter(cmd).Fill(dt);
                     pnlMaterials.Visible = dt.Rows.Count > 0;
                     pnlEmpty.Visible = dt.Rows.Count == 0;
+                    pnlDiscover.Visible = false;
+                    pnlDiscoverEmpty.Visible = false;
                     if (dt.Rows.Count > 0) { rptMaterials.DataSource = dt; rptMaterials.DataBind(); }
                 }
             }
         }
 
+        private void LoadDiscoverMaterials()
+        {
+            string userId = Session["userId"].ToString();
+            string search = txtSearch.Text.Trim();
+            string lvl = ddlFilterLevel.SelectedValue, unit = ddlFilterUnit.SelectedValue;
+            string type = ddlFilterType.SelectedValue;
+
+            string sql = @"SELECT m.[materialId],m.[materialTitle],m.[materialContent],m.[materialType],
+                m.[fileUrl],m.[createdDate],m.[language],ISNULL(st.[subtopicTitleEN],'—') AS subtopicName,
+                COALESCE(t.[name],u2.[username],'Teacher') AS teacherName
+                FROM dbo.[Material] m LEFT JOIN dbo.[Subtopic] st ON st.[subtopicId]=m.[subtopicId]
+                LEFT JOIN dbo.[Unit] un ON un.[unitId]=st.[unitId]
+                LEFT JOIN dbo.[User] u2 ON u2.[userId]=m.[createdByUserId]
+                LEFT JOIN dbo.[Teacher] t ON t.[userId]=m.[createdByUserId]
+                WHERE m.[createdByUserId]<>@userId AND m.[status]='Approved'";
+            if (!string.IsNullOrEmpty(search)) sql += " AND (m.[materialTitle] LIKE @s OR m.[materialContent] LIKE @s)";
+            if (!string.IsNullOrEmpty(lvl)) sql += " AND un.[levelId]=@lvl";
+            if (!string.IsNullOrEmpty(unit)) sql += " AND un.[unitId]=@unit";
+            if (!string.IsNullOrEmpty(type)) sql += " AND m.[materialType]=@type";
+            sql += " ORDER BY m.[createdDate] DESC";
+
+            using (var conn = new SqlConnection(ConnStr))
+            {
+                conn.Open();
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@userId", userId);
+                    if (!string.IsNullOrEmpty(search)) cmd.Parameters.AddWithValue("@s", "%" + search + "%");
+                    if (!string.IsNullOrEmpty(lvl)) cmd.Parameters.AddWithValue("@lvl", lvl);
+                    if (!string.IsNullOrEmpty(unit)) cmd.Parameters.AddWithValue("@unit", unit);
+                    if (!string.IsNullOrEmpty(type)) cmd.Parameters.AddWithValue("@type", type);
+                    var dt = new DataTable(); new SqlDataAdapter(cmd).Fill(dt);
+                    pnlDiscover.Visible = dt.Rows.Count > 0;
+                    pnlDiscoverEmpty.Visible = dt.Rows.Count == 0;
+                    pnlMaterials.Visible = false;
+                    pnlEmpty.Visible = false;
+                    if (dt.Rows.Count > 0) { rptDiscover.DataSource = dt; rptDiscover.DataBind(); }
+                }
+            }
+        }
+
         // ── Filter events ────────────────────────────────────────────
-        protected void btnSearch_Click(object sender, EventArgs e) { LoadMaterials(); }
+        protected void btnSearch_Click(object sender, EventArgs e) { LoadForActiveTab(); }
+        protected void btnTabMine_Click(object sender, EventArgs e) { hidActiveTab.Value = "mine"; SetTabUI(); LoadForActiveTab(); }
+        protected void btnTabDiscover_Click(object sender, EventArgs e) { hidActiveTab.Value = "discover"; SetTabUI(); LoadForActiveTab(); }
+
+        private void SetTabUI()
+        {
+            bool isMine = hidActiveTab.Value != "discover";
+            btnTabMine.CssClass = "mm-tab" + (isMine ? " active" : "");
+            btnTabDiscover.CssClass = "mm-tab" + (!isMine ? " active" : "");
+            pnlUploadBtn.Visible = isMine;
+            pnlStatusChips.Visible = isMine;
+        }
+
+        private void LoadForActiveTab()
+        {
+            SetTabUI();
+            if (hidActiveTab.Value == "discover") LoadDiscoverMaterials();
+            else LoadMaterials();
+        }
+
         protected void ddlFilterLevel_Changed(object sender, EventArgs e)
         {
             ddlFilterUnit.Items.Clear();
@@ -169,11 +232,37 @@ namespace ScienceBuddy.Teacher
                     { cmd.Parameters.AddWithValue("@l", lid); using (var r = cmd.ExecuteReader()) while (r.Read()) ddlFilterUnit.Items.Add(new ListItem(r["unitNameEN"].ToString(), r["unitId"].ToString())); }
                 }
             }
-            LoadMaterials();
+            LoadForActiveTab();
         }
-        protected void ddlFilterUnit_Changed(object sender, EventArgs e) { LoadMaterials(); }
-        protected void ddlFilterType_Changed(object sender, EventArgs e) { LoadMaterials(); }
-        protected void ddlFilterStatus_Changed(object sender, EventArgs e) { LoadMaterials(); }
+        protected void ddlFilterUnit_Changed(object sender, EventArgs e) { LoadForActiveTab(); }
+        protected void ddlFilterType_Changed(object sender, EventArgs e) { LoadForActiveTab(); }
+        protected void ddlFilterStatus_Changed(object sender, EventArgs e) { LoadForActiveTab(); }
+
+        protected void btnChip_Click(object sender, EventArgs e)
+        {
+            var btn = sender as LinkButton;
+            string status = btn?.CommandArgument ?? "";
+            // Update chip UI
+            btnChipAll.CssClass = "mm-chip" + (status == "" ? " active" : "");
+            btnChipApproved.CssClass = "mm-chip" + (status == "Approved" ? " active" : "");
+            btnChipPending.CssClass = "mm-chip" + (status == "Pending" ? " active" : "");
+            btnChipRejected.CssClass = "mm-chip" + (status == "Rejected" ? " active" : "");
+            // Set ddlFilterStatus value for the query
+            try { ddlFilterStatus.SelectedValue = status; } catch { }
+            LoadForActiveTab();
+        }
+
+        protected string GetIconCss(string t)
+        {
+            if (string.IsNullOrEmpty(t)) return "mm-ico-default";
+            string l = t.ToLower();
+            if (l.Contains("pdf")) return "mm-ico-pdf";
+            if (l.Contains("doc")) return "mm-ico-doc";
+            if (l.Contains("ppt")) return "mm-ico-ppt";
+            if (l.Contains("image") || l.Contains("jpg") || l.Contains("png")) return "mm-ico-image";
+            if (l.Contains("video")) return "mm-ico-video";
+            return "mm-ico-default";
+        }
 
         // ── Edit modal load ──────────────────────────────────────────
         private void LoadEditForm(string materialId, string userId)
@@ -304,7 +393,7 @@ namespace ScienceBuddy.Teacher
                 string dir = Server.MapPath("~/Images/Material/");
                 if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
                 fuFile.SaveAs(Path.Combine(dir, fn));
-                fileUrl = "Images/Material/" + fn;
+                fileUrl = fn; // Store filename only in database
             }
 
             try
@@ -334,7 +423,7 @@ namespace ScienceBuddy.Teacher
             LoadMaterials();
         }
 
-        // ── Delete ───────────────────────────────────────────────────
+        // ── Delete (soft delete — set status to 'Deleted') ─────────
         protected void btnConfirmDelete_Click(object sender, EventArgs e)
         {
             string materialId = hidDeleteId.Value;
@@ -344,18 +433,53 @@ namespace ScienceBuddy.Teacher
                 using (var conn = new SqlConnection(ConnStr))
                 {
                     conn.Open();
-                    if (!VerifyOwnership(conn, materialId, userId)) { hidToast.Value = "Permission denied."; LoadMaterials(); return; }
-                    using (var cmd = new SqlCommand("DELETE FROM dbo.[Material] WHERE [materialId]=@id AND [createdByUserId]=@uid", conn))
+                    if (!VerifyOwnership(conn, materialId, userId)) { hidToast.Value = "Permission denied."; LoadForActiveTab(); return; }
+                    using (var cmd = new SqlCommand("UPDATE dbo.[Material] SET [status]='Deleted' WHERE [materialId]=@id AND [createdByUserId]=@uid", conn))
                     { cmd.Parameters.AddWithValue("@id", materialId); cmd.Parameters.AddWithValue("@uid", userId); cmd.ExecuteNonQuery(); }
                 }
                 hidToast.Value = T("Material deleted successfully.","Bahan berjaya dipadam.");
             }
             catch { hidToast.Value = "Could not delete material."; }
-            LoadMaterials();
+            LoadForActiveTab();
         }
 
-        // ── Repeater (not used for commands now but kept for compatibility) ──
-        protected void rptMaterials_ItemCommand(object source, RepeaterCommandEventArgs e) { }
+        // ── Repeater commands ─────────────────────────────────────────
+        protected void rptMaterials_ItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+            HandleFileCommand(e.CommandName, e.CommandArgument?.ToString());
+        }
+
+        protected void rptDiscover_ItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+            HandleFileCommand(e.CommandName, e.CommandArgument?.ToString());
+        }
+
+        private void HandleFileCommand(string commandName, string fileUrl)
+        {
+            if (string.IsNullOrEmpty(fileUrl)) return;
+            string filePath = GetFilePath(fileUrl);
+            string physicalPath = Server.MapPath("~/" + filePath);
+
+            if (commandName == "ViewMaterial")
+            {
+                // Redirect to file URL — browser will display inline (preview)
+                Response.Redirect(ResolveUrl("~/") + filePath, false);
+                Context.ApplicationInstance.CompleteRequest();
+            }
+            else if (commandName == "DownloadMaterial")
+            {
+                // Force download with attachment header
+                if (File.Exists(physicalPath))
+                {
+                    string fileName = Path.GetFileName(physicalPath);
+                    Response.Clear();
+                    Response.ContentType = "application/octet-stream";
+                    Response.AddHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+                    Response.TransmitFile(physicalPath);
+                    Response.End();
+                }
+            }
+        }
 
         // ── Utilities ────────────────────────────────────────────────
         private bool VerifyOwnership(SqlConnection conn, string id, string userId)
@@ -393,6 +517,19 @@ namespace ScienceBuddy.Teacher
         {
             if (string.IsNullOrEmpty(text)) return "No description";
             return text.Length <= max ? text : text.Substring(0, max) + "…";
+        }
+
+        /// <summary>Returns the web-relative path for a material file. Handles both
+        /// old format (Images/Material/file.pdf) and new format (file.pdf only).</summary>
+        protected string GetFilePath(object fileUrlObj)
+        {
+            string fileUrl = fileUrlObj?.ToString() ?? "";
+            if (string.IsNullOrEmpty(fileUrl)) return "#";
+            // If already has folder prefix, use as-is
+            if (fileUrl.StartsWith("Images/", StringComparison.OrdinalIgnoreCase))
+                return fileUrl;
+            // Otherwise prepend the folder
+            return "Images/Material/" + fileUrl;
         }
     }
 }

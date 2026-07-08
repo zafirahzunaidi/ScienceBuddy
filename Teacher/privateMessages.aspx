@@ -9,7 +9,7 @@
 .pm-left{border-right:1.5px solid var(--tb);display:flex;flex-direction:column;overflow:hidden;}
 .pm-left-header{padding:1rem 1.25rem;border-bottom:1px solid var(--tb);}
 .pm-search-wrap{position:relative;}.pm-search-wrap i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--tm);font-size:.9rem;pointer-events:none;}
-.pm-search{width:100%;height:44px;border-radius:12px;border:1.5px solid var(--tb);padding:0 .75rem 0 2.2rem;font-size:.82rem;background:var(--tc);transition:border-color .2s,box-shadow .2s;}
+.pm-search{width:100%;height:44px;border-radius:12px;border:1.5px solid var(--tb);padding:0 .75rem 0 2.2rem;font-size:.86rem;background:var(--tc);transition:border-color .2s,box-shadow .2s;}
 .pm-search:focus{border-color:var(--tp);outline:none;box-shadow:0 0 0 3px rgba(108,99,255,.08);}
 .pm-compose-btn{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--tp),var(--tp2));color:#fff;font-size:1.1rem;text-decoration:none;cursor:pointer;transition:transform .15s,box-shadow .15s;box-shadow:0 2px 8px rgba(108,99,255,.2);flex-shrink:0;}
 .pm-compose-btn:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(108,99,255,.3);color:#fff;text-decoration:none;}
@@ -23,10 +23,10 @@
 .pm-conv.active{background:#EDE9FE;border-color:var(--tp);}
 .pm-conv-avatar{width:38px;height:38px;border-radius:50%;background:#EDE9FE;color:var(--tp);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0;}
 .pm-conv-info{flex:1;min-width:0;}
-.pm-conv-name{font-size:.82rem;font-weight:700;color:var(--tt);display:flex;align-items:center;gap:6px;}
+.pm-conv-name{font-size:.88rem;font-weight:700;color:var(--tt);display:flex;align-items:center;gap:6px;}
 .pm-conv-role{font-size:.6rem;font-weight:700;padding:1px 6px;border-radius:4px;background:#DBEAFE;color:#1D4ED8;}
 .pm-conv-role.parent{background:#FEF3C7;color:#92400E;}
-.pm-conv-preview{font-size:.74rem;color:var(--tm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.pm-conv-preview{font-size:.8rem;color:var(--tm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
 .pm-conv-time{font-size:.66rem;color:var(--tm);white-space:nowrap;}
 .pm-unread{width:8px;height:8px;border-radius:50%;background:var(--tp);flex-shrink:0;}
 /* Right panel */
@@ -39,13 +39,14 @@
 .pm-msg{max-width:75%;display:flex;flex-direction:column;}
 .pm-msg.sent{align-self:flex-end;align-items:flex-end;}
 .pm-msg.received{align-self:flex-start;align-items:flex-start;}
-.pm-bubble{padding:.6rem 1rem;border-radius:14px;font-size:.84rem;line-height:1.5;word-break:break-word;}
+.pm-bubble{padding:.6rem 1rem;border-radius:14px;font-size:.9rem;line-height:1.55;word-break:break-word;}
 .pm-msg.sent .pm-bubble{background:linear-gradient(135deg,var(--tp),var(--tp2));color:#fff;border-bottom-right-radius:4px;}
 .pm-msg.received .pm-bubble{background:#F3F4F6;color:var(--tt);border-bottom-left-radius:4px;}
-.pm-msg-time{font-size:.66rem;color:var(--tm);margin-top:3px;}
+.pm-msg-time{font-size:.66rem;color:var(--tm);margin-top:3px;display:flex;align-items:center;gap:4px;}
+.pm-tick{font-size:.75rem;}.pm-tick.read{color:var(--tp);font-weight:800;}.pm-tick.sent{color:#9CA3AF;font-weight:400;}
 .pm-msg-attach{font-size:.76rem;color:var(--tp);text-decoration:none;display:flex;align-items:center;gap:4px;margin-top:4px;}
 .pm-input-area{padding:.85rem 1.25rem;border-top:1px solid var(--tb);display:flex;gap:.6rem;align-items:center;}
-.pm-input{flex:1;border-radius:10px;border:1.5px solid var(--tb);padding:.55rem .8rem;font-size:.84rem;resize:none;min-height:38px;max-height:80px;transition:border-color .2s;}
+.pm-input{flex:1;border-radius:10px;border:1.5px solid var(--tb);padding:.55rem .8rem;font-size:.88rem;resize:none;min-height:38px;max-height:80px;transition:border-color .2s;}
 .pm-input:focus{border-color:var(--tp);outline:none;}
 .pm-send-btn{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--tp),var(--tp2));border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s,box-shadow .15s;box-shadow:0 2px 8px rgba(108,99,255,.2);}
 .pm-send-btn:hover{transform:scale(1.08);box-shadow:0 4px 14px rgba(108,99,255,.3);}
@@ -114,7 +115,7 @@
     </div>
     <div class="pm-list">
         <asp:Panel ID="pnlNoConvs" runat="server" Visible="false">
-            <div class="pm-empty"><i class="bi bi-chat-square-text"></i><p><%: T("No private messages yet.","Tiada mesej peribadi lagi.") %></p></div>
+            <div class="pm-empty"><i class="bi bi-chat-square-text"></i><p><asp:Literal ID="litNoConvMsg" runat="server" /></p></div>
         </asp:Panel>
         <asp:Repeater ID="rptConvs" runat="server" OnItemCommand="rptConvs_ItemCommand">
             <ItemTemplate>
@@ -167,7 +168,7 @@
         </asp:Panel>
         <div class="pm-input-area">
             <asp:TextBox ID="txtComposeMsg" runat="server" CssClass="pm-input" TextMode="MultiLine" Rows="1" placeholder="Type a message..." />
-            <asp:Button ID="btnComposeSend" runat="server" CssClass="pm-send-btn" Text="›" OnClick="btnComposeSend_Click" CausesValidation="false" />
+            <asp:Button ID="btnComposeSend" runat="server" CssClass="pm-send-btn" Text="&#9992;" OnClick="btnComposeSend_Click" CausesValidation="false" />
         </div>
     </asp:Panel>
 
@@ -184,7 +185,7 @@
                     <div class='pm-msg <%# Eval("isSent").ToString()=="True"?"sent":"received" %>'>
                         <div class="pm-bubble"><%# HttpUtility.HtmlEncode(Eval("msgText")) %></div>
                         <%# Eval("attachmentFile")!=null && Eval("attachmentFile").ToString()!="" ? "<a href='"+ResolveUrl("~/"+Eval("attachmentFile"))+"' target='_blank' class='pm-msg-attach'><i class='bi bi-paperclip'></i> Attachment</a>" : "" %>
-                        <div class="pm-msg-time"><%# Eval("timeStr") %></div>
+                        <div class="pm-msg-time"><%# Eval("timeStr") %><%# Convert.ToBoolean(Eval("isSent")) ? (Convert.ToBoolean(Eval("isRead")) ? "<span class='pm-tick read'>✓</span>" : "<span class='pm-tick sent'>✓</span>") : "" %></div>
                     </div>
                 </ItemTemplate>
             </asp:Repeater>
@@ -195,7 +196,7 @@
         <div class="pm-val" id="valMsg"></div>
         <div class="pm-input-area">
             <asp:TextBox ID="txtMessage" runat="server" CssClass="pm-input" TextMode="MultiLine" Rows="1" placeholder="Type your message..." />
-            <asp:Button ID="btnSend" runat="server" CssClass="pm-send-btn" Text="›" OnClick="btnSend_Click" CausesValidation="false" />
+            <asp:Button ID="btnSend" runat="server" CssClass="pm-send-btn" Text="&#9992;" OnClick="btnSend_Click" CausesValidation="false" />
         </div>
     </asp:Panel>
 </div>

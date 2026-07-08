@@ -5,7 +5,7 @@
 <style>
 :root{--tp:#6C63FF;--th:#5A52E0;--tl:#F5F3FF;--tc:#FFF;--tb:#E5E7EB;--tt:#374151;--tm:#6B7280;--ts:#10B981;--te:#EF4444;}
 /* ── 2-column layout ── */
-.frd-layout{display:grid;grid-template-columns:1fr 300px;gap:1.5rem;align-items:start;}
+.frd-layout{display:grid;grid-template-columns:1fr 340px;gap:1.5rem;align-items:start;}
 /* ── Back ── */
 .frd-back{display:inline-flex;align-items:center;gap:6px;font-size:.82rem;font-weight:700;color:var(--tp);text-decoration:none;margin-bottom:1.25rem;transition:color .15s;}
 .frd-back:hover{color:var(--th);text-decoration:none;}
@@ -53,8 +53,12 @@
 .frd-comments-hd h2{font-size:1rem;font-weight:800;color:var(--tt);margin:0;}
 .frd-count-badge{font-size:.72rem;font-weight:700;background:var(--tl);color:var(--tp);padding:2px 10px;border-radius:20px;}
 .frd-reply-list{display:flex;flex-direction:column;gap:.75rem;margin-bottom:1.5rem;}
-.frd-reply{background:var(--tc);border:1.5px solid var(--tb);border-radius:14px;padding:.9rem 1.1rem;transition:box-shadow .15s;}
+.frd-reply{background:var(--tc);border:1.5px solid var(--tb);border-radius:14px;padding:.9rem 1.1rem;transition:box-shadow .15s;position:relative;overflow:hidden;}
 .frd-reply:hover{box-shadow:0 4px 16px rgba(108,99,255,.07);}
+.frd-reply::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;}
+.frd-reply.accent-student::after{background:#818CF8;}
+.frd-reply.accent-parent::after{background:#FBBF24;}
+.frd-reply.accent-teacher::after{background:#A78BFA;}
 .frd-reply-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:.5rem;}
 .frd-avatar-sm{width:34px;height:34px;border-radius:50%;background:#EDE9FE;color:var(--tp);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;flex-shrink:0;}
 .frd-reply-meta{flex:1;}
@@ -70,14 +74,18 @@
 .frd-sidebar-card{background:var(--tc);border:1.5px solid var(--tb);border-radius:16px;padding:1.1rem 1.25rem;box-shadow:0 2px 8px rgba(0,0,0,.03);}
 .frd-sidebar-title{font-size:.82rem;font-weight:800;color:var(--tt);margin-bottom:.9rem;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--tb);padding-bottom:.6rem;}
 .frd-more-list{display:flex;flex-direction:column;gap:.75rem;}
-.frd-more-item{display:flex;align-items:flex-start;gap:9px;padding:.6rem .7rem;background:#FAFAFA;border:1px solid var(--tb);border-radius:10px;}
+.frd-more-item{display:flex;align-items:flex-start;gap:9px;padding:.7rem .8rem;background:#FAFAFA;border:1px solid var(--tb);border-radius:10px;position:relative;overflow:hidden;}
+.frd-more-item::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;}
+.frd-more-item.accent-student::after{background:#818CF8;}
+.frd-more-item.accent-parent::after{background:#FBBF24;}
+.frd-more-item.accent-teacher::after{background:#A78BFA;}
 .frd-more-avatar{width:30px;height:30px;border-radius:50%;background:#EDE9FE;color:var(--tp);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;flex-shrink:0;}
 .frd-more-info{flex:1;min-width:0;}
-.frd-more-name{font-size:.74rem;font-weight:700;color:var(--tt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.frd-more-name{font-size:.82rem;font-weight:800;color:var(--tt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .frd-more-date{font-size:.67rem;color:var(--tm);margin-bottom:2px;}
-.frd-more-title{font-size:.76rem;color:var(--tt);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px;}
-.frd-more-link{font-size:.71rem;font-weight:700;color:var(--tp);text-decoration:none;}
-.frd-more-link:hover{color:var(--th);text-decoration:underline;}
+.frd-more-title{font-size:.82rem;color:var(--tt);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;}
+.frd-more-link{font-size:.78rem;font-weight:700;color:#4338CA;text-decoration:none;margin-top:2px;display:inline-block;}
+.frd-more-link:hover{color:#3730A3;text-decoration:underline;}
 .frd-part-list{display:flex;flex-direction:column;gap:.6rem;}
 .frd-part-item{display:flex;align-items:center;gap:9px;}
 .frd-part-avatar{width:30px;height:30px;border-radius:50%;background:#EDE9FE;color:var(--tp);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;flex-shrink:0;}
@@ -145,7 +153,6 @@
                         <div class="frd-creator-name">
                             <asp:Literal ID="litCreatorName" runat="server" />
                             <asp:Literal ID="litRoleBadge" runat="server" />
-                            <span class="frd-pub-badge"><i class="bi bi-globe2" style="font-size:.58rem;"></i> <%: T("Public","Awam") %></span>
                         </div>
                         <div class="frd-date"><i class="bi bi-clock"></i> <asp:Literal ID="litPostDate" runat="server" /></div>
                     </div>
@@ -154,26 +161,22 @@
                 <div class="frd-post-msg"><asp:Literal ID="litMessage" runat="server" /></div>
                 <div class="frd-main-footer">
                     <span class="frd-stat"><i class="bi bi-chat-text"></i> <asp:Literal ID="litReplyCount" runat="server" /> <%: T("replies","balasan") %></span>
-                    <span class="frd-stat"><i class="bi bi-heart"></i> <asp:Literal ID="litLikeCount" runat="server" /> <%: T("likes","suka") %></span>
                     <asp:LinkButton ID="btnLike" runat="server" OnClick="btnLike_Click" CausesValidation="false" />
                 </div>
             </div>
 
-            <%-- Reply composer directly below discussion --%>
+            <%-- Reply composer --%>
             <div class="frd-composer-wrap">
-                <div class="frd-composer-inner">
-                    <div class="frd-composer-avatar"><asp:Literal ID="litMyInitials" runat="server" /></div>
-                    <div class="frd-composer-right">
-                        <asp:TextBox ID="txtReply" runat="server" CssClass="frd-composer-ta" TextMode="MultiLine" Rows="3" />
-                        <div class="frd-composer-actions">
-                            <asp:Panel ID="pnlReplyVal" runat="server" Visible="false">
-                                <span class="frd-val-msg"><i class="bi bi-exclamation-circle-fill"></i> <asp:Literal ID="litReplyVal" runat="server" /></span>
-                            </asp:Panel>
-                            <span></span>
-                            <asp:Button ID="btnPostReply" runat="server" CssClass="frd-send-btn"
-                                OnClick="btnPostReply_Click" CausesValidation="false"
-                                Text="&#8593;" />
-                        </div>
+                <div class="frd-composer-right" style="width:100%;">
+                    <asp:TextBox ID="txtReply" runat="server" CssClass="frd-composer-ta" TextMode="MultiLine" Rows="3" />
+                    <div class="frd-composer-actions">
+                        <asp:Panel ID="pnlReplyVal" runat="server" Visible="false">
+                            <span class="frd-val-msg"><i class="bi bi-exclamation-circle-fill"></i> <asp:Literal ID="litReplyVal" runat="server" /></span>
+                        </asp:Panel>
+                        <span></span>
+                        <asp:Button ID="btnPostReply" runat="server" CssClass="frd-send-btn"
+                            OnClick="btnPostReply_Click" CausesValidation="false"
+                            Text="&#9992;" />
                     </div>
                 </div>
             </div>
@@ -189,7 +192,7 @@
                 <div class="frd-reply-list">
                     <asp:Repeater ID="rptReplies" runat="server">
                         <ItemTemplate>
-                            <div class="frd-reply">
+                            <div class='frd-reply accent-<%# Eval("roleCss") %>'>
                                 <div class="frd-reply-top">
                                     <div class="frd-avatar-sm"><%# Eval("initials") %></div>
                                     <div class="frd-reply-meta">
@@ -209,10 +212,8 @@
 
             <%-- Empty replies --%>
             <asp:Panel ID="pnlRepliesEmpty" runat="server" Visible="false">
-                <div class="frd-empty">
-                    <i class="bi bi-chat-square-text"></i>
-                    <div class="frd-empty-title"><%: T("No replies yet.","Belum ada balasan.") %></div>
-                    <div class="frd-empty-sub"><%: T("Be the first to reply.","Jadilah yang pertama membalas.") %></div>
+                <div style="text-align:center;padding:1.5rem;color:var(--tm);font-size:.88rem;font-weight:600;">
+                    <%: T("No replies yet.","Belum ada balasan.") %>
                 </div>
             </asp:Panel>
 
@@ -228,7 +229,7 @@
                     <div class="frd-more-list">
                         <asp:Repeater ID="rptMore" runat="server">
                             <ItemTemplate>
-                                <div class="frd-more-item">
+                                <div class='frd-more-item accent-<%# Eval("roleCss") %>'>
                                     <div class="frd-more-avatar"><%# Eval("initials") %></div>
                                     <div class="frd-more-info">
                                         <div class="frd-more-name"><%# HttpUtility.HtmlEncode(Eval("creatorName").ToString()) %></div>
@@ -241,24 +242,6 @@
                         </asp:Repeater>
                     </div>
                 </asp:Panel>
-            </div>
-
-            <%-- Discussion Participants --%>
-            <div class="frd-sidebar-card">
-                <div class="frd-sidebar-title"><i class="bi bi-people" style="color:var(--tp);"></i> <%: T("Participants","Peserta") %></div>
-                <div class="frd-part-list">
-                    <asp:Repeater ID="rptParticipants" runat="server">
-                        <ItemTemplate>
-                            <div class="frd-part-item">
-                                <div class="frd-part-avatar"><%# Eval("initials") %></div>
-                                <div>
-                                    <div class="frd-part-name"><%# HttpUtility.HtmlEncode(Eval("name").ToString()) %></div>
-                                    <span class='frd-role-badge <%# Eval("roleCss") %>'><%# Eval("roleLabel") %></span>
-                                </div>
-                            </div>
-                        </ItemTemplate>
-                    </asp:Repeater>
-                </div>
             </div>
 
         </div><%-- /.frd-sidebar --%>

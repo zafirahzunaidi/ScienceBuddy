@@ -26,6 +26,7 @@ namespace ScienceBuddy.Teacher
             {
                 ddlRecipient.Items.Clear();
                 ddlRecipient.Items.Add(new ListItem(T("— Select Recipient —","— Pilih Penerima —"), ""));
+                CheckUnreadAndNotify();
                 LoadConversations();
             }
         }
@@ -74,7 +75,9 @@ namespace ScienceBuddy.Teacher
                 }
             }
             if (list.Count > 0) { rptConvs.DataSource = list; rptConvs.DataBind(); pnlNoConvs.Visible = false; }
-            else { pnlNoConvs.Visible = true; }
+            else { pnlNoConvs.Visible = true; litNoConvMsg.Text = string.IsNullOrEmpty(search)
+                ? T("No private messages yet.", "Tiada mesej peribadi lagi.")
+                : T("No matching conversations found.", "Tiada perbualan sepadan ditemui."); }
             if (!string.IsNullOrEmpty(SelectedChatId)) LoadMessages();
         }
 
@@ -102,13 +105,15 @@ namespace ScienceBuddy.Teacher
                 using (var cmd = new SqlCommand("UPDATE dbo.[privateMessage] SET [isRead]=1,[readAt]=GETDATE() WHERE [chatId]=@cid AND [senderUserId]<>@uid AND ([isRead]=0 OR [isRead] IS NULL)", conn))
                 { cmd.Parameters.AddWithValue("@cid", chatId); cmd.Parameters.AddWithValue("@uid", userId); cmd.ExecuteNonQuery(); }
                 var msgs = new List<object>();
-                using (var cmd = new SqlCommand("SELECT [senderUserId],[msgText],[attachmentFile],[sentAt] FROM dbo.[privateMessage] WHERE [chatId]=@cid ORDER BY [sentAt] ASC", conn))
+                using (var cmd = new SqlCommand("SELECT [senderUserId],[msgText],[attachmentFile],[sentAt],[isRead] FROM dbo.[privateMessage] WHERE [chatId]=@cid ORDER BY [sentAt] ASC", conn))
                 {
                     cmd.Parameters.AddWithValue("@cid", chatId);
                     using (var r = cmd.ExecuteReader()) while (r.Read())
                     {
                         DateTime sent = r["sentAt"] != DBNull.Value ? Convert.ToDateTime(r["sentAt"]) : DateTime.Now;
-                        msgs.Add(new { msgText = r["msgText"]?.ToString() ?? "", attachmentFile = r["attachmentFile"]?.ToString(), isSent = r["senderUserId"].ToString() == userId, timeStr = sent.ToString("h:mm tt, d MMM") });
+                        bool isSentMsg = r["senderUserId"].ToString() == userId;
+                        bool isReadMsg = r["isRead"] != DBNull.Value && Convert.ToBoolean(r["isRead"]);
+                        msgs.Add(new { msgText = r["msgText"]?.ToString() ?? "", attachmentFile = r["attachmentFile"]?.ToString(), isSent = isSentMsg, timeStr = sent.ToString("h:mm tt, d MMM"), isRead = isReadMsg });
                     }
                 }
                 if (msgs.Count > 0) { rptMessages.DataSource = msgs; rptMessages.DataBind(); pnlNoMessages.Visible = false; }
@@ -227,6 +232,74 @@ namespace ScienceBuddy.Teacher
             if (span.TotalDays < 1) return (int)span.TotalHours + "h";
             if (span.TotalDays < 7) return (int)span.TotalDays + "d";
             return dt.ToString("d MMM");
+        }
+
+        /// <summary>
+        /// Check for unread private messages sent TO this teacher and create
+        /// a notification for each one that doesn't already have one.
+        /// Duplicate check: toUserId + titleEN + createdAt = message sentAt.
+        /// </summary>
+        private void CheckUnreadAndNotify()
+        {
+            try
+            {
+                string userId = Session["userId"].ToString();
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+
+                    // Find unread messages where this teacher is the recipient (not the sender)
+                    // Join userChat to determine which messages are addressed to the teacher
+                    const string sqlUnread = @"
+                        SELECT pm.[sentAt]
+                        FROM dbo.[privateMessage] pm
+                        INNER JOIN dbo.[userChat] uc ON uc.[chatId]=pm.[chatId]
+                        WHERE pm.[senderUserId]<>@uid
+                          AND (uc.[userId]=@uid OR uc.[user2Id]=@uid)
+                          AND (pm.[isRead]=0 OR pm.[isRead] IS NULL)
+                          AND NOT EXISTS (
+                              SELECT 1 FROM dbo.[Notification] n
+                              WHERE n.[toUserId]=@uid
+                                AND n.[titleEN]='New Private Message'
+                                AND n.[createdAt]=pm.[sentAt]
+                          )";
+
+                    var unreadDates = new List<DateTime>();
+                    using (var cmd = new SqlCommand(sqlUnread, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@uid", userId);
+                        using (var r = cmd.ExecuteReader())
+                            while (r.Read())
+                                if (r["sentAt"] != DBNull.Value)
+                                    unreadDates.Add(Convert.ToDateTime(r["sentAt"]));
+                    }
+
+                    // Insert a notification for each unread message without a duplicate
+                    foreach (var sentAt in unreadDates)
+                    {
+                        // Generate next notification ID
+                        string notifId;
+                        using (var cmd = new SqlCommand(
+                            "SELECT ISNULL(MAX(CAST(SUBSTRING([notificationId],2,LEN([notificationId])-1) AS INT)),0) FROM dbo.[Notification]", conn))
+                        { notifId = "N" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3"); }
+
+                        using (var cmd = new SqlCommand(@"
+                            INSERT INTO dbo.[Notification]([notificationId],[toUserId],[titleEN],[messageEN],[titleBM],[messageBM],[isRead],[createdAt])
+                            VALUES(@id,@uid,@tEN,@mEN,@tBM,@mBM,0,@dt)", conn))
+                        {
+                            cmd.Parameters.AddWithValue("@id", notifId);
+                            cmd.Parameters.AddWithValue("@uid", userId);
+                            cmd.Parameters.AddWithValue("@tEN", "New Private Message");
+                            cmd.Parameters.AddWithValue("@mEN", "You received a new private message.");
+                            cmd.Parameters.AddWithValue("@tBM", "Mesej Peribadi Baharu");
+                            cmd.Parameters.AddWithValue("@mBM", "Anda menerima mesej peribadi baharu.");
+                            cmd.Parameters.AddWithValue("@dt", sentAt);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+            }
+            catch { /* notification creation failure should not block page load */ }
         }
     }
 }

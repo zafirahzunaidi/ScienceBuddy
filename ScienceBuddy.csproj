@@ -268,6 +268,7 @@
     <Content Include="Student\VirtualLab2.aspx" />
     <Content Include="Student\VirtualLabs.aspx" />
     <Content Include="Student\VirtualLabs2.aspx" />
+    <Content Include="Teacher\createPracticeQuiz.aspx" />
     <Content Include="Teacher\Dashboard.aspx" />
     <Content Include="Teacher\ForumReply.aspx" />
     <Content Include="Teacher\manageMaterials.aspx" />
@@ -894,6 +895,13 @@
     </Compile>
     <Compile Include="Student\VirtualLabs2.aspx.designer.cs">
       <DependentUpon>VirtualLabs2.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Teacher\createPracticeQuiz.aspx.cs">
+      <DependentUpon>createPracticeQuiz.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Teacher\createPracticeQuiz.aspx.designer.cs">
+      <DependentUpon>createPracticeQuiz.aspx</DependentUpon>
     </Compile>
     <Compile Include="Teacher\Dashboard.aspx.cs">
       <DependentUpon>Dashboard.aspx</DependentUpon>

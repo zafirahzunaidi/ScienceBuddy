@@ -14,18 +14,36 @@
 /* Upload button */
 .mm-btn-upload {
     display: inline-flex; align-items: center; gap: 6px;
-    background: var(--tc-primary); border: none; border-radius: 10px;
+    background: #F97316; border: none; border-radius: 10px;
     padding: .6rem 1.25rem; font-weight: 700; font-size: .85rem;
     color: #fff; cursor: pointer; text-decoration: none;
-    transition: background .2s, box-shadow .2s;
-    box-shadow: 0 2px 8px rgba(108,99,255,.15);
+    transition: background .2s, box-shadow .2s, transform .2s;
+    box-shadow: 0 2px 8px rgba(249,115,22,.2);
 }
-.mm-btn-upload:hover { background: var(--tc-hover); box-shadow: 0 4px 16px rgba(108,99,255,.25); color: #fff; text-decoration: none; }
+.mm-btn-upload:hover { background: #EA580C; box-shadow: 0 4px 16px rgba(249,115,22,.3); transform: translateY(-1px); color: #fff; text-decoration: none; }
+
+/* ─── Tabs (underline style) ─── */
+.mm-tabs{display:flex;gap:0;border-bottom:2px solid var(--tc-border);margin-bottom:1.25rem;}
+.mm-tab{display:inline-flex;align-items:center;gap:6px;padding:.75rem 1.3rem;font-size:.9rem;font-weight:700;cursor:pointer;border:none;border-radius:0;background:transparent;color:var(--tc-muted);transition:color .15s;text-decoration:none;position:relative;margin-bottom:-2px;border-bottom:2.5px solid transparent;}
+.mm-tab:hover{color:var(--tc-primary);text-decoration:none;}
+.mm-tab.active{color:var(--tc-primary);border-bottom-color:var(--tc-primary);}
+.mm-tab.active:hover{color:var(--tc-primary);}
+
+/* ─── Status chips ─── */
+.mm-chips{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap;}
+.mm-chip{display:inline-flex;align-items:center;padding:.4rem .9rem;border-radius:999px;font-size:.82rem;font-weight:600;cursor:pointer;border:1.5px solid var(--tc-border);background:var(--tc-card-bg);color:var(--tc-muted);transition:all .15s;text-decoration:none;}
+.mm-chip:hover{background:#F3F4F6;text-decoration:none;}
+.mm-chip.active{font-weight:700;}
+/* Per-status chip colours */
+.mm-chip[data-status="all"].active{background:#F3F4F6;color:#374151;border-color:#9CA3AF;}
+.mm-chip[data-status="approved"].active{background:#D1FAE5;color:#047857;border-color:#6EE7B7;}
+.mm-chip[data-status="pending"].active{background:#FEF3C7;color:#B45309;border-color:#FCD34D;}
+.mm-chip[data-status="rejected"].active{background:#FEE2E2;color:#B91C1C;border-color:#FCA5A5;}
 
 /* ─── Filter bar ─── */
 .mm-filter-bar {
     display: flex; align-items: center; gap: 10px;
-    margin-bottom: 1.75rem; flex-wrap: nowrap;
+    margin-bottom: 1.25rem; flex-wrap: wrap;
 }
 .mm-search-wrap {
     position: relative; width: 320px; flex-shrink: 0;
@@ -64,23 +82,26 @@
 /* ─── Material cards ─── */
 .mm-card {
     background: var(--tc-card-bg); border: 1.5px solid var(--tc-border);
-    border-radius: 14px; padding: 1.35rem 1.5rem;
+    border-radius: 14px; padding: 1.5rem 1.6rem;
     margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,.02);
     transition: box-shadow .25s, transform .25s;
 }
 .mm-card:hover { box-shadow: 0 6px 20px rgba(108,99,255,.09); transform: translateY(-1px); }
-.mm-card-top { display: flex; align-items: flex-start; gap: 1rem; }
+.mm-card-top { display: flex; align-items: flex-start; gap: 1.1rem; }
 .mm-card-ico {
-    width: 46px; height: 46px; border-radius: 12px;
-    background: #EDE9FE; color: #6C63FF;
+    width: 50px; height: 50px; border-radius: 14px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.25rem; flex-shrink: 0;
+    font-size: 1.3rem; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,.06);
 }
+.mm-ico-pdf{background:#FEE2E2;color:#DC2626;}.mm-ico-doc{background:#DBEAFE;color:#2563EB;}.mm-ico-ppt{background:#FFEDD5;color:#EA580C;}.mm-ico-image{background:#D1FAE5;color:#059669;}.mm-ico-video{background:#DBEAFE;color:#2563EB;}.mm-ico-default{background:#F3F4F6;color:#6B7280;}
 .mm-card-info { flex: 1; min-width: 0; }
-.mm-card-title { font-weight: 700; font-size: .95rem; color: var(--tc-text); margin-bottom: 3px; line-height: 1.3; }
-.mm-card-desc { font-size: .82rem; color: var(--tc-muted); margin-bottom: 8px; line-height: 1.45; }
-.mm-card-meta { display: flex; gap: .85rem; flex-wrap: wrap; font-size: .75rem; color: var(--tc-muted); }
-.mm-card-meta span { display: inline-flex; align-items: center; gap: 3px; }
+.mm-card-title { font-weight: 800; font-size: 1rem; color: var(--tc-text); margin-bottom: 4px; line-height: 1.3; }
+.mm-card-desc { font-size: .86rem; color: var(--tc-muted); margin-bottom: 10px; line-height: 1.5; }
+.mm-card-desc.collapsed { display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.mm-view-more { font-size: .78rem; font-weight: 600; color: var(--tc-primary); cursor: pointer; display: inline-block; margin-bottom: 8px; }
+.mm-view-more:hover { color: var(--tc-hover); text-decoration: underline; }
+.mm-card-meta { display: flex; gap: .9rem; flex-wrap: wrap; font-size: .8rem; color: var(--tc-muted); }
+.mm-card-meta span { display: inline-flex; align-items: center; gap: 4px; }
 .mm-badge {
     display: inline-block; padding: 4px 12px; border-radius: 50px;
     font-size: .72rem; font-weight: 700; flex-shrink: 0; align-self: flex-start;
@@ -93,11 +114,11 @@
     border-top: 1px solid #F0EDFF; flex-wrap: wrap; align-items: center;
 }
 .mm-action-btn {
-    font-size: .78rem; font-weight: 600; text-decoration: none;
-    padding: 6px 12px; border-radius: 8px; border: 1.5px solid;
+    font-size: .82rem; font-weight: 600; text-decoration: none;
+    padding: 7px 14px; border-radius: 8px; border: 1.5px solid;
     cursor: pointer; background: transparent;
     display: inline-flex; align-items: center; gap: 5px;
-    transition: background .15s, box-shadow .15s; height: 32px;
+    transition: background .15s, box-shadow .15s; height: 34px;
 }
 .mm-action-btn:hover { box-shadow: 0 2px 8px rgba(0,0,0,.06); }
 .mm-act-view { color: var(--tc-info); border-color: #DBEAFE; background: #F0F7FF; }
@@ -199,13 +220,21 @@
 
 <asp:Panel ID="pnlMain" runat="server" Visible="false">
 
-<%-- Page header --%>
-<div style="margin-bottom:1.25rem;">
-    <h1 style="font-size:1.5rem;font-weight:800;color:var(--tc-text);margin:0;"><%: T("My Materials","Bahan Saya") %></h1>
-    <p style="font-size:.85rem;color:var(--tc-muted);margin:.3rem 0 0;"><%: T("Upload and manage learning materials for students.","Muat naik dan urus bahan pembelajaran untuk pelajar.") %></p>
+<%-- Page header with upload button on right --%>
+<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.75rem;">
+    <div>
+        <h1 style="font-size:1.5rem;font-weight:800;color:var(--tc-text);margin:0;"><%: T("Manage Materials","Urus Bahan") %></h1>
+        <p style="font-size:.85rem;color:var(--tc-muted);margin:.3rem 0 0;"><%: T("Upload, manage, and discover learning materials.","Muat naik, urus, dan terokai bahan pembelajaran.") %></p>
+    </div>
+    <asp:Panel ID="pnlUploadBtn" runat="server">
+        <a href="<%: ResolveUrl("~/Teacher/uploadMaterial.aspx") %>" class="mm-btn-upload"><i class="bi bi-plus-lg"></i> <%: T("Upload Material","Muat Naik Bahan") %></a>
+    </asp:Panel>
 </div>
-<div style="margin-bottom:1.5rem;">
-    <a href="<%: ResolveUrl("~/Teacher/uploadMaterial.aspx") %>" class="mm-btn-upload"><i class="bi bi-plus-lg"></i> <%: T("Upload Material","Muat Naik Bahan") %></a>
+
+<%-- Tabs --%>
+<div class="mm-tabs">
+    <asp:LinkButton ID="btnTabMine" runat="server" CssClass="mm-tab active" OnClick="btnTabMine_Click" CausesValidation="false"><i class="bi bi-folder2-open"></i> <%: T("My Materials","Bahan Saya") %></asp:LinkButton>
+    <asp:LinkButton ID="btnTabDiscover" runat="server" CssClass="mm-tab" OnClick="btnTabDiscover_Click" CausesValidation="false"><i class="bi bi-globe2"></i> <%: T("Discover Materials","Terokai Bahan") %></asp:LinkButton>
 </div>
 
 <%-- Search & Filter --%>
@@ -217,9 +246,19 @@
     <asp:DropDownList ID="ddlFilterLevel" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlFilterLevel_Changed" CssClass="mm-select" />
     <asp:DropDownList ID="ddlFilterUnit" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlFilterUnit_Changed" CssClass="mm-select" />
     <asp:DropDownList ID="ddlFilterType" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlFilterType_Changed" CssClass="mm-select" />
-    <asp:DropDownList ID="ddlFilterStatus" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlFilterStatus_Changed" CssClass="mm-select" />
     <asp:Button ID="btnSearch" runat="server" Text="Search" OnClick="btnSearch_Click" CausesValidation="false" CssClass="mm-btn-search" />
 </div>
+
+<%-- Status chips (My Materials only) --%>
+<asp:Panel ID="pnlStatusChips" runat="server">
+<div class="mm-chips">
+    <asp:LinkButton ID="btnChipAll" runat="server" CssClass="mm-chip active" OnClick="btnChip_Click" CommandArgument="" CausesValidation="false" data-status="all"><%: T("All","Semua") %></asp:LinkButton>
+    <asp:LinkButton ID="btnChipApproved" runat="server" CssClass="mm-chip" OnClick="btnChip_Click" CommandArgument="Approved" CausesValidation="false" data-status="approved"><%: T("Approved","Diluluskan") %></asp:LinkButton>
+    <asp:LinkButton ID="btnChipPending" runat="server" CssClass="mm-chip" OnClick="btnChip_Click" CommandArgument="Pending" CausesValidation="false" data-status="pending"><%: T("Pending","Menunggu") %></asp:LinkButton>
+    <asp:LinkButton ID="btnChipRejected" runat="server" CssClass="mm-chip" OnClick="btnChip_Click" CommandArgument="Rejected" CausesValidation="false" data-status="rejected"><%: T("Rejected","Ditolak") %></asp:LinkButton>
+</div>
+</asp:Panel>
+<asp:DropDownList ID="ddlFilterStatus" runat="server" Visible="false" />
 
 <%-- Materials list --%>
 <asp:Panel ID="pnlMaterials" runat="server" Visible="false">
@@ -227,10 +266,11 @@
         <ItemTemplate>
             <div class="mm-card">
                 <div class="mm-card-top">
-                    <div class="mm-card-ico"><i class='bi <%# GetFileIcon(Eval("materialType").ToString()) %>'></i></div>
+                    <div class='mm-card-ico <%# GetIconCss(Eval("materialType").ToString()) %>'><i class='bi <%# GetFileIcon(Eval("materialType").ToString()) %>'></i></div>
                     <div class="mm-card-info">
                         <div class="mm-card-title"><%# HttpUtility.HtmlEncode(Eval("materialTitle")) %></div>
-                        <div class="mm-card-desc"><%# HttpUtility.HtmlEncode(TruncateText(Eval("materialContent")?.ToString(), 120)) %></div>
+                        <div class='mm-card-desc<%# (Eval("materialContent")?.ToString() ?? "").Length > 120 ? " collapsed" : "" %>'><%# HttpUtility.HtmlEncode(Eval("materialContent")?.ToString() ?? "") %></div>
+                        <%# (Eval("materialContent")?.ToString() ?? "").Length > 120 ? "<span class='mm-view-more' onclick='toggleDesc(this)'>View More</span>" : "" %>
                         <div class="mm-card-meta">
                             <span><i class="bi bi-folder2"></i> <%# HttpUtility.HtmlEncode(Eval("subtopicName")) %></span>
                             <span><i class="bi bi-file-earmark"></i> <%# HttpUtility.HtmlEncode(Eval("materialType")) %></span>
@@ -241,24 +281,63 @@
                     <span class='mm-badge <%# GetStatusCss(Eval("status").ToString()) %>'><%# HttpUtility.HtmlEncode(Eval("status")) %></span>
                 </div>
                 <div class="mm-card-actions">
-                    <a href='<%# ResolveUrl("~/") + Eval("fileUrl") %>' target="_blank" class="mm-action-btn mm-act-view"><i class="bi bi-eye"></i> View</a>
-                    <a href='<%# ResolveUrl("~/") + Eval("fileUrl") %>' download class="mm-action-btn mm-act-download"><i class="bi bi-download"></i> Download</a>
+                    <asp:LinkButton ID="lnkView" runat="server" CommandName="ViewMaterial" CommandArgument='<%# Eval("fileUrl") %>' CssClass="mm-action-btn mm-act-view" CausesValidation="false"><i class="bi bi-eye"></i> View</asp:LinkButton>
+                    <asp:LinkButton ID="lnkDownload" runat="server" CommandName="DownloadMaterial" CommandArgument='<%# Eval("fileUrl") %>' CssClass="mm-action-btn mm-act-download" CausesValidation="false"><i class="bi bi-download"></i> Download</asp:LinkButton>
                     <%# Eval("status").ToString() == "Rejected" ?
                         "<button type='button' class='mm-action-btn mm-act-resubmit' onclick=\"openEditModal('" + Eval("materialId") + "')\"><i class='bi bi-arrow-counterclockwise'></i> Resubmit</button>" :
                         "<button type='button' class='mm-action-btn mm-act-edit' onclick=\"openEditModal('" + Eval("materialId") + "')\"><i class='bi bi-pencil'></i> Edit</button>" %>
-                    <button type="button" class="mm-action-btn mm-act-delete" onclick="openDeleteModal('<%# Eval("materialId") %>')"><i class="bi bi-trash"></i> Delete</button>
+                    <button type="button" class="mm-action-btn mm-act-delete" onclick="openDeleteModal('<%# Eval("materialId") %>','<%# HttpUtility.JavaScriptStringEncode(Eval("materialTitle").ToString()) %>')"><i class="bi bi-trash"></i> Delete</button>
                 </div>
             </div>
         </ItemTemplate>
     </asp:Repeater>
 </asp:Panel>
 
-<%-- Empty state --%>
+<%-- Empty state (My Materials) --%>
 <asp:Panel ID="pnlEmpty" runat="server" Visible="false">
     <div class="mm-empty">
         <div style="font-size:3rem;opacity:.5;margin-bottom:.75rem;">📂</div>
-        <div style="font-size:1rem;font-weight:700;color:var(--tc-text);margin-bottom:.25rem;"><%: T("No materials uploaded yet.","Tiada bahan dimuat naik lagi.") %></div>
-        <div style="font-size:.85rem;"><%: T("Click \"Upload Material\" to add your first learning resource.","Klik \"Muat Naik Bahan\" untuk menambah sumber pembelajaran pertama anda.") %></div>
+        <div style="font-size:1rem;font-weight:700;color:var(--tc-text);margin-bottom:.25rem;"><%: T("You haven't uploaded any learning materials yet.","Anda belum memuat naik sebarang bahan pembelajaran.") %></div>
+        <div style="font-size:.85rem;margin-bottom:1rem;"><%: T("Click \"Upload Material\" to add your first learning resource.","Klik \"Muat Naik Bahan\" untuk menambah sumber pembelajaran pertama anda.") %></div>
+        <a href="<%: ResolveUrl("~/Teacher/uploadMaterial.aspx") %>" class="mm-btn-upload"><i class="bi bi-plus-lg"></i> <%: T("Upload Material","Muat Naik Bahan") %></a>
+    </div>
+</asp:Panel>
+
+<%-- ═══ DISCOVER MATERIALS ═══ --%>
+<asp:Panel ID="pnlDiscover" runat="server" Visible="false">
+    <asp:Repeater ID="rptDiscover" runat="server" OnItemCommand="rptDiscover_ItemCommand">
+        <ItemTemplate>
+            <div class="mm-card">
+                <div class="mm-card-top">
+                    <div class='mm-card-ico <%# GetIconCss(Eval("materialType").ToString()) %>'><i class='bi <%# GetFileIcon(Eval("materialType").ToString()) %>'></i></div>
+                    <div class="mm-card-info">
+                        <div class="mm-card-title"><%# HttpUtility.HtmlEncode(Eval("materialTitle")) %></div>
+                        <div style="font-size:.78rem;color:var(--tc-primary);font-weight:600;margin-bottom:4px;"><%: T("By","Oleh") %> <%# HttpUtility.HtmlEncode(Eval("teacherName")) %></div>
+                        <div class='mm-card-desc<%# (Eval("materialContent")?.ToString() ?? "").Length > 120 ? " collapsed" : "" %>'><%# HttpUtility.HtmlEncode(Eval("materialContent")?.ToString() ?? "") %></div>
+                        <%# (Eval("materialContent")?.ToString() ?? "").Length > 120 ? "<span class='mm-view-more' onclick='toggleDesc(this)'>View More</span>" : "" %>
+                        <div class="mm-card-meta">
+                            <span><i class="bi bi-folder2"></i> <%# HttpUtility.HtmlEncode(Eval("subtopicName")) %></span>
+                            <span><i class="bi bi-file-earmark"></i> <%# HttpUtility.HtmlEncode(Eval("materialType")) %></span>
+                            <span><i class="bi bi-calendar3"></i> <%# Eval("createdDate", "{0:d MMM yyyy}") %></span>
+                            <span><i class="bi bi-translate"></i> <%# HttpUtility.HtmlEncode(Eval("language")) %></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mm-card-actions">
+                    <asp:LinkButton ID="lnkViewD" runat="server" CommandName="ViewMaterial" CommandArgument='<%# Eval("fileUrl") %>' CssClass="mm-action-btn mm-act-view" CausesValidation="false"><i class="bi bi-eye"></i> <%: T("View","Lihat") %></asp:LinkButton>
+                    <asp:LinkButton ID="lnkDownloadD" runat="server" CommandName="DownloadMaterial" CommandArgument='<%# Eval("fileUrl") %>' CssClass="mm-action-btn mm-act-download" CausesValidation="false"><i class="bi bi-download"></i> <%: T("Download","Muat Turun") %></asp:LinkButton>
+                </div>
+            </div>
+        </ItemTemplate>
+    </asp:Repeater>
+</asp:Panel>
+
+<%-- Empty state (Discover) --%>
+<asp:Panel ID="pnlDiscoverEmpty" runat="server" Visible="false">
+    <div class="mm-empty">
+        <div style="font-size:3rem;opacity:.5;margin-bottom:.75rem;">🔍</div>
+        <div style="font-size:1rem;font-weight:700;color:var(--tc-text);margin-bottom:.25rem;"><%: T("No shared materials are available at the moment.","Tiada bahan kongsi tersedia buat masa ini.") %></div>
+        <div style="font-size:.85rem;"><%: T("Check back later for materials shared by other teachers.","Semak kemudian untuk bahan yang dikongsi oleh guru lain.") %></div>
     </div>
 </asp:Panel>
 
@@ -342,18 +421,23 @@
 
 <%-- ═══ DELETE CONFIRMATION MODAL ═══ --%>
 <div id="deleteConfirmModal" class="mm-modal-overlay" style="display:none;">
-    <div class="mm-modal mm-modal-sm">
-        <div class="mm-modal-header">
-            <h3 class="mm-modal-title"><%: T("Delete Material","Padam Bahan") %></h3>
-            <button type="button" class="mm-modal-close" onclick="closeDeleteModal()">×</button>
+    <div class="mm-modal mm-modal-sm" style="border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.18);">
+        <div style="background:#FEF2F2;padding:1.1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #FECACA;">
+            <h3 style="margin:0;font-size:1rem;font-weight:800;color:#991B1B;display:flex;align-items:center;gap:7px;">
+                <i class="bi bi-trash3" style="font-size:1rem;"></i> <%: T("Confirm Deletion","Sahkan Pemadaman") %>
+            </h3>
+            <button type="button" class="mm-modal-close" onclick="closeDeleteModal()">&#215;</button>
         </div>
-        <div class="mm-modal-body" style="text-align:center;padding:1.5rem;">
-            <p style="font-size:.9rem;color:var(--tc-text);"><%: T("Are you sure you want to delete this material?<br/>This action cannot be undone.","Adakah anda pasti mahu memadam bahan ini?<br/>Tindakan ini tidak boleh dibatalkan.") %></p>
+        <div style="padding:1.4rem 1.5rem;text-align:left;">
+            <p style="font-size:.92rem;color:var(--tc-text);margin:0;line-height:1.6;">
+                <%: T("Are you sure you want to delete","Adakah anda pasti mahu memadam") %>
+                <br/><strong id="delMaterialTitle" style="color:var(--tc-text);"></strong>?
+            </p>
         </div>
-        <div class="mm-modal-footer" style="justify-content:center;">
-            <button type="button" class="mm-btn-cancel" onclick="closeDeleteModal()"><%: T("Cancel","Batal") %></button>
+        <div style="display:flex;justify-content:flex-end;gap:.6rem;padding:1rem 1.5rem;border-top:1px solid var(--tc-border);">
+            <button type="button" class="mm-btn-cancel" onclick="closeDeleteModal()" style="border-radius:10px;"><%: T("Cancel","Batal") %></button>
             <asp:Button ID="btnConfirmDelete" runat="server" Text="Delete" OnClick="btnConfirmDelete_Click" CausesValidation="false"
-                CssClass="mm-btn-primary" style="background:var(--tc-error);" />
+                CssClass="mm-btn-primary" style="background:#DC2626;border-radius:10px;" />
         </div>
     </div>
 </div>
@@ -361,6 +445,7 @@
 <asp:HiddenField ID="hidDeleteId" runat="server" Value="" />
 <asp:HiddenField ID="hidShowEditModal" runat="server" Value="" />
 <asp:HiddenField ID="hidToast" runat="server" Value="" />
+<asp:HiddenField ID="hidActiveTab" runat="server" Value="mine" />
 
 <%-- Toast container --%>
 <div id="mmToastContainer" class="mm-toast-container"></div>
@@ -370,6 +455,16 @@
 
 <asp:Content ID="cScripts" ContentPlaceHolderID="ScriptsContent" runat="server">
 <script>
+function toggleDesc(el) {
+    var desc = el.previousElementSibling;
+    if (desc.classList.contains('collapsed')) {
+        desc.classList.remove('collapsed');
+        el.textContent = 'View Less';
+    } else {
+        desc.classList.add('collapsed');
+        el.textContent = 'View More';
+    }
+}
 function openEditModal(id) {
     document.getElementById('<%=hidMaterialId.ClientID%>').value = id;
     __doPostBack('LoadEdit', id);
@@ -378,8 +473,9 @@ function closeEditModal() { document.getElementById('editModal').style.display =
 function showEditModal() { document.getElementById('editModal').style.display = 'flex'; }
 function openSaveConfirm() { document.getElementById('saveConfirmModal').style.display = 'flex'; }
 function closeSaveConfirm() { document.getElementById('saveConfirmModal').style.display = 'none'; }
-function openDeleteModal(id) {
+function openDeleteModal(id, title) {
     document.getElementById('<%=hidDeleteId.ClientID%>').value = id;
+    document.getElementById('delMaterialTitle').textContent = '"' + (title || 'this material') + '"';
     document.getElementById('deleteConfirmModal').style.display = 'flex';
 }
 function closeDeleteModal() { document.getElementById('deleteConfirmModal').style.display = 'none'; }

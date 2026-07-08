@@ -7,11 +7,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace ScienceBuddy.Teacher
-{
-
-
-    public partial class createPracticeQuiz
-    {
+namespace ScienceBuddy.Teacher {
+    
+    
+    public partial class createPracticeQuiz {
     }
 }

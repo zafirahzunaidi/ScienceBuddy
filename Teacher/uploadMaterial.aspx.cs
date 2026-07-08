@@ -11,40 +11,21 @@ namespace ScienceBuddy.Teacher
 {
     public partial class uploadMaterial : Page
     {
-        // ── Language support ─────────────────────────────────────────
         protected string CurrentLanguage
-        {
-            get
-            {
-                string lang = Session["preferredLanguage"] as string;
-                return string.IsNullOrEmpty(lang) ? "EN" : lang;
-            }
-        }
+        { get { string lang = Session["preferredLanguage"] as string; return string.IsNullOrEmpty(lang) ? "EN" : lang; } }
         protected string T(string en, string bm) { return CurrentLanguage == "BM" ? bm : en; }
+        private string ConnStr => ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
-        private string ConnStr =>
-            ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
-
-        private static readonly HashSet<string> AllowedExts = new HashSet<string>(
-            StringComparer.OrdinalIgnoreCase)
+        private static readonly HashSet<string> AllowedExts = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         { ".pdf", ".doc", ".docx", ".ppt", ".pptx", ".jpg", ".jpeg", ".png", ".mp4" };
-
-        private const int MaxFileBytes = 100 * 1024 * 1024; // 100 MB
+        private const int MaxFileBytes = 100 * 1024 * 1024;
 
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["userId"] == null || Session["role"]?.ToString() != "Teacher")
             { Response.Redirect("~/Login.aspx", false); Context.ApplicationInstance.CompleteRequest(); return; }
-
-            var master = (ScienceBuddy.SiteMaster)Master;
-            master.LayoutMode = "Sidebar";
-
-            if (!IsPostBack)
-            {
-                if (!Authorize()) return;
-                LoadDropdowns();
-                SetPlaceholders();
-            }
+            ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
+            if (!IsPostBack) { if (!Authorize()) return; LoadDropdowns(); }
         }
 
         private bool Authorize()
@@ -53,13 +34,9 @@ namespace ScienceBuddy.Teacher
             {
                 conn.Open();
                 using (var cmd = new SqlCommand("SELECT [status] FROM dbo.[Teacher] WHERE [userId]=@u", conn))
-                {
-                    cmd.Parameters.AddWithValue("@u", Session["userId"].ToString());
-                    var val = cmd.ExecuteScalar();
-                    if (val == null || val == DBNull.Value ||
-                        !val.ToString().Equals("Certified", StringComparison.OrdinalIgnoreCase))
-                    { Response.Redirect("~/Teacher/Dashboard.aspx", false); Context.ApplicationInstance.CompleteRequest(); return false; }
-                }
+                { cmd.Parameters.AddWithValue("@u", Session["userId"].ToString()); var v = cmd.ExecuteScalar();
+                  if (v == null || v == DBNull.Value || !v.ToString().Equals("Certified", StringComparison.OrdinalIgnoreCase))
+                  { Response.Redirect("~/Teacher/Dashboard.aspx", false); Context.ApplicationInstance.CompleteRequest(); return false; } }
             }
             return true;
         }
@@ -69,20 +46,12 @@ namespace ScienceBuddy.Teacher
             using (var conn = new SqlConnection(ConnStr))
             {
                 conn.Open();
-                ddlLevel.Items.Clear();
-                ddlLevel.Items.Add(new ListItem("— Select Level —", ""));
+                ddlLevel.Items.Clear(); ddlLevel.Items.Add(new ListItem(T("— Select Level —","— Pilih Tahap —"), ""));
                 using (var cmd = new SqlCommand("SELECT [levelId],[levelNameEN] FROM dbo.[Level] ORDER BY [levelId]", conn))
-                using (var r = cmd.ExecuteReader())
-                    while (r.Read()) ddlLevel.Items.Add(new ListItem(r["levelNameEN"].ToString(), r["levelId"].ToString()));
-                ddlUnit.Items.Clear(); ddlUnit.Items.Add(new ListItem("— Select Unit —", ""));
-                ddlSubtopic.Items.Clear(); ddlSubtopic.Items.Add(new ListItem("— Select Subtopic —", ""));
+                using (var r = cmd.ExecuteReader()) while (r.Read()) ddlLevel.Items.Add(new ListItem(r["levelNameEN"].ToString(), r["levelId"].ToString()));
+                ddlUnit.Items.Clear(); ddlUnit.Items.Add(new ListItem(T("— Select Unit —","— Pilih Unit —"), ""));
+                ddlSubtopic.Items.Clear(); ddlSubtopic.Items.Add(new ListItem(T("— Select Subtopic —","— Pilih Subtopik —"), ""));
             }
-        }
-
-        private void SetPlaceholders()
-        {
-            txtTitle.Attributes["placeholder"] = T("Enter material title...", "Masukkan tajuk bahan...");
-            txtDescription.Attributes["placeholder"] = T("Describe what this material covers...", "Terangkan apa yang diliputi bahan ini...");
         }
 
         protected void ddlLevel_Changed(object sender, EventArgs e)
@@ -90,8 +59,8 @@ namespace ScienceBuddy.Teacher
             using (var conn = new SqlConnection(ConnStr))
             {
                 conn.Open();
-                ddlUnit.Items.Clear(); ddlUnit.Items.Add(new ListItem("— Select Unit —", ""));
-                ddlSubtopic.Items.Clear(); ddlSubtopic.Items.Add(new ListItem("— Select Subtopic —", ""));
+                ddlUnit.Items.Clear(); ddlUnit.Items.Add(new ListItem(T("— Select Unit —","— Pilih Unit —"), ""));
+                ddlSubtopic.Items.Clear(); ddlSubtopic.Items.Add(new ListItem(T("— Select Subtopic —","— Pilih Subtopik —"), ""));
                 string lid = ddlLevel.SelectedValue;
                 if (!string.IsNullOrEmpty(lid))
                     using (var cmd = new SqlCommand("SELECT [unitId],[unitNameEN] FROM dbo.[Unit] WHERE [levelId]=@l ORDER BY [orderNo]", conn))
@@ -104,7 +73,7 @@ namespace ScienceBuddy.Teacher
             using (var conn = new SqlConnection(ConnStr))
             {
                 conn.Open();
-                ddlSubtopic.Items.Clear(); ddlSubtopic.Items.Add(new ListItem("— Select Subtopic —", ""));
+                ddlSubtopic.Items.Clear(); ddlSubtopic.Items.Add(new ListItem(T("— Select Subtopic —","— Pilih Subtopik —"), ""));
                 string uid = ddlUnit.SelectedValue;
                 if (!string.IsNullOrEmpty(uid))
                     using (var cmd = new SqlCommand("SELECT [subtopicId],[subtopicTitleEN] FROM dbo.[Subtopic] WHERE [unitId]=@u ORDER BY [orderNo]", conn))
@@ -119,23 +88,19 @@ namespace ScienceBuddy.Teacher
             string subtopicId = ddlSubtopic.SelectedValue;
             string language = hidLanguage.Value;
 
-            if (string.IsNullOrEmpty(title)) { ShowError("Material Title is required."); return; }
-            if (string.IsNullOrEmpty(desc)) { ShowError("Description is required."); return; }
-            if (string.IsNullOrEmpty(ddlLevel.SelectedValue)) { ShowError("Please select a Level."); return; }
-            if (string.IsNullOrEmpty(ddlUnit.SelectedValue)) { ShowError("Please select a Unit."); return; }
-            if (string.IsNullOrEmpty(subtopicId)) { ShowError("Please select a Subtopic."); return; }
+            if (string.IsNullOrEmpty(title)) { ShowError(T("Material Title is required.","Tajuk Bahan diperlukan.")); return; }
+            if (string.IsNullOrEmpty(ddlLevel.SelectedValue)) { ShowError(T("Please select a Level.","Sila pilih Tahap.")); return; }
+            if (string.IsNullOrEmpty(ddlUnit.SelectedValue)) { ShowError(T("Please select a Unit.","Sila pilih Unit.")); return; }
+            if (string.IsNullOrEmpty(subtopicId)) { ShowError(T("Please select a Subtopic.","Sila pilih Subtopik.")); return; }
             if (string.IsNullOrEmpty(language)) language = "EN";
-            if (!fuFile.HasFile) { ShowError("Please upload a file."); return; }
+            if (!fuFile.HasFile) { ShowError(T("Please upload a file.","Sila muat naik fail.")); return; }
 
             string ext = Path.GetExtension(fuFile.FileName).ToLower();
-            if (!AllowedExts.Contains(ext))
-            { ShowError("Unsupported file type. Supported formats: PDF, DOC, DOCX, PPT, PPTX, JPG, JPEG, PNG, MP4"); return; }
-            if (fuFile.PostedFile.ContentLength > MaxFileBytes)
-            { ShowError("File size exceeds the maximum limit of 100 MB."); return; }
+            if (!AllowedExts.Contains(ext)) { ShowError(T("Unsupported file type.","Jenis fail tidak disokong.")); return; }
+            if (fuFile.PostedFile.ContentLength > MaxFileBytes) { ShowError(T("File exceeds 100 MB limit.","Fail melebihi had 100 MB.")); return; }
 
             string materialType = GetMaterialType(ext);
-            string fileName = Guid.NewGuid().ToString("N").Substring(0, 12) + ext;
-            string relativePath = "Images/Material/" + fileName;
+            string fileName = fuFile.FileName; // keep original filename
             string physicalDir = Server.MapPath("~/Images/Material/");
             if (!Directory.Exists(physicalDir)) Directory.CreateDirectory(physicalDir);
 
@@ -146,52 +111,65 @@ namespace ScienceBuddy.Teacher
                 using (var conn = new SqlConnection(ConnStr))
                 {
                     conn.Open();
-                    string newId = GenerateId(conn);
-                    const string sql = @"INSERT INTO dbo.[Material]
-                        ([materialId],[subtopicId],[createdByUserId],[materialTitle],[materialType],[fileUrl],[materialContent],[createdDate],[status],[language])
-                        VALUES(@id,@sub,@uid,@title,@type,@file,@desc,@date,'Pending',@lang)";
-                    using (var cmd = new SqlCommand(sql, conn))
+                    string newId = GenId(conn);
+                    using (var cmd = new SqlCommand(@"INSERT INTO dbo.[Material]([materialId],[subtopicId],[createdByUserId],[materialTitle],[materialType],[fileUrl],[materialContent],[createdDate],[status],[language])
+                        VALUES(@id,@sub,@uid,@title,@type,@file,@desc,GETDATE(),'Pending',@lang)", conn))
                     {
                         cmd.Parameters.AddWithValue("@id", newId);
                         cmd.Parameters.AddWithValue("@sub", subtopicId);
                         cmd.Parameters.AddWithValue("@uid", userId);
                         cmd.Parameters.AddWithValue("@title", title);
                         cmd.Parameters.AddWithValue("@type", materialType);
-                        cmd.Parameters.AddWithValue("@file", relativePath);
-                        cmd.Parameters.AddWithValue("@desc", desc);
-                        cmd.Parameters.AddWithValue("@date", DateTime.Now.ToString("yyyy-MM-dd"));
+                        cmd.Parameters.AddWithValue("@file", fileName); // filename only
+                        cmd.Parameters.AddWithValue("@desc", string.IsNullOrEmpty(desc) ? (object)DBNull.Value : desc);
                         cmd.Parameters.AddWithValue("@lang", language);
                         cmd.ExecuteNonQuery();
                     }
+
+                    // Insert notification for the teacher
+                    InsertNotification(conn, userId);
                 }
-                hidToast.Value = T("Material uploaded successfully.","Bahan berjaya dimuat naik.");
+                hidToast.Value = T("Material uploaded successfully!", "Bahan berjaya dimuat naik!");
+                txtTitle.Text = ""; txtDescription.Text = "";
             }
-            catch { ShowError("An unexpected error occurred. Please try again."); }
+            catch { ShowError(T("An error occurred. Please try again.","Ralat berlaku. Sila cuba lagi.")); }
         }
 
         private void ShowError(string msg) { pnlError.Visible = true; litError.Text = HttpUtility.HtmlEncode(msg); }
 
-        private string GenerateId(SqlConnection conn)
+        private void InsertNotification(SqlConnection conn, string userId)
         {
-            using (var cmd = new SqlCommand("SELECT MAX(CAST(SUBSTRING([materialId],2,LEN([materialId])-1) AS INT)) FROM dbo.[Material]", conn))
+            try
             {
-                var val = cmd.ExecuteScalar();
-                int next = (val != null && val != DBNull.Value) ? Convert.ToInt32(val) + 1 : 1;
-                return "M" + next.ToString("D3");
+                // Generate notification ID: N + 3-digit
+                string notifId;
+                using (var cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING([notificationId],2,LEN([notificationId])-1) AS INT)),0) FROM dbo.[Notification]", conn))
+                { notifId = "N" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3"); }
+
+                using (var cmd = new SqlCommand(@"INSERT INTO dbo.[Notification]([notificationId],[toUserId],[titleEN],[messageEN],[titleBM],[messageBM],[isRead],[createdAt])
+                    VALUES(@id,@uid,@tEN,@mEN,@tBM,@mBM,0,GETDATE())", conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", notifId);
+                    cmd.Parameters.AddWithValue("@uid", userId);
+                    cmd.Parameters.AddWithValue("@tEN", "Material Submitted");
+                    cmd.Parameters.AddWithValue("@mEN", "Your learning material has been submitted successfully and is pending review.");
+                    cmd.Parameters.AddWithValue("@tBM", "Bahan Telah Dihantar");
+                    cmd.Parameters.AddWithValue("@mBM", "Bahan pembelajaran anda telah berjaya dihantar dan sedang menunggu semakan.");
+                    cmd.ExecuteNonQuery();
+                }
             }
+            catch { /* notification insert failure should not block upload success */ }
+        }
+
+        private string GenId(SqlConnection conn)
+        {
+            using (var cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING([materialId],2,LEN([materialId])-1) AS INT)),0) FROM dbo.[Material]", conn))
+            { return "M" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3"); }
         }
 
         private static string GetMaterialType(string ext)
         {
-            switch (ext)
-            {
-                case ".pdf": return "PDF";
-                case ".doc": case ".docx": return "Document";
-                case ".ppt": case ".pptx": return "PPTX";
-                case ".jpg": case ".jpeg": case ".png": return "Image";
-                case ".mp4": return "Video";
-                default: return "Other";
-            }
+            switch (ext) { case ".pdf": return "PDF"; case ".doc": case ".docx": return "Document"; case ".ppt": case ".pptx": return "PPTX"; case ".jpg": case ".jpeg": case ".png": return "Image"; case ".mp4": return "Video"; default: return "Other"; }
         }
     }
 }

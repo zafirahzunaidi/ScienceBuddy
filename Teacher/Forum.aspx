@@ -69,12 +69,17 @@
     border-radius: 16px; padding: 1.25rem 1.5rem;
     box-shadow: 0 2px 8px rgba(0,0,0,.03);
     transition: box-shadow .2s, transform .2s;
-    cursor: pointer;
 }
 .fr-card:hover {
     box-shadow: 0 8px 28px rgba(108,99,255,.1);
     transform: translateY(-2px);
 }
+/* Role accent strip at bottom of card */
+.fr-card{position:relative;overflow:hidden;}
+.fr-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 16px 16px;}
+.fr-card.accent-student::after{background:#818CF8;}
+.fr-card.accent-parent::after{background:#FBBF24;}
+.fr-card.accent-teacher::after{background:#A78BFA;}
 .fr-card-top {
     display: flex; align-items: flex-start;
     gap: 12px; margin-bottom: .85rem;
@@ -88,7 +93,7 @@
 }
 .fr-creator-info { flex: 1; min-width: 0; }
 .fr-creator-name {
-    font-size: .84rem; font-weight: 700; color: var(--tt);
+    font-size: .88rem; font-weight: 800; color: var(--tt);
     display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
 }
 .fr-role-badge {
@@ -100,15 +105,15 @@
 .fr-role-badge.student { background: #D1FAE5; color: #047857; }
 .fr-role-badge.parent  { background: #FEF3C7; color: #92400E; }
 .fr-date {
-    font-size: .72rem; color: var(--tm); margin-top: 2px;
+    font-size: .76rem; color: var(--tm); margin-top: 2px;
     display: flex; align-items: center; gap: 4px;
 }
 .fr-card-title {
-    font-size: .95rem; font-weight: 700; color: var(--tt);
+    font-size: 1.02rem; font-weight: 800; color: var(--tt);
     margin-bottom: .35rem; line-height: 1.4;
 }
 .fr-card-preview {
-    font-size: .82rem; color: var(--tm);
+    font-size: .86rem; color: var(--tm);
     line-height: 1.55; margin-bottom: .85rem;
     display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2;
     -webkit-box-orient: vertical; overflow: hidden;
@@ -129,17 +134,17 @@
 .fr-view-btn {
     display: inline-flex; align-items: center; gap: 6px;
     height: 34px; padding: 0 1rem;
-    background: var(--tp); color: #fff;
+    background: #4338CA; color: #fff;
     border: none; border-radius: 9px;
     font-size: .78rem; font-weight: 700;
     text-decoration: none; cursor: pointer;
     transition: background .2s, box-shadow .2s;
-    box-shadow: 0 2px 8px rgba(108,99,255,.2);
+    box-shadow: 0 2px 8px rgba(67,56,202,.2);
     flex-shrink: 0;
 }
 .fr-view-btn:hover {
-    background: var(--th); color: #fff;
-    box-shadow: 0 4px 14px rgba(108,99,255,.3);
+    background: #3730A3; color: #fff;
+    box-shadow: 0 4px 14px rgba(67,56,202,.3);
     text-decoration: none;
 }
 .fr-view-btn i { font-size: .8rem; }
@@ -272,17 +277,19 @@
 <%-- ════ MAIN CONTENT ════ --%>
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 
-<%-- Page header --%>
-<div class="fr-header">
-    <h1><i class="bi bi-chat-dots" style="color:var(--tp);font-size:1.3rem;vertical-align:middle;margin-right:.4rem;"></i><%: T("Forum","Forum") %></h1>
-    <p><%: T("Join public discussions, answer student questions, and support the ScienceBuddy community.","Sertai perbincangan awam, jawab soalan pelajar, dan sokong komuniti ScienceBuddy.") %></p>
-</div>
-
-<%-- Toolbar: [+ New Post]  [Search input]  [Search button] --%>
-<div class="fr-toolbar">
+<%-- Page header with New Post button on right --%>
+<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem;">
+    <div class="fr-header" style="margin-bottom:0;">
+        <h1><i class="bi bi-chat-dots" style="color:var(--tp);font-size:1.3rem;vertical-align:middle;margin-right:.4rem;"></i><%: T("Forum","Forum") %></h1>
+        <p><%: T("Join public discussions, answer student questions, and support the ScienceBuddy community.","Sertai perbincangan awam, jawab soalan pelajar, dan sokong komuniti ScienceBuddy.") %></p>
+    </div>
     <button type="button" class="fr-new-btn" onclick="openModal()">
         <i class="bi bi-plus-lg"></i> <%: T("New Post","Catatan Baharu") %>
     </button>
+</div>
+
+<%-- Toolbar: [Search input]  [Search button] --%>
+<div class="fr-toolbar">
     <div class="fr-search-wrap">
         <i class="bi bi-search fr-search-icon"></i>
         <asp:TextBox ID="txtSearch" runat="server" CssClass="fr-search" />
@@ -317,7 +324,7 @@
     <div class="fr-cards">
         <asp:Repeater ID="rptPosts" runat="server">
             <ItemTemplate>
-                <div class="fr-card" onclick="location.href=this.querySelector('.fr-view-btn').href">
+                <div class='fr-card accent-<%# Eval("roleCss") %>'>
                     <div class="fr-card-top">
                         <div class="fr-avatar"><%# Eval("initials") %></div>
                         <div class="fr-creator-info">
