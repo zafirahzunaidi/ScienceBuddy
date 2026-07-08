@@ -6,7 +6,7 @@
 
 namespace ScienceBuddy.Student
 {
-    public partial class PersonalityTest
+    public partial class PersonalityTest1
     {
         protected global::System.Web.UI.WebControls.Literal litPageTitle;
         protected global::System.Web.UI.WebControls.Panel pnlQuiz;

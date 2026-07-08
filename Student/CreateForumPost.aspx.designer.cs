@@ -6,7 +6,7 @@
 
 namespace ScienceBuddy.Student
 {
-    public partial class CreateForumPost
+    public partial class CreateForumPost1
     {
         /// <summary>
         /// litPageTitle control.

@@ -6,7 +6,7 @@ using System.Web.UI;
 
 namespace ScienceBuddy.Student
 {
-    public partial class PersonalityTest : Page
+    public partial class PersonalityTest1 : Page
     {
         private string ConnStr => ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
         public string CurrentLanguage = "EN";
@@ -71,20 +71,13 @@ namespace ScienceBuddy.Student
 
             int achiever = 0, creative = 0, thinker = 0, gogetter = 0, chill = 0, socializer = 0;
 
-            // Slider 1: Learning Speed
             if (s1 <= 2) chill += 2; else if (s1 == 3) achiever += 1; else gogetter += 2;
-            // Slider 2: Learning Focus
             if (s2 <= 2) achiever += 2; else if (s2 == 3) thinker += 1; else creative += 2;
-            // Slider 3: Thinking Style
             if (s3 <= 2) gogetter += 2; else if (s3 == 3) achiever += 1; else thinker += 2;
-            // Slider 4: Learning Mood
             if (s4 <= 2) chill += 2; else if (s4 == 3) creative += 1; else gogetter += 2;
-            // Slider 5: Study Preference
             if (s5 <= 2) thinker += 2; else if (s5 == 3) chill += 1; else socializer += 2;
-            // Slider 6: Activity Style
             if (s6 <= 2) thinker += 2; else if (s6 == 3) achiever += 1; else creative += 2;
 
-            // Determine winner (priority order for ties)
             int max = achiever; string pid = "P001"; string pName = "Achiever";
             if (creative > max) { max = creative; pid = "P002"; pName = "Creative"; }
             if (thinker > max) { max = thinker; pid = "P003"; pName = "Thinker"; }
@@ -92,7 +85,6 @@ namespace ScienceBuddy.Student
             if (chill > max) { max = chill; pid = "P005"; pName = "Chill Learner"; }
             if (socializer > max) { max = socializer; pid = "P006"; pName = "Socializer"; }
 
-            // Save to database
             string userId = Session["userId"].ToString();
             using (var conn = new SqlConnection(ConnStr))
             using (var cmd = new SqlCommand("UPDATE Student SET personalityId=@p WHERE userId=@u", conn))
@@ -101,7 +93,6 @@ namespace ScienceBuddy.Student
                 conn.Open(); cmd.ExecuteNonQuery();
             }
 
-            // Show result
             pnlQuiz.Visible = false; pnlResult.Visible = true;
             ShowResult(pid, pName);
         }

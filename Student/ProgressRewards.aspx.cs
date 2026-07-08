@@ -9,7 +9,7 @@ using System.Web.UI.WebControls;
 
 namespace ScienceBuddy.Student
 {
-    public partial class ProgressRewards : Page
+    public partial class ProgressReward : Page
     {
         // ── Connection string ─────────────────────────────────────────
         private string ConnStr =>
@@ -371,7 +371,6 @@ namespace ScienceBuddy.Student
 
                     int xpReward = row["xpReward"] != DBNull.Value ? Convert.ToInt32(row["xpReward"]) : 0;
                     string icon = row["badgeIcon"] != DBNull.Value ? row["badgeIcon"].ToString() : "";
-                    // Resolve badge image path for proper rendering
                     string iconUrl = "";
                     if (!string.IsNullOrWhiteSpace(icon))
                     {
@@ -572,10 +571,6 @@ namespace ScienceBuddy.Student
         }
 
         // ── Table exists helper ───────────────────────────────────────
-        /// <summary>
-        /// Returns true if the given table exists in the current database.
-        /// Uses INFORMATION_SCHEMA so it never throws on a missing table.
-        /// </summary>
         private static bool Tbl(SqlConnection conn, string tableName)
         {
             const string sql = @"

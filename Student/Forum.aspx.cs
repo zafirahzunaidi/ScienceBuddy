@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -9,7 +9,7 @@ using System.Web.UI.WebControls;
 
 namespace ScienceBuddy.Student
 {
-    public partial class ForumPage : Page
+    public partial class Forum : Page
     {
         // ── Connection string ─────────────────────────────────────────
         private string ConnStr =>
@@ -145,13 +145,13 @@ namespace ScienceBuddy.Student
             // Highlight active tab CSS
             if (isPrivate)
             {
-                btnTabPublic.CssClass  = "fm-cat-tab";
-                btnTabPrivate.CssClass = "fm-cat-tab active";
+                btnTabPublic.CssClass  = "st-forum-cat-tab";
+                btnTabPrivate.CssClass = "st-forum-cat-tab active";
             }
             else
             {
-                btnTabPublic.CssClass  = "fm-cat-tab active";
-                btnTabPrivate.CssClass = "fm-cat-tab";
+                btnTabPublic.CssClass  = "st-forum-cat-tab active";
+                btnTabPrivate.CssClass = "st-forum-cat-tab";
             }
         }
 
@@ -376,12 +376,12 @@ namespace ScienceBuddy.Student
                         if (discType == "Private")
                         {
                             typeLabel = T("Private", "Peribadi");
-                            badgeCss = "fm-disc-badge private";
+                            badgeCss = "st-forum-disc-badge private";
                         }
                         else
                         {
                             typeLabel = T("Public", "Awam");
-                            badgeCss = "fm-disc-badge public";
+                            badgeCss = "st-forum-disc-badge public";
                         }
 
                         list.Add(new

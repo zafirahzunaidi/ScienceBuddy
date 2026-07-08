@@ -8,7 +8,7 @@ using System.Web.UI.WebControls;
 
 namespace ScienceBuddy.Student
 {
-    public partial class CreateForumPost : Page
+    public partial class CreateForumPost1 : Page
     {
         // ── Connection string ─────────────────────────────────────────
         private string ConnStr =>
@@ -107,7 +107,7 @@ namespace ScienceBuddy.Student
                                      "Mulakan perbincangan peribadi dengan ibu bapa anda yang dipautkan.");
 
                 // Header style
-                divHeader.Attributes["class"] = "cfp-header private-mode";
+                divHeader.Attributes["class"] = "st-createpost-header private-mode";
                 divHeaderIcon.InnerHtml = "<i class=\"bi bi-people-fill\"></i>";
 
                 // Show private info banner
@@ -123,7 +123,7 @@ namespace ScienceBuddy.Student
                 litTypeLockedVal.Text = T("Private (Student-Parent)", "Peribadi (Murid-Ibu Bapa)");
 
                 // Submit button style
-                btnSubmit.CssClass = "cfp-btn-submit private-btn";
+                btnSubmit.CssClass = "st-createpost-btn-submit private-btn";
                 litSubmitBtn.Text = T("Create Private Discussion", "Cipta Perbincangan Peribadi");
 
                 // Check if student has linked parent
@@ -136,7 +136,7 @@ namespace ScienceBuddy.Student
                 litSubtitle.Text = T("Ask a question or start a Science discussion with the community.",
                                      "Tanya soalan atau mulakan perbincangan Sains dengan komuniti.");
 
-                divHeader.Attributes["class"] = "cfp-header public-mode";
+                divHeader.Attributes["class"] = "st-createpost-header public-mode";
                 divHeaderIcon.InnerHtml = "<i class=\"bi bi-chat-dots-fill\"></i>";
 
                 pnlTypeDropdown.Visible = true;

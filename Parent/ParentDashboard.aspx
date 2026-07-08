@@ -66,7 +66,7 @@
             <span class="item-label"><%: T("Study Plan","Pelan Pembelajaran") %></span>
         </a>
         <a href="<%: ResolveUrl("~/Parent/EditStudyPlan.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-journal-pen item-icon"></i>
+            <i class="bi bi-pencil-square item-icon"></i>
             <span class="item-label"><%: T("Edit Study Plan","Edit Pelan Pembelajaran") %></span>
         </a>
     </div>
@@ -159,8 +159,8 @@
                 <i class="bi bi-eye-fill"></i>
                 <asp:Literal ID="litHeroViewing" runat="server" />
             </div>
-            <%-- learning pills --%>
-            <div class="pd-hero-pills">
+            <%-- learning pills + link button in one row --%>
+            <div class="pd-hero-action-row">
                 <span class="pd-hero-pill">
                     <i class="bi bi-mortarboard-fill"></i>
                     <asp:Literal ID="litHeroLevel" runat="server" />
@@ -175,10 +175,7 @@
                         <asp:Literal ID="litHeroBadges" runat="server" />
                     </span>
                 </asp:Panel>
-            </div>
-            <%-- action row: link button only (child switching moved to sidebar) --%>
-            <div class="pd-hero-action-row">
-                <a href="<%: ResolveUrl("~/Parent/LinkChildAccount.aspx") %>" class="pd-hero-link-btn">
+                <a href="<%: ResolveUrl("~/Parent/LinkChildAccount.aspx") %>" class="pd-hero-link-btn" style="margin-left:auto;">
                     <i class="bi bi-plus-circle-fill"></i>
                     <asp:Literal ID="litHeroLinkChild" runat="server" />
                 </a>

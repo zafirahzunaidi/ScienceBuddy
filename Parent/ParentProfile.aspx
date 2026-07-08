@@ -66,7 +66,7 @@
             <span class="item-label"><%: T("Study Plan","Pelan Pembelajaran") %></span>
         </a>
         <a href="<%: ResolveUrl("~/Parent/EditStudyPlan.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-journal-pen item-icon"></i>
+            <i class="bi bi-pencil-square item-icon"></i>
             <span class="item-label"><%: T("Edit Study Plan","Edit Pelan Pembelajaran") %></span>
         </a>
     </div>

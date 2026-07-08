@@ -8,7 +8,7 @@ using System.Web.UI;
 
 namespace ScienceBuddy.Student
 {
-    public partial class MyRanking : Page
+    public partial class MyRanking1 : Page
     {
         // ── Connection string ─────────────────────────────────────────
         private string ConnStr =>
@@ -115,7 +115,6 @@ namespace ScienceBuddy.Student
             {
                 conn.Open();
 
-                // 1. Get logged-in student's studentId
                 string studentId = GetStudentId(conn, userId);
                 if (string.IsNullOrEmpty(studentId))
                 {
@@ -123,10 +122,8 @@ namespace ScienceBuddy.Student
                     return;
                 }
 
-                // 2. Check if StudentBadge table exists
                 bool hasBadgeTable = Tbl(conn, "StudentBadge");
 
-                // 3. Query ALL active students ranked by XP DESC
                 string badgeSubquery = hasBadgeTable
                     ? "(SELECT COUNT(*) FROM StudentBadge WHERE studentId = s.studentId)"
                     : "0";
@@ -154,11 +151,10 @@ namespace ScienceBuddy.Student
                     return;
                 }
 
-                // 4. Find logged-in student's data from the result
                 int myRank = 0;
                 int myXP = 0;
                 string myName = "Student";
-                string myLevelName = "—";
+                string myLevelName = "\u2014";
                 int myBadgeCount = 0;
                 string myInitial = "S";
                 string currentLevelId = "";
@@ -174,8 +170,8 @@ namespace ScienceBuddy.Student
                         string name = row["name"]?.ToString();
                         myName = !string.IsNullOrWhiteSpace(nickname) ? nickname : name;
                         myLevelName = CurrentLanguage == "BM"
-                            ? (row["levelNameBM"]?.ToString() ?? row["levelNameEN"]?.ToString() ?? "—")
-                            : (row["levelNameEN"]?.ToString() ?? "—");
+                            ? (row["levelNameBM"]?.ToString() ?? row["levelNameEN"]?.ToString() ?? "\u2014")
+                            : (row["levelNameEN"]?.ToString() ?? "\u2014");
                         myBadgeCount = Convert.ToInt32(row["badgeCount"]);
                         currentLevelId = row["currentlevelId"]?.ToString() ?? "";
                         personalityId = row["personalityId"]?.ToString() ?? "";
@@ -184,12 +180,10 @@ namespace ScienceBuddy.Student
                     }
                 }
 
-                // 5. Set hero
                 litHeroRank.Text = T("Your Rank: #", "Kedudukan Anda: #") + myRank.ToString();
                 litHeroXP.Text = myXP.ToString("N0") + " XP";
                 litHeroLevel.Text = T("Level: ", "Tahap: ") + HttpUtility.HtmlEncode(myLevelName);
 
-                // 6. Set personal rank card
                 litPersonalInitial.Text = HttpUtility.HtmlEncode(myInitial);
                 litPersonalName.Text = HttpUtility.HtmlEncode(myName);
                 litPersonalRank.Text = "#" + myRank.ToString();
@@ -197,14 +191,12 @@ namespace ScienceBuddy.Student
                 litPersonalLevel.Text = HttpUtility.HtmlEncode(myLevelName);
                 litPersonalBadges.Text = myBadgeCount.ToString();
 
-                // 7. Build top 10 leaderboard (with filter support)
                 string rankFilter = ViewState["RankFilter"] as string ?? "all";
                 var leaderboard = new List<object>();
                 int count = 0;
                 int filteredRank = 0;
                 foreach (DataRow row in dt.Rows)
                 {
-                    // Apply filter
                     if (rankFilter == "level" && !string.IsNullOrEmpty(currentLevelId))
                     {
                         string rowLevel = row["currentlevelId"]?.ToString() ?? "";
@@ -217,15 +209,15 @@ namespace ScienceBuddy.Student
                     }
 
                     filteredRank++;
-                    if (count >= 10) continue; // still count for rank but don't add to display
+                    if (count >= 10) continue;
 
                     string nickname = row["nickname"]?.ToString();
                     string name = row["name"]?.ToString();
                     string displayName = !string.IsNullOrWhiteSpace(nickname) ? nickname : name;
                     int xp = row["XP"] == DBNull.Value ? 0 : Convert.ToInt32(row["XP"]);
                     string levelName = CurrentLanguage == "BM"
-                        ? (row["levelNameBM"]?.ToString() ?? row["levelNameEN"]?.ToString() ?? "—")
-                        : (row["levelNameEN"]?.ToString() ?? "—");
+                        ? (row["levelNameBM"]?.ToString() ?? row["levelNameEN"]?.ToString() ?? "\u2014")
+                        : (row["levelNameEN"]?.ToString() ?? "\u2014");
                     int badges = Convert.ToInt32(row["badgeCount"]);
                     bool isCurrentUser = row["studentId"].ToString() == studentId;
                     string initial = !string.IsNullOrWhiteSpace(displayName)
@@ -248,10 +240,8 @@ namespace ScienceBuddy.Student
                 rptLeaderboard.DataSource = leaderboard;
                 rptLeaderboard.DataBind();
 
-                // 7b. Build Top 3 Podium
                 BuildPodium(dt, studentId);
 
-                // 8. If logged-in student is NOT in top 10, show "Your Position" card
                 if (myRank > 10)
                 {
                     pnlYourPosition.Visible = true;
@@ -260,7 +250,6 @@ namespace ScienceBuddy.Student
                     litYourPosXP.Text = myXP.ToString("N0") + " XP";
                 }
 
-                // 9. Set motivational message
                 litMotivateMsg.Text = GetMotivationalMessage(myRank);
             }
         }
@@ -270,14 +259,11 @@ namespace ScienceBuddy.Student
         {
             if (dt.Rows.Count == 0) { litPodium.Text = ""; return; }
 
-            // Get top 3 rows (already ordered by rankPos)
             var top3 = new List<DataRow>();
             for (int i = 0; i < Math.Min(3, dt.Rows.Count); i++) top3.Add(dt.Rows[i]);
 
-            // Build podium in visual order: #2, #1, #3
-            string html = "<div class=\"rk-podium\">";
+            string html = "<div class=\"st-ranking-podium\">";
 
-            // Render in order: second (index 1), first (index 0), third (index 2)
             int[] order = top3.Count >= 3 ? new[] { 1, 0, 2 } : top3.Count == 2 ? new[] { 1, 0 } : new[] { 0 };
             string[] classes = { "first", "second", "third" };
 
@@ -294,13 +280,13 @@ namespace ScienceBuddy.Student
                 int xp = row["XP"] == DBNull.Value ? 0 : Convert.ToInt32(row["XP"]);
                 bool isMe = row["studentId"].ToString() == currentStudentId;
 
-                html += "<div class=\"rk-podium-player " + placeClass + "\">";
-                if (rank == 1) html += "<div class=\"rk-podium-crown\"><i class=\"bi bi-trophy-fill\"></i></div>";
-                if (isMe) html += "<div class=\"rk-podium-you\">" + T("You", "Anda") + "</div>";
-                html += "<div class=\"rk-podium-avatar\">" + HttpUtility.HtmlEncode(initial) + "</div>";
-                html += "<div class=\"rk-podium-name\">" + HttpUtility.HtmlEncode(displayName) + "</div>";
-                html += "<div class=\"rk-podium-xp\">" + xp.ToString("N0") + " XP</div>";
-                html += "<div class=\"rk-podium-block\"><span>" + rank + "</span></div>";
+                html += "<div class=\"st-ranking-podium-player " + placeClass + "\">";
+                if (rank == 1) html += "<div class=\"st-ranking-podium-crown\"><i class=\"bi bi-trophy-fill\"></i></div>";
+                if (isMe) html += "<div class=\"st-ranking-podium-you\">" + T("You", "Anda") + "</div>";
+                html += "<div class=\"st-ranking-podium-avatar\">" + HttpUtility.HtmlEncode(initial) + "</div>";
+                html += "<div class=\"st-ranking-podium-name\">" + HttpUtility.HtmlEncode(displayName) + "</div>";
+                html += "<div class=\"st-ranking-podium-xp\">" + xp.ToString("N0") + " XP</div>";
+                html += "<div class=\"st-ranking-podium-block\"><span>" + rank + "</span></div>";
                 html += "</div>";
             }
 
@@ -329,28 +315,24 @@ namespace ScienceBuddy.Student
             SetLabels();
             LoadPage();
 
-            // Update active chip styles
             string filter = btn.CommandArgument;
-            btnFilterAll.CssClass = filter == "all" ? "rk-filter-chip active" : "rk-filter-chip";
-            btnFilterLevel.CssClass = filter == "level" ? "rk-filter-chip active" : "rk-filter-chip";
-            btnFilterPers.CssClass = filter == "personality" ? "rk-filter-chip active" : "rk-filter-chip";
+            btnFilterAll.CssClass = filter == "all" ? "st-ranking-filter-chip active" : "st-ranking-filter-chip";
+            btnFilterLevel.CssClass = filter == "level" ? "st-ranking-filter-chip active" : "st-ranking-filter-chip";
+            btnFilterPers.CssClass = filter == "personality" ? "st-ranking-filter-chip active" : "st-ranking-filter-chip";
         }
 
         // ── Motivational message based on rank ────────────────────────
         private string GetMotivationalMessage(int rank)
         {
             if (rank == 1)
-                return T("You're leading the leaderboard! 🥇",
-                         "Anda mendahului papan kedudukan! 🥇");
+                return T("You're leading the leaderboard!", "Anda mendahului papan kedudukan!");
             if (rank <= 3)
-                return T("You're in the top 3. Amazing work! 🥈",
-                         "Anda berada dalam 3 teratas. Hebat! 🥈");
+                return T("You're in the top 3. Amazing work!", "Anda berada dalam 3 teratas. Hebat!");
             if (rank <= 10)
-                return T("You're in the top 10. Keep going! 🌟",
-                         "Anda berada dalam 10 teratas. Teruskan usaha! 🌟");
+                return T("You're in the top 10. Keep going!", "Anda berada dalam 10 teratas. Teruskan usaha!");
 
-            return T("Every lesson gives you XP. Keep learning and your rank will improve. 💪",
-                     "Setiap pelajaran memberi XP. Teruskan belajar dan kedudukan anda akan meningkat. 💪");
+            return T("Every lesson gives you XP. Keep learning and your rank will improve.",
+                     "Setiap pelajaran memberi XP. Teruskan belajar dan kedudukan anda akan meningkat.");
         }
 
         // ── Rank CSS class helper (used in aspx markup) ───────────────
@@ -358,10 +340,10 @@ namespace ScienceBuddy.Student
         {
             switch (rank)
             {
-                case 1: return "rk-board-rank rk-gold";
-                case 2: return "rk-board-rank rk-silver";
-                case 3: return "rk-board-rank rk-bronze";
-                default: return "rk-board-rank rk-normal";
+                case 1: return "st-ranking-board-rank st-ranking-gold";
+                case 2: return "st-ranking-board-rank st-ranking-silver";
+                case 3: return "st-ranking-board-rank st-ranking-bronze";
+                default: return "st-ranking-board-rank st-ranking-normal";
             }
         }
 
@@ -370,11 +352,11 @@ namespace ScienceBuddy.Student
         {
             litHeroRank.Text = T("My Ranking", "Kedudukan Saya");
             litHeroXP.Text = "0 XP";
-            litHeroLevel.Text = T("Level: —", "Tahap: —");
-            litPersonalName.Text = "—";
-            litPersonalRank.Text = "#—";
+            litHeroLevel.Text = T("Level: \u2014", "Tahap: \u2014");
+            litPersonalName.Text = "\u2014";
+            litPersonalRank.Text = "#\u2014";
             litPersonalXP.Text = "0";
-            litPersonalLevel.Text = "—";
+            litPersonalLevel.Text = "\u2014";
             litPersonalBadges.Text = "0";
             litMotivateMsg.Text = T("Every lesson gives you XP. Keep learning and your rank will improve.",
                                     "Setiap pelajaran memberi XP. Teruskan belajar dan kedudukan anda akan meningkat.");

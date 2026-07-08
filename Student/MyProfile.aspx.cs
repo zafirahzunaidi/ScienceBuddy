@@ -6,7 +6,7 @@ using System.Web.UI;
 
 namespace ScienceBuddy.Student
 {
-    public partial class MyProfile : Page
+    public partial class MyProfile1 : Page
     {
         // ── Connection string ─────────────────────────────────────────
         private string ConnStr =>
@@ -163,7 +163,7 @@ namespace ScienceBuddy.Student
                 }
 
                 // Load Level name
-                string levelName = "—";
+                string levelName = "\u2014";
                 if (!string.IsNullOrEmpty(currentlevelId) && Tbl(conn, "Level"))
                 {
                     string sqlLevel = CurrentLanguage == "BM"
@@ -179,7 +179,7 @@ namespace ScienceBuddy.Student
                 }
 
                 // Load Personality
-                string persName = "—", persDesc = "—", persStyle = "—", persAvatar = "", persColour = "";
+                string persName = "\u2014", persDesc = "\u2014", persStyle = "\u2014", persAvatar = "", persColour = "";
                 if (!string.IsNullOrEmpty(personalityId) && Tbl(conn, "Personality"))
                 {
                     const string sqlPers = @"SELECT personalityNameEN, personalityNameBM, 
@@ -195,14 +195,14 @@ namespace ScienceBuddy.Student
                             if (reader.Read())
                             {
                                 persName   = CurrentLanguage == "BM"
-                                    ? (reader["personalityNameBM"]?.ToString() ?? reader["personalityNameEN"]?.ToString() ?? "—")
-                                    : (reader["personalityNameEN"]?.ToString() ?? "—");
+                                    ? (reader["personalityNameBM"]?.ToString() ?? reader["personalityNameEN"]?.ToString() ?? "\u2014")
+                                    : (reader["personalityNameEN"]?.ToString() ?? "\u2014");
                                 persDesc   = CurrentLanguage == "BM"
-                                    ? (reader["descriptionBM"]?.ToString() ?? reader["descriptionEN"]?.ToString() ?? "—")
-                                    : (reader["descriptionEN"]?.ToString() ?? "—");
+                                    ? (reader["descriptionBM"]?.ToString() ?? reader["descriptionEN"]?.ToString() ?? "\u2014")
+                                    : (reader["descriptionEN"]?.ToString() ?? "\u2014");
                                 persStyle  = CurrentLanguage == "BM"
-                                    ? (reader["learningStyleBM"]?.ToString() ?? reader["learningStyleEN"]?.ToString() ?? "—")
-                                    : (reader["learningStyleEN"]?.ToString() ?? "—");
+                                    ? (reader["learningStyleBM"]?.ToString() ?? reader["learningStyleEN"]?.ToString() ?? "\u2014")
+                                    : (reader["learningStyleEN"]?.ToString() ?? "\u2014");
                                 persAvatar = reader["avatar"]?.ToString() ?? "";
                                 persColour = reader["colour"]?.ToString() ?? "";
                             }
@@ -335,10 +335,6 @@ namespace ScienceBuddy.Student
                 : name[0].ToString().ToUpper();
         }
 
-        /// <summary>
-        /// Returns true if the given table exists in the current database.
-        /// Uses INFORMATION_SCHEMA so it never throws on a missing table.
-        /// </summary>
         private static bool Tbl(SqlConnection conn, string tableName)
         {
             const string sql = @"
