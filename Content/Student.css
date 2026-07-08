@@ -899,4 +899,481 @@
     }
 }
 
-/* -- PAGE 2: LESSON --*/
+/* -- PAGE 2: NOTIFICATIONS --*/
+
+.st-notifications-header { 
+    margin-bottom: var(--space-lg); 
+}
+
+.st-notifications-title {
+    font-family: var(--font-primary);
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--color-text);
+}
+
+.st-notifications-subtitle {
+    font-size: .9375rem;
+    color: var(--color-text-secondary);
+    margin-top: 4px;
+}
+
+/* Search + Filters */
+.st-notifications-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+    flex-wrap: wrap;
+}
+
+.st-notifications-search {
+    flex: 1;
+    min-width: 180px;
+    position: relative;
+}
+
+.st-notifications-search input {
+    width: 100%;
+    padding: 10px 14px 10px 36px;
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--border-radius-full);
+    font-size: .875rem;
+    background: #FAFBFC;
+    transition: border-color .2s;
+}
+
+.st-notifications-search input:focus {
+    border-color: #2563EB;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37,99,235,.08);
+}
+
+.st-notifications-search i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-muted);
+    font-size: .9rem;
+}
+
+.st-notifications-chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.st-notifications-chip {
+    padding: 6px 16px;
+    border-radius: var(--border-radius-full);
+    font-size: .8rem;
+    font-weight: 700;
+    border: 1.5px solid var(--border-color);
+    background: var(--color-white);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all .2s;
+    text-decoration: none;
+}
+
+.st-notifications-chip:hover {
+    border-color: var(--student);
+    color: var(--student);
+    text-decoration: none;
+}
+
+.st-notifications-chip.active {
+    background: var(--student);
+    color: #fff;
+    border-color: var(--student);
+}
+
+/* Notification List */
+.st-notifications-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.st-notifications-item {
+    background: var(--color-white);
+    border-radius: var(--border-radius-lg);
+    border: 1.5px solid var(--border-color);
+    box-shadow: var(--shadow-xs);
+    padding: var(--space-lg);
+    display: flex;
+    gap: var(--space-md);
+    align-items: flex-start;
+    transition: transform .15s, box-shadow .15s;
+}
+
+.st-notifications-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.st-notifications-item.unread {
+    border-left: 4px solid var(--student);
+    background: #FFFBF8;
+}
+
+.st-notifications-item-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.st-notifications-item-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.st-notifications-item-title {
+    font-family: var(--font-primary);
+    font-size: .9375rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.st-notifications-item-msg {
+    font-size: .875rem;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+    margin-bottom: 6px;
+}
+
+.st-notifications-item-time {
+    font-size: .75rem;
+    color: var(--color-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.st-notifications-item-actions {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+.st-notifications-unread-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--student);
+    flex-shrink: 0;
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+    .st-notifications-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+@media (max-width: 479px) {
+    .st-notifications-item {
+        flex-direction: column;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PAGE: MY LEARNING
+   ═══════════════════════════════════════════════════════════════ */
+
+.st-mylearning-header { margin-bottom: var(--space-xl); }
+
+.st-mylearning-title {
+    font-family: var(--font-primary);
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--color-text);
+}
+
+.st-mylearning-subtitle {
+    font-size: .9375rem;
+    color: var(--color-text-secondary);
+    margin-top: 4px;
+}
+
+/* Level Cards */
+.st-mylearning-levels {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-md);
+    margin-bottom: var(--space-xl);
+}
+
+.st-mylearning-level-card {
+    background: var(--color-white);
+    border-radius: var(--border-radius-xl);
+    border: 2px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    padding: var(--space-xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    position: relative;
+    transition: transform .2s, box-shadow .2s;
+    overflow: hidden;
+}
+
+.st-mylearning-level-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.st-mylearning-level-card.current {
+    border-color: var(--student);
+    box-shadow: 0 4px 20px rgba(255,107,44,.18);
+}
+
+.st-mylearning-level-card.current::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--student), var(--color-yellow));
+}
+
+.st-mylearning-level-card.locked {
+    opacity: .6;
+    pointer-events: none;
+    background: #FAFBFD;
+}
+
+.st-mylearning-level-card.locked::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,.3);
+    pointer-events: none;
+}
+
+.st-mylearning-level-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.st-mylearning-level-name {
+    font-family: var(--font-primary);
+    font-size: 1.125rem;
+    font-weight: 800;
+    color: var(--color-text);
+}
+
+.st-mylearning-level-desc {
+    font-size: .8125rem;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+}
+
+.st-mylearning-level-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: var(--border-radius-full);
+    font-size: .75rem;
+    font-weight: 700;
+    width: fit-content;
+}
+
+.st-mylearning-badge-current {
+    background: var(--student-light);
+    color: var(--student);
+}
+
+.st-mylearning-badge-unlocked {
+    background: #DCFCE7;
+    color: #15803D;
+}
+
+.st-mylearning-badge-locked {
+    background: #F1F5F9;
+    color: #64748B;
+}
+
+/* Section Header */
+.st-mylearning-section-hd {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-lg);
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+}
+
+.st-mylearning-section-title {
+    font-family: var(--font-primary);
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+/* Unit Cards */
+.st-mylearning-units {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-md);
+    margin-bottom: var(--space-xl);
+}
+
+.st-mylearning-unit-card {
+    background: var(--color-white);
+    border-radius: var(--border-radius-xl);
+    border: 1.5px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    padding: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    transition: transform .2s, box-shadow .2s;
+}
+
+.st-mylearning-unit-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.st-mylearning-unit-name {
+    font-family: var(--font-primary);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.st-mylearning-unit-desc {
+    font-size: .8125rem;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+    flex: 1;
+}
+
+.st-mylearning-unit-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    font-size: .8125rem;
+    color: var(--color-text-muted);
+}
+
+.st-mylearning-unit-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.st-mylearning-unit-progress {
+    margin-top: var(--space-sm);
+}
+
+.st-mylearning-unit-progress-bar {
+    height: 8px;
+    background: #F0F7FF;
+    border-radius: var(--border-radius-full);
+    overflow: hidden;
+}
+
+.st-mylearning-unit-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--student), #FFD84D);
+    border-radius: var(--border-radius-full);
+    transition: width .6s ease;
+}
+
+.st-mylearning-unit-progress-lbl {
+    display: flex;
+    justify-content: space-between;
+    font-size: .75rem;
+    color: var(--color-text-muted);
+    margin-top: 4px;
+}
+
+/* Quiz Card */
+.st-mylearning-quiz-card {
+    background: linear-gradient(135deg, #1D4ED8, #4DA8FF);
+    border-radius: var(--border-radius-xl);
+    padding: var(--space-xl);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: var(--space-xl);
+}
+
+.st-mylearning-quiz-card::before {
+    content: '';
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.06);
+    top: -60px;
+    right: -40px;
+    pointer-events: none;
+}
+
+.st-mylearning-quiz-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--border-radius);
+    background: rgba(255,255,255,.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.st-mylearning-quiz-body {
+    flex: 1;
+}
+
+.st-mylearning-quiz-title {
+    font-family: var(--font-primary);
+    font-size: 1.0625rem;
+    font-weight: 800;
+}
+
+.st-mylearning-quiz-sub {
+    font-size: .875rem;
+    opacity: .85;
+    margin-top: 4px;
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+    .st-mylearning-levels {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 479px) {
+    .st-mylearning-units {
+        grid-template-columns: 1fr;
+    }
+}

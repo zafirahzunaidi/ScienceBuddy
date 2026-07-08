@@ -8,7 +8,7 @@ using System.Web.UI;
 
 namespace ScienceBuddy.Student
 {
-    public partial class MyLearning1 : Page
+    public partial class MyLearning : Page
     {
         private string ConnStr =>
             ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
@@ -86,6 +86,7 @@ namespace ScienceBuddy.Student
                 return;
             }
 
+            // Get student's current level
             string currentLevelId = null;
             string studentId = null;
             using (var conn = new SqlConnection(ConnStr))
@@ -107,8 +108,13 @@ namespace ScienceBuddy.Student
 
                 if (string.IsNullOrEmpty(currentLevelId)) currentLevelId = "LV001";
 
+                // Load all levels
                 LoadLevels(conn, currentLevelId);
+
+                // Load units for current level
                 LoadUnits(conn, currentLevelId, studentId);
+
+                // Load level quiz
                 LoadLevelQuiz(conn, currentLevelId);
             }
         }
@@ -136,6 +142,7 @@ namespace ScienceBuddy.Student
                 int order   = GetLevelOrder(lid);
                 bool isCurrent = lid == currentLevelId;
                 bool isLocked  = order > currentOrder;
+                bool isUnlocked = order < currentOrder;
 
                 string name = isBM ? row["levelNameBM"].ToString() : row["levelNameEN"].ToString();
                 if (string.IsNullOrWhiteSpace(name)) name = row["levelNameEN"].ToString();
@@ -143,7 +150,7 @@ namespace ScienceBuddy.Student
                 if (string.IsNullOrWhiteSpace(desc)) desc = row["levelDescriptionEN"].ToString();
 
                 string cssClass = isCurrent ? "current" : (isLocked ? "locked" : "");
-                string badgeClass = isCurrent ? "st-mylearning-badge-current" : (isLocked ? "st-mylearning-badge-locked" : "st-mylearning-badge-unlocked");
+                string badgeClass = isCurrent ? "ml-badge-current" : (isLocked ? "ml-badge-locked" : "ml-badge-unlocked");
                 string badgeText = isCurrent ? T("Current", "Semasa")
                     : (isLocked ? T("Locked", "Dikunci") : T("Unlocked", "Dibuka"));
                 string btnText = isLocked ? T("Locked", "Dikunci") : T("View Level", "Lihat Tahap");
@@ -168,6 +175,7 @@ namespace ScienceBuddy.Student
 
         private void LoadUnits(SqlConnection conn, string levelId, string studentId)
         {
+            // Use query param if provided and accessible
             string qLevel = Request.QueryString["level"];
             if (!string.IsNullOrEmpty(qLevel) && GetLevelOrder(qLevel) <= GetLevelOrder(levelId))
                 levelId = qLevel;
@@ -206,7 +214,8 @@ namespace ScienceBuddy.Student
                 return;
             }
 
-            var completedMap = new Dictionary<string, int>();
+            // Get lesson progress for this student
+            var completedMap = new Dictionary<string, int>(); // unitId -> completed lessons
             if (!string.IsNullOrEmpty(studentId) && TableExists("LessonProgress"))
             {
                 const string pSql = @"
@@ -302,6 +311,7 @@ namespace ScienceBuddy.Student
             }
         }
 
+        // ── Utilities ─────────────────────────────────────────────────
         private static int GetLevelOrder(string levelId)
         {
             switch (levelId)

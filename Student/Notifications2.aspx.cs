@@ -9,7 +9,7 @@ using System.Web.UI.WebControls;
 
 namespace ScienceBuddy.Student
 {
-    public partial class Notifications1 : Page
+    public partial class Notifications : Page
     {
         private string ConnStr =>
             ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
@@ -98,9 +98,9 @@ namespace ScienceBuddy.Student
 
             // Update filter chip active state
             string filter = ViewState["Filter"] as string ?? "all";
-            btnFilterAll.CssClass = filter == "all" ? "st-notifications-chip active" : "st-notifications-chip";
-            btnFilterUnread.CssClass = filter == "unread" ? "st-notifications-chip active" : "st-notifications-chip";
-            btnFilterRead.CssClass = filter == "read" ? "st-notifications-chip active" : "st-notifications-chip";
+            btnFilterAll.CssClass = filter == "all" ? "sn-chip active" : "sn-chip";
+            btnFilterUnread.CssClass = filter == "unread" ? "sn-chip active" : "sn-chip";
+            btnFilterRead.CssClass = filter == "read" ? "sn-chip active" : "sn-chip";
         }
 
         private void LoadNotifications()
