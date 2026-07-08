@@ -235,6 +235,7 @@
     <Content Include="Student\Labs\MatterStateChanger.aspx" />
     <Content Include="Student\Labs\SinkOrFloatMaster.aspx" />
     <Content Include="Student\Lesson.aspx" />
+    <Content Include="Student\Lesson2.aspx" />
     <Content Include="Student\LevelDetails.aspx" />
     <Content Include="Student\LiveSessions.aspx" />
     <Content Include="Student\Messages.aspx" />
@@ -259,6 +260,8 @@
     <Content Include="Teacher\Notifications.aspx" />
     <Content Include="Teacher\liveSession.aspx" />
     <Content Include="Teacher\Forum.aspx" />
+    <Content Include="Teacher\studentDetails.aspx" />
+    <Content Include="Teacher\studentProgress.aspx" />
     <Content Include="Teacher\uploadMaterial.aspx" />
     <Content Include="Teacher\manageQuiz.aspx" />
     <Content Include="Teacher\createUnitLevelQuiz.aspx" />
@@ -646,6 +649,13 @@
     <Compile Include="Student\Lesson.aspx.designer.cs">
       <DependentUpon>Lesson.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Student\Lesson2.aspx.cs">
+      <DependentUpon>Lesson2.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\Lesson2.aspx.designer.cs">
+      <DependentUpon>Lesson2.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Student\LevelDetails.aspx.cs">
       <DependentUpon>LevelDetails.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -813,6 +823,20 @@
     </Compile>
     <Compile Include="Teacher\Forum.aspx.designer.cs">
       <DependentUpon>Forum.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Teacher\studentDetails.aspx.cs">
+      <DependentUpon>studentDetails.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Teacher\studentDetails.aspx.designer.cs">
+      <DependentUpon>studentDetails.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Teacher\studentProgress.aspx.cs">
+      <DependentUpon>studentProgress.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Teacher\studentProgress.aspx.designer.cs">
+      <DependentUpon>studentProgress.aspx</DependentUpon>
     </Compile>
     <Compile Include="Teacher\uploadMaterial.aspx.cs">
       <DependentUpon>uploadMaterial.aspx</DependentUpon>

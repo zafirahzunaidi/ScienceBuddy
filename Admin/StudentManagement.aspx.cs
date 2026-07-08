@@ -410,8 +410,11 @@ namespace ScienceBuddy.Admin
             string email = Request.QueryString["email"] ?? "";
             string phone = Request.QueryString["phone"] ?? "";
             string levelId = Request.QueryString["levelId"] ?? "";
+            string lang = Request.QueryString["lang"] ?? "EN";
             if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(email))
             { Response.Write("{\"success\":false,\"msg\":\"Name, username and email are required.\"}"); return; }
+            if (string.IsNullOrWhiteSpace(password) || password.Length < 8)
+            { Response.Write("{\"success\":false,\"msg\":\"Password must be at least 8 characters.\"}"); return; }
             using (var conn = new SqlConnection(ConnStr))
             {
                 conn.Open();
@@ -421,8 +424,8 @@ namespace ScienceBuddy.Admin
 
                 string userId = GenId(conn, "User", "userId", "U");
                 string studentId = GenId(conn, "Student", "studentId", "S");
-                using (var cmd = new SqlCommand("INSERT INTO dbo.[User]([userId],[username],[password],[email],[role],[preferredLanguage],[status]) VALUES(@uid,@un,@pw,@em,'Student','EN','Active')", conn))
-                { cmd.Parameters.AddWithValue("@uid", userId); cmd.Parameters.AddWithValue("@un", username); cmd.Parameters.AddWithValue("@pw", password); cmd.Parameters.AddWithValue("@em", email); cmd.ExecuteNonQuery(); }
+                using (var cmd = new SqlCommand("INSERT INTO dbo.[User]([userId],[username],[password],[email],[role],[preferredLanguage],[status]) VALUES(@uid,@un,@pw,@em,'Student',@lg,'Active')", conn))
+                { cmd.Parameters.AddWithValue("@uid", userId); cmd.Parameters.AddWithValue("@un", username); cmd.Parameters.AddWithValue("@pw", password); cmd.Parameters.AddWithValue("@em", email); cmd.Parameters.AddWithValue("@lg", lang); cmd.ExecuteNonQuery(); }
                 using (var cmd = new SqlCommand("INSERT INTO dbo.[Student]([studentId],[userId],[name],[phoneNumber],[currentLevelId],[XP],[parentCode]) VALUES(@sid,@uid,@name,@ph,@lv,0,@pc)", conn))
                 { cmd.Parameters.AddWithValue("@sid", studentId); cmd.Parameters.AddWithValue("@uid", userId); cmd.Parameters.AddWithValue("@name", name);
                   cmd.Parameters.AddWithValue("@ph", string.IsNullOrEmpty(phone) ? (object)DBNull.Value : phone);
@@ -430,7 +433,7 @@ namespace ScienceBuddy.Admin
                   cmd.Parameters.AddWithValue("@pc", "PC" + DateTime.Now.ToString("yyMMddHHmmss")); cmd.ExecuteNonQuery(); }
 
                 InsertLog(conn, adminId, "Added Student", "Created student: " + name + " (" + studentId + ").", "Success");
-                InsertNotif(conn, userId, "Account Created", "Akaun Dicipta", "Your ScienceBuddy student account has been created.", "Akaun pelajar ScienceBuddy anda telah dicipta.");
+                InsertNotif(conn, userId, "Welcome to ScienceBuddy!", "Selamat Datang ke ScienceBuddy!", "Your student account has been created. Start learning today!", "Akaun pelajar anda telah dicipta. Mula belajar hari ini!");
             }
             Response.Write("{\"success\":true}");
         }
