@@ -249,10 +249,12 @@
     <Content Include="Student\VirtualLab.aspx" />
     <Content Include="Student\VirtualLabs.aspx" />
     <Content Include="Teacher\Dashboard.aspx" />
+    <Content Include="Teacher\ForumReply.aspx" />
     <Content Include="Teacher\manageMaterials.aspx" />
     <Content Include="Teacher\privateMessages.aspx" />
     <Content Include="Teacher\Notifications.aspx" />
     <Content Include="Teacher\liveSession.aspx" />
+    <Content Include="Teacher\Forum.aspx" />
     <Content Include="Teacher\uploadMaterial.aspx" />
     <Content Include="Teacher\manageQuiz.aspx" />
     <Content Include="Teacher\createUnitLevelQuiz.aspx" />
@@ -759,6 +761,13 @@
     <Compile Include="Teacher\Dashboard.aspx.designer.cs">
       <DependentUpon>Dashboard.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Teacher\ForumReply.aspx.cs">
+      <DependentUpon>ForumReply.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Teacher\ForumReply.aspx.designer.cs">
+      <DependentUpon>ForumReply.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Teacher\manageMaterials.aspx.cs">
       <DependentUpon>manageMaterials.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -786,6 +795,13 @@
     </Compile>
     <Compile Include="Teacher\liveSession.aspx.designer.cs">
       <DependentUpon>liveSession.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Teacher\Forum.aspx.cs">
+      <DependentUpon>Forum.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Teacher\Forum.aspx.designer.cs">
+      <DependentUpon>Forum.aspx</DependentUpon>
     </Compile>
     <Compile Include="Teacher\uploadMaterial.aspx.cs">
       <DependentUpon>uploadMaterial.aspx</DependentUpon>

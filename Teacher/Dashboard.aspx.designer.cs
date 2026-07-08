@@ -86,9 +86,6 @@ namespace ScienceBuddy.Teacher
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litUpcomingSessions;
 
-        protected global::System.Web.UI.WebControls.Literal litCalMonth;
-        protected global::System.Web.UI.WebControls.Literal litCalDays;
-
         /// <summary>
         /// litTotalStudents control.
         /// </summary>
@@ -99,6 +96,24 @@ namespace ScienceBuddy.Teacher
         protected global::System.Web.UI.WebControls.Literal litTotalStudents;
 
         /// <summary>
+        /// litCalMonth control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litCalMonth;
+
+        /// <summary>
+        /// litCalDays control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litCalDays;
+
+        /// <summary>
         /// pnlSessions control.
         /// </summary>
         /// <remarks>
@@ -107,10 +122,49 @@ namespace ScienceBuddy.Teacher
         /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlSessions;
 
+        /// <summary>
+        /// litNextDay control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litNextDay;
+
+        /// <summary>
+        /// litNextMonth control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litNextMonth;
+
+        /// <summary>
+        /// litNextTitle control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litNextTitle;
+
+        /// <summary>
+        /// litNextTime control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litNextTime;
+
+        /// <summary>
+        /// litNextTopic control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litNextTopic;
 
         /// <summary>
