@@ -226,9 +226,12 @@
     <Content Include="Student\Chat.aspx" />
     <Content Include="Student\Chat2.aspx" />
     <Content Include="Student\CreateForumPost.aspx" />
+    <Content Include="Student\CreateForumPost2.aspx" />
     <Content Include="Student\Dashboard.aspx" />
     <Content Include="Student\Forum.aspx" />
+    <Content Include="Student\Forum2.aspx" />
     <Content Include="Student\ForumThread.aspx" />
+    <Content Include="Student\ForumThread2.aspx" />
     <Content Include="Student\Labs\BloodFlowSimulator.aspx" />
     <Content Include="Student\Labs\CircuitLab.aspx" />
     <Content Include="Student\Labs\GreatSoakChallenge.aspx" />
@@ -248,13 +251,17 @@
     <Content Include="Student\MyLearning.aspx" />
     <Content Include="Student\MyLearning2.aspx" />
     <Content Include="Student\MyProfile.aspx" />
+    <Content Include="Student\MyProfile2.aspx" />
     <Content Include="Student\MyRanking.aspx" />
+    <Content Include="Student\MyRanking2.aspx" />
     <Content Include="Student\Notifications.aspx" />
     <Content Include="Student\Notifications2.aspx" />
     <Content Include="Student\PersonalityTest.aspx" />
+    <Content Include="Student\PersonalityTest2.aspx" />
     <Content Include="Student\PracticeLibrary.aspx" />
     <Content Include="Student\PracticeLibrary2.aspx" />
     <Content Include="Student\ProgressRewards.aspx" />
+    <Content Include="Student\ProgressRewards2.aspx" />
     <Content Include="Student\Quiz.aspx" />
     <Content Include="Student\Quiz2.aspx" />
     <Content Include="Student\QuizHistory.aspx" />
@@ -602,6 +609,13 @@
     <Compile Include="Student\CreateForumPost.aspx.designer.cs">
       <DependentUpon>CreateForumPost.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Student\CreateForumPost2.aspx.cs">
+      <DependentUpon>CreateForumPost2.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\CreateForumPost2.aspx.designer.cs">
+      <DependentUpon>CreateForumPost2.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Student\Dashboard.aspx.cs">
       <DependentUpon>Dashboard.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -616,12 +630,26 @@
     <Compile Include="Student\Forum.aspx.designer.cs">
       <DependentUpon>Forum.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Student\Forum2.aspx.cs">
+      <DependentUpon>Forum2.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\Forum2.aspx.designer.cs">
+      <DependentUpon>Forum2.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Student\ForumThread.aspx.cs">
       <DependentUpon>ForumThread.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Student\ForumThread.aspx.designer.cs">
       <DependentUpon>ForumThread.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Student\ForumThread2.aspx.cs">
+      <DependentUpon>ForumThread2.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\ForumThread2.aspx.designer.cs">
+      <DependentUpon>ForumThread2.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\Labs\BloodFlowSimulator.aspx.cs">
       <DependentUpon>BloodFlowSimulator.aspx</DependentUpon>
@@ -756,12 +784,26 @@
     <Compile Include="Student\MyProfile.aspx.designer.cs">
       <DependentUpon>MyProfile.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Student\MyProfile2.aspx.cs">
+      <DependentUpon>MyProfile2.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\MyProfile2.aspx.designer.cs">
+      <DependentUpon>MyProfile2.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Student\MyRanking.aspx.cs">
       <DependentUpon>MyRanking.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Student\MyRanking.aspx.designer.cs">
       <DependentUpon>MyRanking.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Student\MyRanking2.aspx.cs">
+      <DependentUpon>MyRanking2.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\MyRanking2.aspx.designer.cs">
+      <DependentUpon>MyRanking2.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\Notifications.aspx.cs">
       <DependentUpon>Notifications.aspx</DependentUpon>
@@ -784,6 +826,13 @@
     <Compile Include="Student\PersonalityTest.aspx.designer.cs">
       <DependentUpon>PersonalityTest.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Student\PersonalityTest2.aspx.cs">
+      <DependentUpon>PersonalityTest2.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\PersonalityTest2.aspx.designer.cs">
+      <DependentUpon>PersonalityTest2.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Student\PracticeLibrary.aspx.cs">
       <DependentUpon>PracticeLibrary.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -804,6 +853,13 @@
     </Compile>
     <Compile Include="Student\ProgressRewards.aspx.designer.cs">
       <DependentUpon>ProgressRewards.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Student\ProgressRewards2.aspx.cs">
+      <DependentUpon>ProgressRewards2.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\ProgressRewards2.aspx.designer.cs">
+      <DependentUpon>ProgressRewards2.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\Quiz.aspx.cs">
       <DependentUpon>Quiz.aspx</DependentUpon>

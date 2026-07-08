@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -9,7 +9,7 @@ using System.Web.UI.WebControls;
 
 namespace ScienceBuddy.Student
 {
-    public partial class ForumThread1 : Page
+    public partial class ForumThread : Page
     {
         // ── Connection string ─────────────────────────────────────────
         private string ConnStr =>
@@ -254,22 +254,22 @@ namespace ScienceBuddy.Student
                 if (discussionType.Equals("Private", StringComparison.OrdinalIgnoreCase))
                 {
                     pnlPrivateNotice.Visible = true;
-                    divHeader.Attributes["class"] = "st-forumthread-header private-thread";
+                    divHeader.Attributes["class"] = "ft-header private-thread";
                 }
                 else
                 {
-                    divHeader.Attributes["class"] = "st-forumthread-header public-thread";
+                    divHeader.Attributes["class"] = "ft-header public-thread";
                 }
 
                 // Like button state
                 if (isLiked)
                 {
-                    btnLike.CssClass = "st-forumthread-like-btn liked";
+                    btnLike.CssClass = "ft-like-btn liked";
                     litLikeText.Text = T("Liked", "Disukai");
                 }
                 else
                 {
-                    btnLike.CssClass = "st-forumthread-like-btn";
+                    btnLike.CssClass = "ft-like-btn";
                     litLikeText.Text = T("Like", "Suka");
                 }
 
@@ -317,7 +317,7 @@ namespace ScienceBuddy.Student
         // ── Set discussion badge ──────────────────────────────────────
         private void SetDiscussionBadge(string discussionType)
         {
-            string badgeClass = "st-forumthread-disc-badge ";
+            string badgeClass = "ft-disc-badge ";
             string badgeText = "";
 
             switch ((discussionType ?? "").ToLower())
