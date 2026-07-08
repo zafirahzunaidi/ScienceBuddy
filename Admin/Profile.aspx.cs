@@ -8,11 +8,9 @@ namespace ScienceBuddy.Admin
 {
     public partial class Profile : Page
     {
-        private string ConnStr =>
-            ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+        private string ConnStr => ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
-        protected string CurrentLanguage =>
-            ((ScienceBuddy.SiteMaster)Master).CurrentLanguage;
+        protected string CurrentLanguage => ((ScienceBuddy.SiteMaster)Master).CurrentLanguage;
 
         protected string T(string en, string bm)
         {
