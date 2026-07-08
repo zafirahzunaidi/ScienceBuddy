@@ -17,6 +17,10 @@ namespace ScienceBuddy.Admin
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            // AJAX handler for Add Teacher
+            if (Request.QueryString["handler"] == "TeacherCRUD" && Request.HttpMethod == "POST")
+            { HandleTeacherAjax(); return; }
+
             if (Session["userId"] == null) { Response.Redirect("~/Login.aspx", false); return; }
             if (Session["role"] == null || Session["role"].ToString() != "Admin") { Response.Redirect("~/Login.aspx", false); return; }
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
@@ -163,5 +167,77 @@ namespace ScienceBuddy.Admin
         private string SS(SqlConnection c, string sql) { try { using (var cmd = new SqlCommand(sql, c)) { var v = cmd.ExecuteScalar(); return v!=null&&v!=DBNull.Value?Convert.ToInt32(v).ToString():"0"; } } catch { return "0"; } }
         private static string NS(object v) { return (v==null||v==DBNull.Value)?"":v.ToString(); }
         private static string GI(string n) { if (string.IsNullOrWhiteSpace(n)) return "T"; var p=n.Trim().Split(' '); return p.Length>=2?(p[0][0].ToString()+p[p.Length-1][0].ToString()).ToUpper():n.Substring(0,Math.Min(2,n.Length)).ToUpper(); }
+
+        // ── Add Teacher AJAX ─────────────────────────────────────────
+        private void HandleTeacherAjax()
+        {
+            Response.ContentType = "application/json";
+            try
+            {
+                if (Session["userId"] == null || Session["role"]?.ToString() != "Admin")
+                { Response.Write("{\"success\":false,\"msg\":\"Unauthorized\"}"); Response.End(); return; }
+
+                string action = Request.QueryString["action"] ?? "";
+                if (action != "addTeacher") { Response.Write("{\"success\":false,\"msg\":\"Unknown\"}"); Response.End(); return; }
+
+                string name          = Request.QueryString["name"]          ?? "";
+                string username      = Request.QueryString["username"]      ?? "";
+                string email         = Request.QueryString["email"]         ?? "";
+                string password      = Request.QueryString["password"]      ?? "";
+                string phone         = Request.QueryString["phone"]         ?? "";
+                string qualification = Request.QueryString["qualification"] ?? "";
+                string lang          = Request.QueryString["lang"]          ?? "EN";
+                string adminId       = Session["userId"].ToString();
+
+                if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(email))
+                { Response.Write("{\"success\":false,\"msg\":\"Name, username and email are required.\"}"); Response.End(); return; }
+                if (string.IsNullOrWhiteSpace(password) || password.Length < 8)
+                { Response.Write("{\"success\":false,\"msg\":\"Password must be at least 8 characters.\"}"); Response.End(); return; }
+
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    // Check uniqueness
+                    using (var chk = new SqlCommand("SELECT COUNT(*) FROM dbo.[User] WHERE [email]=@e OR [username]=@u", conn))
+                    { chk.Parameters.AddWithValue("@e", email); chk.Parameters.AddWithValue("@u", username);
+                      if (Convert.ToInt32(chk.ExecuteScalar()) > 0) { Response.Write("{\"success\":false,\"msg\":\"Username or email already exists.\"}"); Response.End(); return; } }
+
+                    // Generate IDs
+                    string userId    = GenId(conn, "User",    "userId",    "U");
+                    string teacherId = GenId(conn, "Teacher", "teacherId", "T");
+
+                    // Insert User
+                    using (var cmd = new SqlCommand("INSERT INTO dbo.[User]([userId],[username],[password],[email],[role],[preferredLanguage],[status]) VALUES(@uid,@un,@pw,@em,'Teacher',@lg,'Active')", conn))
+                    { cmd.Parameters.AddWithValue("@uid", userId); cmd.Parameters.AddWithValue("@un", username); cmd.Parameters.AddWithValue("@pw", password); cmd.Parameters.AddWithValue("@em", email); cmd.Parameters.AddWithValue("@lg", lang); cmd.ExecuteNonQuery(); }
+
+                    // Insert Teacher
+                    using (var cmd = new SqlCommand("INSERT INTO dbo.[Teacher]([teacherId],[userId],[name],[phoneNumber],[academicQualification],[status],[approvedDate]) VALUES(@tid,@uid,@name,@ph,@qual,'Pending',NULL)", conn))
+                    { cmd.Parameters.AddWithValue("@tid", teacherId); cmd.Parameters.AddWithValue("@uid", userId); cmd.Parameters.AddWithValue("@name", name);
+                      cmd.Parameters.AddWithValue("@ph", string.IsNullOrEmpty(phone) ? (object)DBNull.Value : phone);
+                      cmd.Parameters.AddWithValue("@qual", string.IsNullOrEmpty(qualification) ? (object)DBNull.Value : qualification);
+                      cmd.ExecuteNonQuery(); }
+
+                    // Log
+                    string logId = GenId(conn, "Log", "logId", "LOG");
+                    using (var cmd = new SqlCommand("INSERT INTO dbo.[Log]([logId],[userId],[action],[description],[logDateTime],[status]) VALUES(@a,@b,'Teacher Created',@c,@d,'Success')", conn))
+                    { cmd.Parameters.AddWithValue("@a", logId); cmd.Parameters.AddWithValue("@b", adminId);
+                      cmd.Parameters.AddWithValue("@c", "Created teacher: " + name + " (" + teacherId + ").");
+                      cmd.Parameters.AddWithValue("@d", DateTime.Now); cmd.ExecuteNonQuery(); }
+
+                    // Welcome notification
+                    string notifId = GenId(conn, "Notification", "notificationId", "N");
+                    using (var cmd = new SqlCommand("INSERT INTO dbo.[Notification]([notificationId],[toUserId],[titleEN],[titleBM],[messageEN],[messageBM],[isRead],[createdAt]) VALUES(@a,@b,'Welcome to ScienceBuddy!','Selamat Datang ke ScienceBuddy!','Your teacher account has been created. Pending approval.','Akaun guru anda telah dicipta. Menunggu kelulusan.',0,@c)", conn))
+                    { cmd.Parameters.AddWithValue("@a", notifId); cmd.Parameters.AddWithValue("@b", userId); cmd.Parameters.AddWithValue("@c", DateTime.Now); cmd.ExecuteNonQuery(); }
+                }
+                Response.Write("{\"success\":true}");
+            }
+            catch (Exception ex) { Response.Write("{\"success\":false,\"msg\":\"" + EscJ(ex.Message) + "\"}"); }
+            Response.End();
+        }
+
+        private string GenId(SqlConnection c, string tbl, string col, string pfx)
+        { using (var cmd = new SqlCommand(string.Format("SELECT TOP 1 [{0}] FROM dbo.[{1}] ORDER BY [{0}] DESC", col, tbl), c)) { var v = cmd.ExecuteScalar(); if (v == null || v == DBNull.Value) return pfx + "001"; string l = v.ToString(); int n; int.TryParse(l.Substring(pfx.Length), out n); n++; return pfx + n.ToString().PadLeft(l.Length - pfx.Length, '0'); } }
+
+        private static string EscJ(string s) { return (s ?? "").Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", ""); }
     }
 }

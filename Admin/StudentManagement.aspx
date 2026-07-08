@@ -172,7 +172,12 @@
         <p class="sm-header-sub"><%= T("Manage, monitor and explore student learning progress across ScienceBuddy.", "Urus, pantau dan terokai kemajuan pembelajaran pelajar di ScienceBuddy.") %></p>
         <span class="sm-badge-dir"><i class="bi bi-people-fill"></i> <%= T("Student Directory", "Direktori Pelajar") %></span>
     </div>
-    <div class="sm-header-icon"><i class="bi bi-mortarboard-fill"></i></div>
+    <div style="display:flex;align-items:center;gap:var(--space-md);">
+        <div class="sm-header-icon"><i class="bi bi-mortarboard-fill"></i></div>
+        <a href="javascript:;" onclick="openAddStudent()" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:linear-gradient(135deg,#1D4ED8,#2563EB,#3B82F6);color:#fff;border-radius:12px;font-weight:700;font-size:.9rem;text-decoration:none;box-shadow:0 6px 20px rgba(37,99,235,.35);transition:all .25s;">
+            <i class="bi bi-person-plus-fill"></i> <%= T("+ Add Student", "+ Tambah Pelajar") %>
+        </a>
+    </div>
 </div>
 
 <%-- INSIGHT CARDS --%>
@@ -316,5 +321,76 @@
 </div>
 </asp:Panel>
 <asp:Literal ID="litMXPPct" runat="server" Text="0" Visible="false" />
+
+<%-- ADD STUDENT MODAL --%>
+<div id="addStudentOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:2000;align-items:center;justify-content:center;padding:20px;">
+<div style="background:#fff;border-radius:20px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.2);animation:smIn .3s ease;">
+<style>@keyframes smIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.add-field{margin-bottom:16px;}.add-label{font-size:.75rem;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;display:block;}
+.add-input{width:100%;padding:10px 14px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:.9rem;transition:border-color .2s;}.add-input:focus{outline:none;border-color:#2563EB;box-shadow:0 0 0 3px rgba(37,99,235,.1);}
+.add-input.error{border-color:#DC2626;}.add-err{font-size:.75rem;color:#DC2626;margin-top:3px;display:none;}.add-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+</style>
+<div style="padding:24px 28px;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;">
+    <div><div style="font-family:var(--font-primary);font-size:1.1rem;font-weight:800;display:flex;align-items:center;gap:8px;"><i class="bi bi-person-plus-fill" style="color:#2563EB;"></i> <%= T("Add New Student","Tambah Pelajar Baharu") %></div><div style="font-size:.8rem;color:#64748B;margin-top:2px;"><%= T("Create a new student account.","Cipta akaun pelajar baharu.") %></div></div>
+    <button onclick="closeAddStudent()" style="width:36px;height:36px;border:none;background:#F1F5F9;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;"><i class="bi bi-x-lg"></i></button>
+</div>
+<div style="padding:24px 28px;">
+<div class="add-grid">
+<div class="add-field"><label class="add-label"><%= T("Full Name *","Nama Penuh *") %></label><input id="s_name" class="add-input" type="text" /><div class="add-err" id="e_name">Required</div></div>
+<div class="add-field"><label class="add-label"><%= T("Username *","Nama Pengguna *") %></label><input id="s_username" class="add-input" type="text" /><div class="add-err" id="e_username">Required</div></div>
+<div class="add-field"><label class="add-label"><%= T("Email *","E-mel *") %></label><input id="s_email" class="add-input" type="email" /><div class="add-err" id="e_email">Required</div></div>
+<div class="add-field"><label class="add-label"><%= T("Phone","Telefon") %></label><input id="s_phone" class="add-input" type="text" /></div>
+<div class="add-field"><label class="add-label"><%= T("Password *","Kata Laluan *") %></label><input id="s_pw" class="add-input" type="password" /><div class="add-err" id="e_pw">Min 8 chars</div></div>
+<div class="add-field"><label class="add-label"><%= T("Confirm Password *","Sahkan Kata Laluan *") %></label><input id="s_pw2" class="add-input" type="password" /><div class="add-err" id="e_pw2">Passwords do not match</div></div>
+<div class="add-field"><label class="add-label"><%= T("Language","Bahasa") %></label><select id="s_lang" class="add-input"><option value="EN">English</option><option value="BM">Bahasa Melayu</option></select></div>
+<div class="add-field"><label class="add-label"><%= T("Level","Tahap") %></label><select id="s_level" class="add-input"><option value="LV001">Beginner</option><option value="LV002">Intermediate</option><option value="LV003">Advanced</option></select></div>
+</div>
+<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid #F1F5F9;">
+<button onclick="closeAddStudent()" style="padding:10px 22px;border-radius:10px;border:1.5px solid #E2E8F0;background:#fff;font-weight:600;cursor:pointer;"><%= T("Cancel","Batal") %></button>
+<button onclick="submitAddStudent()" style="padding:10px 26px;border-radius:10px;border:none;background:linear-gradient(135deg,#1D4ED8,#3B82F6);color:#fff;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(37,99,235,.3);"><i class="bi bi-person-plus-fill"></i> <%= T("Create Student","Cipta Pelajar") %></button>
+</div>
+</div></div></div>
+
+<script>
+function openAddStudent(){var o=document.getElementById('addStudentOverlay');o.style.display='flex';}
+function closeAddStudent(){document.getElementById('addStudentOverlay').style.display='none';}
+function submitAddStudent(){
+    var n=document.getElementById('s_name').value.trim(),u=document.getElementById('s_username').value.trim(),e=document.getElementById('s_email').value.trim(),pw=document.getElementById('s_pw').value,pw2=document.getElementById('s_pw2').value;
+    var ok=true;
+    ['e_name','e_username','e_email','e_pw','e_pw2'].forEach(function(id){document.getElementById(id).style.display='none';});
+    if(!n){document.getElementById('e_name').style.display='block';ok=false;}
+    if(!u){document.getElementById('e_username').style.display='block';ok=false;}
+    if(!e||e.indexOf('@')<0){document.getElementById('e_email').style.display='block';ok=false;}
+    if(pw.length<8){document.getElementById('e_pw').style.display='block';ok=false;}
+    if(pw!==pw2){document.getElementById('e_pw2').style.display='block';ok=false;}
+    if(!ok)return;
+    // Collect extra fields before closing overlay
+    var ph=document.getElementById('s_phone').value.trim(),lang=document.getElementById('s_lang').value,lv=document.getElementById('s_level').value;
+    // Hide overlay so SweetAlert is visible on top
+    closeAddStudent();
+    Swal.fire({
+        title:'<%= T("Create this student?","Cipta pelajar ini?") %>',
+        html:'<div style="text-align:left;margin-top:8px;"><b><%= T("Name","Nama") %>:</b> '+n+'<br><b>Username:</b> '+u+'<br><b>Email:</b> '+e+'</div>',
+        icon:'question',showCancelButton:true,
+        confirmButtonText:'<i class="bi bi-person-plus-fill"></i> <%= T("Yes, Create","Ya, Cipta") %>',
+        cancelButtonText:'<%= T("Cancel","Batal") %>',
+        confirmButtonColor:'#2563EB',
+        reverseButtons:true
+    }).then(function(r){
+        if(!r.isConfirmed){openAddStudent();return;} // reopen if cancelled
+        fetch(window.location.pathname+'?handler=StudentCRUD&action=add&name='+encodeURIComponent(n)+'&username='+encodeURIComponent(u)+'&email='+encodeURIComponent(e)+'&password='+encodeURIComponent(pw)+'&phone='+encodeURIComponent(ph)+'&lang='+lang+'&levelId='+lv,{method:'POST',headers:{'X-Requested-With':'XMLHttpRequest'}})
+        .then(function(r){return r.json();})
+        .then(function(d){
+            if(d.success){
+                Swal.fire({icon:'success',title:'<%= T("Student Created!","Pelajar Dicipta!") %>',text:'<%= T("The account has been added to ScienceBuddy.","Akaun telah ditambah ke ScienceBuddy.") %>',confirmButtonColor:'#2563EB',timer:3000,timerProgressBar:true})
+                .then(function(){location.reload();});
+            } else {
+                openAddStudent();
+                Swal.fire({icon:'error',title:'<%= T("Error","Ralat") %>',text:d.msg,confirmButtonColor:'#DC2626'});
+            }
+        }).catch(function(){openAddStudent();Swal.fire({icon:'error',title:'Network Error',text:'Please try again.'});});
+    });
+}
+</script>
 
 </asp:Content>

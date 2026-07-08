@@ -140,7 +140,12 @@
         <p class="pm-header-sub"><%= T("Manage parent accounts, monitor engagement and parent-child communication.", "Urus akaun ibu bapa, pantau penglibatan dan komunikasi ibu bapa-anak.") %></p>
         <span class="pm-header-badge"><i class="bi bi-house-heart-fill"></i> <%= T("Family Directory", "Direktori Keluarga") %></span>
     </div>
-    <div class="pm-header-icon"><i class="bi bi-people-fill"></i></div>
+    <div style="display:flex;align-items:center;gap:var(--space-md);">
+        <div class="pm-header-icon"><i class="bi bi-people-fill"></i></div>
+        <a href="javascript:;" onclick="openAddParent()" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:linear-gradient(135deg,#0E7490,#0891B2,#22D3EE);color:#fff;border-radius:12px;font-weight:700;font-size:.9rem;text-decoration:none;box-shadow:0 6px 20px rgba(8,145,178,.35);transition:all .25s;">
+            <i class="bi bi-person-plus-fill"></i> <%= T("+ Add Parent", "+ Tambah Ibu Bapa") %>
+        </a>
+    </div>
 </div>
 
 <div class="pm-insights">
@@ -280,4 +285,63 @@
     </div>
 </asp:Panel>
 
+<%-- ADD PARENT MODAL --%>
+<div id="addParentOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:2000;align-items:center;justify-content:center;padding:20px;">
+<div style="background:#fff;border-radius:20px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.2);animation:pmIn .3s ease;">
+<style>@keyframes pmIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.pm-add-field{margin-bottom:16px;}.pm-add-label{font-size:.75rem;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;display:block;}
+.pm-add-input{width:100%;padding:10px 14px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:.9rem;transition:border-color .2s;}.pm-add-input:focus{outline:none;border-color:#0891B2;box-shadow:0 0 0 3px rgba(8,145,178,.1);}
+.pm-add-err{font-size:.75rem;color:#DC2626;margin-top:3px;display:none;}.pm-add-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+</style>
+<div style="padding:24px 28px;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;">
+    <div><div style="font-family:var(--font-primary);font-size:1.1rem;font-weight:800;display:flex;align-items:center;gap:8px;"><i class="bi bi-person-plus-fill" style="color:#0891B2;"></i> <%= T("Add New Parent","Tambah Ibu Bapa Baharu") %></div><div style="font-size:.8rem;color:#64748B;margin-top:2px;"><%= T("Create a new parent account.","Cipta akaun ibu bapa baharu.") %></div></div>
+    <button onclick="closeAddParent()" style="width:36px;height:36px;border:none;background:#F1F5F9;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;"><i class="bi bi-x-lg"></i></button>
+</div>
+<div style="padding:24px 28px;">
+<div class="pm-add-grid">
+<div class="pm-add-field"><label class="pm-add-label"><%= T("Full Name *","Nama Penuh *") %></label><input id="p_name" class="pm-add-input" type="text" /><div class="pm-add-err" id="pe_name"><%= T("Required","Diperlukan") %></div></div>
+<div class="pm-add-field"><label class="pm-add-label"><%= T("Username *","Nama Pengguna *") %></label><input id="p_username" class="pm-add-input" type="text" /><div class="pm-add-err" id="pe_username"><%= T("Required","Diperlukan") %></div></div>
+<div class="pm-add-field"><label class="pm-add-label"><%= T("Email *","E-mel *") %></label><input id="p_email" class="pm-add-input" type="email" /><div class="pm-add-err" id="pe_email"><%= T("Required","Diperlukan") %></div></div>
+<div class="pm-add-field"><label class="pm-add-label"><%= T("Phone Number","Nombor Telefon") %></label><input id="p_phone" class="pm-add-input" type="text" /></div>
+<div class="pm-add-field"><label class="pm-add-label"><%= T("Password *","Kata Laluan *") %></label><input id="p_pw" class="pm-add-input" type="password" /><div class="pm-add-err" id="pe_pw"><%= T("Min 8 characters","Min 8 aksara") %></div></div>
+<div class="pm-add-field"><label class="pm-add-label"><%= T("Confirm Password *","Sahkan Kata Laluan *") %></label><input id="p_pw2" class="pm-add-input" type="password" /><div class="pm-add-err" id="pe_pw2"><%= T("Passwords do not match","Kata laluan tidak sama") %></div></div>
+<div class="pm-add-field"><label class="pm-add-label"><%= T("Preferred Language","Bahasa Pilihan") %></label><select id="p_lang" class="pm-add-input"><option value="EN">English</option><option value="BM">Bahasa Melayu</option></select></div>
+</div>
+<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid #F1F5F9;">
+<button onclick="closeAddParent()" style="padding:10px 22px;border-radius:10px;border:1.5px solid #E2E8F0;background:#fff;font-weight:600;cursor:pointer;"><%= T("Cancel","Batal") %></button>
+<button onclick="submitAddParent()" style="padding:10px 26px;border-radius:10px;border:none;background:linear-gradient(135deg,#0E7490,#0891B2);color:#fff;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(8,145,178,.3);"><i class="bi bi-person-plus-fill"></i> <%= T("Create Parent","Cipta Ibu Bapa") %></button>
+</div>
+</div></div></div>
+
+<script>
+function openAddParent(){document.getElementById('addParentOverlay').style.display='flex';}
+function closeAddParent(){document.getElementById('addParentOverlay').style.display='none';}
+function submitAddParent(){
+    var n=document.getElementById('p_name').value.trim(),u=document.getElementById('p_username').value.trim(),e=document.getElementById('p_email').value.trim(),pw=document.getElementById('p_pw').value,pw2=document.getElementById('p_pw2').value;
+    var ok=true;['pe_name','pe_username','pe_email','pe_pw','pe_pw2'].forEach(function(id){document.getElementById(id).style.display='none';});
+    if(!n){document.getElementById('pe_name').style.display='block';ok=false;}
+    if(!u){document.getElementById('pe_username').style.display='block';ok=false;}
+    if(!e||e.indexOf('@')<0){document.getElementById('pe_email').style.display='block';ok=false;}
+    if(pw.length<8){document.getElementById('pe_pw').style.display='block';ok=false;}
+    if(pw!==pw2){document.getElementById('pe_pw2').style.display='block';ok=false;}
+    if(!ok)return;
+    var ph=document.getElementById('p_phone').value.trim(),lang=document.getElementById('p_lang').value;
+    closeAddParent();
+    Swal.fire({
+        title:'<%= T("Create this parent?","Cipta ibu bapa ini?") %>',
+        html:'<div style="text-align:left;margin-top:8px;"><b><%= T("Name","Nama") %>:</b> '+n+'<br><b>Username:</b> '+u+'<br><b>Email:</b> '+e+'</div>',
+        icon:'question',showCancelButton:true,
+        confirmButtonText:'<i class="bi bi-person-plus-fill"></i> <%= T("Yes, Create","Ya, Cipta") %>',
+        cancelButtonText:'<%= T("Cancel","Batal") %>',
+        confirmButtonColor:'#0891B2',reverseButtons:true
+    }).then(function(r){
+        if(!r.isConfirmed){openAddParent();return;}
+        fetch(window.location.pathname+'?handler=ParentCRUD&action=addParent&name='+encodeURIComponent(n)+'&username='+encodeURIComponent(u)+'&email='+encodeURIComponent(e)+'&password='+encodeURIComponent(pw)+'&phone='+encodeURIComponent(ph)+'&lang='+lang,{method:'POST',headers:{'X-Requested-With':'XMLHttpRequest'}})
+        .then(function(r){return r.json();}).then(function(d){
+            if(d.success){Swal.fire({icon:'success',title:'<%= T("Parent Created!","Ibu Bapa Dicipta!") %>',text:'<%= T("The account has been added.","Akaun telah ditambah.") %>',confirmButtonColor:'#0891B2',timer:3000,timerProgressBar:true}).then(function(){location.reload();});}
+            else{openAddParent();Swal.fire({icon:'error',title:'<%= T("Error","Ralat") %>',text:d.msg});}
+        }).catch(function(){openAddParent();Swal.fire({icon:'error',title:'Network Error',text:'Please try again.'});});
+    });
+}
+</script>
 </asp:Content>
