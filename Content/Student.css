@@ -2137,3 +2137,44 @@
 
 /* Responsive */
 @media(max-width:767px){.st-quizreview-header{padding:var(--space-lg);}.st-quizreview-header-title{font-size:1.125rem;}.st-quizreview-card{padding:var(--space-lg);}.st-quizreview-actions{flex-direction:column;}.st-quizreview-btn{justify-content:center;}}
+
+/* ═══════════════════════════════════════════════════════════════
+   PAGE: VIRTUAL LABS
+   ═══════════════════════════════════════════════════════════════ */
+
+.st-virtuallabs-header{margin-bottom:var(--space-xl);}
+.st-virtuallabs-title{font-family:var(--font-primary);font-size:1.75rem;font-weight:800;color:var(--color-text);}
+.st-virtuallabs-subtitle{font-size:.9375rem;color:var(--color-text-secondary);margin-top:4px;}
+
+.st-virtuallabs-filters{display:flex;flex-wrap:wrap;gap:var(--space-sm);margin-bottom:var(--space-xl);align-items:center;}
+.st-virtuallabs-filters select{padding:8px 14px;border:1.5px solid var(--border-color);border-radius:var(--border-radius);font-size:.875rem;background:var(--color-white);min-width:140px;}
+
+.st-virtuallabs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:var(--space-md);margin-bottom:var(--space-xl);}
+
+.st-virtuallabs-card{background:var(--color-white);border-radius:var(--border-radius-xl);border:1.5px solid var(--border-color);box-shadow:var(--shadow-sm);overflow:hidden;display:flex;flex-direction:column;transition:transform .2s,box-shadow .2s;}
+.st-virtuallabs-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
+.st-virtuallabs-card-top{height:8px;}
+.st-virtuallabs-card-top.easy{background:linear-gradient(90deg,#22C55E,#4ADE80);}
+.st-virtuallabs-card-top.medium{background:linear-gradient(90deg,#F59E0B,#FBBF24);}
+.st-virtuallabs-card-top.hard{background:linear-gradient(90deg,#EF4444,#F87171);}
+.st-virtuallabs-card-body{padding:var(--space-lg);flex:1;display:flex;flex-direction:column;gap:var(--space-sm);}
+.st-virtuallabs-card-icon{font-size:2rem;margin-bottom:var(--space-xs);}
+.st-virtuallabs-card-title{font-family:var(--font-primary);font-size:1rem;font-weight:700;color:var(--color-text);}
+.st-virtuallabs-card-desc{font-size:.8125rem;color:var(--color-text-secondary);line-height:1.5;flex:1;}
+.st-virtuallabs-card-meta{display:flex;flex-wrap:wrap;gap:var(--space-sm);font-size:.75rem;color:var(--color-text-muted);}
+.st-virtuallabs-card-meta span{display:flex;align-items:center;gap:3px;}
+.st-virtuallabs-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:var(--border-radius-full);font-size:.6875rem;font-weight:700;}
+.st-virtuallabs-badge-done{background:#DCFCE7;color:#15803D;}
+.st-virtuallabs-badge-new{background:#F0F7FF;color:#2563EB;}
+.st-virtuallabs-card-footer{padding:var(--space-md) var(--space-lg);border-top:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;}
+
+@media(max-width:767px){.st-virtuallabs-grid{grid-template-columns:1fr;}}
+
+/* ═══════════════════════════════════════════════════════════════
+   PAGE: VIRTUAL LAB (single lab router)
+   ═══════════════════════════════════════════════════════════════ */
+
+.st-virtuallab-error{background:var(--color-white);border-radius:var(--border-radius-xl);border:2px solid var(--border-color);padding:var(--space-3xl);text-align:center;max-width:520px;margin:var(--space-2xl) auto;}
+.st-virtuallab-error-icon{font-size:3.5rem;margin-bottom:var(--space-md);}
+.st-virtuallab-error-title{font-family:var(--font-primary);font-size:1.25rem;font-weight:800;color:var(--color-text);margin-bottom:var(--space-sm);}
+.st-virtuallab-error-desc{font-size:.9375rem;color:var(--color-text-secondary);margin-bottom:var(--space-lg);line-height:1.6;}

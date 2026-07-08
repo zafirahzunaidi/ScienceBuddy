@@ -221,7 +221,9 @@
     <Content Include="Scripts\WebForms\WebUIValidation.js" />
     <Content Include="Site.Master" />
     <Content Include="Student\AIStudyCompanion.aspx" />
+    <Content Include="Student\AIStudyCompanion2.aspx" />
     <Content Include="Student\Chat.aspx" />
+    <Content Include="Student\Chat2.aspx" />
     <Content Include="Student\CreateForumPost.aspx" />
     <Content Include="Student\Dashboard.aspx" />
     <Content Include="Student\Forum.aspx" />
@@ -239,7 +241,9 @@
     <Content Include="Student\LevelDetails.aspx" />
     <Content Include="Student\LevelDetails2.aspx" />
     <Content Include="Student\LiveSessions.aspx" />
+    <Content Include="Student\LiveSessions2.aspx" />
     <Content Include="Student\Messages.aspx" />
+    <Content Include="Student\Messages2.aspx" />
     <Content Include="Student\MyLearning.aspx" />
     <Content Include="Student\MyLearning2.aspx" />
     <Content Include="Student\MyProfile.aspx" />
@@ -261,7 +265,9 @@
     <Content Include="Student\UnitDetails.aspx" />
     <Content Include="Student\UnitDetails2.aspx" />
     <Content Include="Student\VirtualLab.aspx" />
+    <Content Include="Student\VirtualLab2.aspx" />
     <Content Include="Student\VirtualLabs.aspx" />
+    <Content Include="Student\VirtualLabs2.aspx" />
     <Content Include="Teacher\Dashboard.aspx" />
     <Content Include="Teacher\ForumReply.aspx" />
     <Content Include="Teacher\manageMaterials.aspx" />
@@ -560,12 +566,26 @@
     <Compile Include="Student\AIStudyCompanion.aspx.designer.cs">
       <DependentUpon>AIStudyCompanion.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Student\AIStudyCompanion2.aspx.cs">
+      <DependentUpon>AIStudyCompanion2.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\AIStudyCompanion2.aspx.designer.cs">
+      <DependentUpon>AIStudyCompanion2.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Student\Chat.aspx.cs">
       <DependentUpon>Chat.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Student\Chat.aspx.designer.cs">
       <DependentUpon>Chat.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Student\Chat2.aspx.cs">
+      <DependentUpon>Chat2.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\Chat2.aspx.designer.cs">
+      <DependentUpon>Chat2.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\CreateForumPost.aspx.cs">
       <DependentUpon>CreateForumPost.aspx</DependentUpon>
@@ -686,12 +706,26 @@
     <Compile Include="Student\LiveSessions.aspx.designer.cs">
       <DependentUpon>LiveSessions.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Student\LiveSessions2.aspx.cs">
+      <DependentUpon>LiveSessions2.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\LiveSessions2.aspx.designer.cs">
+      <DependentUpon>LiveSessions2.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Student\Messages.aspx.cs">
       <DependentUpon>Messages.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Student\Messages.aspx.designer.cs">
       <DependentUpon>Messages.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Student\Messages2.aspx.cs">
+      <DependentUpon>Messages2.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\Messages2.aspx.designer.cs">
+      <DependentUpon>Messages2.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\MyLearning.aspx.cs">
       <DependentUpon>MyLearning.aspx</DependentUpon>
@@ -840,12 +874,26 @@
     <Compile Include="Student\VirtualLab.aspx.designer.cs">
       <DependentUpon>VirtualLab.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Student\VirtualLab2.aspx.cs">
+      <DependentUpon>VirtualLab2.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\VirtualLab2.aspx.designer.cs">
+      <DependentUpon>VirtualLab2.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Student\VirtualLabs.aspx.cs">
       <DependentUpon>VirtualLabs.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Student\VirtualLabs.aspx.designer.cs">
       <DependentUpon>VirtualLabs.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Student\VirtualLabs2.aspx.cs">
+      <DependentUpon>VirtualLabs2.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\VirtualLabs2.aspx.designer.cs">
+      <DependentUpon>VirtualLabs2.aspx</DependentUpon>
     </Compile>
     <Compile Include="Teacher\Dashboard.aspx.cs">
       <DependentUpon>Dashboard.aspx</DependentUpon>

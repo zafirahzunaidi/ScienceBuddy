@@ -1,6 +1,14 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="VirtualLab.aspx.cs" Inherits="ScienceBuddy.Student.VirtualLab1" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="VirtualLab2.aspx.cs"
+    Inherits="ScienceBuddy.Student.VirtualLab" MasterPageFile="~/Site.Master" Title="Virtual Lab" %>
+
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
-    <link href="<%: ResolveUrl("~/Content/Student.css") %>" rel="stylesheet" />
+<style>
+.vlr-error{background:var(--color-white);border-radius:var(--border-radius-xl);border:2px solid var(--border-color);
+    padding:var(--space-3xl);text-align:center;max-width:520px;margin:var(--space-2xl) auto;}
+.vlr-error-icon{font-size:3.5rem;margin-bottom:var(--space-md);}
+.vlr-error-title{font-family:var(--font-primary);font-size:1.25rem;font-weight:800;color:var(--color-text);margin-bottom:var(--space-sm);}
+.vlr-error-desc{font-size:.9375rem;color:var(--color-text-secondary);margin-bottom:var(--space-lg);line-height:1.6;}
+</style>
 </asp:Content>
 
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
@@ -59,15 +67,14 @@
         </a>
     </div>
 </asp:Content>
-
 <asp:Content ID="cPageTitle" ContentPlaceHolderID="PageTitle" runat="server"><asp:Literal ID="litPageTitle" runat="server" Text="Virtual Lab" /></asp:Content>
 
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 <asp:Panel ID="pnlError" runat="server" Visible="false">
-    <div class="st-virtuallab-error">
-        <div class="st-virtuallab-error-icon">🧪</div>
-        <div class="st-virtuallab-error-title"><asp:Literal ID="litErrorTitle" runat="server" /></div>
-        <div class="st-virtuallab-error-desc"><asp:Literal ID="litErrorDesc" runat="server" /></div>
+    <div class="vlr-error">
+        <div class="vlr-error-icon">🧪</div>
+        <div class="vlr-error-title"><asp:Literal ID="litErrorTitle" runat="server" /></div>
+        <div class="vlr-error-desc"><asp:Literal ID="litErrorDesc" runat="server" /></div>
         <a href="<%: ResolveUrl("~/Student/VirtualLabs.aspx") %>" class="sb-btn sb-btn-primary sb-btn-sm">
             <i class="bi bi-arrow-left"></i> <asp:Literal ID="litErrorBtn" runat="server" />
         </a>
