@@ -231,6 +231,7 @@
     <Content Include="Student\Labs\MatterStateChanger.aspx" />
     <Content Include="Student\Labs\SinkOrFloatMaster.aspx" />
     <Content Include="Student\Lesson.aspx" />
+    <Content Include="Student\Lesson2.aspx" />
     <Content Include="Student\LevelDetails.aspx" />
     <Content Include="Student\LiveSessions.aspx" />
     <Content Include="Student\Messages.aspx" />
@@ -636,6 +637,13 @@
     </Compile>
     <Compile Include="Student\Lesson.aspx.designer.cs">
       <DependentUpon>Lesson.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Student\Lesson2.aspx.cs">
+      <DependentUpon>Lesson2.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\Lesson2.aspx.designer.cs">
+      <DependentUpon>Lesson2.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\LevelDetails.aspx.cs">
       <DependentUpon>LevelDetails.aspx</DependentUpon>

@@ -10,7 +10,7 @@ using System.Web.UI.WebControls;
 
 namespace ScienceBuddy.Student
 {
-    public partial class Dashboard1 : System.Web.UI.Page
+    public partial class Dashboard : System.Web.UI.Page
     {
         private string ConnStr = ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
@@ -457,8 +457,7 @@ namespace ScienceBuddy.Student
             litStatLessonsSub.Text = T("Great job so far!", "Kerja bagus setakat ini!");
         }
 
-        private void SetPersonalityCard(string personalityId, string personalityEN,
-                                        string avatar, string colour, string lang)
+        private void SetPersonalityCard(string personalityId, string personalityEN, string avatar, string colour, string lang)
         {
             // Banner background - pastel shade of personality colour
             string bannerBg = "#DBEAFE"; // default soft blue
