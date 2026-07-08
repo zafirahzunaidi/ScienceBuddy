@@ -1,16 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
+using System.Web;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 
 namespace ScienceBuddy.Student
 {
-    public partial class Dashboard : Page
+    public partial class Dashboard1 : System.Web.UI.Page
     {
-        // ── Connection string ─────────────────────────────────────────
-        private string ConnStr =>
-            ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+        private string ConnStr = ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
         // ── Language helper ────────────────────────────────────────────
         private string CurrentLanguage = "EN";
@@ -23,7 +25,6 @@ namespace ScienceBuddy.Student
             return CurrentLanguage == "BM" ? bm : en;
         }
 
-        // ── Page Load ─────────────────────────────────────────────────
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["userId"] == null || Session["role"] == null ||
@@ -42,10 +43,7 @@ namespace ScienceBuddy.Student
                 LoadDashboard(Session["userId"].ToString());
             }
         }
-
-        /// <summary>
-        /// Reads language from Session → DB → defaults to EN.
-        /// </summary>
+        
         private void InitLanguage()
         {
             string lang = Session["preferredLanguage"] as string;
@@ -104,20 +102,20 @@ namespace ScienceBuddy.Student
                     return;
                 }
 
-                string studentId   = studentData["studentId"].ToString();
-                string name        = studentData["name"].ToString();
-                string nickname    = studentData["nickname"].ToString();
-                int    xp          = studentData["XP"] == DBNull.Value ? 0 : Convert.ToInt32(studentData["XP"]);
-                string levelId     = studentData["currentlevelId"]?.ToString();
-                string levelEN     = studentData["levelNameEN"]?.ToString()  ?? "Beginner";
+                string studentId = studentData["studentId"].ToString();
+                string name = studentData["name"].ToString();
+                string nickname = studentData["nickname"].ToString();
+                int xp = studentData["XP"] == DBNull.Value ? 0 : Convert.ToInt32(studentData["XP"]);
+                string levelId = studentData["currentlevelId"]?.ToString();
+                string levelEN = studentData["levelNameEN"]?.ToString() ?? "Beginner";
                 string personalityId = studentData["personalityId"]?.ToString();
                 string personalityEN = studentData["personalityNameEN"]?.ToString() ?? "Learner";
-                string avatar      = studentData["avatar"]?.ToString();
-                string colour      = studentData["colour"]?.ToString() ?? "#F5F5F5";
-                string lang        = studentData["preferredLanguage"]?.ToString() ?? "EN";
+                string avatar = studentData["avatar"]?.ToString();
+                string colour = studentData["colour"]?.ToString() ?? "#F5F5F5";
+                string lang = studentData["preferredLanguage"]?.ToString() ?? "EN";
 
                 // Counts
-                int badgeCount  = GetBadgeCount(conn, studentId);
+                int badgeCount = GetBadgeCount(conn, studentId);
                 int lessonCount = GetLessonCount(conn, studentId);
 
                 // Hero + master user widget
@@ -143,7 +141,7 @@ namespace ScienceBuddy.Student
                 if (unread > 0)
                 {
                     pnlNotifBadge.Visible = true;
-                    litNotifCount.Text    = unread > 99 ? "99+" : unread.ToString();
+                    litNotifCount.Text = unread > 99 ? "99+" : unread.ToString();
                 }
 
                 // Set all remaining bilingual UI labels
@@ -158,53 +156,53 @@ namespace ScienceBuddy.Student
         private void SetBilingualLabels()
         {
             // Section headings
-            litSecContinue.Text     = T("Continue Learning", "Teruskan Pembelajaran");
-            litSecQuick.Text        = T("Quick Actions", "Tindakan Pantas");
-            litSecNotif.Text        = T("Recent Notifications", "Pemberitahuan Terkini");
-            litSecSocial.Text       = T("Learn Together", "Belajar Bersama");
-            litRecLabel.Text        = T("✨ Recommended for your learning style", "✨ Disyorkan untuk gaya pembelajaran anda");
+            litSecContinue.Text = T("Continue Learning", "Teruskan Pembelajaran");
+            litSecQuick.Text = T("Quick Actions", "Tindakan Pantas");
+            litSecNotif.Text = T("Recent Notifications", "Pemberitahuan Terkini");
+            litSecSocial.Text = T("Learn Together", "Belajar Bersama");
+            litRecLabel.Text = T("✨ Recommended for your learning style", "✨ Disyorkan untuk gaya pembelajaran anda");
 
             // Quick action labels
-            litQALearn.Text         = T("My Learning", "Pembelajaran Saya");
-            litQALearnDesc.Text     = T("Lessons, subtopics &amp; units", "Pelajaran, subtopik &amp; unit");
-            litQAPractice.Text      = T("Practice Library", "Perpustakaan Latihan");
-            litQAPracticeDesc.Text  = T("Quizzes &amp; self-assessment", "Kuiz &amp; penilaian kendiri");
-            litQALab.Text           = T("Virtual Labs", "Makmal Maya");
-            litQALabDesc.Text       = T("Interactive science experiments", "Eksperimen Sains interaktif");
-            litQALive.Text          = T("Live Sessions", "Sesi Langsung");
-            litQALiveDesc.Text      = T("Join teacher-led classes", "Sertai kelas yang dipimpin guru");
-            litQAAI.Text            = T("AI Study Companion", "Rakan Belajar AI");
-            litQAAIDesc.Text        = T("Personalised help &amp; hints", "Bantuan &amp; petunjuk peribadi");
-            litQAProgress.Text      = T("Progress &amp; Rewards", "Kemajuan &amp; Ganjaran");
-            litQAProgressDesc.Text  = T("XP, badges &amp; achievements", "XP, lencana &amp; pencapaian");
-            litQAHistory.Text       = T("Quiz History", "Sejarah Kuiz");
-            litQAHistoryDesc.Text   = T("Past attempts &amp; scores", "Percubaan &amp; skor terdahulu");
+            litQALearn.Text = T("My Learning", "Pembelajaran Saya");
+            litQALearnDesc.Text = T("Lessons, subtopics &amp; units", "Pelajaran, subtopik &amp; unit");
+            litQAPractice.Text = T("Practice Library", "Perpustakaan Latihan");
+            litQAPracticeDesc.Text = T("Quizzes &amp; self-assessment", "Kuiz &amp; penilaian kendiri");
+            litQALab.Text = T("Virtual Labs", "Makmal Maya");
+            litQALabDesc.Text = T("Interactive science experiments", "Eksperimen Sains interaktif");
+            litQALive.Text = T("Live Sessions", "Sesi Langsung");
+            litQALiveDesc.Text = T("Join teacher-led classes", "Sertai kelas yang dipimpin guru");
+            litQAAI.Text = T("AI Study Companion", "Rakan Belajar AI");
+            litQAAIDesc.Text = T("Personalised help &amp; hints", "Bantuan &amp; petunjuk peribadi");
+            litQAProgress.Text = T("Progress &amp; Rewards", "Kemajuan &amp; Ganjaran");
+            litQAProgressDesc.Text = T("XP, badges &amp; achievements", "XP, lencana &amp; pencapaian");
+            litQAHistory.Text = T("Quiz History", "Sejarah Kuiz");
+            litQAHistoryDesc.Text = T("Past attempts &amp; scores", "Percubaan &amp; skor terdahulu");
 
             // Continue learning card
-            litContinueHeader.Text  = T("Pick up where you left off", "Sambung dari tempat anda berhenti");
-            litContinueMeta.Text    = T("Next Lesson", "Pelajaran Seterusnya");
-            litContinueBtn.Text     = T("Continue Learning", "Teruskan Belajar");
+            litContinueHeader.Text = T("Pick up where you left off", "Sambung dari tempat anda berhenti");
+            litContinueMeta.Text = T("Next Lesson", "Pelajaran Seterusnya");
+            litContinueBtn.Text = T("Continue Learning", "Teruskan Belajar");
 
             // Empty states
-            litEmptyTitle.Text      = T("Ready to begin your adventure?", "Bersedia untuk memulakan pengembaraan?");
-            litEmptyDesc.Text       = T("You haven't started any lessons yet. Dive in and discover science!", "Anda belum memulakan sebarang pelajaran. Mulakan dan terokai Sains!");
-            litEmptyBtn.Text        = T("Start Learning", "Mula Belajar");
-            litNotifEmpty.Text      = T("You're all caught up!", "Tiada pemberitahuan baharu!");
-            litNotifEmptyDesc.Text  = T("No new notifications right now. Check back later.", "Tiada pemberitahuan baharu. Semak semula nanti.");
+            litEmptyTitle.Text = T("Ready to begin your adventure?", "Bersedia untuk memulakan pengembaraan?");
+            litEmptyDesc.Text = T("You haven't started any lessons yet. Dive in and discover science!", "Anda belum memulakan sebarang pelajaran. Mulakan dan terokai Sains!");
+            litEmptyBtn.Text = T("Start Learning", "Mula Belajar");
+            litNotifEmpty.Text = T("You're all caught up!", "Tiada pemberitahuan baharu!");
+            litNotifEmptyDesc.Text = T("No new notifications right now. Check back later.", "Tiada pemberitahuan baharu. Semak semula nanti.");
 
             // XP bar
-            litXPBarProgress.Text   = T("Level Progress", "Kemajuan Tahap");
+            litXPBarProgress.Text = T("Level Progress", "Kemajuan Tahap");
 
             // Hero CTA buttons
-            litHeroCTA1.Text        = T("Continue Learning", "Teruskan Belajar");
-            litHeroCTA2.Text        = T("My Progress", "Kemajuan Saya");
+            litHeroCTA1.Text = T("Continue Learning", "Teruskan Belajar");
+            litHeroCTA2.Text = T("My Progress", "Kemajuan Saya");
 
             // Hero eyebrow
-            litHeroEyebrow.Text     = T("Science Learning", "Pembelajaran Sains");
+            litHeroEyebrow.Text = T("Science Learning", "Pembelajaran Sains");
 
             // View All links
-            litViewAll.Text         = T("View All", "Lihat Semua");
-            litSeeAll.Text          = T("See All", "Lihat Semua");
+            litViewAll.Text = T("View All", "Lihat Semua");
+            litSeeAll.Text = T("See All", "Lihat Semua");
         }
 
         // ── Data retrieval helpers ────────────────────────────────────
@@ -325,18 +323,18 @@ namespace ScienceBuddy.Student
                     return;
                 }
 
-                var row       = dt.Rows[0];
-                bool isBM     = lang == "BM";
-                string title  = isBM ? row["lessonTitleBM"].ToString()    : row["lessonTitleEN"].ToString();
-                string unit   = isBM ? row["unitNameBM"].ToString()       : row["unitNameEN"].ToString();
-                string sub    = isBM ? row["subtopicTitleBM"].ToString()  : row["subtopicTitleEN"].ToString();
+                var row = dt.Rows[0];
+                bool isBM = lang == "BM";
+                string title = isBM ? row["lessonTitleBM"].ToString() : row["lessonTitleEN"].ToString();
+                string unit = isBM ? row["unitNameBM"].ToString() : row["unitNameEN"].ToString();
+                string sub = isBM ? row["subtopicTitleBM"].ToString() : row["subtopicTitleEN"].ToString();
 
                 if (string.IsNullOrWhiteSpace(title)) title = isBM ? row["lessonTitleEN"].ToString() : row["lessonTitleBM"].ToString();
 
-                pnlContinue.Visible      = true;
+                pnlContinue.Visible = true;
                 pnlContinueEmpty.Visible = false;
-                litContinueTitle.Text    = System.Web.HttpUtility.HtmlEncode(title);
-                litContinueSub.Text      = System.Web.HttpUtility.HtmlEncode(unit + (string.IsNullOrWhiteSpace(sub) ? "" : " › " + sub));
+                litContinueTitle.Text = System.Web.HttpUtility.HtmlEncode(title);
+                litContinueSub.Text = System.Web.HttpUtility.HtmlEncode(unit + (string.IsNullOrWhiteSpace(sub) ? "" : " › " + sub));
             }
         }
 
@@ -350,8 +348,8 @@ namespace ScienceBuddy.Student
 
             if (unread > 0)
             {
-                pnlUnreadBadge.Visible  = true;
-                litUnreadCount.Text     = unread > 99 ? "99+" : unread.ToString();
+                pnlUnreadBadge.Visible = true;
+                litUnreadCount.Text = unread > 99 ? "99+" : unread.ToString();
             }
             const string sql = @"
                 SELECT TOP 3
@@ -375,7 +373,7 @@ namespace ScienceBuddy.Student
                 }
 
                 bool isBM = lang == "BM";
-                var list  = new System.Collections.Generic.List<object>();
+                var list = new System.Collections.Generic.List<object>();
                 foreach (DataRow row in dt.Rows)
                 {
                     string title = isBM ? row["titleBM"].ToString() : row["titleEN"].ToString();
@@ -387,15 +385,15 @@ namespace ScienceBuddy.Student
 
                     list.Add(new
                     {
-                        title   = System.Web.HttpUtility.HtmlEncode(title),
-                        isRead  = Convert.ToBoolean(row["isRead"]),
+                        title = System.Web.HttpUtility.HtmlEncode(title),
+                        isRead = Convert.ToBoolean(row["isRead"]),
                         timeAgo = FormatTimeAgo(created)
                     });
                 }
 
-                pnlNotifications.Visible      = true;
+                pnlNotifications.Visible = true;
                 pnlNotificationsEmpty.Visible = false;
-                rptNotifications.DataSource   = list;
+                rptNotifications.DataSource = list;
                 rptNotifications.DataBind();
             }
         }
@@ -409,11 +407,11 @@ namespace ScienceBuddy.Student
             // Set personality colour for hero gradient
             if (!string.IsNullOrWhiteSpace(colour)) PersonalityColour = colour;
 
-            string displayName  = string.IsNullOrWhiteSpace(nickname) ? name : nickname;
-            litGreeting.Text    = T("Hi, ", "Hai, ") + System.Web.HttpUtility.HtmlEncode(displayName) + "! 👋";
-            litMotivation.Text  = GetMotivation(personalityId);
-            litHeroLevel.Text   = T("Level: ", "Tahap: ") + System.Web.HttpUtility.HtmlEncode(levelEN);
-            litHeroPersonality.Text  = System.Web.HttpUtility.HtmlEncode(personalityEN);
+            string displayName = string.IsNullOrWhiteSpace(nickname) ? name : nickname;
+            litGreeting.Text = T("Hi, ", "Hai, ") + System.Web.HttpUtility.HtmlEncode(displayName) + "! 👋";
+            litMotivation.Text = GetMotivation(personalityId);
+            litHeroLevel.Text = T("Level: ", "Tahap: ") + System.Web.HttpUtility.HtmlEncode(levelEN);
+            litHeroPersonality.Text = System.Web.HttpUtility.HtmlEncode(personalityEN);
             litHeroPersonality2.Text = System.Web.HttpUtility.HtmlEncode(personalityEN);
 
             if (!string.IsNullOrWhiteSpace(avatar))
@@ -423,7 +421,7 @@ namespace ScienceBuddy.Student
                     : avatar.StartsWith("Images/") ? "~/" + avatar
                     : "~/Images/Personality/" + avatar;
                 imgPersonalityAvatar.ImageUrl = ResolveUrl(avatarPath);
-                imgPersonalityAvatar.Visible  = true;
+                imgPersonalityAvatar.Visible = true;
                 // Keep fallback rendered but hidden so JS onerror can show it
                 litAvatarFallback.Text = "<span style=\"display:none;\"><i class=\"bi bi-person-hearts\" style=\"font-size:2.5rem;\"></i></span>";
             }
@@ -436,26 +434,26 @@ namespace ScienceBuddy.Student
 
         private void SetStats(string levelEN, int xp, int badges, int lessons)
         {
-            litHeroXP.Text     = xp.ToString("N0") + " XP";
-            litStatLevel.Text  = System.Web.HttpUtility.HtmlEncode(levelEN);
-            litStatXP.Text     = xp.ToString("N0");
+            litHeroXP.Text = xp.ToString("N0") + " XP";
+            litStatLevel.Text = System.Web.HttpUtility.HtmlEncode(levelEN);
+            litStatXP.Text = xp.ToString("N0");
             litStatBadges.Text = badges.ToString();
             litStatLessons.Text = lessons.ToString();
 
             // XP bar
             litXPBarLabel.Text = xp.ToString("N0") + " XP";
             int pct = Math.Min((xp % 500) * 100 / 500, 100);
-            litXPBarHint.Text  = (500 - (xp % 500)) + T(" XP to next milestone", " XP ke pencapaian seterusnya");
-            xpBarFill.Attributes["data-pct"] = pct.ToString();
+            litXPBarHint.Text = (500 - (xp % 500)) + T(" XP to next milestone", " XP ke pencapaian seterusnya");
+            xpBarFill.Style["width"] = pct + "%";
 
             // Bilingual stat labels
-            litStatLevelLbl.Text   = T("Current Level", "Tahap Semasa");
-            litStatXPLbl.Text      = T("Total XP Earned", "Jumlah XP Diperolehi");
-            litStatBadgesLbl.Text  = T("Badges Earned", "Lencana Diperolehi");
+            litStatLevelLbl.Text = T("Current Level", "Tahap Semasa");
+            litStatXPLbl.Text = T("Total XP Earned", "Jumlah XP Diperolehi");
+            litStatBadgesLbl.Text = T("Badges Earned", "Lencana Diperolehi");
             litStatLessonsLbl.Text = T("Lessons Completed", "Pelajaran Selesai");
-            litStatLevelSub.Text   = T("Keep going to advance!", "Teruskan untuk maju!");
-            litStatXPSub.Text      = T("Every lesson earns XP", "Setiap pelajaran memberi XP");
-            litStatBadgesSub.Text  = T("Complete tasks to earn more", "Selesaikan tugasan untuk lebih banyak");
+            litStatLevelSub.Text = T("Keep going to advance!", "Teruskan untuk maju!");
+            litStatXPSub.Text = T("Every lesson earns XP", "Setiap pelajaran memberi XP");
+            litStatBadgesSub.Text = T("Complete tasks to earn more", "Selesaikan tugasan untuk lebih banyak");
             litStatLessonsSub.Text = T("Great job so far!", "Kerja bagus setakat ini!");
         }
 
@@ -487,7 +485,7 @@ namespace ScienceBuddy.Student
                     : avatar.StartsWith("Images/") ? "~/" + avatar
                     : "~/Images/Personality/" + avatar;
                 imgPersonalityThumb.ImageUrl = ResolveUrl(avatarPath);
-                imgPersonalityThumb.Visible  = true;
+                imgPersonalityThumb.Visible = true;
                 litPersonalityThumbFallback.Text = "<span style=\"display:none;\"><i class=\"bi bi-person-hearts\" style=\"font-size:1.5rem;\"></i></span>";
             }
             else
@@ -500,38 +498,38 @@ namespace ScienceBuddy.Student
             switch (personalityId)
             {
                 case "P001":
-                    litPersonalityRec.Text        = T("You're a goal-getter! Try your next unit quiz to earn a badge.", "Anda seorang pencapai! Cuba kuiz unit seterusnya untuk memperoleh lencana.");
-                    litPersonalityAction.Text     = T("Go to Quiz", "Pergi ke Kuiz");
+                    litPersonalityRec.Text = T("You're a goal-getter! Try your next unit quiz to earn a badge.", "Anda seorang pencapai! Cuba kuiz unit seterusnya untuk memperoleh lencana.");
+                    litPersonalityAction.Text = T("Go to Quiz", "Pergi ke Kuiz");
                     lnkPersonalityAction.NavigateUrl = ResolveUrl("~/Student/Quiz.aspx");
                     break;
                 case "P002":
-                    litPersonalityRec.Text        = T("Explore science your colourful way! Try a virtual lab.", "Terokai Sains dengan cara kreatif! Cuba makmal maya.");
-                    litPersonalityAction.Text     = T("Open Virtual Lab", "Buka Makmal Maya");
+                    litPersonalityRec.Text = T("Explore science your colourful way! Try a virtual lab.", "Terokai Sains dengan cara kreatif! Cuba makmal maya.");
+                    litPersonalityAction.Text = T("Open Virtual Lab", "Buka Makmal Maya");
                     lnkPersonalityAction.NavigateUrl = "#";
                     break;
                 case "P003":
-                    litPersonalityRec.Text        = T("Let's understand the why. Review a lesson or quiz explanation.", "Jom fahami sebab. Semak semula pelajaran atau penjelasan kuiz.");
-                    litPersonalityAction.Text     = T("Review Lessons", "Semak Pelajaran");
+                    litPersonalityRec.Text = T("Let's understand the why. Review a lesson or quiz explanation.", "Jom fahami sebab. Semak semula pelajaran atau penjelasan kuiz.");
+                    litPersonalityAction.Text = T("Review Lessons", "Semak Pelajaran");
                     lnkPersonalityAction.NavigateUrl = ResolveUrl("~/Student/Learning.aspx");
                     break;
                 case "P004":
-                    litPersonalityRec.Text        = T("Challenge yourself today! Jump into the practice library.", "Cabar diri anda hari ini! Masuk ke perpustakaan latihan.");
-                    litPersonalityAction.Text     = T("Practice Now", "Latihan Sekarang");
+                    litPersonalityRec.Text = T("Challenge yourself today! Jump into the practice library.", "Cabar diri anda hari ini! Masuk ke perpustakaan latihan.");
+                    litPersonalityAction.Text = T("Practice Now", "Latihan Sekarang");
                     lnkPersonalityAction.NavigateUrl = ResolveUrl("~/Student/Quiz.aspx");
                     break;
                 case "P005":
-                    litPersonalityRec.Text        = T("Take it step by step. Continue where you left off.", "Langkah demi langkah. Teruskan dari tempat anda berhenti.");
-                    litPersonalityAction.Text     = T("Continue Learning", "Teruskan Belajar");
+                    litPersonalityRec.Text = T("Take it step by step. Continue where you left off.", "Langkah demi langkah. Teruskan dari tempat anda berhenti.");
+                    litPersonalityAction.Text = T("Continue Learning", "Teruskan Belajar");
                     lnkPersonalityAction.NavigateUrl = ResolveUrl("~/Student/Learning.aspx");
                     break;
                 case "P006":
-                    litPersonalityRec.Text        = T("Learn together! Join a forum discussion or live session.", "Belajar bersama! Sertai perbincangan forum atau sesi langsung.");
-                    litPersonalityAction.Text     = T("Go to Forum", "Pergi ke Forum");
+                    litPersonalityRec.Text = T("Learn together! Join a forum discussion or live session.", "Belajar bersama! Sertai perbincangan forum atau sesi langsung.");
+                    litPersonalityAction.Text = T("Go to Forum", "Pergi ke Forum");
                     lnkPersonalityAction.NavigateUrl = ResolveUrl("~/Student/Forum.aspx");
                     break;
                 default:
-                    litPersonalityRec.Text        = T("Keep exploring science at your own pace!", "Teruskan meneroka Sains mengikut rentak anda!");
-                    litPersonalityAction.Text     = T("Start Learning", "Mula Belajar");
+                    litPersonalityRec.Text = T("Keep exploring science at your own pace!", "Teruskan meneroka Sains mengikut rentak anda!");
+                    litPersonalityAction.Text = T("Start Learning", "Mula Belajar");
                     lnkPersonalityAction.NavigateUrl = ResolveUrl("~/Student/Learning.aspx");
                     break;
             }
@@ -539,13 +537,13 @@ namespace ScienceBuddy.Student
 
         private void ShowContinueEmpty()
         {
-            pnlContinue.Visible      = false;
+            pnlContinue.Visible = false;
             pnlContinueEmpty.Visible = true;
         }
 
         private void ShowNotificationsEmpty()
         {
-            pnlNotifications.Visible      = false;
+            pnlNotifications.Visible = false;
             pnlNotificationsEmpty.Visible = true;
         }
 
@@ -585,11 +583,11 @@ namespace ScienceBuddy.Student
                     break;
             }
 
-            pnlSectionRec.Style["order"]      = oRec.ToString();
+            pnlSectionRec.Style["order"] = oRec.ToString();
             pnlSectionContinue.Style["order"] = oContinue.ToString();
-            pnlSectionQuick.Style["order"]    = oQuick.ToString();
-            pnlSectionSocial.Style["order"]   = oSocial.ToString();
-            pnlSectionNotif.Style["order"]    = oNotif.ToString();
+            pnlSectionQuick.Style["order"] = oQuick.ToString();
+            pnlSectionSocial.Style["order"] = oSocial.ToString();
+            pnlSectionNotif.Style["order"] = oNotif.ToString();
         }
 
         // ── Utility helpers ───────────────────────────────────────────
@@ -604,7 +602,7 @@ namespace ScienceBuddy.Student
                 case "P004": return T("Challenge yourself today! ⚡", "Cabar diri anda hari ini! ⚡");
                 case "P005": return T("Take it step by step. You're doing great! 😊", "Belajar langkah demi langkah. Anda sedang melakukan yang terbaik! 😊");
                 case "P006": return T("Learn together with friends and teachers! 🤝", "Belajar bersama rakan dan guru! 🤝");
-                default:     return T("Ready to explore science today? 🚀", "Bersedia untuk meneroka Sains hari ini? 🚀");
+                default: return T("Ready to explore science today? 🚀", "Bersedia untuk meneroka Sains hari ini? 🚀");
             }
         }
 
@@ -620,10 +618,10 @@ namespace ScienceBuddy.Student
         private static string FormatTimeAgo(DateTime dt)
         {
             var span = DateTime.Now - dt;
-            if (span.TotalMinutes < 1)  return "Just now";
-            if (span.TotalHours   < 1)  return (int)span.TotalMinutes + " min ago";
-            if (span.TotalDays    < 1)  return (int)span.TotalHours   + " hr ago";
-            if (span.TotalDays    < 7)  return (int)span.TotalDays    + " day" + ((int)span.TotalDays == 1 ? "" : "s") + " ago";
+            if (span.TotalMinutes < 1) return "Just now";
+            if (span.TotalHours < 1) return (int)span.TotalMinutes + " min ago";
+            if (span.TotalDays < 1) return (int)span.TotalHours + " hr ago";
+            if (span.TotalDays < 7) return (int)span.TotalDays + " day" + ((int)span.TotalDays == 1 ? "" : "s") + " ago";
             return dt.ToString("d MMM yyyy");
         }
 
