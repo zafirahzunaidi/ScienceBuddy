@@ -11,7 +11,7 @@ namespace ScienceBuddy.Student
 {
 
 
-    public partial class Dashboard1
+    public partial class Dashboard
     {
 
         /// <summary>

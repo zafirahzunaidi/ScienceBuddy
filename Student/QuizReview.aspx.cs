@@ -9,7 +9,7 @@ using System.Web.UI;
 
 namespace ScienceBuddy.Student
 {
-    public partial class QuizReviewPage : Page
+    public partial class QuizReview : Page
     {
         private string ConnStr => ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
         public string CurrentLanguage = "EN";
@@ -194,7 +194,7 @@ namespace ScienceBuddy.Student
                     string chips = "";
                     foreach (string topic in weakTopics)
                     {
-                        chips += "<span class=\"rv-weak-chip\"><i class=\"bi bi-book-half\"></i> " + HttpUtility.HtmlEncode(topic) + "</span>";
+                        chips += "<span class=\"st-quizreview-weak-chip\"><i class=\"bi bi-book-half\"></i> " + HttpUtility.HtmlEncode(topic) + "</span>";
                     }
                     litWeakChips.Text = chips;
                 }
@@ -280,3 +280,4 @@ namespace ScienceBuddy.Student
         }
     }
 }
+

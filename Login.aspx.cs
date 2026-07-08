@@ -118,7 +118,7 @@ namespace ScienceBuddy
                                 break;
 
                             case "Parent":
-                                Response.Redirect("~/Parent/Dashboard.aspx", false);
+                                Response.Redirect("~/Parent/ParentDashboard.aspx", false);
                                 break;
 
                             default:

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -9,7 +9,7 @@ using System.Web.UI.WebControls;
 
 namespace ScienceBuddy.Student
 {
-    public partial class QuizHistory : Page
+    public partial class QuizHistory1 : Page
     {
         private string ConnStr => ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
         public string CurrentLanguage = "EN";
@@ -43,10 +43,6 @@ namespace ScienceBuddy.Student
             litPageTitle.Text = T("Quiz History", "Sejarah Kuiz");
             litTitle.Text = T("Quiz History", "Sejarah Kuiz");
             litSubtitle.Text = T("View your past quiz attempts, scores, and reviews.", "Lihat percubaan kuiz, skor, dan semakan jawapan anda.");
-            litStatTotalLbl.Text = T("Total Attempts", "Jumlah Percubaan");
-            litStatPassedLbl.Text = T("Passed", "Lulus");
-            litStatBestLbl.Text = T("Best Score", "Skor Terbaik");
-            litStatLatestLbl.Text = T("Latest", "Terkini");
             litFType.Text = T("Type", "Jenis"); litFStatus.Text = T("Status", "Status");
             litFSort.Text = T("Sort", "Susun"); litFSearch.Text = T("Search", "Cari");
             btnFilter.Text = T("Filter", "Tapis");
@@ -145,10 +141,7 @@ namespace ScienceBuddy.Student
                     DateTime d = row["attemptedDate"] != DBNull.Value ? Convert.ToDateTime(row["attemptedDate"]) : DateTime.MinValue;
                     if (d > latestDate) latestDate = d;
                 }
-                litStatTotal.Text = totalAttempts.ToString();
-                litStatPassed.Text = passedCount.ToString();
-                litStatBest.Text = Math.Round(bestPct, 0) + "%";
-                litStatLatest.Text = latestDate > DateTime.MinValue ? latestDate.ToString("d MMM") : "-";
+                // Stats computed but not displayed (controls removed)
 
                 // Build list
                 var items = new List<object>();
@@ -167,7 +160,7 @@ namespace ScienceBuddy.Student
                     DateTime date = row["attemptedDate"] != DBNull.Value ? Convert.ToDateTime(row["attemptedDate"]) : DateTime.Now;
 
                     bool passed = status == "Passed";
-                    string typeBadge = quizType == "Practice" ? "qh-badge-practice" : quizType == "Unit" ? "qh-badge-unit" : "qh-badge-level";
+                    string typeBadge = quizType == "Practice" ? "st-quizhistory-badge-practice" : quizType == "Unit" ? "st-quizhistory-badge-unit" : "st-quizhistory-badge-level";
                     string typeLabel = quizType == "Practice" ? T("Practice", "Latihan") : quizType == "Unit" ? T("Unit", "Unit") : T("Level", "Tahap");
 
                     items.Add(new {
@@ -177,7 +170,7 @@ namespace ScienceBuddy.Student
                         StatusClass = passed ? "passed" : "failed",
                         TypeBadgeClass = typeBadge,
                         TypeLabel = typeLabel,
-                        StatusBadgeClass = passed ? "qh-badge-passed" : "qh-badge-failed",
+                        StatusBadgeClass = passed ? "st-quizhistory-badge-passed" : "st-quizhistory-badge-failed",
                         StatusLabel = passed ? T("Passed", "Lulus") : T("Failed", "Gagal"),
                         AttemptNo = att,
                         DateDisplay = date.ToString("d MMM yyyy"),

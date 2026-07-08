@@ -1,50 +1,19 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Notifications.aspx.cs"
-    Inherits="ScienceBuddy.Student.Notifications" MasterPageFile="~/Site.Master"
-    Title="Notifications" %>
-
-<asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
-<style>
-:root{--student:#FF6B2C;--student-light:#FFF0E8;}
-.sn-header{margin-bottom:var(--space-lg);}
-.sn-title{font-family:var(--font-primary);font-size:1.75rem;font-weight:800;color:var(--color-text);}
-.sn-subtitle{font-size:.9375rem;color:var(--color-text-secondary);margin-top:4px;}
-/* Search + Filters */
-.sn-bar{display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-lg);flex-wrap:wrap;}
-.sn-search{flex:1;min-width:180px;position:relative;}
-.sn-search input{width:100%;padding:10px 14px 10px 36px;border:1.5px solid var(--border-color);
-    border-radius:var(--border-radius-full);font-size:.875rem;background:#FAFBFC;transition:border-color .2s;}
-.sn-search input:focus{border-color:#2563EB;outline:none;box-shadow:0 0 0 3px rgba(37,99,235,.08);}
-.sn-search i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--color-text-muted);font-size:.9rem;}
-.sn-chips{display:flex;gap:6px;flex-wrap:wrap;}
-.sn-chip{padding:6px 16px;border-radius:var(--border-radius-full);font-size:.8rem;font-weight:700;
-    border:1.5px solid var(--border-color);background:var(--color-white);color:var(--color-text-secondary);
-    cursor:pointer;transition:all .2s;text-decoration:none;}
-.sn-chip:hover{border-color:var(--student);color:var(--student);text-decoration:none;}
-.sn-chip.active{background:var(--student);color:#fff;border-color:var(--student);}
-.sn-toolbar{display:flex;align-items:center;justify-content:space-between;
-    margin-bottom:var(--space-lg);flex-wrap:wrap;gap:var(--space-sm);}
-.sn-list{display:flex;flex-direction:column;gap:var(--space-md);}
-.sn-item{background:var(--color-white);border-radius:var(--border-radius-lg);
-    border:1.5px solid var(--border-color);box-shadow:var(--shadow-xs);
-    padding:var(--space-lg);display:flex;gap:var(--space-md);align-items:flex-start;
-    transition:transform .15s,box-shadow .15s;}
-.sn-item:hover{transform:translateY(-2px);box-shadow:var(--shadow-sm);}
-.sn-item.unread{border-left:4px solid var(--student);background:#FFFBF8;}
-.sn-item-icon{width:42px;height:42px;border-radius:var(--border-radius);
-    display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;}
-.sn-item-body{flex:1;min-width:0;}
-.sn-item-title{font-family:var(--font-primary);font-size:.9375rem;font-weight:700;
-    color:var(--color-text);margin-bottom:4px;display:flex;align-items:center;gap:var(--space-sm);}
-.sn-item-msg{font-size:.875rem;color:var(--color-text-secondary);line-height:1.5;margin-bottom:6px;}
-.sn-item-time{font-size:.75rem;color:var(--color-text-muted);display:flex;align-items:center;gap:4px;}
-.sn-item-actions{flex-shrink:0;display:flex;align-items:center;}
-.sn-unread-dot{width:8px;height:8px;border-radius:50%;background:var(--student);flex-shrink:0;}
-@media(max-width:767px){.sn-bar{flex-direction:column;align-items:stretch;}}
-@media(max-width:479px){.sn-item{flex-direction:column;}}
-</style>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Notifications.aspx.cs" Inherits="ScienceBuddy.Student.Notifications1" %>
+<asp:Content ID="HeadStyle" ContentPlaceHolderID="HeadContent" runat="server">
+    <link href="<%: ResolveUrl("~/Content/Student.css") %>" rel="stylesheet" />
 </asp:Content>
 
-<asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
+<asp:Content ID="TopNavigationLinks" ContentPlaceHolderID="TopNavLinks" runat="server">
+</asp:Content>
+
+<asp:Content ID="TopNavigationActions" ContentPlaceHolderID="TopNavActions" runat="server">
+</asp:Content>
+
+<asp:Content ID="TopNavigationMainContent" ContentPlaceHolderID="MainContent" runat="server">
+</asp:Content>
+
+<%-- Student Sidebar --%>
+<asp:Content ID="StudentSidebarMenu" ContentPlaceHolderID="SidebarMenu" runat="server">
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Main</div>
         <a href="<%: ResolveUrl("~/Student/Dashboard.aspx") %>" class="sb-sidebar-item">
@@ -108,21 +77,21 @@
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 
 <%-- Page Header --%>
-<div class="sn-header">
-    <div class="sn-title"><asp:Literal ID="litTitle" runat="server" /></div>
-    <div class="sn-subtitle"><asp:Literal ID="litSubtitle" runat="server" /></div>
+<div class="st-notifications-header">
+    <div class="st-notifications-title"><asp:Literal ID="litTitle" runat="server" /></div>
+    <div class="st-notifications-subtitle"><asp:Literal ID="litSubtitle" runat="server" /></div>
 </div>
 
 <%-- Search Bar + Filter Chips --%>
-<div class="sn-bar">
-    <div class="sn-search">
+<div class="st-notifications-bar">
+    <div class="st-notifications-search">
         <i class="bi bi-search"></i>
         <asp:TextBox ID="txtSearch" runat="server" placeholder="Search..." />
     </div>
-    <div class="sn-chips">
-        <asp:LinkButton ID="btnFilterAll" runat="server" CssClass="sn-chip active" OnClick="btnFilter_Click" CommandArgument="all" CausesValidation="false"><asp:Literal ID="litFilterAll" runat="server" Text="All" /></asp:LinkButton>
-        <asp:LinkButton ID="btnFilterUnread" runat="server" CssClass="sn-chip" OnClick="btnFilter_Click" CommandArgument="unread" CausesValidation="false"><asp:Literal ID="litFilterUnread" runat="server" Text="Unread" /></asp:LinkButton>
-        <asp:LinkButton ID="btnFilterRead" runat="server" CssClass="sn-chip" OnClick="btnFilter_Click" CommandArgument="read" CausesValidation="false"><asp:Literal ID="litFilterRead" runat="server" Text="Read" /></asp:LinkButton>
+    <div class="st-notifications-chips">
+        <asp:LinkButton ID="btnFilterAll" runat="server" CssClass="st-notifications-chip active" OnClick="btnFilter_Click" CommandArgument="all" CausesValidation="false"><asp:Literal ID="litFilterAll" runat="server" Text="All" /></asp:LinkButton>
+        <asp:LinkButton ID="btnFilterUnread" runat="server" CssClass="st-notifications-chip" OnClick="btnFilter_Click" CommandArgument="unread" CausesValidation="false"><asp:Literal ID="litFilterUnread" runat="server" Text="Unread" /></asp:LinkButton>
+        <asp:LinkButton ID="btnFilterRead" runat="server" CssClass="st-notifications-chip" OnClick="btnFilter_Click" CommandArgument="read" CausesValidation="false"><asp:Literal ID="litFilterRead" runat="server" Text="Read" /></asp:LinkButton>
     </div>
     <asp:LinkButton ID="btnMarkAllRead" runat="server" CssClass="sb-btn sb-btn-primary sb-btn-sm"
         OnClick="btnMarkAllRead_Click" CausesValidation="false">
@@ -132,22 +101,22 @@
 
 <%-- Notification List --%>
 <asp:Panel ID="pnlList" runat="server">
-    <div class="sn-list">
+    <div class="st-notifications-list">
         <asp:Repeater ID="rptNotifications" runat="server" OnItemCommand="rptNotifications_ItemCommand">
             <ItemTemplate>
-                <div class="sn-item <%# !(bool)Eval("IsRead") ? "unread" : "" %>">
-                    <div class="sn-item-icon" style="background:<%# Eval("IconBg") %>;color:<%# Eval("IconColor") %>;">
+                <div class="st-notifications-item <%# !(bool)Eval("IsRead") ? "unread" : "" %>">
+                    <div class="st-notifications-item-icon" style="background:<%# Eval("IconBg") %>;color:<%# Eval("IconColor") %>;">
                         <i class="bi <%# Eval("Icon") %>"></i>
                     </div>
-                    <div class="sn-item-body">
-                        <div class="sn-item-title">
+                    <div class="st-notifications-item-body">
+                        <div class="st-notifications-item-title">
                             <%# Eval("Title") %>
-                            <%# !(bool)Eval("IsRead") ? "<span class='sn-unread-dot'></span>" : "" %>
+                            <%# !(bool)Eval("IsRead") ? "<span class='st-notifications-unread-dot'></span>" : "" %>
                         </div>
-                        <div class="sn-item-msg"><%# Eval("Message") %></div>
-                        <div class="sn-item-time"><i class="bi bi-clock"></i> <%# Eval("TimeAgo") %></div>
+                        <div class="st-notifications-item-msg"><%# Eval("Message") %></div>
+                        <div class="st-notifications-item-time"><i class="bi bi-clock"></i> <%# Eval("TimeAgo") %></div>
                     </div>
-                    <div class="sn-item-actions">
+                    <div class="st-notifications-item-actions">
                         <asp:LinkButton runat="server" CommandName="MarkRead" CommandArgument='<%# Eval("Id") %>'
                             CssClass="sb-btn sb-btn-light sb-btn-xs"
                             Visible='<%# !(bool)Eval("IsRead") %>' CausesValidation="false">

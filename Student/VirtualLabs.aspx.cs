@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -9,7 +9,7 @@ using System.Web.UI.WebControls;
 
 namespace ScienceBuddy.Student
 {
-    public partial class VirtualLabs : Page
+    public partial class VirtualLabs1 : Page
     {
         private string ConnStr => ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
         private string CurrentLanguage = "EN";
@@ -134,7 +134,7 @@ namespace ScienceBuddy.Student
                     if (string.IsNullOrWhiteSpace(lName)) lName = row["levelNameEN"].ToString();
 
                     string statusText = isDone ? T("Completed", "Selesai") : T("Not Started", "Belum Mula");
-                    string badgeClass = isDone ? "vl-badge-done" : "vl-badge-new";
+                    string badgeClass = isDone ? "st-virtuallabs-badge-done" : "st-virtuallabs-badge-new";
                     string btnText = isDone ? T("Redo Lab", "Ulang Makmal") : T("Start Lab", "Mula Makmal");
                     string btnClass = isDone ? "sb-btn-light" : "sb-btn-primary";
                     string diffClass = diff.Equals("Easy", StringComparison.OrdinalIgnoreCase) ? "easy"

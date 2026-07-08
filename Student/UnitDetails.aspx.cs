@@ -8,7 +8,7 @@ using System.Web.UI;
 
 namespace ScienceBuddy.Student
 {
-    public partial class UnitDetails : Page
+    public partial class UnitDetails1 : Page
     {
         private string ConnStr => ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
         private string CurrentLanguage = "EN";
@@ -50,7 +50,6 @@ namespace ScienceBuddy.Student
                   using (var r = cmd.ExecuteReader()) { if (r.Read()) { studentId = r["studentId"].ToString(); curLevel = r["currentlevelId"]?.ToString() ?? "LV001"; } } }
                 if (string.IsNullOrEmpty(studentId)) { ShowLocked(T("Not found","Tidak dijumpai"), T("Student profile missing.","Profil pelajar tiada.")); return; }
 
-                // Get unit's levelId
                 string unitLevel = null;
                 using (var cmd = new SqlCommand("SELECT levelId FROM Unit WHERE unitId=@u", conn))
                 { cmd.Parameters.AddWithValue("@u", unitId); var r = cmd.ExecuteScalar(); unitLevel = r?.ToString(); }
@@ -132,20 +131,17 @@ namespace ScienceBuddy.Student
             if (!Tbl("Subtopic")) { pnlLessons.Visible = false; return; }
 
             bool bm = CurrentLanguage == "BM";
-            // Get completed lesson IDs
             var doneSet = new HashSet<string>();
             if (Tbl("LessonProgress"))
                 using (var cmd = new SqlCommand("SELECT lessonId FROM LessonProgress WHERE studentId=@s AND isCompleted=1", conn))
                 { cmd.Parameters.AddWithValue("@s", studentId); using (var r = cmd.ExecuteReader()) while (r.Read()) doneSet.Add(r["lessonId"].ToString()); }
 
-            // Load subtopics
             var dtSt = new DataTable();
             using (var cmd = new SqlCommand("SELECT subtopicId,subtopicTitleEN,subtopicTitleBM,subtopicDescriptionEN,subtopicDescriptionBM,orderNo FROM Subtopic WHERE unitId=@u ORDER BY orderNo", conn))
             { cmd.Parameters.AddWithValue("@u", unitId); new SqlDataAdapter(cmd).Fill(dtSt); }
 
             if (dtSt.Rows.Count == 0) { pnlLessons.Visible = false; return; }
 
-            // Load all lessons for this unit's subtopics
             var dtLs = new DataTable();
             if (Tbl("Lesson"))
                 using (var cmd = new SqlCommand("SELECT ls.lessonId,ls.subtopicId,ls.lessonTitleEN,ls.lessonTitleBM,ls.orderNo FROM Lesson ls JOIN Subtopic st ON st.subtopicId=ls.subtopicId WHERE st.unitId=@u ORDER BY ls.orderNo", conn))
@@ -192,7 +188,6 @@ namespace ScienceBuddy.Student
 
             if (!Tbl("Material") || !Tbl("Subtopic")) { pnlMats.Visible = false; pnlMatsEmpty.Visible = true; return; }
 
-            bool bm = CurrentLanguage == "BM";
             var dt = new DataTable();
             using (var cmd = new SqlCommand(@"SELECT m.materialId,m.materialTitle,m.materialType,m.fileUrl,m.language
                 FROM Material m JOIN Subtopic st ON st.subtopicId=m.subtopicId
@@ -206,8 +201,7 @@ namespace ScienceBuddy.Student
             {
                 list.Add(new { Title = HttpUtility.HtmlEncode(r["materialTitle"].ToString()),
                     Type = r["materialType"].ToString(), Lang = r["language"].ToString(),
-                    Url = r["fileUrl"]?.ToString() ?? "#",
-                    Btn = T("Open","Buka") });
+                    Url = r["fileUrl"]?.ToString() ?? "#", Btn = T("Open","Buka") });
             }
             pnlMats.Visible = true; pnlMatsEmpty.Visible = false;
             rptMats.DataSource = list; rptMats.DataBind();
@@ -271,7 +265,6 @@ namespace ScienceBuddy.Student
                 }
             }
 
-            // Check if student has a previous attempt
             if (!string.IsNullOrEmpty(quizId) && Tbl("QuizResult"))
             {
                 using (var cmd = new SqlCommand("SELECT TOP 1 resultId FROM QuizResult WHERE studentId=@s AND quizId=@q ORDER BY attemptedDate DESC", conn))

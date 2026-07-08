@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
@@ -6,7 +6,7 @@ using System.Web.UI;
 
 namespace ScienceBuddy.Student
 {
-    public partial class VirtualLab : Page
+    public partial class VirtualLab1 : Page
     {
         private string ConnStr => ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
         private string CurrentLanguage = "EN";

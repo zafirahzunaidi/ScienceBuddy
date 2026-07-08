@@ -7,7 +7,7 @@ using System.Web.UI;
 
 namespace ScienceBuddy.Student
 {
-    public partial class QuizResultPage : Page
+    public partial class QuizResult : Page
     {
         private string ConnStr => ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
         public string CurrentLanguage = "EN";
@@ -117,7 +117,7 @@ namespace ScienceBuddy.Student
                 litPageTitle.Text = T("Quiz Result", "Keputusan Kuiz");
 
                 // Hero
-                divHero.Attributes["class"] = "qr-hero " + (passed ? "passed" : "failed");
+                divHero.Attributes["class"] = "st-quizresult-hero " + (passed ? "passed" : "failed");
                 litHeroIcon.Text = passed ? "<i class=\"bi bi-trophy-fill\"></i>" : "<i class=\"bi bi-emoji-neutral-fill\"></i>";
 
                 // Hero message based on percentage
@@ -148,8 +148,8 @@ namespace ScienceBuddy.Student
                 string starsHtml = "";
                 for (int i = 0; i < 3; i++)
                     starsHtml += i < starCount
-                        ? "<i class=\"bi bi-star-fill qr-star-on\"></i>"
-                        : "<i class=\"bi bi-star qr-star-off\"></i>";
+                        ? "<i class=\"bi bi-star-fill st-quizresult-star-on\"></i>"
+                        : "<i class=\"bi bi-star st-quizresult-star-off\"></i>";
                 litStars.Text = starsHtml;
 
                 // Stats
@@ -246,3 +246,4 @@ namespace ScienceBuddy.Student
         }
     }
 }
+

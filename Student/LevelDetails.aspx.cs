@@ -8,7 +8,7 @@ using System.Web.UI;
 
 namespace ScienceBuddy.Student
 {
-    public partial class LevelDetails : Page
+    public partial class LevelDetails1 : Page
     {
         private string ConnStr => ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
         private string CurrentLanguage = "EN";
@@ -131,7 +131,7 @@ namespace ScienceBuddy.Student
                 { cmd.Parameters.AddWithValue("@l", levelId); cmd.Parameters.AddWithValue("@s", studentId); quizPassed = (int)cmd.ExecuteScalar(); }
 
             litStatUnits.Text   = totalUnits.ToString();
-            litStatDone.Text    = "0"; // Full per-unit completion check simplified
+            litStatDone.Text    = "0";
             litStatLessons.Text = completedLessons.ToString();
             litStatQuiz.Text    = quizPassed.ToString();
 
@@ -218,7 +218,6 @@ namespace ScienceBuddy.Student
                 }
             }
 
-            // Check previous attempt
             if (!string.IsNullOrEmpty(quizId) && TblOK("QuizResult"))
             {
                 using (var cmd = new SqlCommand("SELECT TOP 1 resultId FROM QuizResult WHERE studentId=@s AND quizId=@q ORDER BY attemptedDate DESC", conn))
