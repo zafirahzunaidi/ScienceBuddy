@@ -255,6 +255,8 @@
     <Content Include="Teacher\Notifications.aspx" />
     <Content Include="Teacher\liveSession.aspx" />
     <Content Include="Teacher\Forum.aspx" />
+    <Content Include="Teacher\studentDetails.aspx" />
+    <Content Include="Teacher\studentProgress.aspx" />
     <Content Include="Teacher\uploadMaterial.aspx" />
     <Content Include="Teacher\manageQuiz.aspx" />
     <Content Include="Teacher\createUnitLevelQuiz.aspx" />
@@ -802,6 +804,20 @@
     </Compile>
     <Compile Include="Teacher\Forum.aspx.designer.cs">
       <DependentUpon>Forum.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Teacher\studentDetails.aspx.cs">
+      <DependentUpon>studentDetails.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Teacher\studentDetails.aspx.designer.cs">
+      <DependentUpon>studentDetails.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Teacher\studentProgress.aspx.cs">
+      <DependentUpon>studentProgress.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Teacher\studentProgress.aspx.designer.cs">
+      <DependentUpon>studentProgress.aspx</DependentUpon>
     </Compile>
     <Compile Include="Teacher\uploadMaterial.aspx.cs">
       <DependentUpon>uploadMaterial.aspx</DependentUpon>

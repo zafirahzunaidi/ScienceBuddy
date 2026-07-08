@@ -19,7 +19,9 @@ namespace ScienceBuddy.Teacher
                 return string.IsNullOrEmpty(lang) ? "EN" : lang;
             }
         }
-        protected string T(string en, string bm) { return CurrentLanguage == "BM" ? bm : en; }
+        protected string T(string en, string bm) { 
+            return CurrentLanguage == "BM" ? bm : en; 
+        }
 
         // ── Connection string ────────────────────────────────────────
         private string ConnStr =>
