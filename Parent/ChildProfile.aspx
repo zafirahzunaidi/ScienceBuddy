@@ -3,64 +3,7 @@
     Title="Child Profile" MaintainScrollPositionOnPostback="true" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
-<style>
-.cp-page { padding: 24px 0; max-width: 800px; margin: 0 auto; }
-.cp-card { background:#fff; border-radius:20px; box-shadow:0 2px 16px rgba(0,0,0,0.05); padding:24px 28px; margin-bottom:20px; }
-
-/* Identity */
-.cp-identity { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
-.cp-avatar { width:58px; height:58px; border-radius:50%; background:linear-gradient(135deg,#2563EB,#60A5FA); color:#fff; font-size:1.3rem; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 4px 12px rgba(37,99,235,0.2); }
-.cp-id-info { flex:1; }
-.cp-id-name { font-size:1.15rem; font-weight:800; color:#1E293B; margin:0 0 2px; }
-.cp-id-meta { font-size:0.82rem; color:#64748B; }
-.cp-id-pills { display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
-.cp-id-pill { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:999px; font-size:0.72rem; font-weight:700; }
-.cp-id-pill.level { background:#DBEAFE; color:#1D4ED8; }
-.cp-id-pill.rel { background:#FEF3C7; color:#92400E; }
-
-/* Section title */
-.cp-sec-title { font-size:1rem; font-weight:800; color:#1E293B; margin:0 0 14px; display:flex; align-items:center; gap:8px; }
-.cp-sec-title i { color:#2563EB; font-size:1.05rem; }
-
-/* Learning Path */
-.cp-unit { background:#F8FAFC; border-radius:14px; padding:16px 18px; margin-bottom:12px; border:1px solid #F1F5F9; }
-.cp-unit-header { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; flex-wrap:wrap; }
-.cp-unit-name { font-size:0.92rem; font-weight:700; color:#1E293B; }
-.cp-unit-pct { font-size:0.78rem; font-weight:700; color:#2563EB; }
-.cp-unit-bar { height:6px; background:#E2E8F0; border-radius:999px; overflow:hidden; margin-bottom:8px; }
-.cp-unit-bar-fill { height:100%; border-radius:999px; background:linear-gradient(90deg,#2563EB,#60A5FA); transition:width 0.3s; }
-.cp-unit-subtopics { display:flex; flex-wrap:wrap; gap:6px; }
-.cp-subtopic-chip { font-size:0.7rem; background:#EFF6FF; color:#1D4ED8; border-radius:999px; padding:3px 9px; font-weight:600; }
-.cp-unit-stats { font-size:0.75rem; color:#64748B; margin-top:6px; }
-
-/* Recent Summary */
-.cp-activity-row { display:flex; align-items:flex-start; gap:12px; padding:10px 14px; background:#F8FAFC; border-radius:12px; margin-bottom:8px; border-left:3px solid #DBEAFE; }
-.cp-activity-row.quiz { border-left-color:#FDE68A; }
-.cp-activity-row.badgerow { border-left-color:#DDD6FE; }
-.cp-activity-icon { width:32px; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:0.9rem; flex-shrink:0; }
-.cp-activity-icon.lesson { background:#DBEAFE; color:#1D4ED8; }
-.cp-activity-icon.quiz { background:#FEF3C7; color:#D97706; }
-.cp-activity-icon.badge-icon { background:#EDE9FE; color:#7C3AED; }
-.cp-activity-body { flex:1; }
-.cp-activity-label { font-size:0.7rem; font-weight:700; color:#94A3B8; text-transform:uppercase; letter-spacing:0.5px; }
-.cp-activity-text { font-size:0.88rem; font-weight:600; color:#1E293B; }
-.cp-activity-meta { font-size:0.75rem; color:#64748B; margin-top:2px; }
-
-/* Achievement */
-.cp-achieve-row { display:flex; gap:14px; flex-wrap:wrap; }
-.cp-achieve-item { flex:1; min-width:120px; background:#F8FAFC; border-radius:12px; padding:14px; text-align:center; border:1px solid #F1F5F9; }
-.cp-achieve-value { font-size:1.2rem; font-weight:800; color:#1E293B; display:block; }
-.cp-achieve-label { font-size:0.72rem; color:#64748B; margin-top:2px; }
-.cp-achieve-badge { margin-top:10px; font-size:0.8rem; color:#7C3AED; font-weight:600; }
-
-/* Empty */
-.cp-empty { text-align:center; padding:24px 16px; color:#94A3B8; font-size:0.85rem; }
-.cp-empty i { font-size:2rem; color:#CBD5E1; display:block; margin-bottom:8px; }
-.cp-empty a { color:#2563EB; font-weight:600; text-decoration:none; }
-
-/* No activity */
-.cp-no-data { text-align:center; padding:14px; color:#94A3B8; font-size:0.82rem; }
-</style>
+<link href="<%: ResolveUrl("~/Content/Parent.css") %>" rel="stylesheet" />
 </asp:Content>
 
 <%-- ════ SIDEBAR ════ --%>
