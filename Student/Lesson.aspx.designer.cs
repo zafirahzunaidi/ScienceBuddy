@@ -18,8 +18,8 @@ namespace ScienceBuddy.Student
         protected global::System.Web.UI.WebControls.Literal litBack;
         protected global::System.Web.UI.WebControls.Literal litCrumb;
         protected global::System.Web.UI.WebControls.Literal litTitle;
-        protected global::System.Web.UI.WebControls.Literal litBadgeClass;
-        protected global::System.Web.UI.WebControls.Literal litBadgeIcon;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl heroBadgeDiv;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl heroBadgeIcon;
         protected global::System.Web.UI.WebControls.Literal litBadgeText;
         protected global::System.Web.UI.WebControls.Literal litContent;
         protected global::System.Web.UI.WebControls.Literal litTTSStart;

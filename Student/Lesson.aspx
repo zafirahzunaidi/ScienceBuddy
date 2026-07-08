@@ -142,8 +142,8 @@
     <asp:HyperLink ID="lnkBack" runat="server" CssClass="ls-hero-back"><i class="bi bi-arrow-left"></i> <asp:Literal ID="litBack" runat="server" /></asp:HyperLink>
     <div class="ls-hero-crumb"><asp:Literal ID="litCrumb" runat="server" /></div>
     <div class="ls-hero-title"><asp:Literal ID="litTitle" runat="server" /></div>
-    <div class="ls-hero-badge <asp:Literal ID='litBadgeClass' runat='server' Text='ls-badge-pending' />">
-        <i class="bi <asp:Literal ID='litBadgeIcon' runat='server' Text='bi-clock' />"></i>
+    <div id="heroBadgeDiv" runat="server" class="ls-hero-badge ls-badge-pending">
+        <i id="heroBadgeIcon" runat="server" class="bi bi-clock"></i>
         <asp:Literal ID="litBadgeText" runat="server" Text="—" />
     </div>
 </div>

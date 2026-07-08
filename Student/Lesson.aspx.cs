@@ -133,7 +133,8 @@ namespace ScienceBuddy.Student
                 btnComplete.Enabled = false;
                 btnComplete.CssClass = "sb-btn sb-btn-success sb-btn-sm";
                 completeIcon.Style["background"] = "#DCFCE7"; completeIcon.Style["color"] = "#15803D";
-                litBadgeClass.Text = "ls-badge-done"; litBadgeIcon.Text = "bi-check-circle-fill";
+                heroBadgeDiv.Attributes["class"]  = "ls-hero-badge ls-badge-done";
+                heroBadgeIcon.Attributes["class"] = "bi bi-check-circle-fill";
                 litBadgeText.Text = T("Completed","Selesai");
             }
             else
@@ -144,7 +145,8 @@ namespace ScienceBuddy.Student
                 btnComplete.Enabled = true;
                 btnComplete.CssClass = "sb-btn sb-btn-orange sb-btn-sm";
                 completeIcon.Style["background"] = "#FFF0E8"; completeIcon.Style["color"] = "#FF6B2C";
-                litBadgeClass.Text = "ls-badge-pending"; litBadgeIcon.Text = "bi-clock";
+                heroBadgeDiv.Attributes["class"]  = "ls-hero-badge ls-badge-pending";
+                heroBadgeIcon.Attributes["class"] = "bi bi-clock";
                 litBadgeText.Text = T("Not Completed","Belum Selesai");
             }
         }
