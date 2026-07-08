@@ -10,7 +10,7 @@ using System.Web.UI.WebControls;
 
 namespace ScienceBuddy.Student
 {
-    public partial class Quiz : Page
+    public partial class QuizPage : Page
     {
         private string ConnStr => ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
         public string CurrentLanguage = "EN";
@@ -199,7 +199,7 @@ namespace ScienceBuddy.Student
 
             // Difficulty
             string diff = S(row, "difficulty");
-            if (!string.IsNullOrWhiteSpace(diff)) { pnlQDiff.Visible = true; divDiff.Attributes["class"] = "st-quiz-q-diff " + diff.ToLower(); litQDiff.Text = diff; }
+            if (!string.IsNullOrWhiteSpace(diff)) { pnlQDiff.Visible = true; divDiff.Attributes["class"] = "qz-q-diff " + diff.ToLower(); litQDiff.Text = diff; }
             else { pnlQDiff.Visible = false; }
 
             // Options
@@ -543,4 +543,3 @@ namespace ScienceBuddy.Student
         private class AnsDetail { public string QuestionId; public string Selected; public bool IsCorrect; public decimal Marks; }
     }
 }
-
