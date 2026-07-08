@@ -143,6 +143,9 @@
     <Content Include="favicon.ico" />
     <Content Include="ForgotPassword.aspx" />
     <Content Include="Global.asax" />
+    <Content Include="Images\Parent\amazing-progress.png" />
+    <Content Include="Images\Parent\good-progress.png" />
+    <Content Include="Images\Parent\low-progress.png" />
     <Content Include="Images\Personality\achiever.png" />
     <Content Include="Images\Personality\chill-learner.png" />
     <Content Include="Images\Personality\creative.png" />
@@ -156,6 +159,7 @@
     <Content Include="Parent\LinkChildAccount.aspx" />
     <Content Include="Parent\ChildProfile.aspx" />
     <Content Include="Parent\EnrolledModules.aspx" />
+    <Content Include="Parent\ChildProgress.aspx" />
     <Content Include="Register.aspx" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
@@ -507,6 +511,13 @@
     </Compile>
     <Compile Include="Parent\EnrolledModules.aspx.designer.cs">
       <DependentUpon>EnrolledModules.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Parent\ChildProgress.aspx.cs">
+      <DependentUpon>ChildProgress.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Parent\ChildProgress.aspx.designer.cs">
+      <DependentUpon>ChildProgress.aspx</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Register.aspx.cs">
