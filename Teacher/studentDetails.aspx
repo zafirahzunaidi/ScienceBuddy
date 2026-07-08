@@ -1,128 +1,117 @@
 ﻿<%@ Page Title="Student Details" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="studentDetails.aspx.cs" Inherits="ScienceBuddy.Teacher.studentDetails" %>
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
 <style>
-:root{--sd:#6C63FF;--sd-dk:#5A52E0;--sd-lt:#F5F3FF;--sd-w:#FFF;--sd-b:#E5E7EB;--sd-t:#374151;--sd-m:#6B7280;--sd-s:#10B981;--sd-d:#EF4444;}
-.sd-back{display:inline-flex;align-items:center;gap:6px;font-size:.82rem;font-weight:700;color:var(--sd);text-decoration:none;margin-bottom:1.25rem;transition:color .15s;}.sd-back:hover{color:var(--sd-dk);text-decoration:none;}
-.sd-err{background:#FEF2F2;border:1.5px solid #FECACA;border-radius:16px;padding:2.5rem;text-align:center;}.sd-err i{font-size:2.5rem;color:var(--sd-d);opacity:.5;display:block;margin-bottom:.6rem;}.sd-err-title{font-size:.95rem;font-weight:800;color:#991B1B;margin-bottom:.3rem;}.sd-err-sub{font-size:.82rem;color:#B91C1C;margin-bottom:1rem;}.sd-err-link{display:inline-flex;align-items:center;gap:5px;background:var(--sd);color:#fff;border:none;border-radius:9px;padding:.5rem 1rem;font-size:.8rem;font-weight:700;text-decoration:none;}.sd-err-link:hover{background:var(--sd-dk);color:#fff;}
-/* Profile card */
-.sd-profile{background:var(--sd-w);border:1.5px solid var(--sd-b);border-radius:16px;padding:1.3rem;box-shadow:0 2px 8px rgba(0,0,0,.03);margin-bottom:1.2rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
-.sd-avatar{width:52px;height:52px;border-radius:14px;background:var(--sd-lt);color:var(--sd);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:800;border:2px solid #DDD8FF;flex-shrink:0;}
-.sd-info h2{margin:0;font-size:1.05rem;font-weight:800;color:var(--sd-t);}.sd-info p{margin:.15rem 0 0;font-size:.76rem;color:var(--sd-m);}
-.sd-pills{display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.3rem;}.sd-pill{display:inline-flex;align-items:center;gap:.2rem;padding:.18rem .5rem;border-radius:999px;background:#F9FAFB;border:1px solid var(--sd-b);color:var(--sd-m);font-size:.66rem;font-weight:700;}
-/* Stats */
-.sd-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:.7rem;margin-bottom:1.2rem;}
-.sd-stat{background:var(--sd-w);border:1.5px solid var(--sd-b);border-radius:14px;padding:.8rem;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.02);}
-.sd-stat-icon{width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:var(--sd);background:var(--sd-lt);margin-bottom:.25rem;font-size:.8rem;}
-.sd-stat h3{margin:.1rem 0;font-size:1.15rem;color:var(--sd-t);font-weight:800;}.sd-stat p{margin:0;font-size:.68rem;color:var(--sd-m);font-weight:600;}
-/* Card */
-.sd-card{background:var(--sd-w);border:1.5px solid var(--sd-b);border-radius:16px;padding:1.1rem;box-shadow:0 2px 8px rgba(0,0,0,.03);margin-bottom:1.1rem;}
-.sd-card-hd{display:flex;align-items:center;gap:.5rem;margin-bottom:.8rem;}.sd-card-hd h3{margin:0;font-size:.9rem;font-weight:800;color:var(--sd-t);display:flex;align-items:center;gap:.35rem;}.sd-card-hd h3 i{color:var(--sd);}
-/* Table */
-.sd-tbl{width:100%;border-collapse:collapse;}.sd-tbl th{background:#F9FAFB;font-size:.7rem;font-weight:700;color:var(--sd-t);padding:.55rem .45rem;text-align:left;border-bottom:1px solid var(--sd-b);white-space:nowrap;}.sd-tbl td{padding:.55rem .45rem;font-size:.76rem;color:var(--sd-t);border-bottom:1px solid #F3F4F6;vertical-align:middle;}.sd-tbl tr:hover td{background:#FAFAFF;}
-.sd-badge-done{font-size:.64rem;padding:2px 6px;border-radius:4px;background:#D1FAE5;color:#047857;font-weight:700;}.sd-badge-inc{font-size:.64rem;padding:2px 6px;border-radius:4px;background:#FEE2E2;color:#991B1B;font-weight:700;}
-.sd-badge-pass{font-size:.64rem;padding:2px 6px;border-radius:4px;background:#D1FAE5;color:#047857;font-weight:700;}.sd-badge-fail{font-size:.64rem;padding:2px 6px;border-radius:4px;background:#FEE2E2;color:#991B1B;font-weight:700;}
-/* Weak & Insight */
-.sd-wk-item{display:flex;justify-content:space-between;align-items:center;padding:.5rem .6rem;border:1px solid var(--sd-b);border-radius:8px;background:#FAFAFA;margin-bottom:.4rem;}.sd-wk-name{font-size:.76rem;font-weight:700;color:var(--sd-t);}.sd-wk-cnt{font-size:.7rem;font-weight:800;color:var(--sd-d);background:#FEE2E2;padding:2px 7px;border-radius:5px;}
-.sd-insight{background:#F0FDF4;border:1px solid #A7F3D0;border-radius:12px;padding:.9rem;font-size:.78rem;color:#065F46;line-height:1.55;}
-.sd-empty{text-align:center;padding:1.3rem;font-size:.8rem;color:var(--sd-m);}
-.sd-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
-@media(max-width:980px){.sd-stats{grid-template-columns:repeat(2,1fr);}.sd-grid{grid-template-columns:1fr;}}
-@media(max-width:640px){.sd-stats{grid-template-columns:1fr 1fr;}.sd-profile{flex-direction:column;align-items:flex-start;}}
+:root{--blue:#3B82F6;--green:#10B981;--orange:#F59E0B;--red:#EF4444;--purple:#6C63FF;--purp-dk:#5A52E0;--w:#FFF;--b:#E5E7EB;--t:#1F2937;--m:#6B7280;}
+.sd-back{display:inline-flex;align-items:center;gap:6px;font-size:.9rem;font-weight:700;color:var(--purple);text-decoration:none;margin-bottom:1.4rem;}.sd-back:hover{color:var(--purp-dk);}
+.sd-err{background:#FEF2F2;border:1.5px solid #FECACA;border-radius:18px;padding:2.5rem;text-align:center;}.sd-err i{font-size:2.5rem;color:var(--red);opacity:.5;display:block;margin-bottom:.6rem;}.sd-err-t{font-size:1rem;font-weight:800;color:#991B1B;}.sd-err-s{font-size:.88rem;color:#B91C1C;margin:.3rem 0 1rem;}.sd-err-link{background:var(--purple);color:#fff;border:none;border-radius:10px;padding:.55rem 1.1rem;font-size:.86rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:5px;}.sd-err-link:hover{background:var(--purp-dk);color:#fff;}
+.sd-profile{background:linear-gradient(135deg,#1E40AF 0%,#3B82F6 60%,#60A5FA 100%);border-radius:20px;padding:1.7rem 2rem;color:#fff;display:flex;align-items:center;gap:1.3rem;flex-wrap:wrap;margin-bottom:1.7rem;box-shadow:0 8px 24px rgba(59,130,246,.2);position:relative;overflow:hidden;}.sd-profile::before{content:'';position:absolute;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.06);top:-60px;right:40px;}
+.sd-avatar{width:62px;height:62px;border-radius:18px;background:rgba(255,255,255,.2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.35rem;font-weight:800;border:2.5px solid rgba(255,255,255,.35);flex-shrink:0;}
+.sd-pinfo h2{margin:0;font-size:1.25rem;font-weight:800;}.sd-pinfo p{margin:.2rem 0 0;font-size:.88rem;opacity:.85;}.sd-pills{display:flex;gap:.4rem;margin-top:.5rem;}.sd-pill{padding:.25rem .7rem;border-radius:999px;background:rgba(255,255,255,.18);color:#fff;font-size:.75rem;font-weight:700;border:1px solid rgba(255,255,255,.25);display:inline-flex;align-items:center;gap:.3rem;}
+/* Donuts */
+.sd-donuts{display:grid;grid-template-columns:repeat(3,1fr);gap:1.1rem;margin-bottom:1.7rem;}
+.sd-dc{background:var(--w);border:1.5px solid var(--b);border-radius:18px;padding:1.4rem 1rem;text-align:center;box-shadow:0 3px 12px rgba(0,0,0,.04);transition:transform .2s,box-shadow .2s;}.sd-dc:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.08);}
+.sd-donut{width:110px;height:110px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin:0 auto .9rem;}
+.sd-donut-inner{width:76px;height:76px;border-radius:50%;background:var(--w);display:flex;align-items:center;justify-content:center;}.sd-donut-val{font-size:1.4rem;font-weight:800;color:var(--t);}
+.sd-dc-label{font-size:.95rem;font-weight:800;color:var(--t);margin-bottom:.2rem;}.sd-dc-meta{font-size:.84rem;color:var(--m);}
+/* Section */
+.sd-section{background:var(--w);border:1.5px solid var(--b);border-radius:18px;padding:1.5rem 1.6rem;box-shadow:0 3px 12px rgba(0,0,0,.04);margin-bottom:1.5rem;}
+.sd-sec-hd{margin-bottom:1.1rem;}.sd-sec-hd h3{margin:0;font-size:1.1rem;font-weight:800;color:var(--t);display:flex;align-items:center;gap:.45rem;}.sd-sec-hd h3 i{font-size:1.1rem;}
+.sd-tbl{width:100%;border-collapse:collapse;}.sd-tbl th{background:#F8FAFC;font-size:.86rem;font-weight:800;color:var(--t);padding:.8rem .7rem;text-align:left;border-bottom:1.5px solid var(--b);}.sd-tbl td{padding:.8rem .7rem;font-size:.92rem;color:var(--t);border-bottom:1px solid #F1F5F9;transition:background .12s;}.sd-tbl tr:hover td{background:#F8FAFC;}
+.sd-badge{font-size:.78rem;padding:4px 11px;border-radius:6px;font-weight:700;}.sd-badge.done{background:#D1FAE5;color:#047857;}.sd-badge.inc{background:#FEF3C7;color:#92400E;}.sd-badge.pass{background:#D1FAE5;color:#047857;}.sd-badge.fail{background:#FEE2E2;color:#991B1B;}
+/* Weak */
+.sd-wk-item{margin-bottom:1.1rem;padding-bottom:1.1rem;border-bottom:1px solid #F1F5F9;}.sd-wk-item:last-child{border-bottom:none;padding-bottom:0;margin-bottom:0;}
+.sd-wk-name{font-size:1rem;font-weight:800;color:var(--t);margin-bottom:.35rem;display:block;}
+.sd-wk-stats{display:flex;gap:1.2rem;font-size:.9rem;font-weight:700;margin-bottom:.5rem;}.sd-wk-stats .g{color:var(--green);}.sd-wk-stats .r{color:var(--red);}
+.sd-wk-track{height:14px;background:#F1F5F9;border-radius:999px;overflow:hidden;display:flex;}.sd-wk-fill-g{height:100%;background:var(--green);}.sd-wk-fill-r{height:100%;background:var(--red);}
+/* Certificates */
+.sd-cert-list{display:flex;flex-direction:column;gap:1rem;}
+.sd-cert{background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border:1.5px solid #FDE68A;border-radius:16px;padding:1.4rem 1.6rem;display:flex;align-items:flex-start;gap:1.1rem;box-shadow:0 3px 12px rgba(245,158,11,.08);transition:box-shadow .15s;}.sd-cert:hover{box-shadow:0 6px 20px rgba(245,158,11,.14);}
+.sd-cert-icon{width:48px;height:48px;border-radius:14px;background:rgba(245,158,11,.15);color:#D97706;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;}
+.sd-cert-body{flex:1;min-width:0;}
+.sd-cert-title{font-size:1.05rem;font-weight:800;color:var(--t);margin-bottom:.3rem;}
+.sd-cert-desc{font-size:.88rem;color:#4B5563;line-height:1.55;margin-bottom:.5rem;}
+.sd-cert-meta{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;font-size:.82rem;color:var(--m);font-weight:600;}
+.sd-cert-meta i{margin-right:3px;}
+.sd-cbadge{font-size:.72rem;padding:3px 9px;border-radius:5px;font-weight:700;}.sd-cbadge.active{background:#D1FAE5;color:#047857;}.sd-cbadge.pending{background:#FEF3C7;color:#92400E;}
+.sd-empty{text-align:center;padding:2rem;font-size:.94rem;color:var(--m);}
+.sd-insight{background:linear-gradient(135deg,#ECFDF5,#F0FDF4);border:1.5px solid #86EFAC;border-radius:18px;padding:1.4rem 1.6rem;margin-bottom:1rem;}
+.sd-insight h4{margin:0 0 .5rem;font-size:1.05rem;font-weight:800;color:#047857;display:flex;align-items:center;gap:.4rem;}.sd-insight h4 i{font-size:1.1rem;}
+.sd-insight p{margin:0;font-size:.94rem;color:#065F46;line-height:1.75;}
+.sd-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;}
+@media(max-width:980px){.sd-donuts{grid-template-columns:1fr 1fr 1fr;}.sd-grid{grid-template-columns:1fr;}}
+@media(max-width:640px){.sd-donuts{grid-template-columns:1fr;}.sd-profile{flex-direction:column;align-items:flex-start;padding:1.3rem;}.sd-cert{flex-direction:column;}}
 </style>
 </asp:Content>
 
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
-    <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Main","Utama") %></div>
-        <a href="<%: ResolveUrl("~/Teacher/Dashboard.aspx") %>" class="sb-sidebar-item"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label"><%: T("Dashboard","Papan Pemuka") %></span></a></div>
-    <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Teaching","Pengajaran") %></div>
-        <a href="<%: ResolveUrl("~/Teacher/manageMaterials.aspx") %>" class="sb-sidebar-item"><i class="bi bi-book item-icon"></i><span class="item-label"><%: T("Manage Materials","Bahan Pembelajaran") %></span></a>
-        <a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx") %>" class="sb-sidebar-item"><i class="bi bi-patch-question item-icon"></i><span class="item-label"><%: T("Manage Quiz","Kuiz") %></span></a>
-        <a href="<%: ResolveUrl("~/Teacher/studentProgress.aspx") %>" class="sb-sidebar-item active"><i class="bi bi-bar-chart item-icon"></i><span class="item-label"><%: T("Student Progress","Prestasi Pelajar") %></span></a>
-        <a href="<%: ResolveUrl("~/Teacher/liveSession.aspx") %>" class="sb-sidebar-item"><i class="bi bi-camera-video item-icon"></i><span class="item-label"><%: T("Schedule Live Class","Kelas Langsung") %></span></a></div>
-    <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Community","Komuniti") %></div>
-        <a href="<%: ResolveUrl("~/Teacher/Forum.aspx") %>" class="sb-sidebar-item"><i class="bi bi-chat-dots item-icon"></i><span class="item-label"><%: T("Forum","Forum") %></span></a>
-        <a href="<%: ResolveUrl("~/Teacher/privateMessages.aspx") %>" class="sb-sidebar-item"><i class="bi bi-envelope item-icon"></i><span class="item-label"><%: T("Private Message","Mesej Peribadi") %></span></a></div>
-    <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Account","Akaun") %></div>
-        <a href="<%: ResolveUrl("~/Teacher/MyProfile.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person item-icon"></i><span class="item-label"><%: T("My Profile","Profil Saya") %></span></a>
-        <a href="<%: ResolveUrl("~/Logout.aspx") %>" class="sb-sidebar-item"><i class="bi bi-box-arrow-right item-icon"></i><span class="item-label"><%: T("Sign Out","Log Keluar") %></span></a></div>
+    <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Main","Utama") %></div><a href="<%: ResolveUrl("~/Teacher/Dashboard.aspx") %>" class="sb-sidebar-item"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label"><%: T("Dashboard","Papan Pemuka") %></span></a></div>
+    <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Teaching","Pengajaran") %></div><a href="<%: ResolveUrl("~/Teacher/manageMaterials.aspx") %>" class="sb-sidebar-item"><i class="bi bi-book item-icon"></i><span class="item-label"><%: T("Manage Materials","Bahan Pembelajaran") %></span></a><a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx") %>" class="sb-sidebar-item"><i class="bi bi-patch-question item-icon"></i><span class="item-label"><%: T("Manage Quiz","Kuiz") %></span></a><a href="<%: ResolveUrl("~/Teacher/studentProgress.aspx") %>" class="sb-sidebar-item active"><i class="bi bi-bar-chart item-icon"></i><span class="item-label"><%: T("Student Progress","Prestasi Pelajar") %></span></a><a href="<%: ResolveUrl("~/Teacher/liveSession.aspx") %>" class="sb-sidebar-item"><i class="bi bi-camera-video item-icon"></i><span class="item-label"><%: T("Schedule Live Class","Kelas Langsung") %></span></a></div>
+    <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Community","Komuniti") %></div><a href="<%: ResolveUrl("~/Teacher/Forum.aspx") %>" class="sb-sidebar-item"><i class="bi bi-chat-dots item-icon"></i><span class="item-label"><%: T("Forum","Forum") %></span></a><a href="<%: ResolveUrl("~/Teacher/privateMessages.aspx") %>" class="sb-sidebar-item"><i class="bi bi-envelope item-icon"></i><span class="item-label"><%: T("Private Message","Mesej Peribadi") %></span></a></div>
+    <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Account","Akaun") %></div><a href="<%: ResolveUrl("~/Teacher/MyProfile.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person item-icon"></i><span class="item-label"><%: T("My Profile","Profil Saya") %></span></a><a href="<%: ResolveUrl("~/Logout.aspx") %>" class="sb-sidebar-item"><i class="bi bi-box-arrow-right item-icon"></i><span class="item-label"><%: T("Sign Out","Log Keluar") %></span></a></div>
 </asp:Content>
 <asp:Content ID="cPageTitle" ContentPlaceHolderID="PageTitle" runat="server"><%: T("Student Details","Butiran Pelajar") %></asp:Content>
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 <a href="<%: ResolveUrl("~/Teacher/studentProgress.aspx") %>" class="sd-back"><i class="bi bi-arrow-left"></i> <%: T("Back to Student Progress","Kembali ke Prestasi Pelajar") %></a>
-
-<asp:Panel ID="pnlError" runat="server" Visible="false">
-    <div class="sd-err"><i class="bi bi-exclamation-triangle-fill"></i><div class="sd-err-title"><%: T("Error","Ralat") %></div><div class="sd-err-sub"><asp:Literal ID="litErrMsg" runat="server" /></div>
-    <a href="<%: ResolveUrl("~/Teacher/studentProgress.aspx") %>" class="sd-err-link"><i class="bi bi-arrow-left"></i> <%: T("Back","Kembali") %></a></div>
-</asp:Panel>
-
+<asp:Panel ID="pnlError" runat="server" Visible="false"><div class="sd-err"><i class="bi bi-exclamation-triangle-fill"></i><div class="sd-err-t"><%: T("Error","Ralat") %></div><div class="sd-err-s"><asp:Literal ID="litErrMsg" runat="server" /></div><a href="<%: ResolveUrl("~/Teacher/studentProgress.aspx") %>" class="sd-err-link"><i class="bi bi-arrow-left"></i> <%: T("Back","Kembali") %></a></div></asp:Panel>
 <asp:Panel ID="pnlMain" runat="server" Visible="false">
-<%-- Profile --%>
-<div class="sd-profile">
-    <div class="sd-avatar"><asp:Literal ID="litInitials" runat="server" /></div>
-    <div class="sd-info"><h2><asp:Literal ID="litName" runat="server" /></h2><p>ID: <asp:Literal ID="litStudentId" runat="server" /></p>
-    <div class="sd-pills"><span class="sd-pill"><i class="bi bi-mortarboard"></i> <asp:Literal ID="litLevel" runat="server" /></span></div></div>
-</div>
 
-<%-- Summary Stats --%>
-<div class="sd-stats">
-    <div class="sd-stat"><div class="sd-stat-icon"><i class="bi bi-journal-check"></i></div><h3><asp:Literal ID="litLessons" runat="server" /></h3><p><%: T("Lessons","Pelajaran") %></p></div>
-    <div class="sd-stat"><div class="sd-stat-icon"><i class="bi bi-trophy"></i></div><h3><asp:Literal ID="litUnitAvg" runat="server" /></h3><p><%: T("Unit Quiz","Kuiz Unit") %></p></div>
-    <div class="sd-stat"><div class="sd-stat-icon"><i class="bi bi-award"></i></div><h3><asp:Literal ID="litLevelAvg" runat="server" /></h3><p><%: T("Level Quiz","Kuiz Tahap") %></p></div>
-    <div class="sd-stat"><div class="sd-stat-icon"><i class="bi bi-x-circle"></i></div><h3><asp:Literal ID="litFailedQ" runat="server" /></h3><p><%: T("Failed Q","Soalan Gagal") %></p></div>
-    <div class="sd-stat"><div class="sd-stat-icon"><i class="bi bi-exclamation-triangle"></i></div><h3><asp:Literal ID="litWeakSub" runat="server" /></h3><p><%: T("Weak Sub","Subtopik Lemah") %></p></div>
+<div class="sd-profile"><div class="sd-avatar"><asp:Literal ID="litInitials" runat="server" /></div><div class="sd-pinfo"><h2><asp:Literal ID="litName" runat="server" /></h2><p>ID: <asp:Literal ID="litStudentId" runat="server" /> · <%: T("Detailed learning analytics","Analitik pembelajaran terperinci") %></p><div class="sd-pills"><span class="sd-pill"><i class="bi bi-mortarboard"></i> <asp:Literal ID="litLevel" runat="server" /></span></div></div></div>
+
+<%-- 3 Donut Cards (percentage only inside) --%>
+<div class="sd-donuts">
+    <div class="sd-dc"><div class="sd-donut" style="background:conic-gradient(#3B82F6 0% <%=LessonPct%>%, #E2E8F0 <%=LessonPct%>% 100%);"><div class="sd-donut-inner"><span class="sd-donut-val"><%=LessonPct%>%</span></div></div><div class="sd-dc-label"><%: T("Lesson Completion","Penyelesaian Pelajaran") %></div><div class="sd-dc-meta"><asp:Literal ID="litLessons" runat="server" /></div></div>
+    <div class="sd-dc"><div class="sd-donut" style="background:conic-gradient(#10B981 0% <%=UnitPct%>%, #E2E8F0 <%=UnitPct%>% 100%);"><div class="sd-donut-inner"><span class="sd-donut-val"><%=UnitPct%>%</span></div></div><div class="sd-dc-label"><%: T("Unit Quiz Average","Purata Kuiz Unit") %></div><div class="sd-dc-meta"><asp:Literal ID="litUnitAvg" runat="server" /></div></div>
+    <div class="sd-dc"><div class="sd-donut" style="background:conic-gradient(#F59E0B 0% <%=LevelPct%>%, #E2E8F0 <%=LevelPct%>% 100%);"><div class="sd-donut-inner"><span class="sd-donut-val"><%=LevelPct%>%</span></div></div><div class="sd-dc-label"><%: T("Level Quiz Average","Purata Kuiz Tahap") %></div><div class="sd-dc-meta"><asp:Literal ID="litLevelAvg" runat="server" /></div></div>
 </div>
 
 <%-- Lesson Progress --%>
-<div class="sd-card"><div class="sd-card-hd"><h3><i class="bi bi-book"></i> <%: T("Lesson Progress","Kemajuan Pelajaran") %></h3></div>
+<div class="sd-section"><div class="sd-sec-hd"><h3><i class="bi bi-book-half" style="color:var(--blue);"></i> <%: T("Lesson Progress","Kemajuan Pelajaran") %></h3></div>
 <table class="sd-tbl"><thead><tr><th><%: T("Lesson","Pelajaran") %></th><th><%: T("Status","Status") %></th><th><%: T("Date","Tarikh") %></th></tr></thead><tbody>
-<asp:Repeater ID="rptLessons" runat="server"><ItemTemplate>
-<tr><td><%# HttpUtility.HtmlEncode(Eval("lesson").ToString()) %></td>
-<td><span class='<%# "sd-badge-" + Eval("statusCss") %>'><%# Eval("status") %></span></td>
-<td style="font-size:.72rem;color:#6B7280;"><%# Eval("date") %></td></tr>
-</ItemTemplate></asp:Repeater>
-</tbody></table></div>
+<asp:Repeater ID="rptLessons" runat="server"><ItemTemplate><tr><td><%# HttpUtility.HtmlEncode(Eval("lesson").ToString()) %></td><td><span class='sd-badge <%# Eval("statusCss") %>'><%# Eval("status") %></span></td><td style="color:var(--m);"><%# Eval("date") %></td></tr></ItemTemplate></asp:Repeater></tbody></table></div>
 
-<%-- Quiz Results Grid --%>
+<%-- Quiz Results --%>
 <div class="sd-grid">
-<div class="sd-card"><div class="sd-card-hd"><h3><i class="bi bi-trophy"></i> <%: T("Unit Quiz Results","Keputusan Kuiz Unit") %></h3></div>
-<table class="sd-tbl"><thead><tr><th><%: T("Quiz","Kuiz") %></th><th><%: T("Score","Markah") %></th><th>%</th><th><%: T("Result","Keputusan") %></th><th>#</th><th><%: T("Date","Tarikh") %></th></tr></thead><tbody>
-<asp:Repeater ID="rptUnitQuiz" runat="server"><ItemTemplate>
-<tr><td><%# HttpUtility.HtmlEncode(Eval("quizName").ToString()) %></td><td><%# Eval("score") %></td><td><%# Eval("pct") %></td>
-<td><span class='<%# "sd-badge-" + Eval("resCss") %>'><%# Eval("result") %></span></td><td><%# Eval("attempt") %></td><td style="font-size:.72rem;color:#6B7280;"><%# Eval("date") %></td></tr>
-</ItemTemplate></asp:Repeater>
-</tbody></table></div>
-
-<div class="sd-card"><div class="sd-card-hd"><h3><i class="bi bi-award"></i> <%: T("Level Quiz Results","Keputusan Kuiz Tahap") %></h3></div>
-<table class="sd-tbl"><thead><tr><th><%: T("Quiz","Kuiz") %></th><th><%: T("Score","Markah") %></th><th>%</th><th><%: T("Result","Keputusan") %></th><th>#</th><th><%: T("Date","Tarikh") %></th></tr></thead><tbody>
-<asp:Repeater ID="rptLevelQuiz" runat="server"><ItemTemplate>
-<tr><td><%# HttpUtility.HtmlEncode(Eval("quizName").ToString()) %></td><td><%# Eval("score") %></td><td><%# Eval("pct") %></td>
-<td><span class='<%# "sd-badge-" + Eval("resCss") %>'><%# Eval("result") %></span></td><td><%# Eval("attempt") %></td><td style="font-size:.72rem;color:#6B7280;"><%# Eval("date") %></td></tr>
-</ItemTemplate></asp:Repeater>
-</tbody></table></div>
+<div class="sd-section"><div class="sd-sec-hd"><h3><i class="bi bi-trophy-fill" style="color:var(--green);"></i> <%: T("Unit Quiz Results","Keputusan Kuiz Unit") %></h3></div>
+<table class="sd-tbl"><thead><tr><th><%: T("Quiz","Kuiz") %></th><th><%: T("Score","Markah") %></th><th><%: T("Percentage","Peratus") %></th><th><%: T("Result","Keputusan") %></th><th><%: T("No. of Attempt","Bil. Cubaan") %></th><th><%: T("Date","Tarikh") %></th></tr></thead><tbody>
+<asp:Repeater ID="rptUnitQuiz" runat="server"><ItemTemplate><tr><td><%# HttpUtility.HtmlEncode(Eval("quizName").ToString()) %></td><td><%# Eval("score") %></td><td><strong><%# Eval("pct") %></strong></td><td><span class='sd-badge <%# Eval("resCss") %>'><%# Eval("result") %></span></td><td><%# Eval("attempts") %></td><td style="color:var(--m);"><%# Eval("date") %></td></tr></ItemTemplate></asp:Repeater></tbody></table></div>
+<div class="sd-section"><div class="sd-sec-hd"><h3><i class="bi bi-award-fill" style="color:var(--orange);"></i> <%: T("Level Quiz Results","Keputusan Kuiz Tahap") %></h3></div>
+<table class="sd-tbl"><thead><tr><th><%: T("Quiz","Kuiz") %></th><th><%: T("Score","Markah") %></th><th><%: T("Percentage","Peratus") %></th><th><%: T("Result","Keputusan") %></th><th><%: T("No. of Attempt","Bil. Cubaan") %></th><th><%: T("Date","Tarikh") %></th></tr></thead><tbody>
+<asp:Repeater ID="rptLevelQuiz" runat="server"><ItemTemplate><tr><td><%# HttpUtility.HtmlEncode(Eval("quizName").ToString()) %></td><td><%# Eval("score") %></td><td><strong><%# Eval("pct") %></strong></td><td><span class='sd-badge <%# Eval("resCss") %>'><%# Eval("result") %></span></td><td><%# Eval("attempts") %></td><td style="color:var(--m);"><%# Eval("date") %></td></tr></ItemTemplate></asp:Repeater></tbody></table></div>
 </div>
 
-<%-- Failed Questions & Weak Subtopics --%>
-<div class="sd-grid">
-<div class="sd-card"><div class="sd-card-hd"><h3><i class="bi bi-x-circle"></i> <%: T("Failed Questions","Soalan Gagal") %></h3></div>
-<asp:Panel ID="pnlFailedEmpty" runat="server" Visible="false"><div class="sd-empty"><%: T("No failed questions recorded.","Tiada soalan gagal direkodkan.") %></div></asp:Panel>
-<table class="sd-tbl"><thead><tr><th><%: T("Question","Soalan") %></th><th><%: T("Correct","Betul") %></th><th><%: T("Student Answer","Jawapan Pelajar") %></th><th><%: T("Subtopic","Subtopik") %></th></tr></thead><tbody>
-<asp:Repeater ID="rptFailed" runat="server"><ItemTemplate>
-<tr><td><%# HttpUtility.HtmlEncode(Eval("question").ToString()) %></td><td style="color:#047857;font-weight:700;"><%# HttpUtility.HtmlEncode(Eval("correctAnswer").ToString()) %></td>
-<td style="color:#991B1B;"><%# HttpUtility.HtmlEncode(Eval("studentAnswer").ToString()) %></td><td style="font-size:.72rem;"><%# HttpUtility.HtmlEncode(Eval("subtopic").ToString()) %></td></tr>
-</ItemTemplate></asp:Repeater>
-</tbody></table></div>
-
-<div class="sd-card"><div class="sd-card-hd"><h3><i class="bi bi-exclamation-triangle"></i> <%: T("Weak Subtopics","Subtopik Lemah") %></h3></div>
-<asp:Panel ID="pnlWeakEmpty" runat="server" Visible="false"><div class="sd-empty"><%: T("No weak subtopics detected.","Tiada subtopik lemah dikesan.") %></div></asp:Panel>
+<%-- Weak Subtopics --%>
+<div class="sd-section"><div class="sd-sec-hd"><h3><i class="bi bi-exclamation-triangle-fill" style="color:var(--red);"></i> <%: T("Weak Subtopics","Subtopik Lemah") %></h3></div>
+<asp:Panel ID="pnlWeakEmpty" runat="server" Visible="false"><div class="sd-empty"><i class="bi bi-check-circle-fill" style="color:var(--green);font-size:1.8rem;"></i><br/><%: T("No weak subtopics detected.","Tiada subtopik lemah dikesan.") %></div></asp:Panel>
 <asp:Repeater ID="rptWeak" runat="server"><ItemTemplate>
-<div class="sd-wk-item"><span class="sd-wk-name"><%# HttpUtility.HtmlEncode(Eval("subtopic").ToString()) %></span><span class="sd-wk-cnt"><%# Eval("wrongCount") %> <%: T("wrong","salah") %></span></div>
+<div class="sd-wk-item">
+    <span class="sd-wk-name"><%# HttpUtility.HtmlEncode(Eval("subtopic").ToString()) %></span>
+    <div class="sd-wk-stats"><span class="g">✓ <%: T("Correct","Betul") %>: <%# Eval("correctCount") %></span><span class="r">✗ <%: T("Wrong","Salah") %>: <%# Eval("wrongCount") %></span></div>
+    <div class="sd-wk-track"><div class="sd-wk-fill-g" style='<%# "width:" + Eval("greenPct") + "%" %>'></div><div class="sd-wk-fill-r" style='<%# "width:" + Eval("redPct") + "%" %>'></div></div>
+</div>
+</ItemTemplate></asp:Repeater></div>
+
+<%-- Certificates --%>
+<div class="sd-section"><div class="sd-sec-hd"><h3><i class="bi bi-patch-check-fill" style="color:var(--orange);"></i> <%: T("Certificates Earned","Sijil Diperolehi") %></h3></div>
+<asp:Panel ID="pnlCertEmpty" runat="server" Visible="false"><div class="sd-empty"><%: T("This student has not earned any certificate yet.","Pelajar ini belum memperolehi sebarang sijil.") %></div></asp:Panel>
+<div class="sd-cert-list">
+<asp:Repeater ID="rptCerts" runat="server"><ItemTemplate>
+<div class="sd-cert">
+    <div class="sd-cert-icon"><i class="bi bi-award"></i></div>
+    <div class="sd-cert-body">
+        <div class="sd-cert-title"><%# HttpUtility.HtmlEncode(Eval("title").ToString()) %></div>
+        <div class="sd-cert-desc"><%# HttpUtility.HtmlEncode(Eval("description").ToString()) %></div>
+        <div class="sd-cert-meta">
+            <span><i class="bi bi-mortarboard"></i> <%# HttpUtility.HtmlEncode(Eval("level").ToString()) %></span>
+            <span><i class="bi bi-calendar3"></i> <%# Eval("date") %></span>
+            <span class='sd-cbadge <%# Eval("statusCss") %>'><%# Eval("status") %></span>
+        </div>
+    </div>
+</div>
 </ItemTemplate></asp:Repeater>
-</div>
-</div>
+</div></div>
 
 <%-- Teacher Insight --%>
-<div class="sd-card"><div class="sd-card-hd"><h3><i class="bi bi-lightbulb"></i> <%: T("Teacher Insight","Maklumat Guru") %></h3></div>
-<div class="sd-insight"><asp:Literal ID="litInsight" runat="server" /></div></div>
+<div class="sd-insight"><h4><i class="bi bi-lightbulb-fill"></i> <%: T("Teacher Insight","Maklumat Guru") %></h4><p><asp:Literal ID="litInsight" runat="server" /></p></div>
 
 </asp:Panel>
 </asp:Content>
