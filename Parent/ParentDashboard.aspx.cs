@@ -193,7 +193,6 @@ namespace ScienceBuddy.Parent
             litSnapNoActivity.Text  = T("No recent activity yet.", "Tiada aktiviti terkini lagi.");
             litSnapBtnProfile.Text  = T("View Profile", "Lihat Profil");
             litSnapBtnProgress.Text = T("View Progress", "Lihat Kemajuan");
-            litSnapBtnReport.Text   = T("Report Card", "Kad Laporan");
             litHeroNoChild.Text   = T(
                 "No linked child found. Link a child account to start monitoring progress.",
                 "Tiada akaun anak dipautkan. Paut akaun anak untuk mula memantau kemajuan.");

@@ -54,10 +54,6 @@
             <i class="bi bi-patch-check item-icon"></i>
             <span class="item-label"><%: T("Quiz Results","Keputusan Kuiz") %></span>
         </a>
-        <a href="<%: ResolveUrl("~/Parent/ReportCard.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-file-earmark-bar-graph item-icon"></i>
-            <span class="item-label"><%: T("Report Card","Kad Laporan") %></span>
-        </a>
     </div>
 
     <div class="sb-nav-section">
@@ -297,10 +293,6 @@
                     <a href="<%: ResolveUrl("~/Parent/ChildProgress.aspx") %>" class="pd-snap-btn soft">
                         <i class="bi bi-bar-chart-line"></i>
                         <asp:Literal ID="litSnapBtnProgress" runat="server" />
-                    </a>
-                    <a href="<%: ResolveUrl("~/Parent/ReportCard.aspx") %>" class="pd-snap-btn soft">
-                        <i class="bi bi-file-earmark-bar-graph"></i>
-                        <asp:Literal ID="litSnapBtnReport" runat="server" />
                     </a>
                 </div>
 

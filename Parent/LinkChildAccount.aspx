@@ -50,10 +50,6 @@
             <i class="bi bi-patch-check item-icon"></i>
             <span class="item-label"><%: T("Quiz Results","Keputusan Kuiz") %></span>
         </a>
-        <a href="<%: ResolveUrl("~/Parent/ReportCard.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-file-earmark-bar-graph item-icon"></i>
-            <span class="item-label"><%: T("Report Card","Kad Laporan") %></span>
-        </a>
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label"><%: T("Study Plan","Pelan Pembelajaran") %></div>

@@ -149,9 +149,6 @@ namespace ScienceBuddy.Parent
         /// <summary>litSnapBtnProgress — "View Progress" button text.</summary>
         protected global::System.Web.UI.WebControls.Literal litSnapBtnProgress;
 
-        /// <summary>litSnapBtnReport — "Report Card" button text.</summary>
-        protected global::System.Web.UI.WebControls.Literal litSnapBtnReport;
-
         // ── Summary cards (3 pastel cards) ──────────────────────────
 
         /// <summary>litProgressValue — overall progress percentage.</summary>
