@@ -253,6 +253,7 @@
     <Content Include="Student\QuizHistory.aspx" />
     <Content Include="Student\QuizResult.aspx" />
     <Content Include="Student\QuizReview.aspx" />
+    <Content Include="Student\RevisionPlan.aspx" />
     <Content Include="Student\UnitDetails.aspx" />
     <Content Include="Student\VirtualLab.aspx" />
     <Content Include="Student\VirtualLabs.aspx" />
@@ -778,6 +779,13 @@
     </Compile>
     <Compile Include="Student\QuizReview.aspx.designer.cs">
       <DependentUpon>QuizReview.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Student\RevisionPlan.aspx.cs">
+      <DependentUpon>RevisionPlan.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\RevisionPlan.aspx.designer.cs">
+      <DependentUpon>RevisionPlan.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\UnitDetails.aspx.cs">
       <DependentUpon>UnitDetails.aspx</DependentUpon>

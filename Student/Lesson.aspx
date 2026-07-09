@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Lesson.aspx.cs"
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Lesson.aspx.cs"
     Inherits="ScienceBuddy.Student.Lesson1" MasterPageFile="~/Site.Master" Title="Lesson" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
@@ -52,6 +52,9 @@
         </a>
         <a href="<%: ResolveUrl("~/Student/MyRanking.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-trophy item-icon"></i><span class="item-label">My Ranking</span>
+        </a>
+        <a href="<%: ResolveUrl("~/Student/RevisionPlan.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-calendar-check item-icon"></i><span class="item-label">Revision Plan</span>
         </a>
     </div>
     <div class="sb-nav-section">

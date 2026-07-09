@@ -1295,11 +1295,11 @@ Foreign Key:
 Sample Data:
 Only selected sample records are shown.
 
-| rewardId | studyPlanId | rewardName | requiredProgress | isUnlocked | unlockedAt |
+| rewardId | studyPlanId | rewardName | requiredProgress | isUnlocked | unlockedAt | rewardImage
 |---|---|---|---|---|---|
-| SPR001 | STP001 | Extra Screentime (2 hours) | 25 | 1 | 2026-06-12 18:22:13 |
-| SPR002 | STP001 | Watch "Spiderman" at the movies | 50 | 1 | 2026-06-15 22:10:10 |
-| SPR003 | STP002 | McDonalds | 25 | 1 | 2026-06-03 16:10:10 |
+| SPR001 | STP001 | Extra Screentime (2 hours) | 25 | 1 | 2026-06-12 18:22:13 | Images/Rewards/Screentime.png
+| SPR002 | STP001 | Watch "Spiderman" at the movies | 50 | 1 | 2026-06-15 22:10:10 |Images/Rewards/spiderman.png
+| SPR003 | STP002 | McDonalds | 25 | 1 | 2026-06-03 16:10:10 | Images/Rewards/mcdonald.png
 
 40. userChat table
 

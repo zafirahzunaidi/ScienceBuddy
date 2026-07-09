@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="LevelDetails.aspx.cs" Inherits="ScienceBuddy.Student.LevelDetails1" %>
+<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="LevelDetails.aspx.cs" Inherits="ScienceBuddy.Student.LevelDetails1" %>
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
     <link href="<%: ResolveUrl("~/Content/Student.css") %>" rel="stylesheet" />
 </asp:Content>
@@ -51,6 +51,9 @@
         <a href="<%: ResolveUrl("~/Student/MyRanking.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-trophy item-icon"></i><span class="item-label">My Ranking</span>
         </a>
+        <a href="<%: ResolveUrl("~/Student/RevisionPlan.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-calendar-check item-icon"></i><span class="item-label">Revision Plan</span>
+        </a>
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Account</div>
@@ -69,7 +72,7 @@
 <%-- LOCKED STATE --%>
 <asp:Panel ID="pnlLocked" runat="server" Visible="false">
     <div class="st-leveldetails-locked">
-        <div class="st-leveldetails-locked-icon">🔒</div>
+        <div class="st-leveldetails-locked-icon">??</div>
         <div class="st-leveldetails-locked-title"><asp:Literal ID="litLockedTitle" runat="server" /></div>
         <div class="st-leveldetails-locked-desc"><asp:Literal ID="litLockedDesc" runat="server" /></div>
         <a href="<%: ResolveUrl("~/Student/MyLearning.aspx") %>" class="sb-btn sb-btn-primary sb-btn-sm">
@@ -133,7 +136,7 @@
 
 <asp:Panel ID="pnlUnitsEmpty" runat="server" Visible="false">
     <div class="sb-empty-state" style="padding:var(--space-2xl) 0;">
-        <div class="empty-icon" style="font-size:3rem;">📦</div>
+        <div class="empty-icon" style="font-size:3rem;">??</div>
         <div class="empty-title"><asp:Literal ID="litEmptyTitle" runat="server" /></div>
         <div class="empty-desc"><asp:Literal ID="litEmptyDesc" runat="server" /></div>
     </div>

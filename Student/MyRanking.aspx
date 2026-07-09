@@ -1,11 +1,11 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="MyRanking.aspx.cs"
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="MyRanking.aspx.cs"
     Inherits="ScienceBuddy.Student.MyRanking1" MasterPageFile="~/Site.Master"
     Title="My Ranking" %>
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
 <link href="<%: ResolveUrl("~/Content/Student.css") %>" rel="stylesheet" />
 </asp:Content>
 
-<%-- ════ SIDEBAR ════ --%>
+<%-- ---- SIDEBAR ---- --%>
 <asp:Content ID="cSidebarMenu" ContentPlaceHolderID="SidebarMenu" runat="server">
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Main</div>
@@ -54,6 +54,9 @@
         <a href="<%: ResolveUrl("~/Student/MyRanking.aspx") %>" class="sb-sidebar-item active">
             <i class="bi bi-trophy item-icon"></i><span class="item-label">My Ranking</span>
         </a>
+        <a href="<%: ResolveUrl("~/Student/RevisionPlan.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-calendar-check item-icon"></i><span class="item-label">Revision Plan</span>
+        </a>
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Account</div>
@@ -67,10 +70,10 @@
     <asp:Literal ID="litPageTitle" runat="server" Text="My Ranking" />
 </asp:Content>
 
-<%-- ════ MAIN CONTENT ════ --%>
+<%-- ---- MAIN CONTENT ---- --%>
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 
-<%-- ── RANKING HERO ── --%>
+<%-- -- RANKING HERO -- --%>
 <div class="st-ranking-hero">
     <div class="st-ranking-hero-blob1"></div><div class="st-ranking-hero-blob2"></div>
     <div class="st-ranking-hero-left">
@@ -86,7 +89,7 @@
     </div>
 </div>
 
-<%-- ── PERSONAL RANK CARD ── --%>
+<%-- -- PERSONAL RANK CARD -- --%>
 <div class="st-ranking-personal">
     <div class="st-ranking-personal-avatar"><asp:Literal ID="litPersonalInitial" runat="server" Text="S" /></div>
     <div class="st-ranking-personal-info">
@@ -112,13 +115,13 @@
     </div>
 </div>
 
-<%-- ── TOP 3 PODIUM ── --%>
+<%-- -- TOP 3 PODIUM -- --%>
 <div class="st-ranking-podium-section">
     <div class="st-ranking-podium-title"><i class="bi bi-trophy-fill" style="color:#FACC15;"></i> <asp:Literal ID="litPodiumTitle" runat="server" Text="Top 3 Champions" /></div>
     <asp:Literal ID="litPodium" runat="server" />
 </div>
 
-<%-- ── FILTERS ── --%>
+<%-- -- FILTERS -- --%>
 <div class="st-ranking-filters">
     <div class="st-ranking-filters-label"><asp:Literal ID="litFilterLabel" runat="server" Text="Filter leaderboard" /></div>
     <div class="st-ranking-filter-chips">
@@ -128,7 +131,7 @@
     </div>
 </div>
 
-<%-- ── TOP 10 LEADERBOARD ── --%>
+<%-- -- TOP 10 LEADERBOARD -- --%>
 <div class="st-ranking-board">
     <div class="st-ranking-board-header"><i class="bi bi-trophy-fill"></i> &nbsp;<asp:Literal ID="litBoardTitle" runat="server" Text="Top 10 Leaderboard" /></div>
     <div class="st-ranking-board-list">
@@ -149,7 +152,7 @@
     </div>
 </div>
 
-<%-- ── YOUR POSITION (shown if not in top 10) ── --%>
+<%-- -- YOUR POSITION (shown if not in top 10) -- --%>
 <asp:Panel ID="pnlYourPosition" runat="server" Visible="false">
     <div class="st-ranking-yourpos">
         <div>
@@ -163,13 +166,13 @@
     </div>
 </asp:Panel>
 
-<%-- ── MOTIVATIONAL SECTION ── --%>
+<%-- -- MOTIVATIONAL SECTION -- --%>
 <div class="st-ranking-motivate">
     <div class="st-ranking-motivate-icon"><i class="bi bi-lightning-charge-fill"></i></div>
     <div class="st-ranking-motivate-msg"><asp:Literal ID="litMotivateMsg" runat="server" Text="Every lesson gives you XP. Keep learning and your rank will improve." /></div>
 </div>
 
-<%-- ── XP TIPS ── --%>
+<%-- -- XP TIPS -- --%>
 <div class="st-ranking-tips">
     <div class="st-ranking-tips-title"><i class="bi bi-lightbulb-fill"></i> <asp:Literal ID="litTipsTitle" runat="server" Text="Ways to Earn XP" /></div>
     <div class="st-ranking-tips-grid">
@@ -192,7 +195,7 @@
     </div>
 </div>
 
-<%-- ── NAVIGATION BUTTONS ── --%>
+<%-- -- NAVIGATION BUTTONS -- --%>
 <div class="st-ranking-nav">
     <a href="<%: ResolveUrl("~/Student/ProgressRewards.aspx") %>" class="st-ranking-nav-btn st-ranking-nav-btn-secondary">
         <i class="bi bi-arrow-left"></i> <asp:Literal ID="litNavBack" runat="server" Text="Back to Progress &amp; Rewards" />

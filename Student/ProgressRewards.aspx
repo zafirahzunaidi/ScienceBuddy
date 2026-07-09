@@ -1,11 +1,11 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ProgressRewards.aspx.cs"
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ProgressRewards.aspx.cs"
     Inherits="ScienceBuddy.Student.ProgressReward" MasterPageFile="~/Site.Master"
     Title="Progress &amp; Rewards" %>
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
 <link href="<%: ResolveUrl("~/Content/Student.css") %>" rel="stylesheet" />
 </asp:Content>
 
-<%-- ════ SIDEBAR ════ --%>
+<%-- ---- SIDEBAR ---- --%>
 <asp:Content ID="cSidebarMenu" ContentPlaceHolderID="SidebarMenu" runat="server">
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Main</div>
@@ -54,6 +54,9 @@
         <a href="<%: ResolveUrl("~/Student/MyRanking.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-trophy item-icon"></i><span class="item-label">My Ranking</span>
         </a>
+        <a href="<%: ResolveUrl("~/Student/RevisionPlan.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-calendar-check item-icon"></i><span class="item-label">Revision Plan</span>
+        </a>
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Account</div>
@@ -67,10 +70,10 @@
     <asp:Literal ID="litPageTitle" runat="server" Text="Progress &amp; Rewards" />
 </asp:Content>
 
-<%-- ════ MAIN CONTENT ════ --%>
+<%-- ---- MAIN CONTENT ---- --%>
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 
-<%-- ── HERO SECTION ── --%>
+<%-- -- HERO SECTION -- --%>
 <div class="st-progress-hero">
     <div class="st-progress-hero-name"><i class="bi bi-trophy-fill"></i> <asp:Literal ID="litHeroName" runat="server" /></div>
     <div class="st-progress-hero-meta">
@@ -81,7 +84,7 @@
     <div class="st-progress-hero-motivate"><asp:Literal ID="litHeroMotivate" runat="server" /></div>
 </div>
 
-<%-- ── XP PROGRESS BAR ── --%>
+<%-- -- XP PROGRESS BAR -- --%>
 <div class="st-progress-xp">
     <div class="st-progress-xp-header">
         <div class="st-progress-xp-title"><i class="bi bi-lightning-charge-fill" style="color:#F59E0B;"></i> <asp:Literal ID="litXpTitle" runat="server" Text="XP Progress" /></div>
@@ -96,7 +99,7 @@
     </div>
 </div>
 
-<%-- ── PROGRESS SUMMARY CARDS ── --%>
+<%-- -- PROGRESS SUMMARY CARDS -- --%>
 <div class="st-progress-summary">
     <div class="st-progress-stat-card">
         <div class="st-progress-stat-icon"><i class="bi bi-book-fill" style="color:#2563EB;"></i></div>
@@ -126,7 +129,7 @@
     <asp:Literal ID="litTotalXP" runat="server" Visible="false" /><asp:Literal ID="litTotalXPLabel" runat="server" Visible="false" />
 </div>
 
-<%-- ── BADGE COLLECTION ── --%>
+<%-- -- BADGE COLLECTION -- --%>
 <div class="st-progress-badges">
     <div class="st-progress-section-title"><i class="bi bi-award"></i> <asp:Literal ID="litBadgeSection" runat="server" Text="Badge Collection" /></div>
     <asp:Panel ID="pnlBadges" runat="server">
@@ -156,7 +159,7 @@
     </asp:Panel>
 </div>
 
-<%-- ── RECENT XP ACTIVITY ── --%>
+<%-- -- RECENT XP ACTIVITY -- --%>
 <div class="st-progress-xp-activity">
     <div class="st-progress-section-title"><i class="bi bi-lightning-charge"></i> <asp:Literal ID="litActivitySection" runat="server" Text="Recent XP Activity" /></div>
     <asp:Panel ID="pnlActivity" runat="server">
@@ -185,7 +188,7 @@
     </asp:Panel>
 </div>
 
-<%-- ── CERTIFICATES ── --%>
+<%-- -- CERTIFICATES -- --%>
 <div class="st-progress-certs">
     <div class="st-progress-section-title"><i class="bi bi-file-earmark-check"></i> <asp:Literal ID="litCertSection" runat="server" Text="Certificates" /></div>
     <asp:Panel ID="pnlCerts" runat="server">

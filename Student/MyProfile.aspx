@@ -1,11 +1,11 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="MyProfile.aspx.cs"
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="MyProfile.aspx.cs"
     Inherits="ScienceBuddy.Student.MyProfile1" MasterPageFile="~/Site.Master"
     Title="My Profile" %>
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
 <link href="<%: ResolveUrl("~/Content/Student.css") %>" rel="stylesheet" />
 </asp:Content>
 
-<%-- ════ SIDEBAR ════ --%>
+<%-- ---- SIDEBAR ---- --%>
 <asp:Content ID="cSidebarMenu" ContentPlaceHolderID="SidebarMenu" runat="server">
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Main</div>
@@ -54,6 +54,9 @@
         <a href="<%: ResolveUrl("~/Student/MyRanking.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-trophy item-icon"></i><span class="item-label">My Ranking</span>
         </a>
+        <a href="<%: ResolveUrl("~/Student/RevisionPlan.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-calendar-check item-icon"></i><span class="item-label">Revision Plan</span>
+        </a>
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Account</div>
@@ -67,10 +70,10 @@
     <asp:Literal ID="litPageTitle" runat="server" Text="My Profile" />
 </asp:Content>
 
-<%-- ════ MAIN CONTENT ════ --%>
+<%-- ---- MAIN CONTENT ---- --%>
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 
-<%-- ── HERO CARD ── --%>
+<%-- -- HERO CARD -- --%>
 <div class="st-profile-hero">
     <div class="st-profile-hero-avatar"><asp:Literal ID="litHeroInitial" runat="server" Text="S" /></div>
     <div class="st-profile-hero-info">
@@ -85,7 +88,7 @@
     </div>
 </div>
 
-<%-- ── PERSONAL INFORMATION FORM ── --%>
+<%-- -- PERSONAL INFORMATION FORM -- --%>
 <div class="st-profile-form">
     <div class="st-profile-form-title"><i class="bi bi-person-lines-fill"></i> <asp:Literal ID="litPersonalTitle" runat="server" Text="Personal Information" /></div>
     <div class="st-profile-form-grid">
@@ -112,7 +115,7 @@
     </div>
 </div>
 
-<%-- ── LANGUAGE PREFERENCE ── --%>
+<%-- -- LANGUAGE PREFERENCE -- --%>
 <div class="st-profile-lang">
     <div class="st-profile-lang-title"><i class="bi bi-translate"></i> <asp:Literal ID="litLangTitle" runat="server" Text="Language Preference" /></div>
     <div class="st-profile-field" style="max-width:320px;">
@@ -124,7 +127,7 @@
     </div>
 </div>
 
-<%-- ── PERSONALITY SECTION ── --%>
+<%-- -- PERSONALITY SECTION -- --%>
 <div class="st-profile-personality">
     <div class="st-profile-personality-title"><i class="bi bi-puzzle-fill"></i> <asp:Literal ID="litPersonalityTitle" runat="server" Text="Personality" /></div>
     <div class="st-profile-pers-card">
@@ -141,7 +144,7 @@
     </div>
 </div>
 
-<%-- ── ACCOUNT STATUS ── --%>
+<%-- -- ACCOUNT STATUS -- --%>
 <div class="st-profile-status">
     <div class="st-profile-status-title"><i class="bi bi-shield-check"></i> <asp:Literal ID="litStatusTitle" runat="server" Text="Account Status" /></div>
     <div class="st-profile-status-grid">
@@ -160,7 +163,7 @@
     </div>
 </div>
 
-<%-- ── SAVE BUTTON & ALERTS ── --%>
+<%-- -- SAVE BUTTON & ALERTS -- --%>
 <div class="st-profile-save-area">
     <asp:Button ID="btnSave" runat="server" CssClass="st-profile-btn-save" Text="Save Changes" OnClick="btnSave_Click" />
     <asp:Literal ID="litSaveBtn" runat="server" Visible="false" />

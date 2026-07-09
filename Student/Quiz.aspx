@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Quiz.aspx.cs" Inherits="ScienceBuddy.Student.Quiz" ValidateRequest="false" EnableEventValidation="false" %>
+<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Quiz.aspx.cs" Inherits="ScienceBuddy.Student.Quiz" ValidateRequest="false" EnableEventValidation="false" %>
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
     <link href="<%: ResolveUrl("~/Content/Student.css") %>" rel="stylesheet" />
 </asp:Content>
@@ -50,6 +50,9 @@
         </a>
         <a href="<%: ResolveUrl("~/Student/MyRanking.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-trophy item-icon"></i><span class="item-label">My Ranking</span>
+        </a>
+        <a href="<%: ResolveUrl("~/Student/RevisionPlan.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-calendar-check item-icon"></i><span class="item-label">Revision Plan</span>
         </a>
     </div>
     <div class="sb-nav-section">
@@ -234,7 +237,7 @@ function ddStartDrag(e, val) {
 }
 function ddEndDrag(e) { e.target.style.opacity = '1'; }
 
-// ═══ True/False selection highlight ═══
+// --- True/False selection highlight ---
 document.addEventListener('click', function(e) {
     var label = e.target.closest('.st-quiz-tf-wrap label');
     if (!label) return;

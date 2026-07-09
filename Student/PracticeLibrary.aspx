@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="PracticeLibrary.aspx.cs" Inherits="ScienceBuddy.Student.PracticeLibrary1" %>
+<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="PracticeLibrary.aspx.cs" Inherits="ScienceBuddy.Student.PracticeLibrary1" %>
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
     <link href="<%: ResolveUrl("~/Content/Student.css") %>" rel="stylesheet" />
 </asp:Content>
@@ -51,6 +51,9 @@
         <a href="<%: ResolveUrl("~/Student/MyRanking.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-trophy item-icon"></i><span class="item-label">My Ranking</span>
         </a>
+        <a href="<%: ResolveUrl("~/Student/RevisionPlan.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-calendar-check item-icon"></i><span class="item-label">Revision Plan</span>
+        </a>
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Account</div>
@@ -66,19 +69,19 @@
 
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 
-<%-- ── PAGE HEADER ── --%>
+<%-- -- PAGE HEADER -- --%>
 <div class="st-practice-header">
     <div class="st-practice-title"><asp:Literal ID="litTitle" runat="server" Text="Practice Library" /></div>
     <div class="st-practice-subtitle"><asp:Literal ID="litSubtitle" runat="server" Text="Try extra quizzes to improve your Science skills." /></div>
 </div>
 
-<%-- ── AI RECOMMENDATION BANNER ── --%>
+<%-- -- AI RECOMMENDATION BANNER -- --%>
 <asp:Panel ID="pnlRecommend" runat="server" CssClass="st-practice-recommend" Visible="false">
     <div class="st-practice-recommend-title"><i class="bi bi-stars"></i> <asp:Literal ID="litRecommendTitle" runat="server" /></div>
     <div class="st-practice-recommend-text"><asp:Literal ID="litRecommendText" runat="server" /></div>
 </asp:Panel>
 
-<%-- ── FILTERS ── --%>
+<%-- -- FILTERS -- --%>
 <div class="st-practice-filters">
     <asp:DropDownList ID="ddlLevel" runat="server" AutoPostBack="true" OnSelectedIndexChanged="Filter_Changed" />
     <asp:DropDownList ID="ddlUnit" runat="server" AutoPostBack="true" OnSelectedIndexChanged="Filter_Changed" />
@@ -86,7 +89,7 @@
     <asp:DropDownList ID="ddlLanguage" runat="server" AutoPostBack="true" OnSelectedIndexChanged="Filter_Changed" />
 </div>
 
-<%-- ── QUIZ CARD GRID ── --%>
+<%-- -- QUIZ CARD GRID -- --%>
 <asp:Panel ID="pnlGrid" runat="server">
     <div class="st-practice-grid">
         <asp:Repeater ID="rptQuizzes" runat="server">
@@ -117,10 +120,10 @@
     </div>
 </asp:Panel>
 
-<%-- ── EMPTY STATE ── --%>
+<%-- -- EMPTY STATE -- --%>
 <asp:Panel ID="pnlEmpty" runat="server" Visible="false">
     <div class="st-practice-empty">
-        <div class="st-practice-empty-icon">📝</div>
+        <div class="st-practice-empty-icon">??</div>
         <div class="st-practice-empty-title"><asp:Literal ID="litEmptyTitle" runat="server" Text="No practice quizzes available" /></div>
         <div class="st-practice-empty-desc"><asp:Literal ID="litEmptyDesc" runat="server" Text="No practice quizzes are available yet." /></div>
         <a href="<%: ResolveUrl("~/Student/Dashboard.aspx") %>" class="st-practice-card-btn" style="display:inline-flex;width:auto;">
