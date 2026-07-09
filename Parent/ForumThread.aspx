@@ -1,10 +1,21 @@
 <%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ForumThread.aspx.cs"
     Inherits="ScienceBuddy.Parent.ForumThread" MasterPageFile="~/Site.Master"
     Title="Forum Thread" MaintainScrollPositionOnPostback="true" %>
-<asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server"><link href="<%: ResolveUrl("~/Content/Parent.css") %>" rel="stylesheet" /></asp:Content>
+<asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
+<link href="<%: ResolveUrl("~/Content/Parent.css") %>" rel="stylesheet" />
+<script type="text/javascript">
+function toggleChildPopover(e){e.stopPropagation();var pop=document.getElementById('divChildPopover');if(!pop)return;if(pop.classList.contains('pt-popover-open')){pop.classList.remove('pt-popover-open');return;}var ddl=document.querySelector('.sb-sidebar-child-ddl');if(!ddl)return;var html='<div class="pt-child-popover-title">Select Child</div>';for(var i=0;i<ddl.options.length;i++){var o=ddl.options[i];var init=o.text.charAt(0).toUpperCase();var ac=o.selected?' pt-popover-active':'';html+='<div class="pt-child-popover-item'+ac+'" onclick="selectChildFromPopover(\''+o.value+'\')"><span class="pt-popover-avatar">'+init+'</span>'+o.text+'</div>';}pop.innerHTML=html;pop.classList.add('pt-popover-open');}
+function selectChildFromPopover(v){var ddl=document.querySelector('.sb-sidebar-child-ddl');if(ddl&&ddl.value!==v){ddl.value=v;__doPostBack(ddl.id.replace(/_/g,'$'),'');}var pop=document.getElementById('divChildPopover');if(pop)pop.classList.remove('pt-popover-open');}
+document.addEventListener('DOMContentLoaded',function(){var ddl=document.querySelector('.sb-sidebar-child-ddl');var btn=document.querySelector('.pt-child-compact-btn');if(ddl&&btn&&ddl.options.length>0){btn.textContent=ddl.options[ddl.selectedIndex].text.charAt(0).toUpperCase();}});
+document.addEventListener('click',function(e){var pop=document.getElementById('divChildPopover');if(pop&&!e.target.closest('.pt-child-selector-compact')){pop.classList.remove('pt-popover-open');}});
+</script>
+</asp:Content>
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
-    <div style="padding:10px 16px 6px; font-size:0.72rem; color:#94A3B8; text-transform:uppercase; letter-spacing:1px; font-weight:700;"><%: T("Viewing Child","Anak Dilihat") %></div>
-    <div style="padding:0 16px 14px;"><asp:DropDownList ID="ddlSidebarChild2" runat="server" CssClass="sb-sidebar-child-ddl" /></div>
+    <div class="pt-child-selector">
+        <div class="pt-child-selector-label"><%: T("Viewing Child","Anak Dilihat") %></div>
+        <div class="pt-child-selector-full"><asp:DropDownList ID="ddlSidebarChild2" runat="server" CssClass="sb-sidebar-child-ddl" /></div>
+        <div class="pt-child-selector-compact"><button type="button" class="pt-child-compact-btn" onclick="toggleChildPopover(event);"></button><div class="pt-child-popover" id="divChildPopover"></div></div>
+    </div>
     <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Main","Utama") %></div>
         <a href="<%: ResolveUrl("~/Parent/ParentDashboard.aspx") %>" class="sb-sidebar-item"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label"><%: T("Dashboard","Papan Pemuka") %></span></a>
         <a href="<%: ResolveUrl("~/Parent/ParentNotifications.aspx") %>" class="sb-sidebar-item"><i class="bi bi-bell item-icon"></i><span class="item-label"><%: T("Notifications","Notifikasi") %></span></a></div>
