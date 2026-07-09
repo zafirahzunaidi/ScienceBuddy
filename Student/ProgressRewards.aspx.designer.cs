@@ -8,209 +8,44 @@ namespace ScienceBuddy.Student
 {
     public partial class ProgressReward
     {
-        /// <summary>
-        /// litPageTitle control.
-        /// </summary>
         protected global::System.Web.UI.WebControls.Literal litPageTitle;
-
-        /// <summary>
-        /// litHeroName control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litHeroName;
-
-        /// <summary>
-        /// litHeroLevel control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litHeroLevel;
-
-        /// <summary>
-        /// litHeroXP control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litHeroXP;
-
-        /// <summary>
-        /// litHeroPersonality control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litHeroPersonality;
-
-        /// <summary>
-        /// litHeroMotivate control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litHeroMotivate;
-
-        /// <summary>
-        /// litXpTitle control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litXpTitle;
-
-        /// <summary>
-        /// litXpMilestone control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litXpMilestone;
-
-        /// <summary>
-        /// litXpCurrent control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litXpCurrent;
-
-        /// <summary>
-        /// litXpNext control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litXpNext;
-
-        /// <summary>
-        /// litLessonsCount control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litLessonsCount;
-
-        /// <summary>
-        /// litLessonsLabel control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litLessonsLabel;
-
-        /// <summary>
-        /// litLabsCount control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litLabsCount;
-
-        /// <summary>
-        /// litLabsLabel control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litLabsLabel;
-
-        /// <summary>
-        /// litQuizzesCount control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litQuizzesCount;
-
-        /// <summary>
-        /// litQuizzesLabel control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litQuizzesLabel;
-
-        /// <summary>
-        /// litBadgesCount control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litBadgesCount;
-
-        /// <summary>
-        /// litBadgesLabel control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litBadgesLabel;
-
-        /// <summary>
-        /// litCertsCount control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litCertsCount;
-
-        /// <summary>
-        /// litCertsLabel control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litCertsLabel;
-
-        /// <summary>
-        /// litTotalXP control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litTotalXP;
-
-        /// <summary>
-        /// litTotalXPLabel control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litTotalXPLabel;
-
-        /// <summary>
-        /// litBadgeSection control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litBadgeSection;
-
-        /// <summary>
-        /// pnlBadges control.
-        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlEmpty;
+        protected global::System.Web.UI.WebControls.Literal litEmptyTitle;
+        protected global::System.Web.UI.WebControls.Literal litEmptyDesc;
+        protected global::System.Web.UI.WebControls.Literal litEmptyBtn;
+        protected global::System.Web.UI.WebControls.Panel pnlMain;
+        protected global::System.Web.UI.WebControls.Literal litHeroTitle;
+        protected global::System.Web.UI.WebControls.Literal litHeroSubtitle;
+        protected global::System.Web.UI.WebControls.Literal litStatXP;
+        protected global::System.Web.UI.WebControls.Literal litStatXPLabel;
+        protected global::System.Web.UI.WebControls.Literal litStatLessons;
+        protected global::System.Web.UI.WebControls.Literal litStatLessonsLabel;
+        protected global::System.Web.UI.WebControls.Literal litStatQuizzes;
+        protected global::System.Web.UI.WebControls.Literal litStatQuizzesLabel;
+        protected global::System.Web.UI.WebControls.Literal litStatBadges;
+        protected global::System.Web.UI.WebControls.Literal litStatBadgesLabel;
+        protected global::System.Web.UI.WebControls.Literal litWeeklyTitle;
+        protected global::System.Web.UI.WebControls.Literal litWeeklyChart;
+        protected global::System.Web.UI.WebControls.Literal litChartLegend;
+        protected global::System.Web.UI.WebControls.Literal litQuizPerfTitle;
+        protected global::System.Web.UI.WebControls.Panel pnlQuizPerf;
+        protected global::System.Web.UI.WebControls.Literal litQuizPerfContent;
+        protected global::System.Web.UI.WebControls.Panel pnlNoQuizPerf;
+        protected global::System.Web.UI.WebControls.Literal litNoQuizPerf;
+        protected global::System.Web.UI.WebControls.Literal litWeakTitle;
+        protected global::System.Web.UI.WebControls.Panel pnlWeakTopics;
+        protected global::System.Web.UI.WebControls.Literal litWeakTopicsContent;
+        protected global::System.Web.UI.WebControls.Panel pnlNoWeakTopics;
+        protected global::System.Web.UI.WebControls.Literal litNoWeakTopics;
+        protected global::System.Web.UI.WebControls.Literal litBadgeTitle;
         protected global::System.Web.UI.WebControls.Panel pnlBadges;
-
-        /// <summary>
-        /// rptBadges control.
-        /// </summary>
         protected global::System.Web.UI.WebControls.Repeater rptBadges;
-
-        /// <summary>
-        /// pnlNoBadges control.
-        /// </summary>
         protected global::System.Web.UI.WebControls.Panel pnlNoBadges;
-
-        /// <summary>
-        /// litNoBadges control.
-        /// </summary>
         protected global::System.Web.UI.WebControls.Literal litNoBadges;
-
-        /// <summary>
-        /// litActivitySection control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litActivitySection;
-
-        /// <summary>
-        /// pnlActivity control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Panel pnlActivity;
-
-        /// <summary>
-        /// rptActivity control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Repeater rptActivity;
-
-        /// <summary>
-        /// pnlNoActivity control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Panel pnlNoActivity;
-
-        /// <summary>
-        /// litNoActivity control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litNoActivity;
-
-        /// <summary>
-        /// litCertSection control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litCertSection;
-
-        /// <summary>
-        /// pnlCerts control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Panel pnlCerts;
-
-        /// <summary>
-        /// rptCerts control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Repeater rptCerts;
-
-        /// <summary>
-        /// pnlNoCerts control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Panel pnlNoCerts;
-
-        /// <summary>
-        /// litNoCerts control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litNoCerts;
-
-        /// <summary>
-        /// litNavRanking control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litNavRanking;
-
-        /// <summary>
-        /// litNavLearning control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litNavLearning;
-
-        /// <summary>
-        /// litNavPractice control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litNavPractice;
-
-        /// <summary>
-        /// litNavLabs control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litNavLabs;
+        protected global::System.Web.UI.WebControls.Literal litCertTitle;
+        protected global::System.Web.UI.WebControls.Literal litCertContent;
+        protected global::System.Web.UI.WebControls.Panel pnlAIHint;
+        protected global::System.Web.UI.WebControls.Literal litAIHintTitle;
+        protected global::System.Web.UI.WebControls.Literal litAIHintText;
     }
 }

@@ -3786,3 +3786,826 @@
     .st-revision-reward-boxes{grid-template-columns:1fr;}
     .st-revision-progress-top-row{flex-wrap:wrap;gap:var(--space-sm);}
 }
+
+
+/* Student Progress Rewards Analytics Page */
+
+/* Hero Banner */
+.st-progress-hero {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    border-radius: var(--border-radius-xl);
+    padding: var(--space-2xl) var(--space-xl);
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: var(--space-xl);
+    box-shadow: 0 12px 40px rgba(102, 126, 234, 0.3);
+}
+
+.st-progress-hero-decor {
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    pointer-events: none;
+}
+
+.st-progress-hero-decor::after {
+    content: '';
+    position: absolute;
+    bottom: -80px;
+    left: -60px;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+}
+
+.st-progress-hero-content {
+    position: relative;
+    z-index: 1;
+}
+
+.st-progress-hero-title {
+    font-family: var(--font-primary);
+    font-size: 1.75rem;
+    font-weight: 800;
+    margin: 0 0 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.st-progress-hero-subtitle {
+    font-size: 1rem;
+    opacity: 0.9;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Stat Cards Grid */
+.st-progress-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-md);
+    margin-bottom: var(--space-xl);
+}
+
+.st-progress-stat-card {
+    background: var(--color-white);
+    border-radius: var(--border-radius-xl);
+    border: 1.5px solid var(--border-color);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    padding: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.st-progress-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+}
+
+.st-progress-stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.1);
+}
+
+.st-progress-stat-xp::before {
+    background: linear-gradient(90deg, #F59E0B, #FBBF24);
+}
+
+.st-progress-stat-lessons::before {
+    background: linear-gradient(90deg, #2563EB, #60A5FA);
+}
+
+.st-progress-stat-quizzes::before {
+    background: linear-gradient(90deg, #0EA5E9, #67E8F9);
+}
+
+.st-progress-stat-badges::before {
+    background: linear-gradient(90deg, #7C3AED, #A78BFA);
+}
+
+.st-progress-stat-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.st-progress-stat-xp .st-progress-stat-icon {
+    background: #FEF3C7;
+    color: #D97706;
+}
+
+.st-progress-stat-lessons .st-progress-stat-icon {
+    background: #DBEAFE;
+    color: #2563EB;
+}
+
+.st-progress-stat-quizzes .st-progress-stat-icon {
+    background: #E0F2FE;
+    color: #0284C7;
+}
+
+.st-progress-stat-badges .st-progress-stat-icon {
+    background: #EDE9FE;
+    color: #7C3AED;
+}
+
+.st-progress-stat-value {
+    font-family: var(--font-primary);
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--color-text);
+    line-height: 1;
+}
+
+.st-progress-stat-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+}
+
+/* Section Card Container */
+.st-progress-section-card {
+    background: var(--color-white);
+    border-radius: var(--border-radius-xl);
+    border: 1.5px solid var(--border-color);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+    padding: var(--space-xl);
+    margin-bottom: var(--space-xl);
+}
+
+.st-progress-section-header {
+    font-family: var(--font-primary);
+    font-size: 1.125rem;
+    font-weight: 800;
+    color: var(--color-text);
+    margin-bottom: var(--space-lg);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.st-progress-section-header i {
+    color: var(--student);
+}
+
+/* Weekly Activity Chart (CSS bars) */
+.st-progress-chart-container {
+    padding: var(--space-sm) 0;
+}
+
+.st-progress-chart-bars {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-md);
+    height: 180px;
+    padding: 0 var(--space-sm);
+}
+
+.st-progress-chart-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    gap: 6px;
+}
+
+.st-progress-chart-value {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-text-secondary);
+}
+
+.st-progress-chart-bar-wrap {
+    flex: 1;
+    width: 100%;
+    max-width: 40px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.st-progress-chart-bar {
+    width: 100%;
+    border-radius: 8px 8px 4px 4px;
+    background: linear-gradient(180deg, #667eea, #764ba2);
+    min-height: 4px;
+    transition: height 0.6s ease;
+}
+
+.st-progress-chart-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-align: center;
+}
+
+/* Quiz Performance by Unit */
+.st-progress-quiz-perf-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.st-progress-quiz-perf-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.st-progress-quiz-perf-info {
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.st-progress-quiz-perf-name {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.st-progress-quiz-perf-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border-radius: var(--border-radius-full);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    width: fit-content;
+}
+
+.st-progress-quiz-perf-badge.excellent {
+    background: #DCFCE7;
+    color: #15803D;
+}
+
+.st-progress-quiz-perf-badge.good {
+    background: #FEF3C7;
+    color: #B45309;
+}
+
+.st-progress-quiz-perf-badge.needs-revision {
+    background: #FEE2E2;
+    color: #DC2626;
+}
+
+.st-progress-quiz-perf-bar-wrap {
+    flex: 1;
+    height: 14px;
+    background: #F1F5F9;
+    border-radius: var(--border-radius-full);
+    overflow: hidden;
+}
+
+.st-progress-quiz-perf-bar {
+    height: 100%;
+    border-radius: var(--border-radius-full);
+    transition: width 0.6s ease;
+}
+
+.st-progress-quiz-perf-bar.excellent {
+    background: linear-gradient(90deg, #22C55E, #4ADE80);
+}
+
+.st-progress-quiz-perf-bar.good {
+    background: linear-gradient(90deg, #F59E0B, #FBBF24);
+}
+
+.st-progress-quiz-perf-bar.needs-revision {
+    background: linear-gradient(90deg, #EF4444, #F87171);
+}
+
+.st-progress-quiz-perf-pct {
+    font-size: 0.875rem;
+    font-weight: 800;
+    color: var(--color-text);
+    min-width: 42px;
+    text-align: right;
+}
+
+/* Weak Topics */
+.st-progress-weak-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.st-progress-weak-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-md) var(--space-lg);
+    background: #FFF7ED;
+    border: 1.5px solid #FED7AA;
+    border-radius: var(--border-radius-lg);
+    gap: var(--space-md);
+}
+
+.st-progress-weak-info {
+    flex: 1;
+}
+
+.st-progress-weak-name {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+.st-progress-weak-name i {
+    color: #EA580C;
+}
+
+.st-progress-weak-count {
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+}
+
+.st-progress-weak-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: var(--border-radius-full);
+    background: linear-gradient(135deg, #FF6B2C, #FF8C54);
+    color: #fff;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    white-space: nowrap;
+}
+
+.st-progress-weak-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 107, 44, 0.3);
+    text-decoration: none;
+    color: #fff;
+}
+
+/* Badge Collection */
+.st-progress-badge-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: var(--space-md);
+}
+
+.st-progress-badge-card {
+    background: var(--color-white);
+    border-radius: var(--border-radius-xl);
+    border: 2px solid var(--border-color);
+    padding: var(--space-lg);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+}
+
+.st-progress-badge-card.earned {
+    border-color: #FBBF24;
+    background: linear-gradient(135deg, #FFFBEB, #FEF3C7);
+    box-shadow: 0 4px 16px rgba(251, 191, 36, 0.15);
+}
+
+.st-progress-badge-card.earned:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 8px 24px rgba(251, 191, 36, 0.25);
+}
+
+.st-progress-badge-card.locked {
+    opacity: 0.6;
+    filter: grayscale(0.5);
+}
+
+.st-progress-badge-icon-wrap {
+    width: 72px;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.st-progress-badge-icon-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.st-progress-badge-fallback {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: #FEF3C7;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: #F59E0B;
+}
+
+.st-progress-badge-name {
+    font-family: var(--font-primary);
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--color-text);
+    line-height: 1.3;
+}
+
+.st-progress-badge-desc {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    line-height: 1.4;
+}
+
+.st-progress-badge-status {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: var(--border-radius-full);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.st-progress-badge-status.earned {
+    background: #DCFCE7;
+    color: #15803D;
+}
+
+.st-progress-badge-status.locked {
+    background: #F1F5F9;
+    color: #64748B;
+}
+
+/* Certificate Status */
+.st-progress-cert-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--space-md);
+}
+
+.st-progress-cert-card {
+    border-radius: var(--border-radius-xl);
+    border: 2px solid var(--border-color);
+    padding: var(--space-lg);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.2s;
+}
+
+.st-progress-cert-card.earned {
+    background: linear-gradient(135deg, #F0FDF4, #DCFCE7);
+    border-color: #86EFAC;
+}
+
+.st-progress-cert-card.earned:hover {
+    transform: translateY(-3px);
+}
+
+.st-progress-cert-card.locked {
+    background: #F8FAFC;
+    border-color: #E2E8F0;
+}
+
+.st-progress-cert-icon-wrap {
+    font-size: 2rem;
+}
+
+.st-progress-cert-card.earned .st-progress-cert-icon-wrap i {
+    color: #15803D;
+}
+
+.st-progress-cert-card.locked .st-progress-cert-icon-wrap i {
+    color: #94A3B8;
+}
+
+.st-progress-cert-level {
+    font-family: var(--font-primary);
+    font-size: 0.9375rem;
+    font-weight: 800;
+    color: var(--color-text);
+}
+
+.st-progress-cert-title {
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+    font-weight: 600;
+}
+
+.st-progress-cert-date {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.st-progress-cert-locked-msg {
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    font-style: italic;
+}
+
+/* AI Study Hint */
+.st-progress-ai-hint {
+    background: linear-gradient(135deg, #EDE9FE, #DBEAFE);
+    border: 2px solid #C4B5FD;
+    border-radius: var(--border-radius-xl);
+    padding: var(--space-xl);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-lg);
+    margin-bottom: var(--space-xl);
+}
+
+.st-progress-ai-hint-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7C3AED, #A78BFA);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+}
+
+.st-progress-ai-hint-body {
+    flex: 1;
+}
+
+.st-progress-ai-hint-title {
+    font-family: var(--font-primary);
+    font-size: 1rem;
+    font-weight: 800;
+    color: #5B21B6;
+    margin-bottom: 6px;
+}
+
+.st-progress-ai-hint-text {
+    font-size: 0.9375rem;
+    color: #4C1D95;
+    line-height: 1.6;
+}
+
+.st-progress-ai-hint-text strong {
+    color: #7C3AED;
+}
+
+/* Empty States */
+.st-progress-empty-state {
+    text-align: center;
+    padding: var(--space-xl) var(--space-lg);
+    color: var(--color-text-muted);
+}
+
+.st-progress-empty-state i {
+    font-size: 2.5rem;
+    opacity: 0.4;
+    display: block;
+    margin-bottom: var(--space-sm);
+}
+
+.st-progress-empty-state p {
+    font-size: 0.9375rem;
+    margin: 0;
+}
+
+.st-progress-empty-state.st-progress-empty-success i {
+    color: #22C55E;
+    opacity: 0.7;
+}
+
+/* Full Page Empty State */
+.st-progress-empty-page {
+    text-align: center;
+    padding: var(--space-2xl) var(--space-xl);
+    max-width: 420px;
+    margin: 0 auto;
+}
+
+.st-progress-empty-icon {
+    font-size: 4rem;
+    color: var(--student);
+    margin-bottom: var(--space-lg);
+    opacity: 0.7;
+}
+
+.st-progress-empty-title {
+    font-family: var(--font-primary);
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--color-text);
+    margin-bottom: var(--space-sm);
+}
+
+.st-progress-empty-desc {
+    font-size: 1rem;
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-xl);
+    line-height: 1.6;
+}
+
+.st-progress-empty-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    border-radius: var(--border-radius-full);
+    background: linear-gradient(135deg, var(--student), var(--student-mid));
+    color: #fff;
+    font-weight: 700;
+    font-size: 1rem;
+    text-decoration: none;
+    box-shadow: 0 4px 16px rgba(255, 107, 44, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.st-progress-empty-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(255, 107, 44, 0.4);
+    text-decoration: none;
+    color: #fff;
+}
+
+/* Progress Rewards Responsive */
+@media (max-width: 1023px) {
+    .st-progress-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .st-progress-quiz-perf-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .st-progress-quiz-perf-info {
+        min-width: auto;
+        width: 100%;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .st-progress-quiz-perf-bar-wrap {
+        width: 100%;
+    }
+
+    .st-progress-quiz-perf-pct {
+        align-self: flex-end;
+    }
+}
+
+@media (max-width: 767px) {
+    .st-progress-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-sm);
+    }
+
+    .st-progress-hero {
+        padding: var(--space-xl) var(--space-lg);
+    }
+
+    .st-progress-hero-title {
+        font-size: 1.375rem;
+    }
+
+    .st-progress-badge-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .st-progress-cert-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .st-progress-weak-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .st-progress-ai-hint {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .st-progress-chart-bars {
+        height: 140px;
+    }
+}
+
+@media (max-width: 479px) {
+    .st-progress-stats-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .st-progress-stat-card {
+        padding: var(--space-md);
+    }
+
+    .st-progress-stat-value {
+        font-size: 1.5rem;
+    }
+
+    .st-progress-section-card {
+        padding: var(--space-lg) var(--space-md);
+    }
+
+    .st-progress-badge-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-sm);
+    }
+}
+
+
+/* Student Progress Rewards Page - Redesign Polish */
+
+/* Chart empty message */
+.st-progress-chart-empty-msg{background:#FFF7ED;border:1.5px solid #FFE4CC;border-radius:var(--border-radius-lg);
+    padding:var(--space-md) var(--space-lg);margin-bottom:var(--space-md);font-size:.875rem;font-weight:600;
+    color:#92400E;display:flex;align-items:center;gap:8px;text-align:center;justify-content:center;}
+.st-progress-chart-empty-msg i{font-size:1.25rem;opacity:.6;}
+
+/* Chart bar active state */
+.st-progress-chart-bar.active{background:linear-gradient(180deg,#FF6B2C,#FFD84D)!important;}
+
+/* Chart legend */
+.st-progress-chart-legend{font-size:.7rem;color:var(--color-text-muted);margin-top:var(--space-sm);text-align:center;font-style:italic;}
+
+/* Badge card flex fix for alignment */
+.st-progress-badge-card{display:flex!important;flex-direction:column!important;min-height:220px;}
+.st-progress-badge-icon-wrap{flex-shrink:0;}
+.st-progress-badge-info{flex:1;display:flex;flex-direction:column;gap:4px;}
+.st-progress-badge-status{margin-top:auto!important;align-self:center;}
+
+/* Badge fallback icon */
+.st-progress-badge-fallback{width:72px;height:72px;border-radius:50%;background:#FEF3C7;
+    display:flex;align-items:center;justify-content:center;font-size:2rem;color:#F59E0B;}
+
+/* Certificate download button */
+.st-progress-cert-download{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;
+    border-radius:var(--border-radius-full);font-weight:700;font-size:.8125rem;
+    background:linear-gradient(135deg,#22C55E,#4ADE80);color:#fff;text-decoration:none;
+    transition:all .2s;margin-top:var(--space-sm);box-shadow:0 3px 10px rgba(34,197,94,.25);
+    border:none;cursor:pointer;outline:none;}
+.st-progress-cert-download:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(34,197,94,.35);color:#fff;text-decoration:none;}
+
+/* Certificate pending */
+.st-progress-cert-pending{font-size:.8125rem;color:#B45309;font-weight:600;font-style:italic;margin-top:var(--space-xs);}
+
+/* Certificate card min height for alignment */
+.st-progress-cert-card{min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+
+
+/* Certificate Modal */
+.st-progress-cert-modal{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(3px);
+    z-index:9999;display:flex;align-items:center;justify-content:center;padding:var(--space-md);}
+.st-progress-cert-modal-content{background:#fff;border-radius:12px;
+    position:relative;box-shadow:0 12px 40px rgba(0,0,0,.25);display:flex;flex-direction:column;overflow:hidden;
+    aspect-ratio:1.414/1;} /* A4 landscape ratio */
+.st-progress-cert-modal-close{position:absolute;top:8px;right:8px;width:32px;height:32px;
+    border-radius:50%;background:rgba(0,0,0,.06);border:none;cursor:pointer;display:flex;align-items:center;
+    justify-content:center;font-size:1rem;color:#333;z-index:2;transition:all .2s;}
+.st-progress-cert-modal-close:hover{background:#EF4444;color:#fff;transform:scale(1.1);}
+.st-progress-cert-modal-frame{flex:1;width:100%;height:100%;border:none;}
+
+@media(min-width:768px){
+    .st-progress-cert-modal-content{height:88vh;width:calc(88vh * 1.414);max-width:95vw;}
+}
+@media(max-width:767px){
+    .st-progress-cert-modal-content{width:95vw;height:calc(95vw / 1.414);max-height:90vh;}
+}
