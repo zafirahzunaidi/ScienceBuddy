@@ -107,15 +107,7 @@ namespace ScienceBuddy.Student
                 }
                 ddlSubtopic.Items.Clear();
                 ddlSubtopic.Items.Add(new ListItem(T("All Subtopics", "Semua Subtopik"), ""));
-                if (Tbl(conn, "Subtopic"))
-                {
-                    string sqlSub = CurrentLanguage == "BM"
-                        ? "SELECT subtopicId, subtopicTitleBM AS subtopicTitle FROM Subtopic ORDER BY orderNo"
-                        : "SELECT subtopicId, subtopicTitleEN AS subtopicTitle FROM Subtopic ORDER BY orderNo";
-                    using (var cmd = new SqlCommand(sqlSub, conn))
-                    using (var rdr = cmd.ExecuteReader())
-                    { while (rdr.Read()) ddlSubtopic.Items.Add(new ListItem(rdr["subtopicTitle"].ToString(), rdr["subtopicId"].ToString())); }
-                }
+                ddlSubtopic.Visible = false;
                 ddlLanguage.Items.Clear();
                 ddlLanguage.Items.Add(new ListItem(T("All Languages", "Semua Bahasa"), ""));
                 ddlLanguage.Items.Add(new ListItem("English", "EN"));
@@ -137,17 +129,15 @@ namespace ScienceBuddy.Student
 
                 string sql = @"SELECT q.quizId, q.quizTitleEN, q.quizTitleBM, q.language,
                         l.levelNameEN, l.levelNameBM, l.levelId,
-                        u.unitNameEN, u.unitNameBM, u.unitId,
-                        st.subtopicTitleEN, st.subtopicTitleBM, st.subtopicId"
+                        u.unitNameEN, u.unitNameBM, u.unitId"
                     + (hasQuestion ? ",(SELECT COUNT(*) FROM Question WHERE quizId = q.quizId) AS questionCount" : ",0 AS questionCount")
                     + (hasResult && !string.IsNullOrEmpty(studentId)
                         ? ",(SELECT TOP 1 score FROM QuizResult WHERE quizId = q.quizId AND studentId = @studentId ORDER BY score DESC) AS bestScore,(SELECT COUNT(*) FROM QuizResult WHERE quizId = q.quizId AND studentId = @studentId) AS attemptCount"
                         : ",NULL AS bestScore,0 AS attemptCount")
                     + @" FROM Quiz q
                     LEFT JOIN Level l ON l.levelId = q.levelId
-                    LEFT JOIN Subtopic st ON st.subtopicId = q.subtopicId
-                    LEFT JOIN Unit u ON u.unitId = st.unitId
-                    WHERE q.quizType = 'Practice'";
+                    LEFT JOIN Unit u ON u.unitId = q.unitId
+                    WHERE q.quizType = 'Practice' AND (q.status = 'Approved' OR q.status IS NULL)";
 
                 var parameters = new List<SqlParameter>();
                 if (!string.IsNullOrEmpty(studentId)) parameters.Add(new SqlParameter("@studentId", studentId));
@@ -155,9 +145,7 @@ namespace ScienceBuddy.Student
                 string filterLevel = ddlLevel.SelectedValue;
                 if (!string.IsNullOrEmpty(filterLevel)) { sql += " AND q.levelId = @filterLevel"; parameters.Add(new SqlParameter("@filterLevel", filterLevel)); }
                 string filterUnit = ddlUnit.SelectedValue;
-                if (!string.IsNullOrEmpty(filterUnit)) { sql += " AND u.unitId = @filterUnit"; parameters.Add(new SqlParameter("@filterUnit", filterUnit)); }
-                string filterSubtopic = ddlSubtopic.SelectedValue;
-                if (!string.IsNullOrEmpty(filterSubtopic)) { sql += " AND q.subtopicId = @filterSubtopic"; parameters.Add(new SqlParameter("@filterSubtopic", filterSubtopic)); }
+                if (!string.IsNullOrEmpty(filterUnit)) { sql += " AND q.unitId = @filterUnit"; parameters.Add(new SqlParameter("@filterUnit", filterUnit)); }
                 string filterLang = ddlLanguage.SelectedValue;
                 if (!string.IsNullOrEmpty(filterLang))
                 {
@@ -196,7 +184,6 @@ namespace ScienceBuddy.Student
 
                         string levelName = isBM ? (row["levelNameBM"] != DBNull.Value ? row["levelNameBM"].ToString() : row["levelNameEN"]?.ToString() ?? "") : (row["levelNameEN"]?.ToString() ?? "");
                         string unitName = isBM ? (row["unitNameBM"] != DBNull.Value ? row["unitNameBM"].ToString() : row["unitNameEN"]?.ToString() ?? "") : (row["unitNameEN"]?.ToString() ?? "");
-                        string subtopicName = isBM ? (row["subtopicTitleBM"] != DBNull.Value ? row["subtopicTitleBM"].ToString() : row["subtopicTitleEN"]?.ToString() ?? "") : (row["subtopicTitleEN"]?.ToString() ?? "");
                         int questionCount = row["questionCount"] != DBNull.Value ? Convert.ToInt32(row["questionCount"]) : 0;
                         int attemptCount = row["attemptCount"] != DBNull.Value ? Convert.ToInt32(row["attemptCount"]) : 0;
                         bool isAttempted = attemptCount > 0;
@@ -210,7 +197,6 @@ namespace ScienceBuddy.Student
                             Title = HttpUtility.HtmlEncode(title),
                             Level = HttpUtility.HtmlEncode(levelName),
                             Unit = HttpUtility.HtmlEncode(unitName),
-                            Subtopic = HttpUtility.HtmlEncode(subtopicName),
                             Language = lang,
                             QuestionCount = questionCount,
                             QuestionsLabel = questionsLabel,

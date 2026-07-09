@@ -225,16 +225,11 @@
     <Content Include="Scripts\WebForms\WebUIValidation.js" />
     <Content Include="Site.Master" />
     <Content Include="Student\AIStudyCompanion.aspx" />
-    <Content Include="Student\AIStudyCompanion2.aspx" />
     <Content Include="Student\Chat.aspx" />
-    <Content Include="Student\Chat2.aspx" />
     <Content Include="Student\CreateForumPost.aspx" />
-    <Content Include="Student\CreateForumPost2.aspx" />
     <Content Include="Student\Dashboard.aspx" />
     <Content Include="Student\Forum.aspx" />
-    <Content Include="Student\Forum2.aspx" />
     <Content Include="Student\ForumThread.aspx" />
-    <Content Include="Student\ForumThread2.aspx" />
     <Content Include="Student\Labs\BloodFlowSimulator.aspx" />
     <Content Include="Student\Labs\CircuitLab.aspx" />
     <Content Include="Student\Labs\GreatSoakChallenge.aspx" />
@@ -244,41 +239,23 @@
     <Content Include="Student\Labs\MatterStateChanger.aspx" />
     <Content Include="Student\Labs\SinkOrFloatMaster.aspx" />
     <Content Include="Student\Lesson.aspx" />
-    <Content Include="Student\Lesson2.aspx" />
     <Content Include="Student\LevelDetails.aspx" />
-    <Content Include="Student\LevelDetails2.aspx" />
     <Content Include="Student\LiveSessions.aspx" />
-    <Content Include="Student\LiveSessions2.aspx" />
     <Content Include="Student\Messages.aspx" />
-    <Content Include="Student\Messages2.aspx" />
     <Content Include="Student\MyLearning.aspx" />
-    <Content Include="Student\MyLearning2.aspx" />
     <Content Include="Student\MyProfile.aspx" />
-    <Content Include="Student\MyProfile2.aspx" />
     <Content Include="Student\MyRanking.aspx" />
-    <Content Include="Student\MyRanking2.aspx" />
     <Content Include="Student\Notifications.aspx" />
-    <Content Include="Student\Notifications2.aspx" />
     <Content Include="Student\PersonalityTest.aspx" />
-    <Content Include="Student\PersonalityTest2.aspx" />
     <Content Include="Student\PracticeLibrary.aspx" />
-    <Content Include="Student\PracticeLibrary2.aspx" />
     <Content Include="Student\ProgressRewards.aspx" />
-    <Content Include="Student\ProgressRewards2.aspx" />
     <Content Include="Student\Quiz.aspx" />
-    <Content Include="Student\Quiz2.aspx" />
     <Content Include="Student\QuizHistory.aspx" />
-    <Content Include="Student\QuizHistory2.aspx" />
     <Content Include="Student\QuizResult.aspx" />
-    <Content Include="Student\QuizResult2.aspx" />
     <Content Include="Student\QuizReview.aspx" />
-    <Content Include="Student\QuizReview2.aspx" />
     <Content Include="Student\UnitDetails.aspx" />
-    <Content Include="Student\UnitDetails2.aspx" />
     <Content Include="Student\VirtualLab.aspx" />
-    <Content Include="Student\VirtualLab2.aspx" />
     <Content Include="Student\VirtualLabs.aspx" />
-    <Content Include="Student\VirtualLabs2.aspx" />
     <Content Include="Teacher\createPracticeQuiz.aspx" />
     <Content Include="Teacher\Dashboard.aspx" />
     <Content Include="Teacher\ForumReply.aspx" />
@@ -606,13 +583,6 @@
     <Compile Include="Student\AIStudyCompanion.aspx.designer.cs">
       <DependentUpon>AIStudyCompanion.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Student\AIStudyCompanion2.aspx.cs">
-      <DependentUpon>AIStudyCompanion2.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\AIStudyCompanion2.aspx.designer.cs">
-      <DependentUpon>AIStudyCompanion2.aspx</DependentUpon>
-    </Compile>
     <Compile Include="Student\Chat.aspx.cs">
       <DependentUpon>Chat.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -620,26 +590,12 @@
     <Compile Include="Student\Chat.aspx.designer.cs">
       <DependentUpon>Chat.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Student\Chat2.aspx.cs">
-      <DependentUpon>Chat2.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\Chat2.aspx.designer.cs">
-      <DependentUpon>Chat2.aspx</DependentUpon>
-    </Compile>
     <Compile Include="Student\CreateForumPost.aspx.cs">
       <DependentUpon>CreateForumPost.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Student\CreateForumPost.aspx.designer.cs">
       <DependentUpon>CreateForumPost.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Student\CreateForumPost2.aspx.cs">
-      <DependentUpon>CreateForumPost2.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\CreateForumPost2.aspx.designer.cs">
-      <DependentUpon>CreateForumPost2.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\Dashboard.aspx.cs">
       <DependentUpon>Dashboard.aspx</DependentUpon>
@@ -655,26 +611,12 @@
     <Compile Include="Student\Forum.aspx.designer.cs">
       <DependentUpon>Forum.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Student\Forum2.aspx.cs">
-      <DependentUpon>Forum2.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\Forum2.aspx.designer.cs">
-      <DependentUpon>Forum2.aspx</DependentUpon>
-    </Compile>
     <Compile Include="Student\ForumThread.aspx.cs">
       <DependentUpon>ForumThread.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Student\ForumThread.aspx.designer.cs">
       <DependentUpon>ForumThread.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Student\ForumThread2.aspx.cs">
-      <DependentUpon>ForumThread2.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\ForumThread2.aspx.designer.cs">
-      <DependentUpon>ForumThread2.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\Labs\BloodFlowSimulator.aspx.cs">
       <DependentUpon>BloodFlowSimulator.aspx</DependentUpon>
@@ -739,26 +681,12 @@
     <Compile Include="Student\Lesson.aspx.designer.cs">
       <DependentUpon>Lesson.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Student\Lesson2.aspx.cs">
-      <DependentUpon>Lesson2.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\Lesson2.aspx.designer.cs">
-      <DependentUpon>Lesson2.aspx</DependentUpon>
-    </Compile>
     <Compile Include="Student\LevelDetails.aspx.cs">
       <DependentUpon>LevelDetails.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Student\LevelDetails.aspx.designer.cs">
       <DependentUpon>LevelDetails.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Student\LevelDetails2.aspx.cs">
-      <DependentUpon>LevelDetails2.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\LevelDetails2.aspx.designer.cs">
-      <DependentUpon>LevelDetails2.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\LiveSessions.aspx.cs">
       <DependentUpon>LiveSessions.aspx</DependentUpon>
@@ -767,26 +695,12 @@
     <Compile Include="Student\LiveSessions.aspx.designer.cs">
       <DependentUpon>LiveSessions.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Student\LiveSessions2.aspx.cs">
-      <DependentUpon>LiveSessions2.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\LiveSessions2.aspx.designer.cs">
-      <DependentUpon>LiveSessions2.aspx</DependentUpon>
-    </Compile>
     <Compile Include="Student\Messages.aspx.cs">
       <DependentUpon>Messages.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Student\Messages.aspx.designer.cs">
       <DependentUpon>Messages.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Student\Messages2.aspx.cs">
-      <DependentUpon>Messages2.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\Messages2.aspx.designer.cs">
-      <DependentUpon>Messages2.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\MyLearning.aspx.cs">
       <DependentUpon>MyLearning.aspx</DependentUpon>
@@ -795,26 +709,12 @@
     <Compile Include="Student\MyLearning.aspx.designer.cs">
       <DependentUpon>MyLearning.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Student\MyLearning2.aspx.cs">
-      <DependentUpon>MyLearning2.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\MyLearning2.aspx.designer.cs">
-      <DependentUpon>MyLearning2.aspx</DependentUpon>
-    </Compile>
     <Compile Include="Student\MyProfile.aspx.cs">
       <DependentUpon>MyProfile.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Student\MyProfile.aspx.designer.cs">
       <DependentUpon>MyProfile.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Student\MyProfile2.aspx.cs">
-      <DependentUpon>MyProfile2.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\MyProfile2.aspx.designer.cs">
-      <DependentUpon>MyProfile2.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\MyRanking.aspx.cs">
       <DependentUpon>MyRanking.aspx</DependentUpon>
@@ -823,26 +723,12 @@
     <Compile Include="Student\MyRanking.aspx.designer.cs">
       <DependentUpon>MyRanking.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Student\MyRanking2.aspx.cs">
-      <DependentUpon>MyRanking2.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\MyRanking2.aspx.designer.cs">
-      <DependentUpon>MyRanking2.aspx</DependentUpon>
-    </Compile>
     <Compile Include="Student\Notifications.aspx.cs">
       <DependentUpon>Notifications.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Student\Notifications.aspx.designer.cs">
       <DependentUpon>Notifications.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Student\Notifications2.aspx.cs">
-      <DependentUpon>Notifications2.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\Notifications2.aspx.designer.cs">
-      <DependentUpon>Notifications2.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\PersonalityTest.aspx.cs">
       <DependentUpon>PersonalityTest.aspx</DependentUpon>
@@ -851,26 +737,12 @@
     <Compile Include="Student\PersonalityTest.aspx.designer.cs">
       <DependentUpon>PersonalityTest.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Student\PersonalityTest2.aspx.cs">
-      <DependentUpon>PersonalityTest2.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\PersonalityTest2.aspx.designer.cs">
-      <DependentUpon>PersonalityTest2.aspx</DependentUpon>
-    </Compile>
     <Compile Include="Student\PracticeLibrary.aspx.cs">
       <DependentUpon>PracticeLibrary.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Student\PracticeLibrary.aspx.designer.cs">
       <DependentUpon>PracticeLibrary.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Student\PracticeLibrary2.aspx.cs">
-      <DependentUpon>PracticeLibrary2.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\PracticeLibrary2.aspx.designer.cs">
-      <DependentUpon>PracticeLibrary2.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\ProgressRewards.aspx.cs">
       <DependentUpon>ProgressRewards.aspx</DependentUpon>
@@ -879,26 +751,12 @@
     <Compile Include="Student\ProgressRewards.aspx.designer.cs">
       <DependentUpon>ProgressRewards.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Student\ProgressRewards2.aspx.cs">
-      <DependentUpon>ProgressRewards2.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\ProgressRewards2.aspx.designer.cs">
-      <DependentUpon>ProgressRewards2.aspx</DependentUpon>
-    </Compile>
     <Compile Include="Student\Quiz.aspx.cs">
       <DependentUpon>Quiz.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Student\Quiz.aspx.designer.cs">
       <DependentUpon>Quiz.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Student\Quiz2.aspx.cs">
-      <DependentUpon>Quiz2.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\Quiz2.aspx.designer.cs">
-      <DependentUpon>Quiz2.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\QuizHistory.aspx.cs">
       <DependentUpon>QuizHistory.aspx</DependentUpon>
@@ -907,26 +765,12 @@
     <Compile Include="Student\QuizHistory.aspx.designer.cs">
       <DependentUpon>QuizHistory.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Student\QuizHistory2.aspx.cs">
-      <DependentUpon>QuizHistory2.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\QuizHistory2.aspx.designer.cs">
-      <DependentUpon>QuizHistory2.aspx</DependentUpon>
-    </Compile>
     <Compile Include="Student\QuizResult.aspx.cs">
       <DependentUpon>QuizResult.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Student\QuizResult.aspx.designer.cs">
       <DependentUpon>QuizResult.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Student\QuizResult2.aspx.cs">
-      <DependentUpon>QuizResult2.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\QuizResult2.aspx.designer.cs">
-      <DependentUpon>QuizResult2.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\QuizReview.aspx.cs">
       <DependentUpon>QuizReview.aspx</DependentUpon>
@@ -935,26 +779,12 @@
     <Compile Include="Student\QuizReview.aspx.designer.cs">
       <DependentUpon>QuizReview.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Student\QuizReview2.aspx.cs">
-      <DependentUpon>QuizReview2.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\QuizReview2.aspx.designer.cs">
-      <DependentUpon>QuizReview2.aspx</DependentUpon>
-    </Compile>
     <Compile Include="Student\UnitDetails.aspx.cs">
       <DependentUpon>UnitDetails.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Student\UnitDetails.aspx.designer.cs">
       <DependentUpon>UnitDetails.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Student\UnitDetails2.aspx.cs">
-      <DependentUpon>UnitDetails2.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\UnitDetails2.aspx.designer.cs">
-      <DependentUpon>UnitDetails2.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\VirtualLab.aspx.cs">
       <DependentUpon>VirtualLab.aspx</DependentUpon>
@@ -963,26 +793,12 @@
     <Compile Include="Student\VirtualLab.aspx.designer.cs">
       <DependentUpon>VirtualLab.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Student\VirtualLab2.aspx.cs">
-      <DependentUpon>VirtualLab2.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\VirtualLab2.aspx.designer.cs">
-      <DependentUpon>VirtualLab2.aspx</DependentUpon>
-    </Compile>
     <Compile Include="Student\VirtualLabs.aspx.cs">
       <DependentUpon>VirtualLabs.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Student\VirtualLabs.aspx.designer.cs">
       <DependentUpon>VirtualLabs.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Student\VirtualLabs2.aspx.cs">
-      <DependentUpon>VirtualLabs2.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\VirtualLabs2.aspx.designer.cs">
-      <DependentUpon>VirtualLabs2.aspx</DependentUpon>
     </Compile>
     <Compile Include="Teacher\createPracticeQuiz.aspx.cs">
       <DependentUpon>createPracticeQuiz.aspx</DependentUpon>

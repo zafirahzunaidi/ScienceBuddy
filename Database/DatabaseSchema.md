@@ -1,1707 +1,1491 @@
-# ScienceBuddy Database Schema Guide
+# ScienceBuddy Database Schema
 
+1.0 Database Schema
 
-> **Important rule:** Use the exact table names and column names shown here. Do not rename columns in website code unless the SQL database schema is officially changed.
+1.1 Table List
 
----
-
-## 1. Database Name
-
-```sql
-ScienceBuddy_DB
-```
-
-Always run scripts using:
-
-```sql
-USE ScienceBuddy_DB;
-GO
-```
-
----
-
-## 2. SQL Script Run Order
-
-Run the files in this exact order.
-
-| Order | File | Purpose |
-|---:|---|---|
-| 1 | `CreateTables_ImagesPath_Set.sql` | Creates ScienceBuddy_DB, drops/recreates all 41 tables, PKs, FKs, unique constraints, and check constraints. |
-| 2 | `InsertConstants_ImagesPath.sql` | Inserts seeded/constant data such as levels, personalities, badges, units, subtopics, lessons, XP actions, tags, labs, and configuration settings. |
-| 3 | `InsertSampleData_ImagesPath.sql` | Inserts sample users and activity data such as students, parents, teachers, quizzes, materials, forums, results, study plans, chats, and messages. |
-
-Do not run insert scripts before table creation. If SQL Server says `Invalid object name`, it normally means the table creation script was not executed successfully or the query is running in the wrong database.
-
----
-
-## 3. Global Naming and Coding Rules
-
-- SQL Server schema is `dbo`.
-- Always reference tables using `dbo.TableName`.
-- Use `dbo.[User]` with square brackets because `User` can conflict with SQL Server reserved/context keywords.
-- ID columns use string IDs such as `U001`, `S001`, `QST001`, `CERT001`.
-- `BIT` values are stored as `1` or `0` in SQL Server.
-- Use ISO date format in SQL inserts and updates: `YYYY-MM-DD` or `YYYY-MM-DD HH:MM:SS`.
-- Bilingual content uses `EN` and `BM` suffixes where applicable.
-- Current check constraints allow these language values:
-  - `User.preferredLanguage`: `EN`, `BM`
-  - `Quiz.language`: `EN`, `BM`, `BOTH`
-  - `Material.language`: `EN`, `BM`, `BOTH`
-
-## 3A. ID Generation Rules
-
-IMPORTANT:
-All primary key IDs must follow the fixed prefix + 3-digit running number format unless the seed script already uses a different official format.
-
-Do NOT generate IDs using:
-
-* Date/time ticks
-* GUID
-* Random numbers
-* Current timestamp
-* Student ID + date
-* Long IDs such as QR20260630001
-* Auto-increment integer IDs
-
-Most ID columns are `NVARCHAR(10)`, so generated IDs must stay short.
-
-### Required ID Format
-
-Use this format:
-
-PREFIX + 3-digit number
-
-Examples:
-
-* U001
-* S001
-* P001
-* T001
-* QR001
-* QA001
-* LP001
-
-### How to Generate New ID in Website Code
-
-When inserting a new record:
-
-1. Find the current highest ID for that table.
-2. Extract the numeric part after the prefix.
-3. Add 1.
-4. Pad the number to 3 digits.
-5. Combine with the prefix.
-
-Example:
-If the highest `resultId` is `QR022`, the next ID must be:
-
-QR023
-
-Example SQL idea:
-
-```sql
-SELECT ISNULL(MAX(CAST(SUBSTRING(resultId, 3, 3) AS INT)), 0) + 1
-FROM dbo.QuizResult
-WHERE resultId LIKE 'QR%'
-```
-
-Then format in C#:
-
-```csharp
-string newId = "QR" + nextNumber.ToString("D3");
-```
-
-### ID Prefix Table
-
-Use these prefixes when inserting new records:
-
-| Table                   | ID Column       | Prefix | Example |
-| ----------------------- | --------------- | -----: | ------- |
-| User                    | userId          |      U | U001    |
-| Student                 | studentId       |      S | S001    |
-| Parent                  | parentId        |      P | P001    |
-| Teacher                 | teacherId       |      T | T001    |
-| StudentParent           | studentParentId |     SP | SP001   |
-| Level                   | levelId         |     LV | LV001   |
-| Personality             | personalityId   |    PER | PER001  |
-| Badge                   | badgeId         |      B | B001    |
-| StudentBadge            | studentBadgeId  |     SB | SB001   |
-| Unit                    | unitId          |     UN | UN001   |
-| Subtopic                | subtopicId      |     ST | ST001   |
-| Enrollment              | enrollmentId    |    ENR | ENR001  |
-| Lesson                  | lessonId        |      L | L001    |
-| Quiz                    | quizId          |      Q | Q001    |
-| Material                | materialId      |      M | M001    |
-| Forum                   | forumId         |      F | F001    |
-| ForumChat               | forumChatId     |     FC | FC001   |
-| Tag                     | tagId           |     TG | TG001   |
-| ForumTag                | forumTagId      |     FT | FT001   |
-| ForumLike               | likeId          |     FL | FL001   |
-| Question                | questionId      |    QST | QST001  |
-| QuizResult              | resultId        |     QR | QR001   |
-| QuizAnswer              | answerId        |     QA | QA001   |
-| XPAction                | xpActionId      |     XA | XA001   |
-| XPTransaction           | xpTransactionId |     XT | XT001   |
-| LessonProgress          | progressId      |     LP | LP001   |
-| Certificate             | certificateId   |   CERT | CERT001 |
-| Log                     | logId           |    LOG | LOG001  |
-| Notification            | notificationId  |      N | N001    |
-| VirtualLab              | labId           |    LAB | LAB001  |
-| LabProgress             | labProgressId   |    LPR | LPR001  |
-| LiveConsultationSession | sessionId       |     LS | LS001   |
-| LiveSessionParticipant  | participantId   |    LSP | LSP001  |
-| UserStatusAction        | actionId        |    USA | USA001  |
-| ConfigurationSetting    | configId        |    CFG | CFG001  |
-| AILearningAnalysis      | analysisId      |     AI | AI001   |
-| StudyPlan               | studyPlanId     |    SPN | SPN001  |
-| SPTask                  | spTaskId        |    SPT | SPT001  |
-| SPReward                | rewardId        |    SPR | SPR001  |
-| userChat                | chatId          |     CH | CH001   |
-| privateMessage          | privateMsgId    |     PM | PM001   |
-
-### Important Exception
-
-`certificateCode` is NOT the same as `certificateId`.
-
-* `certificateId` must follow the short sequential format, for example CERT001.
-* `certificateCode` may be a longer unique verification code, for example CERT-S005-LV001-20260630.
-
-Do not use `certificateCode` format for primary key IDs.
-
-### C# Helper Rule
-
-When Kiro generates insert logic, it should create or reuse a helper method like:
-
-```csharp
-private string GenerateNextId(SqlConnection conn, SqlTransaction tran, string tableName, string idColumn, string prefix)
-{
-    string sql = $@"
-        SELECT ISNULL(MAX(CAST(SUBSTRING({idColumn}, LEN(@prefix) + 1, 10) AS INT)), 0) + 1
-        FROM {tableName}
-        WHERE {idColumn} LIKE @prefix + '%'";
-
-    using (SqlCommand cmd = new SqlCommand(sql, conn, tran))
-    {
-        cmd.Parameters.AddWithValue("@prefix", prefix);
-        int nextNumber = Convert.ToInt32(cmd.ExecuteScalar());
-        return prefix + nextNumber.ToString("D3");
-    }
-}
-```
-
-Use this helper before INSERT statements.
-
-Do not use timestamps, GUIDs, or random values for primary key IDs.
-
-
----
-
-## 4. File and Image Path Rules
-
-All stored file/image paths must start with `Images/TableName/filename.ext`. Do not store only the filename for these columns.
-
-| Table | Column | Required Path Prefix | Example |
-|---|---|---|---|
-| `Teacher` | `licenseCert` | `Images/Teacher/` | `Images/Teacher/cert_zara.pdf` |
-| `Personality` | `avatar` | `Images/Personality/` | `Images/Personality/achiever.png` |
-| `Badge` | `badgeIcon` | `Images/Badge/` | `Images/Badge/first-step.png` |
-| `Lesson` | `attachmentUrl` | `Images/Lesson/` | `Images/Lesson/humansense.png` |
-| `Material` | `fileUrl` | `Images/Material/` | `Images/Material/humansense.pdf` |
-| `Question` | `questionImageUrl` | `Images/Question/` | `Images/Question/human_senses.jpg` |
-| `Certificate` | `certificateUrl` | `Images/Certificate/` | `Images/Certificate/cert_s005_lv001.pdf` |
-| `privateMessage` | `attachmentFile` | `Images/privateMessage/` | `Images/privateMessage/answer.pdf` |
-
-### Path Handling Rules for Website Code
-
-- Store relative paths only, not local machine paths like `C:\Users\...`.
-- Do not include physical Windows paths in the database.
-- For web display, combine the database value with the project root/static file handling.
-- For `Question.questionImageUrl`, treat `NULL`, empty value, or `optional` as no image.
-- For other attachment columns, prefer `NULL` when there is no attachment.
-
----
-
-## 5. Table Summary
-
-| No. | Table | Purpose | Seed/Sample Rows |
-|---:|---|---|---:|
-| 1 | `User` | Stores login credentials, user role, preferred language, and account status. | 24 |
-| 2 | `Student` | Stores student profile, current level, XP, personality, and parent-linking code. | 11 |
-| 3 | `Parent` | Stores parent profile information. | 6 |
-| 4 | `Teacher` | Stores teacher profile, biography, certification file path, and approval status. | 6 |
-| 5 | `StudentParent` | Junction table linking students to parents and relationship type. | 10 |
-| 6 | `Level` | Seeded lookup table for learning levels. | 3 |
-| 7 | `Personality` | Seeded lookup table for learner personalities and avatar/theme information. | 6 |
-| 8 | `Badge` | Seeded lookup table for achievement badges and badge icons. | 10 |
-| 9 | `StudentBadge` | Stores badges earned by students. | 22 |
-| 10 | `Unit` | Stores learning units under each level. | 15 |
-| 11 | `Subtopic` | Stores subtopics under each unit. | 44 |
-| 12 | `Enrollment` | Stores student enrollment records by level. | 14 |
-| 13 | `Lesson` | Stores core lesson content and lesson attachment file path. | 81 |
-| 14 | `Quiz` | Stores quiz metadata for Unit, Level, and Practice quizzes. | 53 |
-| 15 | `Material` | Stores teacher-uploaded learning support materials and review status. | 12 |
-| 16 | `Forum` | Stores public/private forum discussion posts. | 17 |
-| 17 | `ForumChat` | Stores replies/messages inside forum discussions. | 5 |
-| 18 | `Tag` | Stores forum tag names. | 51 |
-| 19 | `ForumTag` | Junction table linking forum posts to tags. | 14 |
-| 20 | `ForumLike` | Stores likes on forum posts. | 10 |
-| 21 | `Question` | Stores quiz questions, options, correct answers, explanations, image path, difficulty, and review status. | 99 |
-| 22 | `QuizResult` | Stores quiz attempt result summaries. | 22 |
-| 23 | `QuizAnswer` | Stores selected answers and marks for each quiz attempt. | 87 |
-| 24 | `XPAction` | Seeded lookup table for XP action types and default XP values. | 9 |
-| 25 | `XPTransaction` | Stores XP earned by students. | 19 |
-| 26 | `LessonProgress` | Tracks lesson completion by student. | 26 |
-| 27 | `Certificate` | Stores issued student certificates and certificate file paths. | 4 |
-| 28 | `Log` | Stores system/user activity logs. | 20 |
-| 29 | `Notification` | Stores bilingual notifications sent to users. | 15 |
-| 30 | `VirtualLab` | Seeded interactive virtual lab activities. | 8 |
-| 31 | `LabProgress` | Tracks virtual lab completion by student. | 12 |
-| 32 | `LiveConsultationSession` | Stores teacher-hosted live consultation sessions. | 6 |
-| 33 | `LiveSessionParticipant` | Stores attendance/participation records for live sessions. | 12 |
-| 34 | `UserStatusAction` | Stores admin/status actions performed on user accounts. | 5 |
-| 35 | `ConfigurationSetting` | Stores configurable application settings. | 14 |
-| 36 | `AILearningAnalysis` | Stores AI-generated learning analysis summaries for students. | 8 |
-| 37 | `StudyPlan` | Stores study plans created by parents/students/users. | 7 |
-| 38 | `SPTask` | Stores tasks inside study plans. | 19 |
-| 39 | `SPReward` | Stores rewards linked to study plans. | 12 |
-| 40 | `userChat` | Stores private one-to-one chat rooms between two users. | 11 |
-| 41 | `privateMessage` | Stores private messages inside user chats, including optional attachment file path. | 16 |
-
----
-
-## 6. Seeded / Mostly Static Tables
-
-These tables are inserted through `InsertConstants_ImagesPath.sql` and should normally be treated as seeded data.
-
-| Table | Notes |
-|---|---|
-| `Level` | 3 levels: Beginner, Intermediate, Advanced. |
-| `Personality` | 6 learner personalities: Achiever, Creative, Thinker, Go-Getter, Chill Learner, Socializer. |
-| `Badge` | 10 achievement badges covering lesson, lab, quiz, unit, level, forum, and progress actions. |
-| `Unit` | 15 units: 5 per level. |
-| `Subtopic` | 44 subtopics mapped to units. |
-| `Lesson` | 81 core/admin lessons mapped to subtopics. |
-| `XPAction` | 9 XP actions. |
-| `Tag` | 51 forum tags. |
-| `VirtualLab` | 8 interactive lab activities. |
-| `ConfigurationSetting` | 14 configurable system settings. |
-
----
-
-## 7. Account, Access, and Status Rules
-
-### User Login Rules
-
-- Login uses `dbo.[User]`.
-- Username/password must match.
-- Only `status = 'Active'` can log in.
-- `Blocked` users cannot log in.
-- `Deleted` users cannot log in.
-
-### User Roles
-
-Allowed by check constraint:
-
-- `Admin`
-- `Student`
-- `Parent`
-- `Teacher`
-
-### Teacher Certification Status
-
-Use these values in application logic:
-
-| Status | Meaning |
-|---|---|
-| `Pending` | Teacher has restricted access while waiting for approval. |
-| `Certified` | Teacher can use full teacher features. |
-| `Not Certified` | Teacher is restricted/rejected and may need to resubmit certification. |
-
-### Content Review Status
-
-Used in teacher-created content such as `Material`, `Question`, and teacher practice quizzes:
-
-- `Pending`
-- `Approved`
-- `Rejected`
-- `NULL` may exist for admin-created/unit/level content depending on sample data.
-
----
-
-## 8. Main Learning Structure
-
-The main content hierarchy is:
-
-```text
-Level
-  -> Unit
-      -> Subtopic
-          -> Lesson
-          -> Quiz / Question
-          -> Material
-          -> LiveConsultationSession
-```
-
-Student progress links into this structure through:
-
-```text
-Student
-  -> Enrollment
-  -> LessonProgress
-  -> LabProgress
-  -> QuizResult
-      -> QuizAnswer
-  -> StudentBadge
-  -> XPTransaction
-  -> Certificate
-  -> AILearningAnalysis
-```
-
-Parent support features link through:
-
-```text
-Parent
-  -> StudentParent
-      -> StudyPlan
-          -> SPTask
-          -> SPReward
-```
-
-Communication features use:
-
-```text
-Forum
-  -> ForumChat
-  -> ForumTag
-  -> ForumLike
-
-userChat
-  -> privateMessage
-```
-
----
-
-## 9. Main Foreign Key Relationships
-
-| Child Table | FK Column | Parent Table | Parent Column | Constraint Name |
-|---|---|---|---|---|
-| `Student` | `userId` | `User` | `userId` | `FK_Student_userId_User` |
-| `Student` | `currentLevelId` | `Level` | `levelId` | `FK_Student_currentLevelId_Level` |
-| `Student` | `personalityId` | `Personality` | `personalityId` | `FK_Student_personalityId_Personality` |
-| `Parent` | `userId` | `User` | `userId` | `FK_Parent_userId_User` |
-| `Teacher` | `userId` | `User` | `userId` | `FK_Teacher_userId_User` |
-| `StudentParent` | `studentId` | `Student` | `studentId` | `FK_StudentParent_studentId_Student` |
-| `StudentParent` | `parentId` | `Parent` | `parentId` | `FK_StudentParent_parentId_Parent` |
-| `StudentBadge` | `studentId` | `Student` | `studentId` | `FK_StudentBadge_studentId_Student` |
-| `StudentBadge` | `badgeId` | `Badge` | `badgeId` | `FK_StudentBadge_badgeId_Badge` |
-| `Unit` | `levelId` | `Level` | `levelId` | `FK_Unit_levelId_Level` |
-| `Subtopic` | `unitId` | `Unit` | `unitId` | `FK_Subtopic_unitId_Unit` |
-| `Enrollment` | `studentId` | `Student` | `studentId` | `FK_Enrollment_studentId_Student` |
-| `Enrollment` | `levelId` | `Level` | `levelId` | `FK_Enrollment_levelId_Level` |
-| `Lesson` | `subtopicId` | `Subtopic` | `subtopicId` | `FK_Lesson_subtopicId_Subtopic` |
-| `Quiz` | `levelId` | `Level` | `levelId` | `FK_Quiz_levelId_Level` |
-| `Quiz` | `unitId` | `Unit` | `unitId` | `FK_Quiz_unitId_Unit` |
-| `Quiz` | `subtopicId` | `Subtopic` | `subtopicId` | `FK_Quiz_subtopicId_Subtopic` |
-| `Quiz` | `createdByUserId` | `User` | `userId` | `FK_Quiz_createdByUserId_User` |
-| `Material` | `subtopicId` | `Subtopic` | `subtopicId` | `FK_Material_subtopicId_Subtopic` |
-| `Material` | `createdByUserId` | `User` | `userId` | `FK_Material_createdByUserId_User` |
-| `Forum` | `createdBy` | `User` | `userId` | `FK_Forum_createdBy_User` |
-| `ForumChat` | `forumId` | `Forum` | `forumId` | `FK_ForumChat_forumId_Forum` |
-| `ForumChat` | `senderUserId` | `User` | `userId` | `FK_ForumChat_senderUserId_User` |
-| `ForumTag` | `forumId` | `Forum` | `forumId` | `FK_ForumTag_forumId_Forum` |
-| `ForumTag` | `tagId` | `Tag` | `tagId` | `FK_ForumTag_tagId_Tag` |
-| `ForumLike` | `forumId` | `Forum` | `forumId` | `FK_ForumLike_forumId_Forum` |
-| `ForumLike` | `senderUserId` | `User` | `userId` | `FK_ForumLike_senderUserId_User` |
-| `Question` | `quizId` | `Quiz` | `quizId` | `FK_Question_quizId_Quiz` |
-| `Question` | `subtopicId` | `Subtopic` | `subtopicId` | `FK_Question_subtopicId_Subtopic` |
-| `Question` | `createdByUserId` | `User` | `userId` | `FK_Question_createdByUserId_User` |
-| `QuizResult` | `studentId` | `Student` | `studentId` | `FK_QuizResult_studentId_Student` |
-| `QuizResult` | `quizId` | `Quiz` | `quizId` | `FK_QuizResult_quizId_Quiz` |
-| `QuizAnswer` | `resultId` | `QuizResult` | `resultId` | `FK_QuizAnswer_resultId_QuizResult` |
-| `QuizAnswer` | `questionId` | `Question` | `questionId` | `FK_QuizAnswer_questionId_Question` |
-| `XPTransaction` | `studentId` | `Student` | `studentId` | `FK_XPTransaction_studentId_Student` |
-| `XPTransaction` | `xpActionId` | `XPAction` | `xpActionId` | `FK_XPTransaction_xpActionId_XPAction` |
-| `LessonProgress` | `studentId` | `Student` | `studentId` | `FK_LessonProgress_studentId_Student` |
-| `LessonProgress` | `lessonId` | `Lesson` | `lessonId` | `FK_LessonProgress_lessonId_Lesson` |
-| `Certificate` | `studentId` | `Student` | `studentId` | `FK_Certificate_studentId_Student` |
-| `Certificate` | `levelId` | `Level` | `levelId` | `FK_Certificate_levelId_Level` |
-| `Log` | `userId` | `User` | `userId` | `FK_Log_userId_User` |
-| `Notification` | `toUserId` | `User` | `userId` | `FK_Notification_toUserId_User` |
-| `VirtualLab` | `unitId` | `Unit` | `unitId` | `FK_VirtualLab_unitId_Unit` |
-| `LabProgress` | `studentId` | `Student` | `studentId` | `FK_LabProgress_studentId_Student` |
-| `LabProgress` | `labId` | `VirtualLab` | `labId` | `FK_LabProgress_labId_VirtualLab` |
-| `LiveConsultationSession` | `teacherId` | `Teacher` | `teacherId` | `FK_LiveConsultationSession_teacherId_Teacher` |
-| `LiveConsultationSession` | `unitId` | `Unit` | `unitId` | `FK_LiveConsultationSession_unitId_Unit` |
-| `LiveConsultationSession` | `subtopicId` | `Subtopic` | `subtopicId` | `FK_LiveConsultationSession_subtopicId_Subtopic` |
-| `LiveSessionParticipant` | `sessionId` | `LiveConsultationSession` | `sessionId` | `FK_LiveSessionParticipant_sessionId_LiveConsultationSession` |
-| `LiveSessionParticipant` | `studentId` | `Student` | `studentId` | `FK_LiveSessionParticipant_studentId_Student` |
-| `UserStatusAction` | `userId` | `User` | `userId` | `FK_UserStatusAction_userId_User` |
-| `UserStatusAction` | `performedBy` | `User` | `userId` | `FK_UserStatusAction_performedBy_User` |
-| `AILearningAnalysis` | `studentId` | `Student` | `studentId` | `FK_AILearningAnalysis_studentId_Student` |
-| `StudyPlan` | `studentParentId` | `StudentParent` | `studentParentId` | `FK_StudyPlan_studentParentId_StudentParent` |
-| `StudyPlan` | `createdByUserId` | `User` | `userId` | `FK_StudyPlan_createdByUserId_User` |
-| `SPTask` | `studyPlanId` | `StudyPlan` | `studyPlanId` | `FK_SPTask_studyPlanId_StudyPlan` |
-| `SPReward` | `studyPlanId` | `StudyPlan` | `studyPlanId` | `FK_SPReward_studyPlanId_StudyPlan` |
-| `userChat` | `userId` | `User` | `userId` | `FK_userChat_userId_User` |
-| `userChat` | `user2Id` | `User` | `userId` | `FK_userChat_user2Id_User` |
-| `privateMessage` | `chatId` | `userChat` | `chatId` | `FK_privateMessage_chatId_userChat` |
-| `privateMessage` | `senderUserId` | `User` | `userId` | `FK_privateMessage_senderUserId_User` |
-
----
-
-## 10. Check Constraints
-
-| Table | Constraint | Rule |
+| No. | Table Name | Purpose |
 |---|---|---|
-| `Student` | `FK_Student_userId_User] FOREIGN KEY ([userId]) REFERENCES dbo.[User]([userId]);
-GO
-ALTER TABLE dbo.[Student] WITH CHECK ADD CONSTRAINT [FK_Student_currentLevelId_Level] FOREIGN KEY ([currentLevelId]) REFERENCES dbo.[Level]([levelId]);
-GO
-ALTER TABLE dbo.[Student] WITH CHECK ADD CONSTRAINT [FK_Student_personalityId_Personality] FOREIGN KEY ([personalityId]) REFERENCES dbo.[Personality]([personalityId]);
-GO
-ALTER TABLE dbo.[Parent] WITH CHECK ADD CONSTRAINT [FK_Parent_userId_User] FOREIGN KEY ([userId]) REFERENCES dbo.[User]([userId]);
-GO
-ALTER TABLE dbo.[Teacher] WITH CHECK ADD CONSTRAINT [FK_Teacher_userId_User] FOREIGN KEY ([userId]) REFERENCES dbo.[User]([userId]);
-GO
-ALTER TABLE dbo.[StudentParent] WITH CHECK ADD CONSTRAINT [FK_StudentParent_studentId_Student] FOREIGN KEY ([studentId]) REFERENCES dbo.[Student]([studentId]);
-GO
-ALTER TABLE dbo.[StudentParent] WITH CHECK ADD CONSTRAINT [FK_StudentParent_parentId_Parent] FOREIGN KEY ([parentId]) REFERENCES dbo.[Parent]([parentId]);
-GO
-ALTER TABLE dbo.[StudentBadge] WITH CHECK ADD CONSTRAINT [FK_StudentBadge_studentId_Student] FOREIGN KEY ([studentId]) REFERENCES dbo.[Student]([studentId]);
-GO
-ALTER TABLE dbo.[StudentBadge] WITH CHECK ADD CONSTRAINT [FK_StudentBadge_badgeId_Badge] FOREIGN KEY ([badgeId]) REFERENCES dbo.[Badge]([badgeId]);
-GO
-ALTER TABLE dbo.[Unit] WITH CHECK ADD CONSTRAINT [FK_Unit_levelId_Level] FOREIGN KEY ([levelId]) REFERENCES dbo.[Level]([levelId]);
-GO
-ALTER TABLE dbo.[Subtopic] WITH CHECK ADD CONSTRAINT [FK_Subtopic_unitId_Unit] FOREIGN KEY ([unitId]) REFERENCES dbo.[Unit]([unitId]);
-GO
-ALTER TABLE dbo.[Enrollment] WITH CHECK ADD CONSTRAINT [FK_Enrollment_studentId_Student] FOREIGN KEY ([studentId]) REFERENCES dbo.[Student]([studentId]);
-GO
-ALTER TABLE dbo.[Enrollment] WITH CHECK ADD CONSTRAINT [FK_Enrollment_levelId_Level] FOREIGN KEY ([levelId]) REFERENCES dbo.[Level]([levelId]);
-GO
-ALTER TABLE dbo.[Lesson] WITH CHECK ADD CONSTRAINT [FK_Lesson_subtopicId_Subtopic] FOREIGN KEY ([subtopicId]) REFERENCES dbo.[Subtopic]([subtopicId]);
-GO
-ALTER TABLE dbo.[Quiz] WITH CHECK ADD CONSTRAINT [FK_Quiz_levelId_Level] FOREIGN KEY ([levelId]) REFERENCES dbo.[Level]([levelId]);
-GO
-ALTER TABLE dbo.[Quiz] WITH CHECK ADD CONSTRAINT [FK_Quiz_unitId_Unit] FOREIGN KEY ([unitId]) REFERENCES dbo.[Unit]([unitId]);
-GO
-ALTER TABLE dbo.[Quiz] WITH CHECK ADD CONSTRAINT [FK_Quiz_subtopicId_Subtopic] FOREIGN KEY ([subtopicId]) REFERENCES dbo.[Subtopic]([subtopicId]);
-GO
-ALTER TABLE dbo.[Quiz] WITH CHECK ADD CONSTRAINT [FK_Quiz_createdByUserId_User] FOREIGN KEY ([createdByUserId]) REFERENCES dbo.[User]([userId]);
-GO
-ALTER TABLE dbo.[Material] WITH CHECK ADD CONSTRAINT [FK_Material_subtopicId_Subtopic] FOREIGN KEY ([subtopicId]) REFERENCES dbo.[Subtopic]([subtopicId]);
-GO
-ALTER TABLE dbo.[Material] WITH CHECK ADD CONSTRAINT [FK_Material_createdByUserId_User] FOREIGN KEY ([createdByUserId]) REFERENCES dbo.[User]([userId]);
-GO
-ALTER TABLE dbo.[Forum] WITH CHECK ADD CONSTRAINT [FK_Forum_createdBy_User] FOREIGN KEY ([createdBy]) REFERENCES dbo.[User]([userId]);
-GO
-ALTER TABLE dbo.[ForumChat] WITH CHECK ADD CONSTRAINT [FK_ForumChat_forumId_Forum] FOREIGN KEY ([forumId]) REFERENCES dbo.[Forum]([forumId]);
-GO
-ALTER TABLE dbo.[ForumChat] WITH CHECK ADD CONSTRAINT [FK_ForumChat_senderUserId_User] FOREIGN KEY ([senderUserId]) REFERENCES dbo.[User]([userId]);
-GO
-ALTER TABLE dbo.[ForumTag] WITH CHECK ADD CONSTRAINT [FK_ForumTag_forumId_Forum] FOREIGN KEY ([forumId]) REFERENCES dbo.[Forum]([forumId]);
-GO
-ALTER TABLE dbo.[ForumTag] WITH CHECK ADD CONSTRAINT [FK_ForumTag_tagId_Tag] FOREIGN KEY ([tagId]) REFERENCES dbo.[Tag]([tagId]);
-GO
-ALTER TABLE dbo.[ForumLike] WITH CHECK ADD CONSTRAINT [FK_ForumLike_forumId_Forum] FOREIGN KEY ([forumId]) REFERENCES dbo.[Forum]([forumId]);
-GO
-ALTER TABLE dbo.[ForumLike] WITH CHECK ADD CONSTRAINT [FK_ForumLike_senderUserId_User] FOREIGN KEY ([senderUserId]) REFERENCES dbo.[User]([userId]);
-GO
-ALTER TABLE dbo.[Question] WITH CHECK ADD CONSTRAINT [FK_Question_quizId_Quiz] FOREIGN KEY ([quizId]) REFERENCES dbo.[Quiz]([quizId]);
-GO
-ALTER TABLE dbo.[Question] WITH CHECK ADD CONSTRAINT [FK_Question_subtopicId_Subtopic] FOREIGN KEY ([subtopicId]) REFERENCES dbo.[Subtopic]([subtopicId]);
-GO
-ALTER TABLE dbo.[Question] WITH CHECK ADD CONSTRAINT [FK_Question_createdByUserId_User] FOREIGN KEY ([createdByUserId]) REFERENCES dbo.[User]([userId]);
-GO
-ALTER TABLE dbo.[QuizResult] WITH CHECK ADD CONSTRAINT [FK_QuizResult_studentId_Student] FOREIGN KEY ([studentId]) REFERENCES dbo.[Student]([studentId]);
-GO
-ALTER TABLE dbo.[QuizResult] WITH CHECK ADD CONSTRAINT [FK_QuizResult_quizId_Quiz] FOREIGN KEY ([quizId]) REFERENCES dbo.[Quiz]([quizId]);
-GO
-ALTER TABLE dbo.[QuizAnswer] WITH CHECK ADD CONSTRAINT [FK_QuizAnswer_resultId_QuizResult] FOREIGN KEY ([resultId]) REFERENCES dbo.[QuizResult]([resultId]);
-GO
-ALTER TABLE dbo.[QuizAnswer] WITH CHECK ADD CONSTRAINT [FK_QuizAnswer_questionId_Question] FOREIGN KEY ([questionId]) REFERENCES dbo.[Question]([questionId]);
-GO
-ALTER TABLE dbo.[XPTransaction] WITH CHECK ADD CONSTRAINT [FK_XPTransaction_studentId_Student] FOREIGN KEY ([studentId]) REFERENCES dbo.[Student]([studentId]);
-GO
-ALTER TABLE dbo.[XPTransaction] WITH CHECK ADD CONSTRAINT [FK_XPTransaction_xpActionId_XPAction] FOREIGN KEY ([xpActionId]) REFERENCES dbo.[XPAction]([xpActionId]);
-GO
-ALTER TABLE dbo.[LessonProgress] WITH CHECK ADD CONSTRAINT [FK_LessonProgress_studentId_Student] FOREIGN KEY ([studentId]) REFERENCES dbo.[Student]([studentId]);
-GO
-ALTER TABLE dbo.[LessonProgress] WITH CHECK ADD CONSTRAINT [FK_LessonProgress_lessonId_Lesson] FOREIGN KEY ([lessonId]) REFERENCES dbo.[Lesson]([lessonId]);
-GO
-ALTER TABLE dbo.[Certificate] WITH CHECK ADD CONSTRAINT [FK_Certificate_studentId_Student] FOREIGN KEY ([studentId]) REFERENCES dbo.[Student]([studentId]);
-GO
-ALTER TABLE dbo.[Certificate] WITH CHECK ADD CONSTRAINT [FK_Certificate_levelId_Level] FOREIGN KEY ([levelId]) REFERENCES dbo.[Level]([levelId]);
-GO
-ALTER TABLE dbo.[Log] WITH CHECK ADD CONSTRAINT [FK_Log_userId_User] FOREIGN KEY ([userId]) REFERENCES dbo.[User]([userId]);
-GO
-ALTER TABLE dbo.[Notification] WITH CHECK ADD CONSTRAINT [FK_Notification_toUserId_User] FOREIGN KEY ([toUserId]) REFERENCES dbo.[User]([userId]);
-GO
-ALTER TABLE dbo.[VirtualLab] WITH CHECK ADD CONSTRAINT [FK_VirtualLab_unitId_Unit] FOREIGN KEY ([unitId]) REFERENCES dbo.[Unit]([unitId]);
-GO
-ALTER TABLE dbo.[LabProgress] WITH CHECK ADD CONSTRAINT [FK_LabProgress_studentId_Student] FOREIGN KEY ([studentId]) REFERENCES dbo.[Student]([studentId]);
-GO
-ALTER TABLE dbo.[LabProgress] WITH CHECK ADD CONSTRAINT [FK_LabProgress_labId_VirtualLab] FOREIGN KEY ([labId]) REFERENCES dbo.[VirtualLab]([labId]);
-GO
-ALTER TABLE dbo.[LiveConsultationSession] WITH CHECK ADD CONSTRAINT [FK_LiveConsultationSession_teacherId_Teacher] FOREIGN KEY ([teacherId]) REFERENCES dbo.[Teacher]([teacherId]);
-GO
-ALTER TABLE dbo.[LiveConsultationSession] WITH CHECK ADD CONSTRAINT [FK_LiveConsultationSession_unitId_Unit] FOREIGN KEY ([unitId]) REFERENCES dbo.[Unit]([unitId]);
-GO
-ALTER TABLE dbo.[LiveConsultationSession] WITH CHECK ADD CONSTRAINT [FK_LiveConsultationSession_subtopicId_Subtopic] FOREIGN KEY ([subtopicId]) REFERENCES dbo.[Subtopic]([subtopicId]);
-GO
-ALTER TABLE dbo.[LiveSessionParticipant] WITH CHECK ADD CONSTRAINT [FK_LiveSessionParticipant_sessionId_LiveConsultationSession] FOREIGN KEY ([sessionId]) REFERENCES dbo.[LiveConsultationSession]([sessionId]);
-GO
-ALTER TABLE dbo.[LiveSessionParticipant] WITH CHECK ADD CONSTRAINT [FK_LiveSessionParticipant_studentId_Student] FOREIGN KEY ([studentId]) REFERENCES dbo.[Student]([studentId]);
-GO
-ALTER TABLE dbo.[UserStatusAction] WITH CHECK ADD CONSTRAINT [FK_UserStatusAction_userId_User] FOREIGN KEY ([userId]) REFERENCES dbo.[User]([userId]);
-GO
-ALTER TABLE dbo.[UserStatusAction] WITH CHECK ADD CONSTRAINT [FK_UserStatusAction_performedBy_User] FOREIGN KEY ([performedBy]) REFERENCES dbo.[User]([userId]);
-GO
-ALTER TABLE dbo.[AILearningAnalysis] WITH CHECK ADD CONSTRAINT [FK_AILearningAnalysis_studentId_Student] FOREIGN KEY ([studentId]) REFERENCES dbo.[Student]([studentId]);
-GO
-ALTER TABLE dbo.[StudyPlan] WITH CHECK ADD CONSTRAINT [FK_StudyPlan_studentParentId_StudentParent] FOREIGN KEY ([studentParentId]) REFERENCES dbo.[StudentParent]([studentParentId]);
-GO
-ALTER TABLE dbo.[StudyPlan] WITH CHECK ADD CONSTRAINT [FK_StudyPlan_createdByUserId_User] FOREIGN KEY ([createdByUserId]) REFERENCES dbo.[User]([userId]);
-GO
-ALTER TABLE dbo.[SPTask] WITH CHECK ADD CONSTRAINT [FK_SPTask_studyPlanId_StudyPlan] FOREIGN KEY ([studyPlanId]) REFERENCES dbo.[StudyPlan]([studyPlanId]);
-GO
-ALTER TABLE dbo.[SPReward] WITH CHECK ADD CONSTRAINT [FK_SPReward_studyPlanId_StudyPlan] FOREIGN KEY ([studyPlanId]) REFERENCES dbo.[StudyPlan]([studyPlanId]);
-GO
-ALTER TABLE dbo.[userChat] WITH CHECK ADD CONSTRAINT [FK_userChat_userId_User] FOREIGN KEY ([userId]) REFERENCES dbo.[User]([userId]);
-GO
-ALTER TABLE dbo.[userChat] WITH CHECK ADD CONSTRAINT [FK_userChat_user2Id_User] FOREIGN KEY ([user2Id]) REFERENCES dbo.[User]([userId]);
-GO
-ALTER TABLE dbo.[privateMessage] WITH CHECK ADD CONSTRAINT [FK_privateMessage_chatId_userChat] FOREIGN KEY ([chatId]) REFERENCES dbo.[userChat]([chatId]);
-GO
-ALTER TABLE dbo.[privateMessage] WITH CHECK ADD CONSTRAINT [FK_privateMessage_senderUserId_User] FOREIGN KEY ([senderUserId]) REFERENCES dbo.[User]([userId]);
-GO
+| 1 | User | Keeps login account data, role, language and status. |
+| 2 | Level | Contains learning level records. |
+| 3 | Personality | Contains student personality types. |
+| 4 | Badge | Contains badge records for student achievements. |
+| 5 | Unit | Keeps science units under each level. |
+| 6 | Subtopic | Keeps subtopics under each unit. |
+| 7 | Lesson | Keeps lesson titles, content and attachment path. |
+| 8 | XPAction | Contains fixed XP action values. |
+| 9 | ConfigurationSetting | Contains system configuration values. |
+| 10 | VirtualLab | Keeps virtual lab activities. |
+| 11 | Student | Keeps student profile details. |
+| 12 | Parent | Keeps parent profile details. |
+| 13 | Teacher | Keeps teacher profile and certificate details. |
+| 14 | StudentParent | Links a student account with a parent account. |
+| 15 | Enrollment | Keeps student level enrollment records. |
+| 16 | StudentBadge | Keeps badges earned by students. |
+| 17 | Quiz | Keeps quiz details. |
+| 18 | Material | Keeps teacher material uploads. |
+| 19 | Forum | Keeps forum discussion posts. |
+| 20 | ForumChat | Keeps replies inside forum discussions. |
+| 21 | Tag | Keeps forum tags. |
+| 22 | ForumTag | Links forums with tags. |
+| 23 | ForumLike | Keeps forum likes. |
+| 24 | Question | Keeps quiz questions and answer options. |
+| 25 | QuizResult | Keeps student quiz result records. |
+| 26 | QuizAnswer | Keeps answers selected in quiz attempts. |
+| 27 | XPTransaction | Keeps XP earned by students. |
+| 28 | LessonProgress | Keeps student lesson completion records. |
+| 29 | Certificate | Keeps student certificate records. |
+| 30 | Log | Keeps system log records. |
+| 31 | Notification | Keeps notification records for users. |
+| 32 | LabProgress | Keeps student virtual lab progress. |
+| 33 | LiveConsultationSession | Keeps teacher live session details. |
+| 34 | LiveSessionParticipant | Keeps students who joined live sessions. |
+| 35 | UserStatusAction | Keeps user status actions done by admin. |
+| 36 | AILearningAnalysis | Keeps learning analysis for students. |
+| 37 | StudyPlan | Keeps study plans for students. |
+| 38 | SPTask | Keeps tasks inside study plans. |
+| 39 | SPReward | Keeps rewards inside study plans. |
+| 40 | userChat | Keeps private chat rooms between users. |
+| 41 | privateMessage | Keeps private messages inside private chats. |
 
--- Basic data-quality checks
-ALTER TABLE dbo.[User] WITH CHECK ADD CONSTRAINT [CK_User_Role` | `[role] IN (N'Admin',N'Student',N'Parent',N'Teacher')` |
-| `User` | `CK_User_Language` | `[preferredLanguage] IN (N'EN',N'BM')` |
-| `User` | `CK_User_Status` | `[status] IN (N'Active',N'Blocked',N'Deleted')` |
-| `Quiz` | `CK_Quiz_Language` | `[language] IS NULL OR [language] IN (N'EN',N'BM',N'BOTH')` |
-| `Material` | `CK_Material_Language` | `[language] IS NULL OR [language] IN (N'EN',N'BM',N'BOTH')` |
+1.2 Table Details
 
----
+1. User table
 
-# Table Details
+Description:
+Keeps login account data, role, language and status.
 
-## 1. `User`
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| userId | nvarchar(10) | PK | Related user ID. |
+| username | nvarchar(50) | Unique | Username for login. |
+| password | nvarchar(50) | - | Password for login. |
+| email | nvarchar(100) | Unique | Email address. |
+| role | nvarchar(20) | - | User role. |
+| preferredLanguage | nvarchar(10) | - | Selected language. |
+| status | nvarchar(20) | - | Record status. |
 
-Stores login credentials, user role, preferred language, and account status.
+Primary Key:
+- userId
 
-Seed/sample script currently inserts **24 row(s)** for this table.
+Foreign Key:
+- None
 
-### Columns
+Sample Data:
+Only selected sample records are shown.
 
-| Column | Data Type | Null? | Key / Constraint | Description |
+| userId | username | password | email | role | preferredLanguage | status |
+|---|---|---|---|---|---|---|
+| U001 | najihah01 | 12345 | admin@sciencebuddy.edu | Admin | EN | Active |
+| U002 | Aiman | 12345 | aiman@gmail.com | Student | BM | Active |
+| U003 | siti | 12345 | siti@gmail.com | Student | EN | Active |
+
+2. Level table
+
+Description:
+Contains learning level records.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| levelId | nvarchar(10) | PK | Level ID. |
+| levelNameEN | nvarchar(50) | - | English text. |
+| levelNameBM | nvarchar(50) | - | Bahasa Melayu text. |
+| levelDescriptionEN | nvarchar(500) | - | English text. |
+| levelDescriptionBM | nvarchar(500) | - | Bahasa Melayu text. |
+
+Primary Key:
+- levelId
+
+Foreign Key:
+- None
+
+Sample Data:
+| levelId | levelNameEN | levelNameBM | levelDescriptionEN | levelDescriptionBM |
 |---|---|---|---|---|
-| `userId` | `NVARCHAR(10)` | No | PK | Unique user account ID, e.g. U001. |
-| `username` | `NVARCHAR(50)` | No | - | Login username. |
-| `password` | `NVARCHAR(255)` | No | - | Login password. For real deployment, store hashed passwords, not plain text. |
-| `email` | `NVARCHAR(100)` | No | UNIQUE | User email address. |
-| `role` | `NVARCHAR(20)` | No | - | User role: Admin, Student, Parent, or Teacher. |
-| `preferredLanguage` | `NVARCHAR(5)` | No | - | User interface language preference: EN or BM. |
-| `status` | `NVARCHAR(20)` | No | - | Account status: Active, Blocked, or Deleted. |
+| LV001 | Beginner | Pemula | Suitable for students who are starting to learn basic Science concepts. | Sesuai untuk murid yang baru mula mempelajari konsep asas Sains. |
+| LV002 | Intermediate | Pertengahan | Suitable for students who have basic Science understanding and are ready for more detailed topics. | Sesuai untuk murid yang mempunyai kefahaman asas Sains dan bersedia untuk topik yang lebih terperinci. |
+| LV003 | Advanced | Lanjutan | Suitable for students who are ready to explore more challenging Science concepts and assessments. | Sesuai untuk murid yang bersedia meneroka konsep dan penilaian Sains yang lebih mencabar. |
 
-### Important Notes
+3. Personality table
 
-- Use `dbo.[User]` with square brackets in SQL because `USER` is a SQL Server keyword/context function.
-- Only users with `status = 'Active'` should be allowed to log in.
-- The current schema makes `email` unique. `username` is not marked unique in the latest SQL script, so enforce unique username in the application if needed or add a DB constraint later.
+Description:
+Contains student personality types.
 
-## 2. `Student`
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| personalityId | nvarchar(10) | PK | Personality ID. |
+| personalityNameEN | nvarchar(50) | - | English text. |
+| personalityNameBM | nvarchar(50) | - | Bahasa Melayu text. |
+| descriptionEN | nvarchar(500) | - | English text. |
+| descriptionBM | nvarchar(500) | - | Bahasa Melayu text. |
+| avatar | nvarchar(200) | - | Table field. |
+| colour | nvarchar(20) | - | Table field. |
+| learningStyleEN | nvarchar(100) | - | English text. |
+| learningStyleBM | nvarchar(100) | - | Bahasa Melayu text. |
 
-Stores student profile, current level, XP, personality, and parent-linking code.
+Primary Key:
+- personalityId
 
-Seed/sample script currently inserts **11 row(s)** for this table.
+Foreign Key:
+- None
 
-### Columns
+Sample Data:
+Only selected sample records are shown.
 
-| Column | Data Type | Null? | Key / Constraint | Description |
+| personalityId | personalityNameEN | personalityNameBM | descriptionEN | descriptionBM | avatar | colour | learningStyleEN | learningStyleBM |
+|---|---|---|---|---|---|---|---|---|
+| P001 | Achiever | Pencapai | A goal-oriented learner who enjoys progress, rewards, badges, and completing learning targets. | Murid yang berorientasikan matlamat dan suka melihat kemajuan, ganjaran, lencana serta menyelesaikan sasaran pembelajaran. | Images/Personality/achiever.png | #F5B041 | Goal-based learning | Pembelajaran berasaskan matlamat |
+| P002 | Creative | Kreatif | A visual and imaginative learner who enjoys colourful notes, flashcards, videos, and virtual lab activities. | Murid yang visual dan imaginatif serta suka nota berwarna, kad imbas, video dan aktiviti makmal maya. | Images/Personality/creative.png | #9B59B6 | Visual and interactive learning | Pembelajaran visual dan interaktif |
+| P003 | Thinker | Pemikir | A curious learner who enjoys understanding reasons, reviewing explanations, and analysing weak topics. | Murid yang ingin tahu dan suka memahami sebab, menyemak penerangan serta menganalisis topik lemah. | Images/Personality/thinker.png | #3498DB | Explanation-based learning | Pembelajaran berasaskan penerangan |
+
+4. Badge table
+
+Description:
+Contains badge records for student achievements.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| badgeId | nvarchar(10) | PK | Table field. |
+| badgeNameEN | nvarchar(100) | - | English text. |
+| badgeNameBM | nvarchar(100) | - | Bahasa Melayu text. |
+| badgeType | nvarchar(50) | - | Type. |
+| xpReward | int | - | Table field. |
+| badgeIcon | nvarchar(200) | - | Table field. |
+| requirementDescriptionEN | nvarchar(500) | - | English text. |
+| requirementDescriptionBM | nvarchar(500) | - | Bahasa Melayu text. |
+| badgeDescriptionEN | nvarchar(500) | - | English text. |
+| badgeDescriptionBM | nvarchar(500) | - | Bahasa Melayu text. |
+
+Primary Key:
+- badgeId
+
+Foreign Key:
+- None
+
+Sample Data:
+Only selected sample records are shown.
+
+| badgeId | badgeNameEN | badgeNameBM | badgeType | xpReward | badgeIcon | requirementDescriptionEN | requirementDescriptionBM | badgeDescriptionEN | badgeDescriptionBM |
+|---|---|---|---|---|---|---|---|---|---|
+| B001 | First Step Learner | Pelajar Langkah Pertama | Lesson | 20 | Images/Badge/first-step.png | Complete the first lesson. | Selesaikan pelajaran pertama. | Awarded to students who begin their learning journey by completing their first lesson. | Diberikan kepada murid yang memulakan perjalanan pembelajaran dengan menyelesaikan pelajaran pertama. |
+| B002 | Lab Explorer | Penjelajah Makmal | Lab | 30 | Images/Badge/lab-explorer.png | Complete the first virtual lab. | Selesaikan makmal maya pertama. | Awarded to students who complete their first interactive virtual lab activity. | Diberikan kepada murid yang menyelesaikan aktiviti makmal maya interaktif pertama. |
+| B003 | Quiz Starter | Pemula Kuiz | Quiz | 20 | Images/Badge/quiz-starter.png | Attempt the first quiz. | Jawab kuiz pertama. | Awarded to students who attempt their first quiz or self-assessment. | Diberikan kepada murid yang menjawab kuiz atau penilaian kendiri pertama. |
+
+5. Unit table
+
+Description:
+Keeps science units under each level.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| unitId | nvarchar(10) | PK | Unit ID. |
+| levelId | nvarchar(10) | FK -> Level.levelId | Level ID. |
+| unitNameEN | nvarchar(100) | - | English text. |
+| unitNameBM | nvarchar(100) | - | Bahasa Melayu text. |
+| unitDescriptionEN | nvarchar(500) | - | English text. |
+| unitDescriptionBM | nvarchar(500) | - | Bahasa Melayu text. |
+| orderNo | int | - | Order number. |
+
+Primary Key:
+- unitId
+
+Foreign Key:
+- levelId -> Level.levelId
+
+Sample Data:
+Only selected sample records are shown.
+
+| unitId | levelId | unitNameEN | unitNameBM | unitDescriptionEN | unitDescriptionBM | orderNo |
+|---|---|---|---|---|---|---|
+| UN101 | LV001 | Humans | Manusia | Learn about human senses and how they help us understand the world. | Mempelajari deria manusia dan kegunaannya dalam kehidupan harian. | 1 |
+| UN102 | LV001 | Magnets | Magnet | Learn the uses, shapes, attraction and repulsion of magnets. | Mempelajari kegunaan, bentuk, tarikan dan tolakan magnet. | 2 |
+| UN103 | LV001 | Absorption | Penyerapan | Learn about water absorbent and non-water absorbent materials. | Mempelajari bahan yang menyerap dan tidak menyerap air. | 3 |
+
+6. Subtopic table
+
+Description:
+Keeps subtopics under each unit.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| subtopicId | nvarchar(10) | PK | Subtopic ID. |
+| unitId | nvarchar(10) | FK -> Unit.unitId | Unit ID. |
+| subtopicTitleEN | nvarchar(100) | - | English text. |
+| subtopicTitleBM | nvarchar(100) | - | Bahasa Melayu text. |
+| subtopicDescriptionEN | nvarchar(500) | - | English text. |
+| subtopicDescriptionBM | nvarchar(500) | - | Bahasa Melayu text. |
+| orderNo | int | - | Order number. |
+
+Primary Key:
+- subtopicId
+
+Foreign Key:
+- unitId -> Unit.unitId
+
+Sample Data:
+Only selected sample records are shown.
+
+| subtopicId | unitId | subtopicTitleEN | subtopicTitleBM | subtopicDescriptionEN | subtopicDescriptionBM | orderNo |
+|---|---|---|---|---|---|---|
+| ST111 | UN101 | Human Sense | Deria Manusia | Learn about the five human senses. | Mempelajari lima deria manusia. | 1 |
+| ST112 | UN101 | Classify Taste | Mengelaskan Rasa | Learn to classify different tastes. | Mempelajari cara mengelaskan rasa. | 2 |
+| ST113 | UN101 | The Use of Human Sense | Kegunaan Deria Manusia | Learn how senses help us in daily life. | Mempelajari kegunaan deria dalam kehidupan harian. | 3 |
+
+7. Lesson table
+
+Description:
+Keeps lesson titles, content and attachment path.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| lessonId | nvarchar(10) | PK | Lesson ID. |
+| subtopicId | nvarchar(10) | FK -> Subtopic.subtopicId | Subtopic ID. |
+| lessonTitleEN | nvarchar(100) | - | English text. |
+| lessonTitleBM | nvarchar(100) | - | Bahasa Melayu text. |
+| lessonContentEN | NVARCHAR(MAX) | - | English text. |
+| lessonContentBM | NVARCHAR(MAX) | - | Bahasa Melayu text. |
+| attachmentUrl | nvarchar(200) | - | Attachment path. |
+| orderNo | int | - | Order number. |
+
+Primary Key:
+- lessonId
+
+Foreign Key:
+- subtopicId -> Subtopic.subtopicId
+
+Sample Data:
+Only selected sample records are shown.
+
+| lessonId | subtopicId | lessonTitleEN | lessonTitleBM | lessonContentEN | lessonContentBM | attachmentUrl | orderNo |
+|---|---|---|---|---|---|---|---|
+| LS001 | ST111 | Human Sense | Deria Manusia | <p>We explore the world using <strong>five amazing senses</strong>!</p><br><br><p>Each sense has a special body part that helps us understand what is around us:</p><br><br><ul><br>  <li><strong>Eyes</strong> help us see colours, sizes, and shapes.</li><br>  <li><strong>Ears</strong> help us hear sounds, such as loud music or soft whispers.</li><br>  <li><strong>Nose</strong> helps us smell things, such as fragrant flowers or stinky trash.</li><br>  <li><strong>Tongue</strong> helps us taste food and drinks.</li><br>  <li><strong>Skin</strong> helps us feel things that are rough, smooth, hard, or soft.</li><br></ul><br><br><div class="lesson-tip"><br>  Our five senses help us explore, learn, and stay aware of the world around us.<br></div> | <p>Kita meneroka dunia menggunakan <strong>lima deria yang hebat</strong>!</p><br><br><p>Setiap deria mempunyai bahagian tubuh yang khas untuk membantu kita memahami keadaan di sekeliling:</p><br><br><ul><br>  <li><strong>Mata</strong> membantu kita melihat warna, saiz, dan bentuk.</li><br>  <li><strong>Telinga</strong> membantu kita mendengar bunyi, seperti muzik kuat atau bisikan perlahan.</li><br>  <li><strong>Hidung</strong> membantu kita menghidu bau, seperti bunga wangi atau sampah busuk.</li><br>  <li><strong>Lidah</strong> membantu kita merasa makanan dan minuman.</li><br>  <li><strong>Kulit</strong> membantu kita merasa benda yang kasar, licin, keras, atau lembut.</li><br></ul><br><br><div class="lesson-tip"><br>  Lima deria membantu kita meneroka, belajar, dan peka terhadap dunia di sekeliling kita.<br></div> | Images/Lesson/humansense.png | 1 |
+| LS002 | ST112 | Classify Taste | Mengelaskan Rasa | <p>Our tongue is like a <strong>taste detective</strong>!</p><br><br><p>We can identify and group foods by four main flavours:</p><br><br><ul><br>  <li><strong>Sweet</strong> — like a lollipop or honey.</li><br>  <li><strong>Sour</strong> — like a lemon or lime.</li><br>  <li><strong>Salty</strong> — like salt or salted fish.</li><br>  <li><strong>Bitter</strong> — like coffee or bitter gourd.</li><br></ul><br><br><p>Some things may also be <strong>tasteless</strong>, such as plain water.</p><br><br><div class="lesson-tip"><br>  Taste helps us describe and compare different types of food.<br></div> | <p>Lidah kita seperti <strong>detektif rasa</strong>!</p><br><br><p>Kita boleh mengenal pasti dan mengelaskan makanan mengikut empat rasa utama:</p><br><br><ul><br>  <li><strong>Manis</strong> — seperti lolipop atau madu.</li><br>  <li><strong>Masam</strong> — seperti lemon atau limau nipis.</li><br>  <li><strong>Masin</strong> — seperti garam atau ikan masin.</li><br>  <li><strong>Pahit</strong> — seperti kopi atau peria.</li><br></ul><br><br><p>Ada juga benda yang mungkin <strong>tawar</strong>, seperti air kosong.</p><br><br><div class="lesson-tip"><br>  Deria rasa membantu kita menerangkan dan membandingkan pelbagai jenis makanan.<br></div> | Images/Lesson/taste.mp4 | 1 |
+| LS003 | ST113 | The Use of Human Sense | Kegunaan Deria Manusia | <p>Our senses help us <strong>stay safe</strong> and <strong>learn about our surroundings</strong>.</p><br><br><p>When one sense does not work well, we can use special aids to help us:</p><br><br><ul><br>  <li><strong>Glasses</strong> help people see more clearly.</li><br>  <li><strong>Hearing aids</strong> help people hear sounds better.</li><br></ul><br><br><p>Even when it is dark and we cannot see, we can still use our <strong>sense of touch</strong> to find our way or identify objects.</p><br><br><div class="lesson-tip"><br>  Each sense is important because it helps us understand and respond to the world around us.<br></div> | <p>Deria kita membantu kita <strong>menjaga keselamatan</strong> dan <strong>belajar tentang persekitaran</strong>.</p><br><br><p>Jika satu deria tidak berfungsi dengan baik, kita boleh menggunakan alat bantuan khas:</p><br><br><ul><br>  <li><strong>Cermin mata</strong> membantu seseorang melihat dengan lebih jelas.</li><br>  <li><strong>Alat bantu pendengaran</strong> membantu seseorang mendengar bunyi dengan lebih baik.</li><br></ul><br><br><p>Walaupun dalam keadaan gelap dan kita tidak dapat melihat, kita masih boleh menggunakan <strong>deria sentuhan</strong> untuk mencari jalan atau mengenal pasti objek.</p><br><br><div class="lesson-tip"><br>  Setiap deria penting kerana membantu kita memahami dan bertindak balas terhadap dunia di sekeliling kita.<br></div> | Images/Lesson/useofhumansense.mp4 | 1 |
+
+Notes:
+- lessonContentEN and lessonContentBM use NVARCHAR(MAX).
+- attachmentUrl is NULL when the lesson has no file path.
+
+8. XPAction table
+
+Description:
+Contains fixed XP action values.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| xpActionId | nvarchar(10) | PK | XP action ID. |
+| actionNameEN | nvarchar(100) | - | English text. |
+| actionNameBM | nvarchar(100) | - | Bahasa Melayu text. |
+| xpValue | int | - | Table field. |
+
+Primary Key:
+- xpActionId
+
+Foreign Key:
+- None
+
+Sample Data:
+Only selected sample records are shown.
+
+| xpActionId | actionNameEN | actionNameBM | xpValue |
+|---|---|---|---|
+| XP001 | Complete Lesson | Selesaikan Pelajaran | 10 |
+| XP002 | Complete Virtual Lab | Selesaikan Makmal Maya | 15 |
+| XP003 | Attempt Practice Quiz | Jawab Kuiz Latihan | 10 |
+
+9. ConfigurationSetting table
+
+Description:
+Contains system configuration values.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| configId | nvarchar(20) | PK | Table field. |
+| configKey | nvarchar(100) | - | Table field. |
+| configValue | int | - | Table field. |
+| lastUpdated | datetime | - | Last updated date and time. |
+
+Primary Key:
+- configId
+
+Foreign Key:
+- None
+
+Sample Data:
+Only selected sample records are shown.
+
+| configId | configKey | configValue | lastUpdated |
+|---|---|---|---|
+| CONFIG001 | Easy Question Timer (Seconds) | 10 | 2026-02-15 10:05:40 |
+| CONFIG002 | Medium Question Timer (Seconds) | 20 | 2026-02-15 10:06:25 |
+| CONFIG003 | Hard Question Timer (Seconds) | 30 | 2026-02-15 10:07:39 |
+
+10. VirtualLab table
+
+Description:
+Keeps virtual lab activities.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| labId | nvarchar(10) | PK | Virtual lab ID. |
+| unitId | nvarchar(10) | FK -> Unit.unitId | Unit ID. |
+| labTitleEN | nvarchar(100) | - | English text. |
+| labTitleBM | nvarchar(100) | - | Bahasa Melayu text. |
+| labDescriptionEN | nvarchar(500) | - | English text. |
+| labDescriptionBM | nvarchar(500) | - | Bahasa Melayu text. |
+| instructionEN | nvarchar(max) | - | English text. |
+| instructionBM | nvarchar(max) | - | Bahasa Melayu text. |
+| labType | nvarchar(50) | - | Type. |
+| difficulty | nvarchar(20) | - | Table field. |
+| createdAt | datetime | - | Created date and time. |
+
+Primary Key:
+- labId
+
+Foreign Key:
+- unitId -> Unit.unitId
+
+Sample Data:
+Only selected sample records are shown.
+
+| labId | unitId | labTitleEN | labTitleBM | labDescriptionEN | labDescriptionBM | instructionEN | instructionBM | labType | difficulty | createdAt |
+|---|---|---|---|---|---|---|---|---|---|---|
+| LAB001 | UN102 | Magnetic Forces Explorer | Penjelajah Daya Magnet | Test different magnet poles and identify which objects are attracted to magnets. | Uji kutub magnet yang berbeza dan kenal pasti objek yang ditarik oleh magnet. | 1. Select two magnets and drag them together to test the same poles (N-N or S-S) and different poles (N-S)<br>2. Observe if the magnets push away (repel) or pull together (attract)<br>3. Drag a magnet toward objects like a nail, pencil, and paperclip<br>4. Sort the objects into "Magnetic" and "Non-magnetic" categories | 1. Pilih dua magnet dan seretnya bersama-sama untuk menguji kutub yang sama (U-U atau S-S) dan kutub yang berbeza (U-S)<br>2. Perhatikan jika magnet menolak atau menarik satu sama lain<br>3. Seret magnet ke arah objek seperti paku, pensel, dan klip kertas<br>4. Kelaskan objek ke dalam kategori "Bermagnet" dan "Tidak Bermagnet" | Drag-and-drop Simulation | Easy | 2026-01-01 00:00:00 |
+| LAB002 | UN103 | The Great Soak Challenge | Cabaran Serapan Hebat | Test the water absorption capacity of different materials | Uji keupayaan penyerapan air bagi bahan yang berbeza | 1. Select a material such as a sponge, tissue paper, or a plastic coin<br>2. Use the virtual dropper to place three drops of colored water on the material<br>3. Observe if the water is absorbed or if it remains on the surface<br>4. Compare two absorbent materials to see which one soaks up more water | 1. Pilih bahan seperti span, kertas tisu, atau duit syiling plastik<br>2. Gunakan penitis maya untuk menitiskan tiga titik air berwarna pada bahan tersebut<br>3. Perhatikan sama ada air diserap atau kekal di atas permukaan<br>4. Bandingkan dua bahan yang menyerap air untuk melihat mana yang menyerap lebih banyak air | Observation Lab | Easy | 2026-01-01 00:00:00 |
+| LAB003 | UN201 | Journey of a Sandwich | Perjalanan Sekeping Sandwic | Follow food as it is broken down and travels through the digestive system | Ikuti perjalanan makanan semasa ia dihancurkan dan melalui sistem pencernaan | 1. Click the sandwich to begin mechanical digestion in the mouth using teeth and saliva<br>2. Drag the food bolus down the esophagus into the stomach<br>3. Watch the food turn into a liquid state in the stomach and move to the intestines<br>4. Identify where nutrients are absorbed and follow the waste until it reaches the anus | 1. Klik pada sandwic untuk memulakan pencernaan mekanikal di dalam mulut menggunakan gigi dan air liur<br>2. Seret bolus makanan menuruni esofagus ke dalam perut<br>3. Perhatikan makanan berubah menjadi cecair di dalam perut dan bergerak ke usus<br>4. Kenal pasti di mana nutrien diserap dan ikuti sisa makanan sehingga sampai ke dubur | Process Animation | Medium | 2026-01-01 00:00:00 |
+
+11. Student table
+
+Description:
+Keeps student profile details.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| studentId | nvarchar(10) | PK | Student ID. |
+| userId | nvarchar(10) | FK -> User.userId | Related user ID. |
+| name | nvarchar(100) | - | Full name. |
+| phoneNumber | nvarchar(20) | - | Phone number. |
+| nickname | nvarchar(50) | - | Table field. |
+| currentLevelId | nvarchar(10) | FK -> Level.levelId | Current level ID. |
+| XP | int | - | Total XP. |
+| personalityId | nvarchar(10) | FK -> Personality.personalityId | Personality ID. |
+| parentCode | nvarchar(20) | Unique | Code used for parent linking. |
+
+Primary Key:
+- studentId
+
+Foreign Key:
+- userId -> User.userId
+- currentLevelId -> Level.levelId
+- personalityId -> Personality.personalityId
+
+Sample Data:
+Only selected sample records are shown.
+
+| studentId | userId | name | phoneNumber | nickname | currentLevelId | XP | personalityId | parentCode |
+|---|---|---|---|---|---|---|---|---|
+| S001 | U002 | Aiman Harris Bin Zulkarnain | 0122068743 | Aiman | LV001 | 0 | P001 | ABX123 |
+| S002 | U003 | Siti Rahimah Binti Hassan | 0126559145 | Siti | LV001 | 120 | P004 | SRT456 |
+| S003 | U004 | Zara Binti Zaidi | 0172008562 | Zara | LV003 | 0 | P006 | HZQ789 |
+
+12. Parent table
+
+Description:
+Keeps parent profile details.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| parentId | nvarchar(10) | PK | Parent ID. |
+| userId | nvarchar(10) | FK -> User.userId | Related user ID. |
+| name | nvarchar(100) | - | Full name. |
+| phoneNumber | nvarchar(20) | - | Phone number. |
+
+Primary Key:
+- parentId
+
+Foreign Key:
+- userId -> User.userId
+
+Sample Data:
+Only selected sample records are shown.
+
+| parentId | userId | name | phoneNumber |
+|---|---|---|---|
+| P001 | U005 | Aminah Binti Yusof | 0134444676 |
+| P002 | U006 | Hassan Bin Zainal | 0198888900 |
+| P003 | U007 | Laila Binti Mahfuz | 0186455333 |
+
+13. Teacher table
+
+Description:
+Keeps teacher profile and certificate details.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| teacherId | nvarchar(10) | PK | Teacher ID. |
+| userId | nvarchar(10) | FK -> User.userId | Related user ID. |
+| name | nvarchar(100) | - | Full name. |
+| phoneNumber | nvarchar(20) | - | Phone number. |
+| academicQualification | nvarchar(200) | - | Table field. |
+| bio | nvarchar(500) | - | Table field. |
+| licenseCert | nvarchar(200) | - | Teacher certificate file. |
+| status | nvarchar(30) | - | Record status. |
+| approvedDate | datetime | - | Teacher approved date. |
+
+Primary Key:
+- teacherId
+
+Foreign Key:
+- userId -> User.userId
+
+Sample Data:
+Only selected sample records are shown.
+
+| teacherId | userId | name | phoneNumber | academicQualification | bio | licenseCert | status | approvedDate |
+|---|---|---|---|---|---|---|---|---|
+| T001 | U008 | Zara Natasya Binti Karim | 0112222333 | B.Sc Biology (UTM) | Experienced science teacher with 10 years in secondary education. | Images/Teacher/cert_zara.pdf | Pending | NULL |
+| T002 | U009 | Reza Hakim Bin Malik | 0145555666 | M.Ed Science Education (UM) | Passionate about inquiry-based learning and student engagement. | Images/Teacher/cert_reza.pdf | Certified | 2026-01-01 00:00:00 |
+| T003 | U010 | Nurl Izzah Binti Azmi | 0178888999 | B.Ed (Hons) Chemistry (UPM) | Focused on helping student grasp foundational concepts. | Images/Teacher/cert_izzah.pdf | Not Certified | 2026-01-02 00:00:00 |
+
+14. StudentParent table
+
+Description:
+Links a student account with a parent account.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| studentParentId | nvarchar(10) | PK | Student-parent link ID. |
+| studentId | nvarchar(10) | FK -> Student.studentId | Student ID. |
+| parentId | nvarchar(10) | FK -> Parent.parentId | Parent ID. |
+| relationship | nvarchar(50) | - | Relationship name. |
+
+Primary Key:
+- studentParentId
+
+Foreign Key:
+- studentId -> Student.studentId
+- parentId -> Parent.parentId
+
+Sample Data:
+Only selected sample records are shown.
+
+| studentParentId | studentId | parentId | relationship |
+|---|---|---|---|
+| SP001 | S001 | P001 | Mother |
+| SP002 | S002 | P002 | Father |
+| SP003 | S003 | P003 | Mother |
+
+15. Enrollment table
+
+Description:
+Keeps student level enrollment records.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| enrollmentId | nvarchar(10) | PK | Table field. |
+| studentId | nvarchar(10) | FK -> Student.studentId | Student ID. |
+| levelId | nvarchar(10) | FK -> Level.levelId | Level ID. |
+| enrolledDate | datetime | - | Enrollment date. |
+| status | nvarchar(20) | - | Record status. |
+
+Primary Key:
+- enrollmentId
+
+Foreign Key:
+- studentId -> Student.studentId
+- levelId -> Level.levelId
+
+Sample Data:
+Only selected sample records are shown.
+
+| enrollmentId | studentId | levelId | enrolledDate | status |
 |---|---|---|---|---|
-| `studentId` | `NVARCHAR(10)` | No | PK | Unique student ID, e.g. S001. |
-| `userId` | `NVARCHAR(10)` | Yes | FK -> `User.userId` | Unique user account ID, e.g. U001. |
-| `name` | `NVARCHAR(150)` | Yes | - | Full name. |
-| `phoneNumber` | `NVARCHAR(20)` | Yes | - | Phone number. |
-| `nickname` | `NVARCHAR(50)` | Yes | - | Display nickname. |
-| `currentLevelId` | `NVARCHAR(10)` | Yes | FK -> `Level.levelId` | Current learning level ID. |
-| `XP` | `INT` | Yes | - | Total student XP. |
-| `personalityId` | `NVARCHAR(10)` | Yes | FK -> `Personality.personalityId` | Selected/assigned learning personality. |
-| `parentCode` | `NVARCHAR(20)` | Yes | UNIQUE | Unique code used to link parent with student. |
+| EN001 | S001 | LV001 | 2026-01-06 00:00:00 | Active |
+| EN002 | S002 | LV001 | 2026-05-01 00:00:00 | Active |
+| EN003 | S003 | LV003 | 2026-10-03 00:00:00 | Deleted |
 
-### Foreign Keys
+16. StudentBadge table
 
-- `userId` references `User.userId` (`FK_Student_userId_User`).
-- `currentLevelId` references `Level.levelId` (`FK_Student_currentLevelId_Level`).
-- `personalityId` references `Personality.personalityId` (`FK_Student_personalityId_Personality`).
+Description:
+Keeps badges earned by students.
 
-### Important Notes
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| studentBadgeId | nvarchar(10) | PK | Table field. |
+| studentId | nvarchar(10) | FK -> Student.studentId | Student ID. |
+| badgeId | nvarchar(10) | FK -> Badge.badgeId | Table field. |
+| earnedAt | datetime | - | Date and time earned. |
 
-- A student profile links back to one `User` account.
-- `parentCode` is unique and used by parents to link to a child.
+Primary Key:
+- studentBadgeId
 
-## 3. `Parent`
+Foreign Key:
+- studentId -> Student.studentId
+- badgeId -> Badge.badgeId
 
-Stores parent profile information.
+Sample Data:
+Only selected sample records are shown.
 
-Seed/sample script currently inserts **6 row(s)** for this table.
+| studentBadgeId | studentId | badgeId | earnedAt |
+|---|---|---|---|
+| SB001 | S002 | B001 | 2026-05-16 10:00:00 |
+| SB002 | S002 | B003 | 2026-05-17 11:30:00 |
+| SB003 | S004 | B001 | 2026-02-04 09:20:00 |
 
-### Columns
+17. Quiz table
 
-| Column | Data Type | Null? | Key / Constraint | Description |
+Description:
+Keeps quiz details.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| quizId | nvarchar(10) | PK | Quiz ID. |
+| levelId | nvarchar(10) | FK -> Level.levelId | Level ID. |
+| unitId | nvarchar(10) | FK -> Unit.unitId | Unit ID. |
+| quizTitleEN | nvarchar(100) | - | English text. |
+| quizTitleBM | nvarchar(100) | - | Bahasa Melayu text. |
+| quizType | nvarchar(20) | - | Type. |
+| status | nvarchar(20) | - | Record status. |
+| createdByUserId | nvarchar(10) | FK -> User.userId | User who created the record. |
+| createdAt | datetime | - | Created date and time. |
+| language | nvarchar(10) | - | Table field. |
+
+Primary Key:
+- quizId
+
+Foreign Key:
+- levelId -> Level.levelId
+- unitId -> Unit.unitId
+- createdByUserId -> User.userId
+
+Sample Data:
+Only selected sample records are shown.
+
+| quizId | levelId | unitId | quizTitleEN | quizTitleBM | quizType | status | createdByUserId | createdAt | language |
+|---|---|---|---|---|---|---|---|---|---|
+| Q001 | NULL | UN101 | My Super Senses Challenge | Cabaran Deria Hebat Saya | Unit | NULL | U001 | 2026-01-01 10:00:00 | BOTH |
+| Q002 | NULL | UN102 | Magnet Magic Adventure | Kembara Magnet Ajaib | Unit | NULL | U001 | 2026-01-02 12:59:21 | BOTH |
+| Q003 | NULL | UN103 | The Great Soak-Off | Hero Penyerapan Hebat | Unit | NULL | U001 | 2026-01-02 17:34:22 | BOTH |
+
+Notes:
+- levelId and unitId allow NULL in SQL, but sample quiz rows use Level and Unit values.
+- Quiz table does not have subtopicId in the real SQL.
+
+18. Material table
+
+Description:
+Keeps teacher material uploads.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| materialId | nvarchar(10) | PK | Table field. |
+| subtopicId | nvarchar(10) | FK -> Subtopic.subtopicId | Subtopic ID. |
+| createdByUserId | nvarchar(10) | FK -> User.userId | User who created the record. |
+| materialTitle | nvarchar(100) | - | Title. |
+| materialType | nvarchar(30) | - | Type. |
+| fileUrl | nvarchar(200) | - | File path. |
+| materialContent | nvarchar(max) | - | Content. |
+| createdDate | datetime | - | Created date and time. |
+| status | nvarchar(20) | - | Record status. |
+| reviewedDate | datetime | - | Reviewed date. |
+| language | nvarchar(10) | - | Table field. |
+
+Primary Key:
+- materialId
+
+Foreign Key:
+- subtopicId -> Subtopic.subtopicId
+- createdByUserId -> User.userId
+
+Sample Data:
+Only selected sample records are shown.
+
+| materialId | subtopicId | createdByUserId | materialTitle | materialType | fileUrl | materialContent | createdDate | status | reviewedDate | language |
+|---|---|---|---|---|---|---|---|---|---|---|
+| M001 | ST111 | U022 | Human Sense Notes | PDF | Images/Material/humansense.pdf | This material introduces the five human senses and their functions. Students will learn how sight, hearing, smell, taste and touch help humans understand their surroundings. | 2026-01-28 00:00:00 | Pending | NULL | EN |
+| M002 | ST122 | U023 | Bentuk-Bentuk Magnet | Image | magnetbentuk.png | Bahan pembelajaran ini memperkenalkan pelbagai bentuk magnet seperti magnet ladam, magnet bar dan magnet silinder serta kegunaannya dalam kehidupan harian. | 2025-01-04 00:00:00 | Approved | 2025-03-04 00:00:00 | BM |
+| M003 | ST313 | U022 | Blood Circulatory System Video Lesson | Video | circulatory_system.mp4 | This video explains the functions of the heart, blood vessels and blood circulation throughout the human body using simple animations and examples. | 2025-09-18 00:00:00 | Pending | NULL | EN |
+
+Notes:
+- fileUrl is NULL when no material file is provided.
+
+19. Forum table
+
+Description:
+Keeps forum discussion posts.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| forumId | nvarchar(10) | PK | Table field. |
+| createdBy | nvarchar(10) | FK -> User.userId | User who created the forum. |
+| title | nvarchar(200) | - | Title. |
+| message | nvarchar(max) | - | Table field. |
+| discussionType | nvarchar(20) | - | Type. |
+| createdAt | datetime | - | Created date and time. |
+
+Primary Key:
+- forumId
+
+Foreign Key:
+- createdBy -> User.userId
+
+Sample Data:
+Only selected sample records are shown.
+
+| forumId | createdBy | title | message | discussionType | createdAt |
+|---|---|---|---|---|---|
+| F001 | U002 | Can someone explain how gears work in a super simple way? | I am trying to answer the second quiz in Unit 3 but would like to see some examples. | Public | 2026-01-21 16:45:00 |
+| F002 | U003 | Litmus paper not working | I tried testing acidity using litmus paper, but it does not change colour. Why? | Public | 2026-01-28 14:20:00 |
+| F003 | U004 | Why does ice float on water? | NULL | Private | 2026-02-03 19:00:00 |
+
+20. ForumChat table
+
+Description:
+Keeps replies inside forum discussions.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| forumChatId | nvarchar(10) | PK | Table field. |
+| forumId | nvarchar(10) | FK -> Forum.forumId | Table field. |
+| senderUserId | nvarchar(10) | FK -> User.userId | User who sent the record. |
+| message | nvarchar(max) | - | Table field. |
+| createdAt | datetime | - | Created date and time. |
+
+Primary Key:
+- forumChatId
+
+Foreign Key:
+- forumId -> Forum.forumId
+- senderUserId -> User.userId
+
+Sample Data:
+Only selected sample records are shown.
+
+| forumChatId | forumId | senderUserId | message | createdAt |
 |---|---|---|---|---|
-| `parentId` | `NVARCHAR(10)` | No | PK | Unique parent ID, e.g. P001. |
-| `userId` | `NVARCHAR(10)` | Yes | FK -> `User.userId` | Unique user account ID, e.g. U001. |
-| `name` | `NVARCHAR(150)` | Yes | - | Full name. |
-| `phoneNumber` | `NVARCHAR(20)` | Yes | - | Phone number. |
+| FC001 | F013 | U016 | I use flashcards too. You should write short notes after each lesson to create them immediately. | 2026-01-06 11:33:44 |
+| FC002 | F013 | U012 | Mind maps make it fun because you can draw anything on it. | 2026-06-06 10:22:00 |
+| FC003 | F006 | U017 | Hey mom. | 2026-06-13 16:30:00 |
 
-### Foreign Keys
+21. Tag table
 
-- `userId` references `User.userId` (`FK_Parent_userId_User`).
+Description:
+Keeps forum tags.
 
-## 4. `Teacher`
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| tagId | nvarchar(10) | PK | Table field. |
+| tagName | nvarchar(100) | - | Table field. |
+| createdAt | datetime | - | Created date and time. |
 
-Stores teacher profile, biography, certification file path, and approval status.
+Primary Key:
+- tagId
 
-Seed/sample script currently inserts **6 row(s)** for this table.
+Foreign Key:
+- None
 
-### Columns
+Sample Data:
+Only selected sample records are shown.
 
-| Column | Data Type | Null? | Key / Constraint | Description |
+| tagId | tagName | createdAt |
+|---|---|---|
+| TAG001 | Human Sense | 2026-01-01 14:39:00 |
+| TAG002 | Classify Taste | 2026-01-01 14:40:00 |
+| TAG003 | Use of Human Sense | 2026-01-01 14:42:00 |
+
+22. ForumTag table
+
+Description:
+Links forums with tags.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| forumTagId | nvarchar(10) | PK | Table field. |
+| forumId | nvarchar(10) | FK -> Forum.forumId | Table field. |
+| tagId | nvarchar(10) | FK -> Tag.tagId | Table field. |
+
+Primary Key:
+- forumTagId
+
+Foreign Key:
+- forumId -> Forum.forumId
+- tagId -> Tag.tagId
+
+Sample Data:
+Only selected sample records are shown.
+
+| forumTagId | forumId | tagId |
+|---|---|---|
+| FTAG001 | F001 | TAG043 |
+| FTAG002 | F002 | TAG016 |
+| FTAG003 | F003 | TAG013 |
+
+23. ForumLike table
+
+Description:
+Keeps forum likes.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| likeId | nvarchar(10) | PK | Table field. |
+| forumId | nvarchar(10) | FK -> Forum.forumId | Table field. |
+| senderUserId | nvarchar(10) | FK -> User.userId | User who sent the record. |
+| createdAt | datetime | - | Created date and time. |
+
+Primary Key:
+- likeId
+
+Foreign Key:
+- forumId -> Forum.forumId
+- senderUserId -> User.userId
+
+Sample Data:
+Only selected sample records are shown.
+
+| likeId | forumId | senderUserId | createdAt |
+|---|---|---|---|
+| LIKE001 | F001 | U003 | 2026-01-21 18:05:00 |
+| LIKE002 | F001 | U008 | 2026-01-21 18:20:00 |
+| LIKE003 | F002 | U012 | 2026-01-29 09:30:00 |
+
+24. Question table
+
+Description:
+Keeps quiz questions and answer options.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| questionId | nvarchar(10) | PK | Question ID. |
+| quizId | nvarchar(10) | FK -> Quiz.quizId | Quiz ID. |
+| subtopicId | nvarchar(10) | FK -> Subtopic.subtopicId | Subtopic ID. |
+| createdByUserId | nvarchar(10) | FK -> User.userId | User who created the record. |
+| questionTextEN | nvarchar(max) | - | English text. |
+| questionTextBM | nvarchar(max) | - | Bahasa Melayu text. |
+| questionType | nvarchar(50) | - | Type. |
+| questionImageUrl | nvarchar(200) | - | Question image path. |
+| optionA_EN | nvarchar(500) | - | English text. |
+| optionA_BM | nvarchar(500) | - | Bahasa Melayu text. |
+| optionB_EN | nvarchar(500) | - | English text. |
+| optionB_BM | nvarchar(500) | - | Bahasa Melayu text. |
+| optionC_EN | nvarchar(500) | - | English text. |
+| optionC_BM | nvarchar(500) | - | Bahasa Melayu text. |
+| optionD_EN | nvarchar(500) | - | English text. |
+| optionD_BM | nvarchar(500) | - | Bahasa Melayu text. |
+| correctAnswer | nvarchar(200) | - | Table field. |
+| correctExplanationEN | nvarchar(max) | - | English text. |
+| correctExplanationBM | nvarchar(max) | - | Bahasa Melayu text. |
+| wrongExplanationEN | nvarchar(max) | - | English text. |
+| wrongExplanationBM | nvarchar(max) | - | Bahasa Melayu text. |
+| difficulty | nvarchar(20) | - | Table field. |
+| status | nvarchar(20) | - | Record status. |
+| createdAt | datetime | - | Created date and time. |
+| reviewedDate | datetime | - | Reviewed date. |
+
+Primary Key:
+- questionId
+
+Foreign Key:
+- quizId -> Quiz.quizId
+- subtopicId -> Subtopic.subtopicId
+- createdByUserId -> User.userId
+
+Sample Data:
+Only selected sample records are shown.
+
+| questionId | quizId | subtopicId | createdByUserId | questionTextEN | questionTextBM | questionType | questionImageUrl | optionA_EN | optionA_BM | optionB_EN | optionB_BM | optionC_EN | optionC_BM | optionD_EN | optionD_BM | correctAnswer | correctExplanationEN | correctExplanationBM | wrongExplanationEN | wrongExplanationBM | difficulty | status | createdAt | reviewedDate |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| QST001 | Q001 | ST111 | U022 | Which sense helps us hear sounds? | Deria manakah yang membantu kita mendengar bunyi? | MCQ | Images/Question/human_senses.jpg | Sight | Penglihatan | Hearing | Pendengaran | Taste | Rasa | Smell | Bau | B | Correct! The sense of hearing allows us to hear sounds such as music, voices and alarms through our ears. | Betul! Deria pendengaran membolehkan kita mendengar bunyi seperti muzik, suara dan loceng menggunakan telinga. | Incorrect. Sight is used for seeing, taste is used for identifying flavours and smell is used for detecting scents. | Incorrect. Sight is used for seeing, taste is used for identifying flavours and smell is used for detecting scents. | Easy | Approved | 2026-01-02 10:00:00 | 2026-01-07 10:00:00 |
+| QST002 | Q001 | ST111 | U022 | Select ALL organs that are part of the five human senses. | Pilih SEMUA organ yang merupakan sebahagian daripada lima deria manusia. | Multiselect | NULL | Reading a book | Membaca buku | Watching television | Menonton televisyen | Smelling a flower | Menghidu bunga | Identifying traffic lights | Mengenal lampu isyarat | A,B,D | Reading, watching television and identifying traffic lights all require our eyes. | Membaca, menonton televisyen dan mengenal lampu isyarat memerlukan penggunaan mata. | hink about which activities require you to see objects or colours. | Fikirkan aktiviti yang memerlukan kita melihat objek atau warna. | Medium | Approved | 2026-01-02 10:00:00 | 2026-01-07 10:00:00 |
+| QST003 | Q001 | ST111 | U022 | Complete the sentence by dragging the correct answer.<br><br>We use our _____ to taste food. | Lengkapkan ayat dengan menyeret jawapan yang betul.<br><br>Kita menggunakan _____ untuk merasa makanan. | Drag & Drop | NULL | Tongue | Lidah | Ear | Telinga | NULL | NULL | NULL | NULL | Tongue,Lidah | The tongue contains taste buds that help us detect different tastes such as sweet, sour, salty and bitter. | Lidah mempunyai tunas rasa yang membantu kita mengesan pelbagai rasa seperti manis, masam, masin dan pahit | Food is tasted using the tongue, not the ears. | Makanan dirasa menggunakan lidah, bukan telinga. | Easy | Approved | 2026-01-02 10:00:00 | 2026-01-07 10:00:00 |
+
+Notes:
+- questionImageUrl is NULL when no image is used.
+
+25. QuizResult table
+
+Description:
+Keeps student quiz result records.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| resultId | nvarchar(10) | PK | Quiz result ID. |
+| studentId | nvarchar(10) | FK -> Student.studentId | Student ID. |
+| quizId | nvarchar(10) | FK -> Quiz.quizId | Quiz ID. |
+| score | int | - | Score value. |
+| totalMarks | int | - | Marks value. |
+| percentage | decimal(5,2) | - | Table field. |
+| resultStatus | nvarchar(20) | - | Table field. |
+| attemptNo | int | - | Order number. |
+| attemptedDate | datetime | - | Quiz attempt date. |
+
+Primary Key:
+- resultId
+
+Foreign Key:
+- studentId -> Student.studentId
+- quizId -> Quiz.quizId
+
+Sample Data:
+Only selected sample records are shown.
+
+| resultId | studentId | quizId | score | totalMarks | percentage | resultStatus | attemptNo | attemptedDate |
+|---|---|---|---|---|---|---|---|---|
+| QR001 | S005 | Q001 | 10 | 10 | 100 | Passed | 1 | 2026-01-15 10:50:00 |
+| QR002 | S005 | Q002 | 18 | 23 | 78.26 | Passed | 1 | 2026-01-15 11:00:00 |
+| QR003 | S005 | Q003 | 14 | 19 | 73.68 | Passed | 1 | 2026-01-15 11:06:00 |
+
+26. QuizAnswer table
+
+Description:
+Keeps answers selected in quiz attempts.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| answerId | nvarchar(10) | PK | Quiz answer ID. |
+| resultId | nvarchar(10) | FK -> QuizResult.resultId | Quiz result ID. |
+| questionId | nvarchar(10) | FK -> Question.questionId | Question ID. |
+| selectedAnswer | nvarchar(500) | - | Table field. |
+| isCorrect | bit | - | Correct answer value. |
+| marksAwarded | int | - | Marks value. |
+
+Primary Key:
+- answerId
+
+Foreign Key:
+- resultId -> QuizResult.resultId
+- questionId -> Question.questionId
+
+Sample Data:
+Only selected sample records are shown.
+
+| answerId | resultId | questionId | selectedAnswer | isCorrect | marksAwarded |
+|---|---|---|---|---|---|
+| QA001 | QR001 | QST001 | B | 1 | 1 |
+| QA002 | QR001 | QST002 | A,B,D | 1 | 3 |
+| QA003 | QR001 | QST003 | Tongue | 1 | 1 |
+
+27. XPTransaction table
+
+Description:
+Keeps XP earned by students.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| xpTransactionId | nvarchar(10) | PK | XP transaction ID. |
+| studentId | nvarchar(10) | FK -> Student.studentId | Student ID. |
+| xpActionId | nvarchar(10) | FK -> XPAction.xpActionId | XP action ID. |
+| xpAmount | int | - | Table field. |
+| dateEarned | datetime | - | Date XP was earned. |
+
+Primary Key:
+- xpTransactionId
+
+Foreign Key:
+- studentId -> Student.studentId
+- xpActionId -> XPAction.xpActionId
+
+Sample Data:
+Only selected sample records are shown.
+
+| xpTransactionId | studentId | xpActionId | xpAmount | dateEarned |
 |---|---|---|---|---|
-| `teacherId` | `NVARCHAR(10)` | No | PK | Unique teacher ID, e.g. T001. |
-| `userId` | `NVARCHAR(10)` | Yes | FK -> `User.userId` | Unique user account ID, e.g. U001. |
-| `name` | `NVARCHAR(150)` | Yes | - | Full name. |
-| `phoneNumber` | `NVARCHAR(20)` | Yes | - | Phone number. |
-| `academicQualification` | `NVARCHAR(200)` | Yes | - | Teacher academic qualification. |
-| `bio` | `NVARCHAR(MAX)` | Yes | - | Teacher biography. |
-| `licenseCert` | `NVARCHAR(255)` | Yes | - | Teacher certificate/license file path. |
-| `status` | `NVARCHAR(30)` | Yes | - | Account status: Active, Blocked, or Deleted. |
-| `approvedDate` | `DATE` | Yes | - | Teacher approval/review date. |
+| XPT001 | S002 | XP001 | 10 | 2026-05-16 00:00:00 |
+| XPT002 | S002 | XP003 | 10 | 2026-05-17 00:00:00 |
+| XPT003 | S002 | XP002 | 15 | 2026-05-18 00:00:00 |
 
-### Foreign Keys
+28. LessonProgress table
 
-- `userId` references `User.userId` (`FK_Teacher_userId_User`).
+Description:
+Keeps student lesson completion records.
 
-### Important Notes
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| progressId | nvarchar(10) | PK | Lesson progress ID. |
+| studentId | nvarchar(10) | FK -> Student.studentId | Student ID. |
+| lessonId | nvarchar(10) | FK -> Lesson.lessonId | Lesson ID. |
+| isCompleted | bit | - | Completion value. |
+| completedDate | datetime | - | Completed date. |
 
-- `status` uses the teacher certification workflow: `Pending`, `Certified`, `Not Certified`.
-- `licenseCert` must use the path prefix `Images/Teacher/`.
+Primary Key:
+- progressId
 
-## 5. `StudentParent`
+Foreign Key:
+- studentId -> Student.studentId
+- lessonId -> Lesson.lessonId
 
-Junction table linking students to parents and relationship type.
+Sample Data:
+Only selected sample records are shown.
 
-Seed/sample script currently inserts **10 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
+| progressId | studentId | lessonId | isCompleted | completedDate |
 |---|---|---|---|---|
-| `studentParentId` | `NVARCHAR(10)` | No | PK | Unique student-parent relationship ID. |
-| `studentId` | `NVARCHAR(10)` | Yes | FK -> `Student.studentId` | Unique student ID, e.g. S001. |
-| `parentId` | `NVARCHAR(10)` | Yes | FK -> `Parent.parentId` | Unique parent ID, e.g. P001. |
-| `relationship` | `NVARCHAR(30)` | Yes | - | Relationship to student, e.g. Mother, Father, Guardian. |
+| PR001 | S002 | LS001 | 1 | 2026-05-16 00:00:00 |
+| PR002 | S002 | LS002 | 1 | 2026-05-17 00:00:00 |
+| PR003 | S002 | LS003 | 0 | NULL |
 
-### Foreign Keys
+29. Certificate table
 
-- `studentId` references `Student.studentId` (`FK_StudentParent_studentId_Student`).
-- `parentId` references `Parent.parentId` (`FK_StudentParent_parentId_Parent`).
+Description:
+Keeps student certificate records.
 
-## 6. `Level`
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| certificateId | nvarchar(20) | PK | Certificate ID. |
+| studentId | nvarchar(10) | FK -> Student.studentId | Student ID. |
+| levelId | nvarchar(10) | FK -> Level.levelId | Level ID. |
+| certificateTitleEN | nvarchar(100) | - | English text. |
+| certificateTitleBM | nvarchar(100) | - | Bahasa Melayu text. |
+| certificateDescriptionEN | nvarchar(500) | - | English text. |
+| certificateDescriptionBM | nvarchar(500) | - | Bahasa Melayu text. |
+| issuedDate | datetime | - | Issued date. |
+| certificateUrl | nvarchar(200) | - | Certificate file path. |
+| certificateCode | nvarchar(50) | - | Table field. |
+| status | nvarchar(20) | - | Record status. |
 
-Seeded lookup table for learning levels.
+Primary Key:
+- certificateId
 
-Seed/sample script currently inserts **3 row(s)** for this table.
+Foreign Key:
+- studentId -> Student.studentId
+- levelId -> Level.levelId
 
-### Columns
+Sample Data:
+Only selected sample records are shown.
 
-| Column | Data Type | Null? | Key / Constraint | Description |
+| certificateId | studentId | levelId | certificateTitleEN | certificateTitleBM | certificateDescriptionEN | certificateDescriptionBM | issuedDate | certificateUrl | certificateCode | status |
+|---|---|---|---|---|---|---|---|---|---|---|
+| CERT001 | S005 | LV001 | Beginner Science Completion Certificate | Sijil Tamat Sains Pemula | Awarded for successfully completing all Beginner Science learning units and meeting the minimum passing requirements. | Dianugerahkan kerana berjaya menamatkan semua unit pembelajaran Sains Pemula dan memenuhi syarat kelulusan minimum. | 2026-01-28 00:00:00 | Images/Certificate/cert_s005_lv001.pdf | SCI-BEG-S005 | Active |
+| CERT002 | S006 | LV001 | Beginner Science Completion Certificate | Sijil Tamat Sains Pemula | Awarded for successfully completing all Beginner Science learning units and meeting the minimum passing requirements. | Dianugerahkan kerana berjaya menamatkan semua unit pembelajaran Sains Pemula dan memenuhi syarat kelulusan minimum. | 2026-02-28 00:00:00 | cert_s006_lv001.pdf | SCI-BEG-S006 | Active |
+| CERT003 | S006 | LV002 | Intermediate Science Completion Certificate | Sijil Tamat Sains Pertengahan | Awarded for successfully completing all Intermediate Science learning units and achieving the required passing score. | Dianugerahkan kerana berjaya menamatkan semua unit pembelajaran Sains Pemula dan memenuhi syarat kelulusan minimum. | 2026-04-30 00:00:00 | cert_s006_lv002.pdf | SCI-INT-S006 | Active |
+
+30. Log table
+
+Description:
+Keeps system log records.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| logId | nvarchar(10) | PK | Table field. |
+| userId | nvarchar(10) | FK -> User.userId | Related user ID. |
+| action | nvarchar(50) | - | Table field. |
+| description | nvarchar(500) | - | Description. |
+| logDateTime | datetime | - | Log date and time. |
+| status | nvarchar(20) | - | Record status. |
+
+Primary Key:
+- logId
+
+Foreign Key:
+- userId -> User.userId
+
+Sample Data:
+Only selected sample records are shown.
+
+| logId | userId | action | description | logDateTime | status |
+|---|---|---|---|---|---|
+| LOG001 | U002 | Login | User logged into the system successfully. | 2026-05-16 08:05:00 | Success |
+| LOG002 | U018 | Failed Login | Incorrect password entered. Attempt 1 of 3. | 2026-06-14 07:55:43 | Failed |
+| LOG003 | U018 | Failed Login | Incorrect password entered. Attempt 2 of 3. | 2026-06-14 07:57:43 | Failed |
+
+31. Notification table
+
+Description:
+Keeps notification records for users.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| notificationId | nvarchar(10) | PK | Notification ID. |
+| toUserId | nvarchar(10) | FK -> User.userId | User receiving the notification. |
+| titleEN | nvarchar(100) | - | English text. |
+| titleBM | nvarchar(100) | - | Bahasa Melayu text. |
+| messageEN | nvarchar(500) | - | English text. |
+| messageBM | nvarchar(500) | - | Bahasa Melayu text. |
+| isRead | bit | - | Read value. |
+| createdAt | datetime | - | Created date and time. |
+
+Primary Key:
+- notificationId
+
+Foreign Key:
+- toUserId -> User.userId
+
+Sample Data:
+Only selected sample records are shown.
+
+| notificationId | toUserId | titleEN | titleBM | messageEN | messageBM | isRead | createdAt |
+|---|---|---|---|---|---|---|---|
+| N001 | U002 | Welcome to ScienceBuddy | Selamat Datang ke ScienceBuddy | Start your first lesson today. | Mulakan pelajaran pertama anda hari ini. | 0 | 2026-06-05 04:46:20 |
+| N002 | U003 | Quiz Completed | Kuiz Selesai | You passed your quiz. | Anda telah lulus kuiz anda. | 1 | 2026-06-02 12:14:57 |
+| N003 | U011 | New Badge Earned | Lencana Baharu Diperoleh | You earned High Scorer. | Anda memperoleh Skor Cemerlang. | 0 | 2026-06-13 14:31:55 |
+
+32. LabProgress table
+
+Description:
+Keeps student virtual lab progress.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| labProgressId | nvarchar(10) | PK | Lab progress ID. |
+| studentId | nvarchar(10) | FK -> Student.studentId | Student ID. |
+| labId | nvarchar(10) | FK -> VirtualLab.labId | Virtual lab ID. |
+| isCompleted | bit | - | Completion value. |
+| completedDate | datetime | - | Completed date. |
+
+Primary Key:
+- labProgressId
+
+Foreign Key:
+- studentId -> Student.studentId
+- labId -> VirtualLab.labId
+
+Sample Data:
+Only selected sample records are shown.
+
+| labProgressId | studentId | labId | isCompleted | completedDate |
 |---|---|---|---|---|
-| `levelId` | `NVARCHAR(10)` | No | PK | Unique learning level ID. |
-| `levelNameEN` | `NVARCHAR(50)` | No | - | English level name. |
-| `levelNameBM` | `NVARCHAR(50)` | No | - | Malay level name. |
-| `levelDescriptionEN` | `NVARCHAR(MAX)` | Yes | - | English level description. |
-| `levelDescriptionBM` | `NVARCHAR(MAX)` | Yes | - | Malay level description. |
+| LABP001 | S002 | LAB001 | 1 | 2026-05-18 00:00:00 |
+| LABP002 | S004 | LAB001 | 1 | 2026-06-04 00:00:00 |
+| LABP003 | S004 | LAB002 | 1 | 2026-10-04 00:00:00 |
 
-## 7. `Personality`
+33. LiveConsultationSession table
 
-Seeded lookup table for learner personalities and avatar/theme information.
+Description:
+Keeps teacher live session details.
 
-Seed/sample script currently inserts **6 row(s)** for this table.
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| sessionId | nvarchar(10) | PK | Live session ID. |
+| teacherId | nvarchar(10) | FK -> Teacher.teacherId | Teacher ID. |
+| unitId | nvarchar(10) | FK -> Unit.unitId | Unit ID. |
+| subtopicId | nvarchar(10) | FK -> Subtopic.subtopicId | Subtopic ID. |
+| sessionTitle | nvarchar(100) | - | Title. |
+| sessionDescription | nvarchar(500) | - | Description. |
+| meetingLink | nvarchar(200) | - | Meeting link. |
+| startDateTime | datetime | - | Session start date and time. |
+| endDateTime | datetime | - | Session end date and time. |
+| status | nvarchar(20) | - | Record status. |
 
-### Columns
+Primary Key:
+- sessionId
 
-| Column | Data Type | Null? | Key / Constraint | Description |
+Foreign Key:
+- teacherId -> Teacher.teacherId
+- unitId -> Unit.unitId
+- subtopicId -> Subtopic.subtopicId
+
+Sample Data:
+Only selected sample records are shown.
+
+| sessionId | teacherId | unitId | subtopicId | sessionTitle | sessionDescription | meetingLink | startDateTime | endDateTime | status |
+|---|---|---|---|---|---|---|---|---|---|
+| LIVE001 | T004 | UN201 | ST211 | Healthy Teeth Workshop | Learn how to maintain healthy teeth through proper habits. | https://meet.google.com/tth-sci-teeth | 2026-01-20 10:00:00 | 2026-01-20 12:00:00 | Completed |
+| LIVE002 | T004 | UN202 | ST221 | Float and Sink Experiment | Live demonstration of floating and sinking objects. | https://meet.google.com/tth-float-sink | 2026-02-13 14:00:00 | 2026-02-13 15:00:00 | Completed |
+| LIVE003 | T005 | UN104 | ST141 | Meneroka Bentuk Muka Bumi | Kenali gunung, lembah, pantai dan pelbagai bentuk muka bumi melalui contoh visual. | https://meet.google.com/tth-landforms | 2026-05-20 14:30:00 | 2026-05-20 16:30:00 | Completed |
+
+34. LiveSessionParticipant table
+
+Description:
+Keeps students who joined live sessions.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| participantId | nvarchar(20) | PK | Participant ID. |
+| sessionId | nvarchar(10) | FK -> LiveConsultationSession.sessionId | Live session ID. |
+| studentId | nvarchar(10) | FK -> Student.studentId | Student ID. |
+| joinedAt | datetime | - | Joined date and time. |
+
+Primary Key:
+- participantId
+
+Foreign Key:
+- sessionId -> LiveConsultationSession.sessionId
+- studentId -> Student.studentId
+
+Sample Data:
+Only selected sample records are shown.
+
+| participantId | sessionId | studentId | joinedAt |
+|---|---|---|---|
+| LIVEP001 | LIVE001 | S010 | 2026-01-20 10:05:00 |
+| LIVEP002 | LIVE001 | S009 | 2026-01-20 10:05:00 |
+| LIVEP003 | LIVE001 | S005 | 2026-01-20 10:20:00 |
+
+35. UserStatusAction table
+
+Description:
+Keeps user status actions done by admin.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| actionId | nvarchar(10) | PK | Action ID. |
+| userId | nvarchar(10) | FK -> User.userId | Related user ID. |
+| actionType | nvarchar(20) | - | Type. |
+| reason | nvarchar(500) | - | Table field. |
+| actionDate | datetime | - | Action date and time. |
+| performedBy | nvarchar(10) | FK -> User.userId | Table field. |
+
+Primary Key:
+- actionId
+
+Foreign Key:
+- userId -> User.userId
+- performedBy -> User.userId
+
+Sample Data:
+Only selected sample records are shown.
+
+| actionId | userId | actionType | reason | actionDate | performedBy |
+|---|---|---|---|---|---|
+| US001 | U018 | Blocked | Suspicious login attempts exceeded limit. | 2026-06-14 00:00:00 | U001 |
+| US002 | U018 | Unblocked | Account lock duration completed and account restored. | 2026-06-14 00:00:00 | U001 |
+| US003 | U004 | Deleted | User requested account deletion. | 2026-05-30 00:00:00 | U001 |
+
+36. AILearningAnalysis table
+
+Description:
+Keeps learning analysis for students.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| analysisId | nvarchar(10) | PK | Analysis ID. |
+| studentId | nvarchar(10) | FK -> Student.studentId | Student ID. |
+| analysisJson | nvarchar(max) | - | Table field. |
+| overallSummary | nvarchar(500) | - | Table field. |
+| strongTopics | nvarchar(500) | - | Table field. |
+| weakTopics | nvarchar(500) | - | Table field. |
+| avgQuizScore | decimal(5,2) | - | Score value. |
+| totalQuizAttempts | int | - | Date and time value. |
+| isLatest | bit | - | Latest analysis value. |
+
+Primary Key:
+- analysisId
+
+Foreign Key:
+- studentId -> Student.studentId
+
+Sample Data:
+Only selected sample records are shown.
+
+| analysisId | studentId | analysisJson | overallSummary | strongTopics | weakTopics | avgQuizScore | totalQuizAttempts | isLatest |
+|---|---|---|---|---|---|---|---|---|
+| A001 | S002 | NULL | Student is progressing steadily in Beginner level. | Basic science concepts | Scientific method | 65 | 2 | 1 |
+| A002 | S004 | NULL | Student performs excellently and is ready for level completion. | Scientific method, Matter, Energy | NULL | 90 | 3 | 1 |
+| A003 | S005 | NULL | Student completed Beginner level and is adapting to Intermediate topics. | Beginner concepts | Forces and electricity | 65 | 2 | 1 |
+
+37. StudyPlan table
+
+Description:
+Keeps study plans for students.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| studyPlanId | nvarchar(10) | PK | Study plan ID. |
+| studentParentId | nvarchar(10) | FK -> StudentParent.studentParentId | Student-parent link ID. |
+| createdByUserId | nvarchar(10) | FK -> User.userId | User who created the record. |
+| planTitle | nvarchar(100) | - | Title. |
+| startDate | datetime | - | Plan start date. |
+| endDate | datetime | - | Plan end date. |
+| status | nvarchar(20) | - | Record status. |
+| createdAt | datetime | - | Created date and time. |
+
+Primary Key:
+- studyPlanId
+
+Foreign Key:
+- studentParentId -> StudentParent.studentParentId
+- createdByUserId -> User.userId
+
+Sample Data:
+Only selected sample records are shown.
+
+| studyPlanId | studentParentId | createdByUserId | planTitle | startDate | endDate | status | createdAt |
+|---|---|---|---|---|---|---|---|
+| STP001 | SP002 | U006 | Siti Human Revision Plan | 2026-06-10 00:00:00 | 2026-06-16 00:00:00 | Ongoing | 2026-06-10 19:00:00 |
+| STP002 | SP003 | U002 | This Week | 2026-06-01 00:00:00 | 2026-06-08 00:00:00 | Ongoing | 2026-06-01 15:21:00 |
+| STP003 | SP006 | U005 | Hana Weak Topic Support Plan | 2026-06-02 00:00:00 | 2026-06-09 00:00:00 | Completed | 2026-06-02 20:15:00 |
+
+38. SPTask table
+
+Description:
+Keeps tasks inside study plans.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| spTaskId | nvarchar(10) | PK | Study plan task ID. |
+| studyPlanId | nvarchar(10) | FK -> StudyPlan.studyPlanId | Study plan ID. |
+| taskTitle | nvarchar(100) | - | Title. |
+| suggestedAction | nvarchar(500) | - | Table field. |
+| orderNo | int | - | Order number. |
+| isCompleted | bit | - | Completion value. |
+| completedAt | datetime | - | Date and time value. |
+
+Primary Key:
+- spTaskId
+
+Foreign Key:
+- studyPlanId -> StudyPlan.studyPlanId
+
+Sample Data:
+Only selected sample records are shown.
+
+| spTaskId | studyPlanId | taskTitle | suggestedAction | orderNo | isCompleted | completedAt |
+|---|---|---|---|---|---|---|
+| SPT001 | STP001 | Review Human Sense Lesson | Read notes about the five human senses. | 1 | 1 | 2026-06-10 20:00:00 |
+| SPT002 | STP001 | Classify taste examples | Extra revision | 2 | 0 | NULL |
+| SPT003 | STP001 | Attempt Human Sense Quiz | Complete quiz after revision | 3 | 0 | NULL |
+
+39. SPReward table
+
+Description:
+Keeps rewards inside study plans.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| rewardId | nvarchar(10) | PK | Reward ID. |
+| studyPlanId | nvarchar(10) | FK -> StudyPlan.studyPlanId | Study plan ID. |
+| rewardName | nvarchar(100) | - | Table field. |
+| requiredProgress | int | - | Table field. |
+| isUnlocked | bit | - | Reward unlocked value. |
+| unlockedAt | datetime | - | Date and time value. |
+
+Primary Key:
+- rewardId
+
+Foreign Key:
+- studyPlanId -> StudyPlan.studyPlanId
+
+Sample Data:
+Only selected sample records are shown.
+
+| rewardId | studyPlanId | rewardName | requiredProgress | isUnlocked | unlockedAt |
+|---|---|---|---|---|---|
+| SPR001 | STP001 | Extra Screentime (2 hours) | 25 | 1 | 2026-06-12 18:22:13 |
+| SPR002 | STP001 | Watch "Spiderman" at the movies | 50 | 1 | 2026-06-15 22:10:10 |
+| SPR003 | STP002 | McDonalds | 25 | 1 | 2026-06-03 16:10:10 |
+
+40. userChat table
+
+Description:
+Keeps private chat rooms between users.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| chatId | nvarchar(10) | PK | Private chat ID. |
+| userId | nvarchar(10) | FK -> User.userId | Related user ID. |
+| user2Id | nvarchar(10) | FK -> User.userId | Second user in chat. |
+| createdAt | datetime | - | Created date and time. |
+
+Primary Key:
+- chatId
+
+Foreign Key:
+- userId -> User.userId
+- user2Id -> User.userId
+
+Sample Data:
+Only selected sample records are shown.
+
+| chatId | userId | user2Id | createdAt |
+|---|---|---|---|
+| C001 | U002 | U008 | 2026-05-06 10:00:00 |
+| C002 | U003 | U008 | 2026-06-03 14:00:00 |
+| C003 | U003 | U009 | 2026-06-15 20:00:00 |
+
+Notes:
+- The first chat user column is userId in the real SQL.
+
+41. privateMessage table
+
+Description:
+Keeps private messages inside private chats.
+
+Columns:
+| Column Name | Data Type | Key | Description |
+|---|---|---|---|
+| privateMsgId | nvarchar(10) | PK | Private message ID. |
+| chatId | nvarchar(10) | FK -> userChat.chatId | Private chat ID. |
+| senderUserId | nvarchar(10) | FK -> User.userId | User who sent the record. |
+| msgText | nvarchar(max) | - | Table field. |
+| attachmentFile | nvarchar(200) | - | Message attachment file. |
+| sentAt | datetime | - | Message sent date and time. |
+| isRead | bit | - | Read value. |
+| readAt | datetime | - | Message read date and time. |
+
+Primary Key:
+- privateMsgId
+
+Foreign Key:
+- chatId -> userChat.chatId
+- senderUserId -> User.userId
+
+Sample Data:
+Only selected sample records are shown.
+
+| privateMsgId | chatId | senderUserId | msgText | attachmentFile | sentAt | isRead | readAt |
+|---|---|---|---|---|---|---|---|
+| PM001 | C001 | U002 | Can you checkout my answers I wrote on paper? | Images/PrivateMessage/answer.pdf | 2026-07-03 10:00:00 | 1 | 2026-07-04 14:00:00 |
+| PM002 | C001 | U008 | Sure! Question 2 and 3 is wrong. | NULL | 2026-07-03 10:10:55 | 0 | NULL |
+| PM003 | C002 | U003 | Miss, I think the answer for question 4 is wrong. | NULL | 2026-07-07 09:00:00 | 1 | 2026-07-07 09:04:00 |
+
+Notes:
+- attachmentFile is NULL when the message has no attachment.
+
+2.0 Static / Constant Tables
+
+The following tables are inserted in InsertConstants_real.sql:
+
+- Level
+- Personality
+- Badge
+- Unit
+- Subtopic
+- Lesson
+- XPAction
+- ConfigurationSetting
+- VirtualLab
+
+3.0 Main Relationship Summary
+
+| No. | Child Table | Foreign Key | Parent Table | Parent Key |
 |---|---|---|---|---|
-| `personalityId` | `NVARCHAR(10)` | No | PK | Selected/assigned learning personality. |
-| `personalityNameEN` | `NVARCHAR(50)` | No | - | English personality name. |
-| `personalityNameBM` | `NVARCHAR(50)` | Yes | - | Malay personality name. |
-| `descriptionEN` | `NVARCHAR(MAX)` | Yes | - | English description. |
-| `descriptionBM` | `NVARCHAR(MAX)` | Yes | - | Malay description. |
-| `avatar` | `NVARCHAR(255)` | Yes | - | Personality avatar image path. |
-| `colour` | `NVARCHAR(20)` | Yes | - | Hex colour used for personality theme. |
-| `learningStyleEN` | `NVARCHAR(100)` | Yes | - | English learning style label. |
-| `learningStyleBM` | `NVARCHAR(100)` | Yes | - | Malay learning style label. |
-
-### Important Notes
-
-- `avatar` must use the path prefix `Images/Personality/`.
-
-## 8. `Badge`
-
-Seeded lookup table for achievement badges and badge icons.
-
-Seed/sample script currently inserts **10 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `badgeId` | `NVARCHAR(10)` | No | PK | Unique badge ID. |
-| `badgeNameEN` | `NVARCHAR(100)` | No | - | English badge name. |
-| `badgeNameBM` | `NVARCHAR(100)` | Yes | - | Malay badge name. |
-| `badgeType` | `NVARCHAR(30)` | No | - | Badge category/type. |
-| `xpReward` | `INT` | Yes | - | XP rewarded for earning badge. |
-| `badgeIcon` | `NVARCHAR(255)` | Yes | - | Badge icon image path. |
-| `requirementDescriptionEN` | `NVARCHAR(MAX)` | Yes | - | English requirement description. |
-| `requirementDescriptionBM` | `NVARCHAR(MAX)` | Yes | - | Malay requirement description. |
-| `badgeDescriptionEN` | `NVARCHAR(MAX)` | Yes | - | English badge description. |
-| `badgeDescriptionBM` | `NVARCHAR(MAX)` | Yes | - | Malay badge description. |
-
-### Important Notes
-
-- `badgeIcon` must use the path prefix `Images/Badge/`.
-
-## 9. `StudentBadge`
-
-Stores badges earned by students.
-
-Seed/sample script currently inserts **22 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `studentBadgeId` | `NVARCHAR(10)` | No | PK | Unique earned-badge record ID. |
-| `studentId` | `NVARCHAR(10)` | Yes | FK -> `Student.studentId` | Unique student ID, e.g. S001. |
-| `badgeId` | `NVARCHAR(10)` | Yes | FK -> `Badge.badgeId` | Unique badge ID. |
-| `earnedAt` | `DATETIME2(0)` | Yes | - | Date/time badge was earned. |
-
-### Foreign Keys
-
-- `studentId` references `Student.studentId` (`FK_StudentBadge_studentId_Student`).
-- `badgeId` references `Badge.badgeId` (`FK_StudentBadge_badgeId_Badge`).
-
-## 10. `Unit`
-
-Stores learning units under each level.
-
-Seed/sample script currently inserts **15 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `unitId` | `NVARCHAR(10)` | No | PK | Unique unit ID. |
-| `levelId` | `NVARCHAR(10)` | No | FK -> `Level.levelId` | Unique learning level ID. |
-| `unitNameEN` | `NVARCHAR(100)` | No | - | English unit name. |
-| `unitNameBM` | `NVARCHAR(100)` | Yes | - | Malay unit name. |
-| `unitDescriptionEN` | `NVARCHAR(MAX)` | Yes | - | English unit description. |
-| `unitDescriptionBM` | `NVARCHAR(MAX)` | Yes | - | Malay unit description. |
-| `orderNo` | `INT` | No | - | Display/order number. |
-
-### Foreign Keys
-
-- `levelId` references `Level.levelId` (`FK_Unit_levelId_Level`).
-
-## 11. `Subtopic`
-
-Stores subtopics under each unit.
-
-Seed/sample script currently inserts **44 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `subtopicId` | `NVARCHAR(10)` | No | PK | Unique subtopic ID. |
-| `unitId` | `NVARCHAR(10)` | No | FK -> `Unit.unitId` | Unique unit ID. |
-| `subtopicTitleEN` | `NVARCHAR(150)` | Yes | - | English subtopic title. |
-| `subtopicTitleBM` | `NVARCHAR(150)` | Yes | - | Malay subtopic title. |
-| `subtopicDescriptionEN` | `NVARCHAR(MAX)` | Yes | - | English subtopic description. |
-| `subtopicDescriptionBM` | `NVARCHAR(MAX)` | Yes | - | Malay subtopic description. |
-| `orderNo` | `INT` | Yes | - | Display/order number. |
-
-### Foreign Keys
-
-- `unitId` references `Unit.unitId` (`FK_Subtopic_unitId_Unit`).
-
-## 12. `Enrollment`
-
-Stores student enrollment records by level.
-
-Seed/sample script currently inserts **14 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `enrollmentId` | `NVARCHAR(10)` | No | PK | Unique enrollment record ID. |
-| `studentId` | `NVARCHAR(10)` | Yes | FK -> `Student.studentId` | Unique student ID, e.g. S001. |
-| `levelId` | `NVARCHAR(10)` | Yes | FK -> `Level.levelId` | Unique learning level ID. |
-| `enrolledDate` | `DATE` | Yes | - | Date student enrolled in level. |
-| `status` | `NVARCHAR(20)` | Yes | - | Account status: Active, Blocked, or Deleted. |
-
-### Foreign Keys
-
-- `studentId` references `Student.studentId` (`FK_Enrollment_studentId_Student`).
-- `levelId` references `Level.levelId` (`FK_Enrollment_levelId_Level`).
-
-## 13. `Lesson`
-
-Stores core lesson content and lesson attachment file path.
-
-Seed/sample script currently inserts **81 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `lessonId` | `NVARCHAR(10)` | No | PK | Unique lesson ID. |
-| `subtopicId` | `NVARCHAR(10)` | No | FK -> `Subtopic.subtopicId` | Unique subtopic ID. |
-| `lessonTitleEN` | `NVARCHAR(150)` | Yes | - | English lesson title. |
-| `lessonTitleBM` | `NVARCHAR(150)` | Yes | - | Malay lesson title. |
-| `lessonContentEN` | `NVARCHAR(MAX)` | Yes | - | English lesson content. |
-| `lessonContentBM` | `NVARCHAR(MAX)` | Yes | - | Malay lesson content. |
-| `attachmentUrl` | `NVARCHAR(255)` | Yes | - | Lesson attachment file path. |
-| `orderNo` | `INT` | Yes | - | Display/order number. |
-
-### Foreign Keys
-
-- `subtopicId` references `Subtopic.subtopicId` (`FK_Lesson_subtopicId_Subtopic`).
-
-### Important Notes
-
-- `attachmentUrl` must use the path prefix `Images/Lesson/` when an attachment exists.
-
-## 14. `Quiz`
-
-Stores quiz metadata for Unit, Level, and Practice quizzes.
-
-Seed/sample script currently inserts **53 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `quizId` | `NVARCHAR(10)` | No | PK | Unique quiz ID. |
-| `levelId` | `NVARCHAR(10)` | Yes | FK -> `Level.levelId` | Unique learning level ID. |
-| `unitId` | `NVARCHAR(10)` | Yes | FK -> `Unit.unitId` | Unique unit ID. |
-| `subtopicId` | `NVARCHAR(10)` | Yes | FK -> `Subtopic.subtopicId` | Unique subtopic ID. |
-| `quizTitleEN` | `NVARCHAR(150)` | Yes | - | English quiz title. |
-| `quizTitleBM` | `NVARCHAR(150)` | Yes | - | Malay quiz title. |
-| `quizType` | `NVARCHAR(30)` | Yes | - | Quiz type: Unit, Level, or Practice. |
-| `status` | `NVARCHAR(30)` | Yes | - | Account status: Active, Blocked, or Deleted. |
-| `createdByUserId` | `NVARCHAR(10)` | Yes | FK -> `User.userId` | User who created the record. |
-| `createdAt` | `DATETIME2(0)` | Yes | - | Creation date/time. |
-| `language` | `NVARCHAR(10)` | Yes | - | Content language: EN, BM, or BOTH. |
-
-### Foreign Keys
-
-- `levelId` references `Level.levelId` (`FK_Quiz_levelId_Level`).
-- `unitId` references `Unit.unitId` (`FK_Quiz_unitId_Unit`).
-- `subtopicId` references `Subtopic.subtopicId` (`FK_Quiz_subtopicId_Subtopic`).
-- `createdByUserId` references `User.userId` (`FK_Quiz_createdByUserId_User`).
-
-### Important Notes
-
-- `quizType` supports `Unit`, `Level`, and `Practice`.
-- Level quizzes may have `unitId` and `subtopicId` as `NULL`; the schema allows this.
-- `language` must be `EN`, `BM`, or `BOTH` because of the check constraint.
-
-## 15. `Material`
-
-Stores teacher-uploaded learning support materials and review status.
-
-Seed/sample script currently inserts **12 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `materialId` | `NVARCHAR(10)` | No | PK | Unique material ID. |
-| `subtopicId` | `NVARCHAR(10)` | Yes | FK -> `Subtopic.subtopicId` | Unique subtopic ID. |
-| `createdByUserId` | `NVARCHAR(10)` | Yes | FK -> `User.userId` | User who created the record. |
-| `materialTitle` | `NVARCHAR(150)` | Yes | - | Material title. |
-| `materialType` | `NVARCHAR(30)` | Yes | - | Material type, e.g. PDF, Image, Video, PPTX. |
-| `fileUrl` | `NVARCHAR(255)` | Yes | - | Material file path. |
-| `materialContent` | `NVARCHAR(MAX)` | Yes | - | Description or text content. |
-| `createdDate` | `DATE` | Yes | - | Created/uploaded date. |
-| `status` | `NVARCHAR(30)` | Yes | - | Account status: Active, Blocked, or Deleted. |
-| `reviewedDate` | `DATE` | Yes | - | Reviewed date/time. |
-| `language` | `NVARCHAR(10)` | Yes | - | Content language: EN, BM, or BOTH. |
-
-### Foreign Keys
-
-- `subtopicId` references `Subtopic.subtopicId` (`FK_Material_subtopicId_Subtopic`).
-- `createdByUserId` references `User.userId` (`FK_Material_createdByUserId_User`).
-
-### Important Notes
-
-- `fileUrl` must use the path prefix `Images/Material/` when a file exists.
-- `language` must be `EN`, `BM`, or `BOTH` because of the check constraint.
-- Teacher-uploaded material should normally be reviewed before students see it.
-
-## 16. `Forum`
-
-Stores public/private forum discussion posts.
-
-Seed/sample script currently inserts **17 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `forumId` | `NVARCHAR(10)` | No | PK | Unique forum post ID. |
-| `createdBy` | `NVARCHAR(10)` | Yes | FK -> `User.userId` | User who created the forum post. |
-| `title` | `NVARCHAR(200)` | Yes | - | Forum title. |
-| `message` | `NVARCHAR(MAX)` | Yes | - | Forum/message body. |
-| `discussionType` | `NVARCHAR(20)` | Yes | - | Public or Private. |
-| `createdAt` | `DATETIME2(0)` | Yes | - | Creation date/time. |
-
-### Foreign Keys
-
-- `createdBy` references `User.userId` (`FK_Forum_createdBy_User`).
-
-## 17. `ForumChat`
-
-Stores replies/messages inside forum discussions.
-
-Seed/sample script currently inserts **5 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `forumChatId` | `NVARCHAR(10)` | No | PK | Unique forum reply/chat ID. |
-| `forumId` | `NVARCHAR(10)` | Yes | FK -> `Forum.forumId` | Unique forum post ID. |
-| `senderUserId` | `NVARCHAR(10)` | Yes | FK -> `User.userId` | User who sent message/like/answer. |
-| `message` | `NVARCHAR(MAX)` | Yes | - | Forum/message body. |
-| `createdAt` | `DATETIME2(0)` | Yes | - | Creation date/time. |
-
-### Foreign Keys
-
-- `forumId` references `Forum.forumId` (`FK_ForumChat_forumId_Forum`).
-- `senderUserId` references `User.userId` (`FK_ForumChat_senderUserId_User`).
-
-## 18. `Tag`
-
-Stores forum tag names.
-
-Seed/sample script currently inserts **51 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `tagId` | `NVARCHAR(10)` | No | PK | Unique tag ID. |
-| `tagName` | `NVARCHAR(100)` | Yes | - | Tag display name. |
-| `createdAt` | `DATETIME2(0)` | Yes | - | Creation date/time. |
-
-## 19. `ForumTag`
-
-Junction table linking forum posts to tags.
-
-Seed/sample script currently inserts **14 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `forumTagId` | `NVARCHAR(10)` | No | PK | Unique forum-tag ID. |
-| `forumId` | `NVARCHAR(10)` | Yes | FK -> `Forum.forumId` | Unique forum post ID. |
-| `tagId` | `NVARCHAR(10)` | Yes | FK -> `Tag.tagId` | Unique tag ID. |
-
-### Foreign Keys
-
-- `forumId` references `Forum.forumId` (`FK_ForumTag_forumId_Forum`).
-- `tagId` references `Tag.tagId` (`FK_ForumTag_tagId_Tag`).
-
-## 20. `ForumLike`
-
-Stores likes on forum posts.
-
-Seed/sample script currently inserts **10 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `likeId` | `NVARCHAR(10)` | No | PK | Unique forum-like ID. |
-| `forumId` | `NVARCHAR(10)` | Yes | FK -> `Forum.forumId` | Unique forum post ID. |
-| `senderUserId` | `NVARCHAR(10)` | Yes | FK -> `User.userId` | User who sent message/like/answer. |
-| `createdAt` | `DATETIME2(0)` | Yes | - | Creation date/time. |
-
-### Foreign Keys
-
-- `forumId` references `Forum.forumId` (`FK_ForumLike_forumId_Forum`).
-- `senderUserId` references `User.userId` (`FK_ForumLike_senderUserId_User`).
-
-## 21. `Question`
-
-Stores quiz questions, options, correct answers, explanations, image path, difficulty, and review status.
-
-Seed/sample script currently inserts **99 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `questionId` | `NVARCHAR(10)` | No | PK | Unique question ID. |
-| `quizId` | `NVARCHAR(10)` | Yes | FK -> `Quiz.quizId` | Unique quiz ID. |
-| `subtopicId` | `NVARCHAR(10)` | Yes | FK -> `Subtopic.subtopicId` | Unique subtopic ID. |
-| `createdByUserId` | `NVARCHAR(10)` | Yes | FK -> `User.userId` | User who created the record. |
-| `questionTextEN` | `NVARCHAR(MAX)` | Yes | - | English question text. |
-| `questionTextBM` | `NVARCHAR(MAX)` | Yes | - | Malay question text. |
-| `questionType` | `NVARCHAR(30)` | Yes | - | Question type such as MCQ, True/False, Drag & Drop, or Multiselect. |
-| `questionImageUrl` | `NVARCHAR(255)` | Yes | - | Optional question image path or no-image marker. |
-| `optionA_EN` | `NVARCHAR(MAX)` | Yes | - | Option A in English. |
-| `optionA_BM` | `NVARCHAR(MAX)` | Yes | - | Option A in Malay. |
-| `optionB_EN` | `NVARCHAR(MAX)` | Yes | - | Option B in English. |
-| `optionB_BM` | `NVARCHAR(MAX)` | Yes | - | Option B in Malay. |
-| `optionC_EN` | `NVARCHAR(MAX)` | Yes | - | Option C in English. |
-| `optionC_BM` | `NVARCHAR(MAX)` | Yes | - | Option C in Malay. |
-| `optionD_EN` | `NVARCHAR(MAX)` | Yes | - | Option D in English. |
-| `optionD_BM` | `NVARCHAR(MAX)` | Yes | - | Option D in Malay. |
-| `correctAnswer` | `NVARCHAR(255)` | Yes | - | Correct answer value; may be A/B/C/D, comma-separated selections, or drag/drop text. |
-| `correctExplanationEN` | `NVARCHAR(MAX)` | Yes | - | English explanation for correct answer. |
-| `correctExplanationBM` | `NVARCHAR(MAX)` | Yes | - | Malay explanation for correct answer. |
-| `wrongExplanationEN` | `NVARCHAR(MAX)` | Yes | - | English explanation for wrong answer. |
-| `wrongExplanationBM` | `NVARCHAR(MAX)` | Yes | - | Malay explanation for wrong answer. |
-| `difficulty` | `NVARCHAR(20)` | Yes | - | Question difficulty: Easy, Medium, or Hard. |
-| `status` | `NVARCHAR(30)` | Yes | - | Account status: Active, Blocked, or Deleted. |
-| `createdAt` | `DATETIME2(0)` | Yes | - | Creation date/time. |
-| `reviewedDate` | `DATETIME2(0)` | Yes | - | Reviewed date/time. |
-
-### Foreign Keys
-
-- `quizId` references `Quiz.quizId` (`FK_Question_quizId_Quiz`).
-- `subtopicId` references `Subtopic.subtopicId` (`FK_Question_subtopicId_Subtopic`).
-- `createdByUserId` references `User.userId` (`FK_Question_createdByUserId_User`).
-
-### Important Notes
-
-- `questionImageUrl` must use the path prefix `Images/Question/` for real image files.
-- Some sample rows use `optional` to mean no image. In application code, treat `NULL`, empty string, or `optional` as no image.
-- For multiselect answers, comma-separated values such as `A,B,D` are used.
-- For drag/drop answers, text values may be used in `correctAnswer`.
-
-## 22. `QuizResult`
-
-Stores quiz attempt result summaries.
-
-Seed/sample script currently inserts **22 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `resultId` | `NVARCHAR(10)` | No | PK | Unique quiz result/attempt ID. |
-| `studentId` | `NVARCHAR(10)` | Yes | FK -> `Student.studentId` | Unique student ID, e.g. S001. |
-| `quizId` | `NVARCHAR(10)` | Yes | FK -> `Quiz.quizId` | Unique quiz ID. |
-| `score` | `DECIMAL(6,2)` | Yes | - | Score achieved. |
-| `totalMarks` | `DECIMAL(6,2)` | Yes | - | Total possible marks. |
-| `percentage` | `DECIMAL(5,2)` | Yes | - | Percentage score. |
-| `resultStatus` | `NVARCHAR(20)` | Yes | - | Result status, e.g. Passed or Failed. |
-| `attemptNo` | `INT` | Yes | - | Attempt number. |
-| `attemptedDate` | `DATETIME2(0)` | Yes | - | Attempt date/time. |
-
-### Foreign Keys
-
-- `studentId` references `Student.studentId` (`FK_QuizResult_studentId_Student`).
-- `quizId` references `Quiz.quizId` (`FK_QuizResult_quizId_Quiz`).
-
-## 23. `QuizAnswer`
-
-Stores selected answers and marks for each quiz attempt.
-
-Seed/sample script currently inserts **87 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `answerId` | `NVARCHAR(10)` | No | PK | Unique quiz answer ID. |
-| `resultId` | `NVARCHAR(10)` | Yes | FK -> `QuizResult.resultId` | Unique quiz result/attempt ID. |
-| `questionId` | `NVARCHAR(10)` | Yes | FK -> `Question.questionId` | Unique question ID. |
-| `selectedAnswer` | `NVARCHAR(255)` | Yes | - | Answer selected by student. |
-| `isCorrect` | `BIT` | Yes | - | BIT value: 1 = true, 0 = false. |
-| `marksAwarded` | `DECIMAL(6,2)` | Yes | - | Marks awarded for this answer. |
-
-### Foreign Keys
-
-- `resultId` references `QuizResult.resultId` (`FK_QuizAnswer_resultId_QuizResult`).
-- `questionId` references `Question.questionId` (`FK_QuizAnswer_questionId_Question`).
-
-## 24. `XPAction`
-
-Seeded lookup table for XP action types and default XP values.
-
-Seed/sample script currently inserts **9 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `xpActionId` | `NVARCHAR(10)` | No | PK | Unique XP action ID. |
-| `actionNameEN` | `NVARCHAR(100)` | No | - | English XP action name. |
-| `actionNameBM` | `NVARCHAR(100)` | Yes | - | Malay XP action name. |
-| `xpValue` | `INT` | No | - | Default XP value. |
-
-## 25. `XPTransaction`
-
-Stores XP earned by students.
-
-Seed/sample script currently inserts **19 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `xpTransactionId` | `NVARCHAR(10)` | No | PK | Unique XP transaction ID. |
-| `studentId` | `NVARCHAR(10)` | Yes | FK -> `Student.studentId` | Unique student ID, e.g. S001. |
-| `xpActionId` | `NVARCHAR(10)` | Yes | FK -> `XPAction.xpActionId` | Unique XP action ID. |
-| `xpAmount` | `INT` | Yes | - | XP amount awarded. |
-| `dateEarned` | `DATE` | Yes | - | Date XP was earned. |
-
-### Foreign Keys
-
-- `studentId` references `Student.studentId` (`FK_XPTransaction_studentId_Student`).
-- `xpActionId` references `XPAction.xpActionId` (`FK_XPTransaction_xpActionId_XPAction`).
-
-## 26. `LessonProgress`
-
-Tracks lesson completion by student.
-
-Seed/sample script currently inserts **26 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `progressId` | `NVARCHAR(10)` | No | PK | Unique lesson progress ID. |
-| `studentId` | `NVARCHAR(10)` | Yes | FK -> `Student.studentId` | Unique student ID, e.g. S001. |
-| `lessonId` | `NVARCHAR(10)` | Yes | FK -> `Lesson.lessonId` | Unique lesson ID. |
-| `isCompleted` | `BIT` | Yes | - | BIT value: 1 = completed, 0 = not completed. |
-| `completedDate` | `DATE` | Yes | - | Completion date. |
-
-### Foreign Keys
-
-- `studentId` references `Student.studentId` (`FK_LessonProgress_studentId_Student`).
-- `lessonId` references `Lesson.lessonId` (`FK_LessonProgress_lessonId_Lesson`).
-
-## 27. `Certificate`
-
-Stores issued student certificates and certificate file paths.
-
-Seed/sample script currently inserts **4 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `certificateId` | `NVARCHAR(10)` | No | PK | Unique certificate ID. |
-| `studentId` | `NVARCHAR(10)` | Yes | FK -> `Student.studentId` | Unique student ID, e.g. S001. |
-| `levelId` | `NVARCHAR(10)` | Yes | FK -> `Level.levelId` | Unique learning level ID. |
-| `certificateTitleEN` | `NVARCHAR(150)` | Yes | - | English certificate title. |
-| `certificateTitleBM` | `NVARCHAR(150)` | Yes | - | Malay certificate title. |
-| `certificateDescriptionEN` | `NVARCHAR(MAX)` | Yes | - | English certificate description. |
-| `certificateDescriptionBM` | `NVARCHAR(MAX)` | Yes | - | Malay certificate description. |
-| `issuedDate` | `DATE` | Yes | - | Certificate issued date. |
-| `certificateUrl` | `NVARCHAR(255)` | Yes | - | Certificate file path. |
-| `certificateCode` | `NVARCHAR(50)` | Yes | UNIQUE | Unique certificate verification code. |
-| `status` | `NVARCHAR(20)` | Yes | - | Account status: Active, Blocked, or Deleted. |
-
-### Foreign Keys
-
-- `studentId` references `Student.studentId` (`FK_Certificate_studentId_Student`).
-- `levelId` references `Level.levelId` (`FK_Certificate_levelId_Level`).
-
-### Important Notes
-
-- `certificateUrl` must use the path prefix `Images/Certificate/`.
-
-## 28. `Log`
-
-Stores system/user activity logs.
-
-Seed/sample script currently inserts **20 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `logId` | `NVARCHAR(10)` | No | PK | Unique log ID. |
-| `userId` | `NVARCHAR(10)` | Yes | FK -> `User.userId` | Unique user account ID, e.g. U001. |
-| `action` | `NVARCHAR(100)` | Yes | - | Action name. |
-| `description` | `NVARCHAR(MAX)` | Yes | - |  |
-| `logDateTime` | `DATETIME2(0)` | Yes | - | Action/log date and time. |
-| `status` | `NVARCHAR(20)` | Yes | - | Account status: Active, Blocked, or Deleted. |
-
-### Foreign Keys
-
-- `userId` references `User.userId` (`FK_Log_userId_User`).
-
-## 29. `Notification`
-
-Stores bilingual notifications sent to users.
-
-Seed/sample script currently inserts **15 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `notificationId` | `NVARCHAR(10)` | No | PK | Unique notification ID. |
-| `toUserId` | `NVARCHAR(10)` | Yes | FK -> `User.userId` | Recipient user ID. |
-| `titleEN` | `NVARCHAR(150)` | Yes | - | English title. |
-| `titleBM` | `NVARCHAR(150)` | Yes | - | Malay title. |
-| `messageEN` | `NVARCHAR(MAX)` | Yes | - | English message. |
-| `messageBM` | `NVARCHAR(MAX)` | Yes | - | Malay message. |
-| `isRead` | `BIT` | Yes | - | BIT value: 1 = read, 0 = unread. |
-| `createdAt` | `DATETIME2(0)` | Yes | - | Creation date/time. |
-
-### Foreign Keys
-
-- `toUserId` references `User.userId` (`FK_Notification_toUserId_User`).
-
-## 30. `VirtualLab`
-
-Seeded interactive virtual lab activities.
-
-Seed/sample script currently inserts **8 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `labId` | `NVARCHAR(10)` | No | PK | Unique virtual lab ID. |
-| `unitId` | `NVARCHAR(10)` | Yes | FK -> `Unit.unitId` | Unique unit ID. |
-| `labTitleEN` | `NVARCHAR(150)` | Yes | - | English lab title. |
-| `labTitleBM` | `NVARCHAR(150)` | Yes | - | Malay lab title. |
-| `labDescriptionEN` | `NVARCHAR(MAX)` | Yes | - | English lab description. |
-| `labDescriptionBM` | `NVARCHAR(MAX)` | Yes | - | Malay lab description. |
-| `instructionEN` | `NVARCHAR(MAX)` | Yes | - | English lab instructions. |
-| `instructionBM` | `NVARCHAR(MAX)` | Yes | - | Malay lab instructions. |
-| `labType` | `NVARCHAR(50)` | Yes | - | Lab interaction type. |
-| `difficulty` | `NVARCHAR(20)` | Yes | - | Question difficulty: Easy, Medium, or Hard. |
-| `createdAt` | `DATE` | Yes | - | Creation date/time. |
-
-### Foreign Keys
-
-- `unitId` references `Unit.unitId` (`FK_VirtualLab_unitId_Unit`).
-
-## 31. `LabProgress`
-
-Tracks virtual lab completion by student.
-
-Seed/sample script currently inserts **12 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `labProgressId` | `NVARCHAR(10)` | No | PK | Unique lab progress ID. |
-| `studentId` | `NVARCHAR(10)` | Yes | FK -> `Student.studentId` | Unique student ID, e.g. S001. |
-| `labId` | `NVARCHAR(10)` | Yes | FK -> `VirtualLab.labId` | Unique virtual lab ID. |
-| `isCompleted` | `BIT` | Yes | - | BIT value: 1 = completed, 0 = not completed. |
-| `completedDate` | `DATE` | Yes | - | Completion date. |
-
-### Foreign Keys
-
-- `studentId` references `Student.studentId` (`FK_LabProgress_studentId_Student`).
-- `labId` references `VirtualLab.labId` (`FK_LabProgress_labId_VirtualLab`).
-
-## 32. `LiveConsultationSession`
-
-Stores teacher-hosted live consultation sessions.
-
-Seed/sample script currently inserts **6 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `sessionId` | `NVARCHAR(10)` | No | PK | Unique live session ID. |
-| `teacherId` | `NVARCHAR(10)` | Yes | FK -> `Teacher.teacherId` | Unique teacher ID, e.g. T001. |
-| `unitId` | `NVARCHAR(10)` | Yes | FK -> `Unit.unitId` | Unique unit ID. |
-| `subtopicId` | `NVARCHAR(10)` | Yes | FK -> `Subtopic.subtopicId` | Unique subtopic ID. |
-| `sessionTitle` | `NVARCHAR(200)` | Yes | - | Live session title. |
-| `sessionDescription` | `NVARCHAR(MAX)` | Yes | - | Live session description. |
-| `meetingLink` | `NVARCHAR(255)` | Yes | - | Online meeting link. |
-| `startDateTime` | `DATETIME2(0)` | Yes | - | Session start date/time. |
-| `endDateTime` | `DATETIME2(0)` | Yes | - | Session end date/time. |
-| `status` | `NVARCHAR(30)` | Yes | - | Account status: Active, Blocked, or Deleted. |
-
-### Foreign Keys
-
-- `teacherId` references `Teacher.teacherId` (`FK_LiveConsultationSession_teacherId_Teacher`).
-- `unitId` references `Unit.unitId` (`FK_LiveConsultationSession_unitId_Unit`).
-- `subtopicId` references `Subtopic.subtopicId` (`FK_LiveConsultationSession_subtopicId_Subtopic`).
-
-## 33. `LiveSessionParticipant`
-
-Stores attendance/participation records for live sessions.
-
-Seed/sample script currently inserts **12 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `participantId` | `NVARCHAR(10)` | No | PK | Unique live session participant ID. |
-| `sessionId` | `NVARCHAR(10)` | Yes | FK -> `LiveConsultationSession.sessionId` | Unique live session ID. |
-| `studentId` | `NVARCHAR(10)` | Yes | FK -> `Student.studentId` | Unique student ID, e.g. S001. |
-| `joinedAt` | `DATETIME2(0)` | Yes | - | Date/time student joined session. |
-
-### Foreign Keys
-
-- `sessionId` references `LiveConsultationSession.sessionId` (`FK_LiveSessionParticipant_sessionId_LiveConsultationSession`).
-- `studentId` references `Student.studentId` (`FK_LiveSessionParticipant_studentId_Student`).
-
-### Important Notes
-
-- The latest SQL table has no `attendanceStatus` column; do not reference it in website code unless the schema is officially changed.
-
-## 34. `UserStatusAction`
-
-Stores admin/status actions performed on user accounts.
-
-Seed/sample script currently inserts **5 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `actionId` | `NVARCHAR(10)` | No | PK | Unique user status action ID. |
-| `userId` | `NVARCHAR(10)` | Yes | FK -> `User.userId` | Unique user account ID, e.g. U001. |
-| `actionType` | `NVARCHAR(30)` | Yes | - | Status action type, e.g. Blocked, Unblocked, Deleted. |
-| `reason` | `NVARCHAR(MAX)` | Yes | - | Reason for action. |
-| `actionDate` | `DATE` | Yes | - | Date action was performed. |
-| `performedBy` | `NVARCHAR(10)` | Yes | FK -> `User.userId` | User/admin who performed the action. |
-
-### Foreign Keys
-
-- `userId` references `User.userId` (`FK_UserStatusAction_userId_User`).
-- `performedBy` references `User.userId` (`FK_UserStatusAction_performedBy_User`).
-
-## 35. `ConfigurationSetting`
-
-Stores configurable application settings.
-
-Seed/sample script currently inserts **14 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `configId` | `NVARCHAR(10)` | No | PK | Unique configuration ID. |
-| `configKey` | `NVARCHAR(100)` | Yes | UNIQUE | Configuration setting name/key. |
-| `configValue` | `NVARCHAR(100)` | Yes | - | Configuration value stored as text. |
-| `lastUpdated` | `DATETIME2(0)` | Yes | - | Date/time setting was last updated. |
-
-## 36. `AILearningAnalysis`
-
-Stores AI-generated learning analysis summaries for students.
-
-Seed/sample script currently inserts **8 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `analysisId` | `NVARCHAR(10)` | No | PK | Unique AI analysis ID. |
-| `studentId` | `NVARCHAR(10)` | Yes | FK -> `Student.studentId` | Unique student ID, e.g. S001. |
-| `analysisJson` | `NVARCHAR(MAX)` | Yes | - | Raw AI response or JSON payload. |
-| `overallSummary` | `NVARCHAR(MAX)` | Yes | - | Human-readable learning summary. |
-| `strongTopics` | `NVARCHAR(MAX)` | Yes | - | Topics where the student is strong. |
-| `weakTopics` | `NVARCHAR(MAX)` | Yes | - | Topics needing improvement. |
-| `avgQuizScore` | `DECIMAL(5,2)` | Yes | - | Average quiz score. |
-| `totalQuizAttempts` | `INT` | Yes | - | Total quiz attempts considered. |
-| `isLatest` | `BIT` | Yes | - | BIT value: 1 = latest analysis for student. |
-
-### Foreign Keys
-
-- `studentId` references `Student.studentId` (`FK_AILearningAnalysis_studentId_Student`).
-
-### Important Notes
-
-- When inserting a new latest analysis for a student, application logic should set previous analyses for that student to `isLatest = 0` and the new row to `isLatest = 1`.
-
-## 37. `StudyPlan`
-
-Stores study plans created by parents/students/users.
-
-Seed/sample script currently inserts **7 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `studyPlanId` | `NVARCHAR(10)` | No | PK | Unique study plan ID. |
-| `studentParentId` | `NVARCHAR(10)` | Yes | FK -> `StudentParent.studentParentId` | Unique student-parent relationship ID. |
-| `createdByUserId` | `NVARCHAR(10)` | Yes | FK -> `User.userId` | User who created the record. |
-| `planTitle` | `NVARCHAR(200)` | Yes | - | Study plan title. |
-| `startDate` | `DATE` | Yes | - | Study plan start date. |
-| `endDate` | `DATE` | Yes | - | Study plan end date. |
-| `status` | `NVARCHAR(30)` | Yes | - | Account status: Active, Blocked, or Deleted. |
-| `createdAt` | `DATETIME2(0)` | Yes | - | Creation date/time. |
-
-### Foreign Keys
-
-- `studentParentId` references `StudentParent.studentParentId` (`FK_StudyPlan_studentParentId_StudentParent`).
-- `createdByUserId` references `User.userId` (`FK_StudyPlan_createdByUserId_User`).
-
-### Important Notes
-
-- `studentParentId` is nullable so a study plan can exist for a student without a linked parent relationship.
-
-## 38. `SPTask`
-
-Stores tasks inside study plans.
-
-Seed/sample script currently inserts **19 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `spTaskId` | `NVARCHAR(10)` | No | PK | Unique study plan task ID. |
-| `studyPlanId` | `NVARCHAR(10)` | Yes | FK -> `StudyPlan.studyPlanId` | Unique study plan ID. |
-| `taskTitle` | `NVARCHAR(200)` | Yes | - | Task title. |
-| `suggestedAction` | `NVARCHAR(MAX)` | Yes | - | Suggested action/instruction for task. |
-| `orderNo` | `INT` | Yes | - | Display/order number. |
-| `isCompleted` | `BIT` | Yes | - | BIT value: 1 = completed, 0 = not completed. |
-| `completedAt` | `DATETIME2(0)` | Yes | - | Task completion date/time. |
-
-### Foreign Keys
-
-- `studyPlanId` references `StudyPlan.studyPlanId` (`FK_SPTask_studyPlanId_StudyPlan`).
-
-## 39. `SPReward`
-
-Stores rewards linked to study plans.
-
-Seed/sample script currently inserts **12 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `rewardId` | `NVARCHAR(10)` | No | PK | Unique study plan reward ID. |
-| `studyPlanId` | `NVARCHAR(10)` | Yes | FK -> `StudyPlan.studyPlanId` | Unique study plan ID. |
-| `rewardName` | `NVARCHAR(200)` | Yes | - | Reward name. |
-| `requiredProgress` | `INT` | Yes | - | Required progress percentage/value to unlock. |
-| `isUnlocked` | `BIT` | Yes | - | BIT value: 1 = unlocked, 0 = locked. |
-| `unlockedAt` | `DATETIME2(0)` | Yes | - | Reward unlock date/time. |
-
-### Foreign Keys
-
-- `studyPlanId` references `StudyPlan.studyPlanId` (`FK_SPReward_studyPlanId_StudyPlan`).
-
-## 40. `userChat`
-
-Stores private one-to-one chat rooms between two users.
-
-Seed/sample script currently inserts **11 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `chatId` | `NVARCHAR(10)` | No | PK | Unique chat room ID. |
-| `userId` | `NVARCHAR(10)` | Yes | FK -> `User.userId` | Unique user account ID, e.g. U001. |
-| `user2Id` | `NVARCHAR(10)` | Yes | FK -> `User.userId` | Second chat user ID. |
-| `createdAt` | `DATETIME2(0)` | Yes | - | Creation date/time. |
-
-### Foreign Keys
-
-- `userId` references `User.userId` (`FK_userChat_userId_User`).
-- `user2Id` references `User.userId` (`FK_userChat_user2Id_User`).
-
-### Important Notes
-
-- The current column names are `userId` and `user2Id`, not `user1Id` and `user2Id`.
-
-## 41. `privateMessage`
-
-Stores private messages inside user chats, including optional attachment file path.
-
-Seed/sample script currently inserts **16 row(s)** for this table.
-
-### Columns
-
-| Column | Data Type | Null? | Key / Constraint | Description |
-|---|---|---|---|---|
-| `privateMsgId` | `NVARCHAR(10)` | No | PK | Unique private message ID. |
-| `chatId` | `NVARCHAR(10)` | Yes | FK -> `userChat.chatId` | Unique chat room ID. |
-| `senderUserId` | `NVARCHAR(10)` | Yes | FK -> `User.userId` | User who sent message/like/answer. |
-| `msgText` | `NVARCHAR(MAX)` | Yes | - | Private message text. |
-| `attachmentFile` | `NVARCHAR(255)` | Yes | - | Optional private message attachment file path. |
-| `sentAt` | `DATETIME2(0)` | Yes | - | Message sent date/time. |
-| `isRead` | `BIT` | Yes | - | BIT value: 1 = read, 0 = unread. |
-| `readAt` | `DATETIME2(0)` | Yes | - | Message read date/time. |
-
-### Foreign Keys
-
-- `chatId` references `userChat.chatId` (`FK_privateMessage_chatId_userChat`).
-- `senderUserId` references `User.userId` (`FK_privateMessage_senderUserId_User`).
-
-### Important Notes
-
-- `attachmentFile` must use the path prefix `Images/privateMessage/` when an attachment exists.
-- In application code, treat `NULL` as no attachment.
-
-
----
-
-# Website Development Guide for Kiro / Groupmates
-
-Use these rules when generating ASP.NET Web Forms pages, C# code-behind, SQL queries, or UI modules.
-
-## A. Do Not Rename Database Fields
-
-Use the exact latest names:
-
-- `Student.currentLevelId`, not `currentlevelId`
-- `StudentBadge.earnedAt`, not `dateTimeEarned`
-- `StudyPlan.createdByUserId`, not `CreatedByUserId`
-- `SPTask.spTaskId`, not `SPTaskId`
-- `privateMessage.readAt`, not `ReadAt`
-- `userChat.userId` and `userChat.user2Id`, not `user1Id`
-
-## B. Use Parameterized Queries
-
-Do not concatenate user input into SQL strings. Use parameters for login, search, insert, update, and delete operations.
-
-Example pattern:
-
-```csharp
-SqlCommand cmd = new SqlCommand(
-    "SELECT * FROM dbo.[User] WHERE username = @username AND password = @password AND status = 'Active'",
-    conn
-);
-cmd.Parameters.AddWithValue("@username", username);
-cmd.Parameters.AddWithValue("@password", password);
-```
-
-## C. Use Correct Boolean Handling
-
-SQL Server `BIT` uses:
-
-- `1` = true/completed/read/correct/latest/unlocked
-- `0` = false/not completed/unread/incorrect/not latest/locked
-
-Apply this to:
-
-- `QuizAnswer.isCorrect`
-- `LessonProgress.isCompleted`
-- `Notification.isRead`
-- `LabProgress.isCompleted`
-- `AILearningAnalysis.isLatest`
-- `SPTask.isCompleted`
-- `SPReward.isUnlocked`
-- `privateMessage.isRead`
-
-## D. Use Correct File Path Handling
-
-When uploading or displaying files, use the path prefixes from Section 4.
-
-Example insert/update values:
-
-```sql
-Images/Teacher/cert_zara.pdf
-Images/Personality/achiever.png
-Images/Badge/first-step.png
-Images/Lesson/humansense.png
-Images/Material/humansense.pdf
-Images/Question/human_senses.jpg
-Images/Certificate/cert_s005_lv001.pdf
-Images/privateMessage/answer.pdf
-```
-
-Do not store only `cert_zara.pdf` or `humansense.png` in these columns.
-
-## E. Recommended Module-to-Table Mapping
-
-| Website Module | Main Tables |
-|---|---|
-| Login / Authentication | `User`, `Log`, `UserStatusAction` |
-| Student Dashboard | `Student`, `Level`, `Personality`, `Badge`, `StudentBadge`, `XPTransaction`, `Notification`, `AILearningAnalysis` |
-| My Learning | `Level`, `Unit`, `Subtopic`, `Lesson`, `LessonProgress`, `Quiz`, `Question`, `QuizResult`, `QuizAnswer` |
-| Virtual Labs | `VirtualLab`, `LabProgress`, `Unit` |
-| Practice Library | `Quiz`, `Question`, `QuizResult`, `QuizAnswer` |
-| Teacher Material Upload | `Teacher`, `Material`, `Subtopic`, `User` |
-| Teacher Quiz/Question Review | `Quiz`, `Question`, `User` |
-| Forum | `Forum`, `ForumChat`, `ForumTag`, `ForumLike`, `Tag`, `User` |
-| Parent Dashboard | `Parent`, `StudentParent`, `Student`, `StudyPlan`, `SPTask`, `SPReward`, `AILearningAnalysis` |
-| Live Sessions | `LiveConsultationSession`, `LiveSessionParticipant`, `Teacher`, `Student`, `Unit`, `Subtopic` |
-| Private Messaging | `userChat`, `privateMessage`, `User` |
-| Certificates | `Certificate`, `Student`, `Level` |
-| Admin Settings | `ConfigurationSetting`, `Log`, `UserStatusAction` |
-
-## F. Safe Filtering Rules
-
-- Hide or block login for users with `User.status IN ('Blocked', 'Deleted')`.
-- Teacher full features should be available only when `Teacher.status = 'Certified'`.
-- Show only approved teacher-created learning material/questions to students unless the page is for teacher/admin review.
-- Deleted sample records may remain in the database for history/testing; filter them out in normal UI views.
-
-## G. Useful Verification Queries
-
-Check all tables exist:
-
-```sql
-USE ScienceBuddy_DB;
-GO
-
-SELECT name
-FROM sys.tables
-ORDER BY name;
-```
-
-Check row counts quickly:
-
-```sql
-SELECT 'User' AS TableName, COUNT(*) AS TotalRows FROM dbo.[User]
-UNION ALL SELECT 'Student', COUNT(*) FROM dbo.Student
-UNION ALL SELECT 'Teacher', COUNT(*) FROM dbo.Teacher
-UNION ALL SELECT 'Quiz', COUNT(*) FROM dbo.Quiz
-UNION ALL SELECT 'Question', COUNT(*) FROM dbo.Question
-UNION ALL SELECT 'Lesson', COUNT(*) FROM dbo.Lesson
-UNION ALL SELECT 'Material', COUNT(*) FROM dbo.Material;
-```
-
-Check path columns:
-
-```sql
-SELECT teacherId, licenseCert FROM dbo.Teacher;
-SELECT personalityId, avatar FROM dbo.Personality;
-SELECT badgeId, badgeIcon FROM dbo.Badge;
-SELECT lessonId, attachmentUrl FROM dbo.Lesson;
-SELECT materialId, fileUrl FROM dbo.Material;
-SELECT questionId, questionImageUrl FROM dbo.Question WHERE questionImageUrl IS NOT NULL;
-SELECT certificateId, certificateUrl FROM dbo.Certificate;
-SELECT privateMsgId, attachmentFile FROM dbo.privateMessage WHERE attachmentFile IS NOT NULL;
-```
-
----
-
-# Final Reminder
-
-This guide describes the database structure, relationships, and development rules. It intentionally does **not** list every sample row. For exact seed/sample records, refer to:
-
-- `InsertConstants_ImagesPath.sql`
-- `InsertSampleData_ImagesPath.sql`
+| 1 | Unit | levelId | Level | levelId |
+| 2 | Subtopic | unitId | Unit | unitId |
+| 3 | Lesson | subtopicId | Subtopic | subtopicId |
+| 4 | VirtualLab | unitId | Unit | unitId |
+| 5 | Student | userId | User | userId |
+| 6 | Student | currentLevelId | Level | levelId |
+| 7 | Student | personalityId | Personality | personalityId |
+| 8 | Parent | userId | User | userId |
+| 9 | Teacher | userId | User | userId |
+| 10 | StudentParent | studentId | Student | studentId |
+| 11 | StudentParent | parentId | Parent | parentId |
+| 12 | Enrollment | studentId | Student | studentId |
+| 13 | Enrollment | levelId | Level | levelId |
+| 14 | StudentBadge | studentId | Student | studentId |
+| 15 | StudentBadge | badgeId | Badge | badgeId |
+| 16 | Quiz | levelId | Level | levelId |
+| 17 | Quiz | unitId | Unit | unitId |
+| 18 | Quiz | createdByUserId | User | userId |
+| 19 | Material | subtopicId | Subtopic | subtopicId |
+| 20 | Material | createdByUserId | User | userId |
+| 21 | Forum | createdBy | User | userId |
+| 22 | ForumChat | forumId | Forum | forumId |
+| 23 | ForumChat | senderUserId | User | userId |
+| 24 | ForumTag | forumId | Forum | forumId |
+| 25 | ForumTag | tagId | Tag | tagId |
+| 26 | ForumLike | forumId | Forum | forumId |
+| 27 | ForumLike | senderUserId | User | userId |
+| 28 | Question | quizId | Quiz | quizId |
+| 29 | Question | subtopicId | Subtopic | subtopicId |
+| 30 | Question | createdByUserId | User | userId |
+| 31 | QuizResult | studentId | Student | studentId |
+| 32 | QuizResult | quizId | Quiz | quizId |
+| 33 | QuizAnswer | resultId | QuizResult | resultId |
+| 34 | QuizAnswer | questionId | Question | questionId |
+| 35 | XPTransaction | studentId | Student | studentId |
+| 36 | XPTransaction | xpActionId | XPAction | xpActionId |
+| 37 | LessonProgress | studentId | Student | studentId |
+| 38 | LessonProgress | lessonId | Lesson | lessonId |
+| 39 | Certificate | studentId | Student | studentId |
+| 40 | Certificate | levelId | Level | levelId |
+| 41 | Log | userId | User | userId |
+| 42 | Notification | toUserId | User | userId |
+| 43 | LabProgress | studentId | Student | studentId |
+| 44 | LabProgress | labId | VirtualLab | labId |
+| 45 | LiveConsultationSession | teacherId | Teacher | teacherId |
+| 46 | LiveConsultationSession | unitId | Unit | unitId |
+| 47 | LiveConsultationSession | subtopicId | Subtopic | subtopicId |
+| 48 | LiveSessionParticipant | sessionId | LiveConsultationSession | sessionId |
+| 49 | LiveSessionParticipant | studentId | Student | studentId |
+| 50 | UserStatusAction | userId | User | userId |
+| 51 | UserStatusAction | performedBy | User | userId |
+| 52 | AILearningAnalysis | studentId | Student | studentId |
+| 53 | StudyPlan | studentParentId | StudentParent | studentParentId |
+| 54 | StudyPlan | createdByUserId | User | userId |
+| 55 | SPTask | studyPlanId | StudyPlan | studyPlanId |
+| 56 | SPReward | studyPlanId | StudyPlan | studyPlanId |
+| 57 | userChat | userId | User | userId |
+| 58 | userChat | user2Id | User | userId |
+| 59 | privateMessage | chatId | userChat | chatId |
+| 60 | privateMessage | senderUserId | User | userId |
+
+4.0 Important Database Rules
+
+- Login uses User table.
+- Only Active users can login.
+- Student, Parent, and Teacher profile tables are linked to User.
+- Lessons belong to Subtopic.
+- Quiz is linked to Level and Unit. In the real SQL, levelId and unitId allow NULL.
+- Quiz table does not have subtopicId in the real SQL.
+- Question links the quiz questions to Quiz and Subtopic.
+- QuizAnswer must link to existing QuizResult and Question.
+- StudyPlan is linked to StudentParent. studentParentId allows NULL in the real SQL.
+- SPTask and SPReward are linked to StudyPlan.
+- userChat stores private chat room.
+- privateMessage stores messages under userChat.
+
+5.0 Naming Convention
+
+Use the exact database names below:
+
+- userId
+- studentId
+- parentId
+- teacherId
+- studentParentId
+- levelId
+- unitId
+- subtopicId
+- lessonId
+- quizId
+- questionId
+- resultId
+- answerId
+- studyPlanId
+- spTaskId
+- rewardId
+- chatId
+- privateMsgId
+
+6.0 Data Review Notes
+
+No major issue found after checking with the fixed real SQL files.

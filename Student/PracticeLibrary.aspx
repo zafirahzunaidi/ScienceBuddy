@@ -95,8 +95,8 @@
                     <div class="st-practice-card-body">
                         <div class="st-practice-card-title"><%# Eval("Title") %></div>
                         <div class="st-practice-card-meta">
+                            <span><i class="bi bi-bar-chart-steps"></i> <%# Eval("Level") %></span>
                             <span><i class="bi bi-layers"></i> <%# Eval("Unit") %></span>
-                            <span><i class="bi bi-bookmark"></i> <%# Eval("Subtopic") %></span>
                         </div>
                         <div class="st-practice-card-badges">
                             <span class="st-practice-badge st-practice-badge-level"><i class="bi bi-bar-chart-steps"></i> <%# Eval("Level") %></span>

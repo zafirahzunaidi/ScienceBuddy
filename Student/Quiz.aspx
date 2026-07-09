@@ -112,9 +112,7 @@
 
         <%-- True/False --%>
         <asp:Panel ID="pnlTF" runat="server" Visible="false">
-            <div class="st-quiz-tf-wrap">
-                <asp:RadioButtonList ID="rblTF" runat="server" RepeatLayout="Flow" CssClass="st-quiz-tf-wrap" />
-            </div>
+            <asp:RadioButtonList ID="rblTF" runat="server" RepeatLayout="Flow" CssClass="st-quiz-tf-wrap" />
         </asp:Panel>
 
         <%-- Multiselect --%>
@@ -235,5 +233,26 @@ function ddStartDrag(e, val) {
     e.target.style.opacity = '0.5';
 }
 function ddEndDrag(e) { e.target.style.opacity = '1'; }
+
+// ═══ True/False selection highlight ═══
+document.addEventListener('click', function(e) {
+    var label = e.target.closest('.st-quiz-tf-wrap label');
+    if (!label) return;
+    var wrap = label.closest('.st-quiz-tf-wrap');
+    if (!wrap) return;
+    wrap.querySelectorAll('label').forEach(function(l){ l.classList.remove('tf-selected'); });
+    label.classList.add('tf-selected');
+});
+// On page load, highlight any already-checked TF option
+(function(){
+    var tfWraps = document.querySelectorAll('.st-quiz-tf-wrap');
+    tfWraps.forEach(function(wrap){
+        var checked = wrap.querySelector('input[type="radio"]:checked');
+        if (checked) {
+            var lbl = checked.closest('label') || checked.parentElement.querySelector('label');
+            if (lbl) lbl.classList.add('tf-selected');
+        }
+    });
+})();
 </script>
 </asp:Content>
