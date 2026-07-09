@@ -25,6 +25,7 @@
             <i class="bi bi-speedometer2 item-icon"></i>
             <span class="item-label"><%: T("Dashboard","Papan Pemuka") %></span>
         </a>
+        <a href="<%: ResolveUrl("~/Parent/ParentNotifications.aspx") %>" class="sb-sidebar-item"><i class="bi bi-bell item-icon"></i><span class="item-label"><%: T("Notifications","Notifikasi") %></span><asp:Literal ID="litUnreadBadge" runat="server" /></a>
     </div>
 
     <div class="sb-nav-section">
@@ -84,22 +85,10 @@
     </div>
 
     <div class="sb-nav-section">
-        <div class="sb-nav-section-label"><%: T("Notifications","Notifikasi") %></div>
-        <a href="<%: ResolveUrl("~/Parent/ParentNotifications.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-bell item-icon"></i>
-            <span class="item-label"><%: T("Notifications","Notifikasi") %></span>
-        </a>
-    </div>
-
-    <div class="sb-nav-section">
         <div class="sb-nav-section-label"><%: T("Profile","Profil") %></div>
         <a href="<%: ResolveUrl("~/Parent/ParentProfile.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-person item-icon"></i>
             <span class="item-label"><%: T("Edit Profile","Edit Profil") %></span>
-        </a>
-        <a href="<%: ResolveUrl("~/Parent/AccountSettings.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-gear item-icon"></i>
-            <span class="item-label"><%: T("Account Settings","Tetapan Akaun") %></span>
         </a>
         <a href="<%: ResolveUrl("~/Logout.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-box-arrow-right item-icon"></i>

@@ -155,6 +155,7 @@ namespace ScienceBuddy.Student
                 bool isBM = CurrentLanguage == "BM";
                 string title = isBM ? S(qzRow, "quizTitleBM") : S(qzRow, "quizTitleEN");
                 if (string.IsNullOrWhiteSpace(title)) title = S(qzRow, "quizTitleEN");
+                if (string.IsNullOrWhiteSpace(title)) title = S(qzRow, "quizTitleBM");
                 litQuizTitle.Text = HttpUtility.HtmlEncode(title);
                 litQType.Text = GetTypeLabel(quizType);
                 litQuizSub.Text = GetInstructions(quizType);
@@ -185,9 +186,10 @@ namespace ScienceBuddy.Student
             litProgressCount.Text = (idx + 1) + " / " + total;
             litQNum.Text = T("Question ", "Soalan ") + (idx + 1) + " / " + total;
 
-            // Text
+            // Text — for Practice quizzes, content may only exist in one language
             string qText = isBM ? S(row, "questionTextBM") : S(row, "questionTextEN");
             if (string.IsNullOrWhiteSpace(qText)) qText = S(row, "questionTextEN");
+            if (string.IsNullOrWhiteSpace(qText)) qText = S(row, "questionTextBM");
             litQText.Text = HttpUtility.HtmlEncode(qText);
 
             // Image
@@ -202,11 +204,11 @@ namespace ScienceBuddy.Student
             if (!string.IsNullOrWhiteSpace(diff)) { pnlQDiff.Visible = true; divDiff.Attributes["class"] = "st-quiz-q-diff " + diff.ToLower(); litQDiff.Text = diff; }
             else { pnlQDiff.Visible = false; }
 
-            // Options
-            string optA = isBM ? S(row, "optionA_BM") : S(row, "optionA_EN"); if (string.IsNullOrWhiteSpace(optA)) optA = S(row, "optionA_EN");
-            string optB = isBM ? S(row, "optionB_BM") : S(row, "optionB_EN"); if (string.IsNullOrWhiteSpace(optB)) optB = S(row, "optionB_EN");
-            string optC = isBM ? S(row, "optionC_BM") : S(row, "optionC_EN"); if (string.IsNullOrWhiteSpace(optC)) optC = S(row, "optionC_EN");
-            string optD = isBM ? S(row, "optionD_BM") : S(row, "optionD_EN"); if (string.IsNullOrWhiteSpace(optD)) optD = S(row, "optionD_EN");
+            // Options — for Practice quizzes, options may only exist in one language
+            string optA = isBM ? S(row, "optionA_BM") : S(row, "optionA_EN"); if (string.IsNullOrWhiteSpace(optA)) optA = S(row, "optionA_EN"); if (string.IsNullOrWhiteSpace(optA)) optA = S(row, "optionA_BM");
+            string optB = isBM ? S(row, "optionB_BM") : S(row, "optionB_EN"); if (string.IsNullOrWhiteSpace(optB)) optB = S(row, "optionB_EN"); if (string.IsNullOrWhiteSpace(optB)) optB = S(row, "optionB_BM");
+            string optC = isBM ? S(row, "optionC_BM") : S(row, "optionC_EN"); if (string.IsNullOrWhiteSpace(optC)) optC = S(row, "optionC_EN"); if (string.IsNullOrWhiteSpace(optC)) optC = S(row, "optionC_BM");
+            string optD = isBM ? S(row, "optionD_BM") : S(row, "optionD_EN"); if (string.IsNullOrWhiteSpace(optD)) optD = S(row, "optionD_EN"); if (string.IsNullOrWhiteSpace(optD)) optD = S(row, "optionD_BM");
 
             string qType = NormalizeQuestionType(S(row, "questionType"));
             pnlMCQ.Visible = false; pnlTF.Visible = false; pnlMulti.Visible = false; pnlDrag.Visible = false;
@@ -242,8 +244,8 @@ namespace ScienceBuddy.Student
             rblTF.Items.Clear();
             string trueLabel = !string.IsNullOrWhiteSpace(a) ? a : T("True", "Betul");
             string falseLabel = !string.IsNullOrWhiteSpace(b) ? b : T("False", "Salah");
-            rblTF.Items.Add(new ListItem("<span class=\"qz-tf-ico\"><i class=\"bi bi-check-circle-fill\" style=\"color:#22C55E;\"></i></span><span class=\"qz-tf-lbl\">" + HttpUtility.HtmlEncode(trueLabel) + "</span>", "A"));
-            rblTF.Items.Add(new ListItem("<span class=\"qz-tf-ico\"><i class=\"bi bi-x-circle-fill\" style=\"color:#EF4444;\"></i></span><span class=\"qz-tf-lbl\">" + HttpUtility.HtmlEncode(falseLabel) + "</span>", "B"));
+            rblTF.Items.Add(new ListItem("<span class=\"st-quiz-tf-ico\"><i class=\"bi bi-check-circle-fill\" style=\"color:#22C55E;\"></i></span><span class=\"st-quiz-tf-lbl\">" + HttpUtility.HtmlEncode(trueLabel) + "</span>", "A"));
+            rblTF.Items.Add(new ListItem("<span class=\"st-quiz-tf-ico\"><i class=\"bi bi-x-circle-fill\" style=\"color:#EF4444;\"></i></span><span class=\"st-quiz-tf-lbl\">" + HttpUtility.HtmlEncode(falseLabel) + "</span>", "B"));
             if (!string.IsNullOrEmpty(saved)) { var li = rblTF.Items.FindByValue(saved); if (li != null) li.Selected = true; }
         }
 
@@ -288,7 +290,7 @@ namespace ScienceBuddy.Student
                 string escaped = HttpUtility.HtmlEncode(opt);
                 string jsVal = HttpUtility.JavaScriptStringEncode(opt);
                 chipsHtml += string.Format(
-                    "<div class=\"qz-dd-chip\" draggable=\"true\" data-value=\"{0}\" " +
+                    "<div class=\"st-quiz-dd-chip\" draggable=\"true\" data-value=\"{0}\" " +
                     "ondragstart=\"ddStartDrag(event,'{1}')\" ondragend=\"ddEndDrag(event)\" " +
                     "onclick=\"ddChipClick('{1}')\">{0}</div>",
                     escaped, jsVal);

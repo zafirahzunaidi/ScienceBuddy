@@ -32,5 +32,7 @@ namespace ScienceBuddy.Parent
         protected global::System.Web.UI.WebControls.Panel pnlUnits;
         protected global::System.Web.UI.WebControls.Panel pnlNoUnits;
         protected global::System.Web.UI.WebControls.Literal litNoUnits;
+        protected global::System.Web.UI.WebControls.Literal litUnreadBadge;
+
     }
 }

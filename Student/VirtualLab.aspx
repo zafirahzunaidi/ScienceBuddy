@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="VirtualLab.aspx.cs" Inherits="ScienceBuddy.Student.VirtualLab1" %>
+<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="VirtualLab.aspx.cs" Inherits="ScienceBuddy.Student.VirtualLab1" %>
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
     <link href="<%: ResolveUrl("~/Content/Student.css") %>" rel="stylesheet" />
 </asp:Content>
@@ -51,6 +51,9 @@
         <a href="<%: ResolveUrl("~/Student/MyRanking.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-trophy item-icon"></i><span class="item-label">My Ranking</span>
         </a>
+        <a href="<%: ResolveUrl("~/Student/RevisionPlan.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-calendar-check item-icon"></i><span class="item-label">Revision Plan</span>
+        </a>
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Account</div>
@@ -65,7 +68,7 @@
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 <asp:Panel ID="pnlError" runat="server" Visible="false">
     <div class="st-virtuallab-error">
-        <div class="st-virtuallab-error-icon">🧪</div>
+        <div class="st-virtuallab-error-icon">??</div>
         <div class="st-virtuallab-error-title"><asp:Literal ID="litErrorTitle" runat="server" /></div>
         <div class="st-virtuallab-error-desc"><asp:Literal ID="litErrorDesc" runat="server" /></div>
         <a href="<%: ResolveUrl("~/Student/VirtualLabs.aspx") %>" class="sb-btn sb-btn-primary sb-btn-sm">

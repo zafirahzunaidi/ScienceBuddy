@@ -30,5 +30,7 @@ namespace ScienceBuddy.Parent
         protected global::System.Web.UI.WebControls.Literal litRemainingDays;
         protected global::System.Web.UI.WebControls.Panel pnlDaysLeftBanner;
         protected global::System.Web.UI.WebControls.Literal litDaysLeftBanner;
+        protected global::System.Web.UI.WebControls.Literal litUnreadBadge;
+
     }
 }

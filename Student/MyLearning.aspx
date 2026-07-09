@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="MyLearning.aspx.cs" Inherits="ScienceBuddy.Student.MyLearning1" %>
+<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="MyLearning.aspx.cs" Inherits="ScienceBuddy.Student.MyLearning1" %>
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
     <link href="<%: ResolveUrl("~/Content/Student.css") %>" rel="stylesheet" />
 </asp:Content>
@@ -50,6 +50,9 @@
         </a>
         <a href="<%: ResolveUrl("~/Student/MyRanking.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-trophy item-icon"></i><span class="item-label">My Ranking</span>
+        </a>
+        <a href="<%: ResolveUrl("~/Student/RevisionPlan.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-calendar-check item-icon"></i><span class="item-label">Revision Plan</span>
         </a>
     </div>
     <div class="sb-nav-section">
@@ -154,7 +157,7 @@
 <%-- Empty state if no levels --%>
 <asp:Panel ID="pnlEmpty" runat="server" Visible="false">
     <div class="sb-empty-state" style="padding:var(--space-3xl) 0;">
-        <div class="empty-icon" style="font-size:3.5rem;">📚</div>
+        <div class="empty-icon" style="font-size:3.5rem;">??</div>
         <div class="empty-title"><asp:Literal ID="litEmptyTitle" runat="server" /></div>
         <div class="empty-desc"><asp:Literal ID="litEmptyDesc" runat="server" /></div>
     </div>

@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="LiveSessions.aspx.cs" Inherits="ScienceBuddy.Student.LiveSessions1" %>
+<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="LiveSessions.aspx.cs" Inherits="ScienceBuddy.Student.LiveSessions1" %>
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
     <link href="<%: ResolveUrl("~/Content/Student.css") %>" rel="stylesheet" />
 </asp:Content>
@@ -27,6 +27,9 @@
         <div class="sb-nav-section-label">Progress</div>
         <a href="<%: ResolveUrl("~/Student/ProgressRewards.aspx") %>" class="sb-sidebar-item"><i class="bi bi-bar-chart-line item-icon"></i><span class="item-label">Progress &amp; Rewards</span></a>
         <a href="<%: ResolveUrl("~/Student/MyRanking.aspx") %>" class="sb-sidebar-item"><i class="bi bi-trophy item-icon"></i><span class="item-label">My Ranking</span></a>
+        <a href="<%: ResolveUrl("~/Student/RevisionPlan.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-calendar-check item-icon"></i><span class="item-label">Revision Plan</span>
+        </a>
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Account</div>
@@ -97,7 +100,7 @@
 <%-- Empty State --%>
 <asp:Panel ID="pnlEmpty" runat="server" Visible="false">
     <div class="st-livesessions-empty">
-        <div class="st-livesessions-empty-icon">📹</div>
+        <div class="st-livesessions-empty-icon">??</div>
         <div class="st-livesessions-empty-title"><asp:Literal ID="litEmptyTitle" runat="server" Text="No live sessions available" /></div>
         <div class="st-livesessions-empty-desc"><asp:Literal ID="litEmptyDesc" runat="server" Text="No live sessions are available yet." /></div>
         <a href="<%: ResolveUrl("~/Student/Dashboard.aspx") %>" class="st-livesessions-card-btn" style="display:inline-flex;width:auto;">

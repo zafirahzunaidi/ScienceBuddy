@@ -1,6 +1,6 @@
 <%@ Page Language="C#" AutoEventWireup="true" CodeBehind="TeacherManagement.aspx.cs"
     Inherits="ScienceBuddy.Admin.TeacherManagement" MasterPageFile="~/Site.Master"
-    Title="Teacher Management" %>
+    Title="Teacher Management" ValidateRequest="false" EnableEventValidation="false" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
 <style>
@@ -340,17 +340,18 @@ function submitAddTeacher(){
     var ph=document.getElementById('t_phone').value.trim(),qual=document.getElementById('t_qual').value.trim(),lang=document.getElementById('t_lang').value;
     closeAddTeacher();
     Swal.fire({
-        title:'<%= T("Create this teacher?","Cipta guru ini?") %>',
-        html:'<div style="text-align:left;margin-top:8px;"><b><%= T("Name","Nama") %>:</b> '+n+'<br><b>Username:</b> '+u+'<br><b>Email:</b> '+e+'</div>',
+        title:'<%= T("Create New Account?","Cipta Akaun Baharu?") %>',
+        text:'<%= T("Are you sure you want to create this account?","Adakah anda pasti ingin mencipta akaun ini?") %>',
         icon:'question',showCancelButton:true,
-        confirmButtonText:'<i class="bi bi-person-plus-fill"></i> <%= T("Yes, Create","Ya, Cipta") %>',
+        confirmButtonText:'<i class="bi bi-person-plus-fill"></i> <%= T("Create","Cipta") %>',
         cancelButtonText:'<%= T("Cancel","Batal") %>',
         confirmButtonColor:'#059669',reverseButtons:true
     }).then(function(r){
         if(!r.isConfirmed){openAddTeacher();return;}
-        fetch(window.location.pathname+'?handler=TeacherCRUD&action=addTeacher&name='+encodeURIComponent(n)+'&username='+encodeURIComponent(u)+'&email='+encodeURIComponent(e)+'&password='+encodeURIComponent(pw)+'&phone='+encodeURIComponent(ph)+'&qualification='+encodeURIComponent(qual)+'&lang='+lang,{method:'POST',headers:{'X-Requested-With':'XMLHttpRequest'}})
+        var fd=new FormData();fd.append('name',n);fd.append('username',u);fd.append('email',e);fd.append('password',pw);fd.append('phone',ph);fd.append('qualification',qual);fd.append('lang',lang);
+        fetch(window.location.pathname+'?handler=TeacherCRUD&action=addTeacher',{method:'POST',body:fd})
         .then(function(r){return r.json();}).then(function(d){
-            if(d.success){Swal.fire({icon:'success',title:'<%= T("Teacher Created!","Guru Dicipta!") %>',text:'<%= T("The account has been added.","Akaun telah ditambah.") %>',confirmButtonColor:'#059669',timer:3000,timerProgressBar:true}).then(function(){location.reload();});}
+            if(d.success){Swal.fire({icon:'success',title:'<%= T("Teacher Created!","Guru Dicipta!") %>',text:'<%= T("The teacher account has been created successfully.","Akaun guru telah berjaya dicipta.") %>',confirmButtonColor:'#059669',timer:3000,timerProgressBar:true}).then(function(){__doPostBack('<%= btnSearch.UniqueID %>','');});}
             else{openAddTeacher();Swal.fire({icon:'error',title:'<%= T("Error","Ralat") %>',text:d.msg});}
         }).catch(function(){openAddTeacher();Swal.fire({icon:'error',title:'Network Error',text:'Please try again.'});});
     });

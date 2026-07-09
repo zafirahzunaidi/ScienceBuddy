@@ -26,7 +26,7 @@ namespace ScienceBuddy.Parent
         {
             if (!EnsureAuth()) return;
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
-            LoadLang(); _parentUserId = Session["userId"].ToString(); LoadParent();
+            LoadLang(); LoadUnreadBadge(); _parentUserId = Session["userId"].ToString(); LoadParent();
             if (!IsPostBack) { SetLabels(); LoadChildren(); if (!string.IsNullOrEmpty(_selectedChildId)) LoadPage(); else ShowNoChild(); }
             else { SetLabels(); _selectedChildId = ddlSidebarChild.SelectedValue; _selectedChildName = ddlSidebarChild.SelectedItem != null ? ddlSidebarChild.SelectedItem.Text : ""; LoadSPId(); }
         }
@@ -297,7 +297,7 @@ namespace ScienceBuddy.Parent
                         // Check max 5
                         int cnt = 0; using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.SPReward WHERE studyPlanId=@pid", c, txn)) { cmd.Parameters.AddWithValue("@pid", _planId); cnt = (int)cmd.ExecuteScalar(); }
                         if (cnt >= 5) { txn.Rollback(); ShowMsg(T("Maximum 5 rewards allowed.", "Maksimum 5 ganjaran dibenarkan."), false); return; }
-                        string newId = GenId(c, txn, "SPReward", "rewardId", "RWD");
+                        string newId = GenId(c, txn, "SPReward", "rewardId", "SPR");
                         using (var cmd = new SqlCommand("INSERT INTO dbo.SPReward(rewardId,studyPlanId,rewardName,requiredProgress,isUnlocked,unlockedAt) VALUES(@id,@pid,@n,@p,0,NULL)", c, txn))
                         { cmd.Parameters.AddWithValue("@id", newId); cmd.Parameters.AddWithValue("@pid", _planId); cmd.Parameters.AddWithValue("@n", encodedName); cmd.Parameters.AddWithValue("@p", pct); cmd.ExecuteNonQuery(); }
                     }
@@ -326,5 +326,21 @@ namespace ScienceBuddy.Parent
         private string GenId(SqlConnection c, SqlTransaction t, string table, string col, string prefix) { int n = 1; using (var cmd = new SqlCommand(string.Format("SELECT MAX({0}) FROM dbo.[{1}]", col, table), c, t)) { var r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) { string last = r.ToString(); if (last.Length > prefix.Length) { int num; if (int.TryParse(last.Substring(prefix.Length), out num)) n = num + 1; } } } return prefix + n.ToString("D3"); }
         private void ShowMsg(string msg, bool ok) { pnlMessage.Visible = true; divMessage.InnerHtml = msg; iMsgIcon.Attributes["class"] = ok ? "bi bi-check-circle-fill" : "bi bi-exclamation-circle-fill"; }
         protected void BtnCloseMsg_Click(object sender, EventArgs e) { pnlMessage.Visible = false; LoadPage(); }
+        private void LoadUnreadBadge()
+        {
+            try
+            {
+                using (var c = new System.Data.SqlClient.SqlConnection(ConnStr))
+                using (var cmd = new System.Data.SqlClient.SqlCommand("SELECT COUNT(*) FROM dbo.Notification WHERE toUserId=@uid AND isRead=0", c))
+                {
+                    cmd.Parameters.AddWithValue("@uid", Session["userId"].ToString());
+                    c.Open();
+                    int count = (int)cmd.ExecuteScalar();
+                    if (count > 0) litUnreadBadge.Text = "<span class='pt-sidebar-badge'>" + count + "</span>";
+                    else litUnreadBadge.Text = "";
+                }
+            }
+            catch { }
+        }
     }
 }

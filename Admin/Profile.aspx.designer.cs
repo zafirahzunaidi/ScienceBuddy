@@ -18,5 +18,10 @@ namespace ScienceBuddy.Admin
         protected global::System.Web.UI.WebControls.Literal litEmailVal;
         protected global::System.Web.UI.WebControls.Literal litRoleVal;
         protected global::System.Web.UI.WebControls.Literal litLangVal;
+        protected global::System.Web.UI.WebControls.HiddenField hfUserId;
+        protected global::System.Web.UI.WebControls.HiddenField hfCurrentName;
+        protected global::System.Web.UI.WebControls.HiddenField hfCurrentEmail;
+        protected global::System.Web.UI.WebControls.HiddenField hfCurrentLang;
+        protected global::System.Web.UI.WebControls.HiddenField hfCurrentStatus;
     }
 }

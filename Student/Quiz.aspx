@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Quiz.aspx.cs" Inherits="ScienceBuddy.Student.Quiz" ValidateRequest="false" EnableEventValidation="false" %>
+<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Quiz.aspx.cs" Inherits="ScienceBuddy.Student.Quiz" ValidateRequest="false" EnableEventValidation="false" %>
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
     <link href="<%: ResolveUrl("~/Content/Student.css") %>" rel="stylesheet" />
 </asp:Content>
@@ -50,6 +50,9 @@
         </a>
         <a href="<%: ResolveUrl("~/Student/MyRanking.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-trophy item-icon"></i><span class="item-label">My Ranking</span>
+        </a>
+        <a href="<%: ResolveUrl("~/Student/RevisionPlan.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-calendar-check item-icon"></i><span class="item-label">Revision Plan</span>
         </a>
     </div>
     <div class="sb-nav-section">
@@ -112,9 +115,7 @@
 
         <%-- True/False --%>
         <asp:Panel ID="pnlTF" runat="server" Visible="false">
-            <div class="st-quiz-tf-wrap">
-                <asp:RadioButtonList ID="rblTF" runat="server" RepeatLayout="Flow" CssClass="st-quiz-tf-wrap" />
-            </div>
+            <asp:RadioButtonList ID="rblTF" runat="server" RepeatLayout="Flow" CssClass="st-quiz-tf-wrap" />
         </asp:Panel>
 
         <%-- Multiselect --%>
@@ -235,5 +236,26 @@ function ddStartDrag(e, val) {
     e.target.style.opacity = '0.5';
 }
 function ddEndDrag(e) { e.target.style.opacity = '1'; }
+
+// --- True/False selection highlight ---
+document.addEventListener('click', function(e) {
+    var label = e.target.closest('.st-quiz-tf-wrap label');
+    if (!label) return;
+    var wrap = label.closest('.st-quiz-tf-wrap');
+    if (!wrap) return;
+    wrap.querySelectorAll('label').forEach(function(l){ l.classList.remove('tf-selected'); });
+    label.classList.add('tf-selected');
+});
+// On page load, highlight any already-checked TF option
+(function(){
+    var tfWraps = document.querySelectorAll('.st-quiz-tf-wrap');
+    tfWraps.forEach(function(wrap){
+        var checked = wrap.querySelector('input[type="radio"]:checked');
+        if (checked) {
+            var lbl = checked.closest('label') || checked.parentElement.querySelector('label');
+            if (lbl) lbl.classList.add('tf-selected');
+        }
+    });
+})();
 </script>
 </asp:Content>

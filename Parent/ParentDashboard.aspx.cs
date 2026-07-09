@@ -45,7 +45,7 @@ namespace ScienceBuddy.Parent
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
 
             // Language
-            LoadCurrentLanguage();
+            LoadCurrentLanguage(); LoadUnreadBadge();
 
             // Parent info
             _parentUserId = Session["userId"].ToString();
@@ -1106,6 +1106,22 @@ namespace ScienceBuddy.Parent
             pnlMessage.Visible = true;
             divMessage.InnerHtml = Server.HtmlEncode(message);
             divMessage.Attributes["class"] = isError ? "pd-msg error" : "pd-msg info";
+        }
+        private void LoadUnreadBadge()
+        {
+            try
+            {
+                using (var c = new System.Data.SqlClient.SqlConnection(ConnStr))
+                using (var cmd = new System.Data.SqlClient.SqlCommand("SELECT COUNT(*) FROM dbo.Notification WHERE toUserId=@uid AND isRead=0", c))
+                {
+                    cmd.Parameters.AddWithValue("@uid", Session["userId"].ToString());
+                    c.Open();
+                    int count = (int)cmd.ExecuteScalar();
+                    if (count > 0) litUnreadBadge.Text = "<span class='pt-sidebar-badge'>" + count + "</span>";
+                    else litUnreadBadge.Text = "";
+                }
+            }
+            catch { }
         }
     }
 }

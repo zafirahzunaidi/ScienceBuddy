@@ -404,36 +404,68 @@ namespace ScienceBuddy.Admin
 
         private void HandleAdd(string adminId)
         {
-            string name = Request.QueryString["name"] ?? "";
-            string username = Request.QueryString["username"] ?? "";
-            string password = Request.QueryString["password"] ?? "";
-            string email = Request.QueryString["email"] ?? "";
-            string phone = Request.QueryString["phone"] ?? "";
-            string levelId = Request.QueryString["levelId"] ?? "";
-            string lang = Request.QueryString["lang"] ?? "EN";
+            // Read parameters from Form body (sent via FormData)
+            string name = Request.Form["name"] ?? "";
+            string username = Request.Form["username"] ?? "";
+            string password = Request.Form["password"] ?? "";
+            string email = Request.Form["email"] ?? "";
+            string phone = Request.Form["phone"] ?? "";
+            string levelId = Request.Form["levelId"] ?? "";
+            string lang = Request.Form["lang"] ?? "EN";
             if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(email))
             { Response.Write("{\"success\":false,\"msg\":\"Name, username and email are required.\"}"); return; }
             if (string.IsNullOrWhiteSpace(password) || password.Length < 8)
             { Response.Write("{\"success\":false,\"msg\":\"Password must be at least 8 characters.\"}"); return; }
+
             using (var conn = new SqlConnection(ConnStr))
             {
                 conn.Open();
+
+                // Check uniqueness before starting transaction
                 using (var chk = new SqlCommand("SELECT COUNT(*) FROM dbo.[User] WHERE [email]=@e OR [username]=@u", conn))
                 { chk.Parameters.AddWithValue("@e", email); chk.Parameters.AddWithValue("@u", username);
                   if (Convert.ToInt32(chk.ExecuteScalar()) > 0) { Response.Write("{\"success\":false,\"msg\":\"Username or email already exists.\"}"); return; } }
 
-                string userId = GenId(conn, "User", "userId", "U");
-                string studentId = GenId(conn, "Student", "studentId", "S");
-                using (var cmd = new SqlCommand("INSERT INTO dbo.[User]([userId],[username],[password],[email],[role],[preferredLanguage],[status]) VALUES(@uid,@un,@pw,@em,'Student',@lg,'Active')", conn))
-                { cmd.Parameters.AddWithValue("@uid", userId); cmd.Parameters.AddWithValue("@un", username); cmd.Parameters.AddWithValue("@pw", password); cmd.Parameters.AddWithValue("@em", email); cmd.Parameters.AddWithValue("@lg", lang); cmd.ExecuteNonQuery(); }
-                using (var cmd = new SqlCommand("INSERT INTO dbo.[Student]([studentId],[userId],[name],[phoneNumber],[currentLevelId],[XP],[parentCode]) VALUES(@sid,@uid,@name,@ph,@lv,0,@pc)", conn))
-                { cmd.Parameters.AddWithValue("@sid", studentId); cmd.Parameters.AddWithValue("@uid", userId); cmd.Parameters.AddWithValue("@name", name);
-                  cmd.Parameters.AddWithValue("@ph", string.IsNullOrEmpty(phone) ? (object)DBNull.Value : phone);
-                  cmd.Parameters.AddWithValue("@lv", string.IsNullOrEmpty(levelId) ? "LV001" : levelId);
-                  cmd.Parameters.AddWithValue("@pc", "PC" + DateTime.Now.ToString("yyMMddHHmmss")); cmd.ExecuteNonQuery(); }
+                // BEGIN TRANSACTION — all inserts succeed or none persist
+                using (var txn = conn.BeginTransaction())
+                {
+                    try
+                    {
+                        string userId = GenId(conn, "User", "userId", "U", txn);
+                        string studentId = GenId(conn, "Student", "studentId", "S", txn);
 
-                InsertLog(conn, adminId, "Added Student", "Created student: " + name + " (" + studentId + ").", "Success");
-                InsertNotif(conn, userId, "Welcome to ScienceBuddy!", "Selamat Datang ke ScienceBuddy!", "Your student account has been created. Start learning today!", "Akaun pelajar anda telah dicipta. Mula belajar hari ini!");
+                        // 1. Insert User
+                        using (var cmd = new SqlCommand("INSERT INTO dbo.[User]([userId],[username],[password],[email],[role],[preferredLanguage],[status]) VALUES(@uid,@un,@pw,@em,'Student',@lg,'Active')", conn, txn))
+                        { cmd.Parameters.AddWithValue("@uid", userId); cmd.Parameters.AddWithValue("@un", username); cmd.Parameters.AddWithValue("@pw", password); cmd.Parameters.AddWithValue("@em", email); cmd.Parameters.AddWithValue("@lg", lang); cmd.ExecuteNonQuery(); }
+
+                        // 2. Insert Student (foreign key to User)
+                        using (var cmd = new SqlCommand("INSERT INTO dbo.[Student]([studentId],[userId],[name],[phoneNumber],[currentLevelId],[XP],[parentCode]) VALUES(@sid,@uid,@name,@ph,@lv,0,@pc)", conn, txn))
+                        { cmd.Parameters.AddWithValue("@sid", studentId); cmd.Parameters.AddWithValue("@uid", userId); cmd.Parameters.AddWithValue("@name", name);
+                          cmd.Parameters.AddWithValue("@ph", string.IsNullOrEmpty(phone) ? (object)DBNull.Value : phone);
+                          cmd.Parameters.AddWithValue("@lv", string.IsNullOrEmpty(levelId) ? "LV001" : levelId);
+                          cmd.Parameters.AddWithValue("@pc", "PC" + DateTime.Now.ToString("yyMMddHHmmss")); cmd.ExecuteNonQuery(); }
+
+                        // 3. Insert Notification
+                        string notifId = GenId(conn, "Notification", "notificationId", "N", txn);
+                        using (var cmd = new SqlCommand("INSERT INTO dbo.[Notification]([notificationId],[toUserId],[titleEN],[titleBM],[messageEN],[messageBM],[isRead],[createdAt]) VALUES(@a,@b,'Welcome to ScienceBuddy!','Selamat Datang ke ScienceBuddy!','Your student account has been created. Start learning today!','Akaun pelajar anda telah dicipta. Mula belajar hari ini!',0,@c)", conn, txn))
+                        { cmd.Parameters.AddWithValue("@a", notifId); cmd.Parameters.AddWithValue("@b", userId); cmd.Parameters.AddWithValue("@c", DateTime.Now); cmd.ExecuteNonQuery(); }
+
+                        // 4. Insert Log
+                        string logId = GenId(conn, "Log", "logId", "LOG", txn);
+                        using (var cmd = new SqlCommand("INSERT INTO dbo.[Log]([logId],[userId],[action],[description],[logDateTime],[status]) VALUES(@a,@b,@c,@d,@e,'Success')", conn, txn))
+                        { cmd.Parameters.AddWithValue("@a", logId); cmd.Parameters.AddWithValue("@b", adminId); cmd.Parameters.AddWithValue("@c", "Added Student"); cmd.Parameters.AddWithValue("@d", "Created student: " + name + " (" + studentId + ")."); cmd.Parameters.AddWithValue("@e", DateTime.Now); cmd.ExecuteNonQuery(); }
+
+                        // COMMIT — all steps succeeded
+                        txn.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        // ROLLBACK — no partial records
+                        txn.Rollback();
+                        Response.Write("{\"success\":false,\"msg\":\"Transaction failed: " + EscJson(ex.Message) + "\"}");
+                        return;
+                    }
+                }
             }
             Response.Write("{\"success\":true}");
         }
@@ -510,7 +542,10 @@ namespace ScienceBuddy.Admin
         { if (string.IsNullOrEmpty(toUid)) return; string id = GenId(c, "Notification", "notificationId", "N"); using (var cmd = new SqlCommand("INSERT INTO dbo.[Notification]([notificationId],[toUserId],[titleEN],[titleBM],[messageEN],[messageBM],[isRead],[createdAt]) VALUES(@a,@b,@c,@d,@e,@f,0,@g)", c)) { cmd.Parameters.AddWithValue("@a", id); cmd.Parameters.AddWithValue("@b", toUid); cmd.Parameters.AddWithValue("@c", tEN); cmd.Parameters.AddWithValue("@d", tBM); cmd.Parameters.AddWithValue("@e", mEN); cmd.Parameters.AddWithValue("@f", mBM); cmd.Parameters.AddWithValue("@g", DateTime.Now); cmd.ExecuteNonQuery(); } }
 
         private string GenId(SqlConnection c, string tbl, string col, string pfx)
-        { using (var cmd = new SqlCommand(string.Format("SELECT TOP 1 [{0}] FROM dbo.[{1}] ORDER BY [{0}] DESC", col, tbl), c)) { var v = cmd.ExecuteScalar(); if (v == null || v == DBNull.Value) return pfx + "001"; string l = v.ToString(); int n; int.TryParse(l.Substring(pfx.Length), out n); n++; return pfx + n.ToString().PadLeft(l.Length - pfx.Length, '0'); } }
+        { return GenId(c, tbl, col, pfx, null); }
+
+        private string GenId(SqlConnection c, string tbl, string col, string pfx, SqlTransaction txn)
+        { using (var cmd = new SqlCommand(string.Format("SELECT TOP 1 [{0}] FROM dbo.[{1}] ORDER BY [{0}] DESC", col, tbl), c)) { cmd.Transaction = txn; var v = cmd.ExecuteScalar(); if (v == null || v == DBNull.Value) return pfx + "001"; string l = v.ToString(); int n; int.TryParse(l.Substring(pfx.Length), out n); n++; return pfx + n.ToString().PadLeft(l.Length - pfx.Length, '0'); } }
 
         private static string EscJson(string s) { return (s ?? "").Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", ""); }
     }

@@ -11,577 +11,355 @@ namespace ScienceBuddy.Student
 {
     public partial class ProgressReward : Page
     {
-        // ── Connection string ─────────────────────────────────────────
-        private string ConnStr =>
-            ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
-
-        // ── Language helper ────────────────────────────────────────────
+        private string ConnStr => ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
         public string CurrentLanguage = "EN";
+        public string T(string en, string bm) { return CurrentLanguage == "BM" ? bm : en; }
 
-        public string T(string en, string bm)
-        {
-            return CurrentLanguage == "BM" ? bm : en;
-        }
-
-        // ── XP progress percentage (used in aspx) ─────────────────────
-        public int XpPercent = 0;
-
-        // ── Page Load ─────────────────────────────────────────────────
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["userId"] == null || Session["role"] == null ||
-                Session["role"].ToString() != "Student")
-            {
-                Response.Redirect("~/Login.aspx", false);
-                return;
-            }
-
+            if (Session["userId"] == null || Session["role"] == null || Session["role"].ToString() != "Student")
+            { Response.Redirect("~/Login.aspx", false); return; }
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
-
-            if (!IsPostBack)
-            {
-                InitLang();
-                SetLabels();
-                LoadPage();
-            }
+            if (!IsPostBack) { InitLang(); LoadPage(); }
         }
 
-        // ── Language initialisation ───────────────────────────────────
         private void InitLang()
         {
             string lang = Session["preferredLanguage"] as string;
-            if (!string.IsNullOrEmpty(lang))
-            {
-                CurrentLanguage = lang;
-                return;
-            }
-
+            if (!string.IsNullOrEmpty(lang)) { CurrentLanguage = lang; return; }
             string userId = Session["userId"] as string;
             if (!string.IsNullOrEmpty(userId))
             {
                 try
                 {
-                    const string sql = "SELECT preferredLanguage FROM [User] WHERE userId = @userId";
                     using (var conn = new SqlConnection(ConnStr))
-                    using (var cmd = new SqlCommand(sql, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@userId", userId);
-                        conn.Open();
-                        object result = cmd.ExecuteScalar();
-                        if (result != null && result != DBNull.Value)
-                        {
-                            lang = result.ToString();
-                            Session["preferredLanguage"] = lang;
-                            CurrentLanguage = lang;
-                            return;
-                        }
-                    }
-                }
-                catch (SqlException) { }
+                    using (var cmd = new SqlCommand("SELECT preferredLanguage FROM [User] WHERE userId=@u", conn))
+                    { cmd.Parameters.AddWithValue("@u", userId); conn.Open(); var r = cmd.ExecuteScalar();
+                      if (r != null && r != DBNull.Value) { lang = r.ToString(); Session["preferredLanguage"] = lang; CurrentLanguage = lang; return; } }
+                } catch { }
             }
-
-            CurrentLanguage = "EN";
-            Session["preferredLanguage"] = "EN";
+            CurrentLanguage = "EN"; Session["preferredLanguage"] = "EN";
         }
 
-        // ── Set bilingual labels ──────────────────────────────────────
-        private void SetLabels()
-        {
-            litPageTitle.Text = T("Progress &amp; Rewards", "Kemajuan &amp; Ganjaran");
-            litXpTitle.Text = T("XP Progress", "Kemajuan XP");
-            litLessonsLabel.Text = T("Lessons Completed", "Pelajaran Selesai");
-            litLabsLabel.Text = T("Labs Completed", "Makmal Selesai");
-            litQuizzesLabel.Text = T("Quizzes Attempted", "Kuiz Dijawab");
-            litBadgesLabel.Text = T("Badges Earned", "Lencana Diperolehi");
-            litCertsLabel.Text = T("Certificates Earned", "Sijil Diperolehi");
-            litTotalXPLabel.Text = T("Total XP", "Jumlah XP");
-            litBadgeSection.Text = T("Badge Collection", "Koleksi Lencana");
-            litActivitySection.Text = T("Recent XP Activity", "Aktiviti XP Terkini");
-            litNoActivity.Text = T("No XP activity yet.", "Tiada aktiviti XP lagi.");
-            litCertSection.Text = T("Certificates", "Sijil");
-            litNoCerts.Text = T("No certificates yet.", "Tiada sijil lagi.");
-            litNavRanking.Text = T("View Ranking", "Lihat Kedudukan");
-            litNavLearning.Text = T("Continue Learning", "Teruskan Pembelajaran");
-            litNavPractice.Text = T("Practice Library", "Perpustakaan Latihan");
-            litNavLabs.Text = T("Virtual Labs", "Makmal Maya");
-            litHeroMotivate.Text = T("Amazing progress!", "Kemajuan yang hebat!");
-        }
-
-        // ── Main data loading ─────────────────────────────────────────
         private void LoadPage()
         {
+            SetLabels();
             using (var conn = new SqlConnection(ConnStr))
             {
                 conn.Open();
-
-                // Get studentId
                 string studentId = GetStudentId(conn);
-                if (string.IsNullOrEmpty(studentId))
-                {
-                    litHeroName.Text = T("Welcome, Student!", "Selamat Datang, Pelajar!");
-                    return;
-                }
+                if (string.IsNullOrEmpty(studentId)) { pnlMain.Visible = false; pnlEmpty.Visible = true; return; }
 
-                // 1. Get student info
-                int xp = 0;
-                string studentName = "";
-                string nickname = "";
-                string currentLevelId = "";
-                string personalityId = "";
+                int totalXP = GetInt(conn, "SELECT ISNULL(XP,0) FROM Student WHERE studentId=@s", studentId);
+                int lessonsCompleted = GetInt(conn, "SELECT COUNT(*) FROM LessonProgress WHERE studentId=@s AND isCompleted=1", studentId);
+                int quizzesAttempted = GetInt(conn, "SELECT COUNT(*) FROM QuizResult WHERE studentId=@s", studentId);
+                int badgesEarned = GetInt(conn, "SELECT COUNT(*) FROM StudentBadge WHERE studentId=@s", studentId);
 
-                if (Tbl(conn, "Student"))
+                if (totalXP == 0 && lessonsCompleted == 0 && quizzesAttempted == 0 && badgesEarned == 0)
+                { pnlMain.Visible = false; pnlEmpty.Visible = true; return; }
+
+                litStatXP.Text = totalXP.ToString("N0");
+                litStatLessons.Text = lessonsCompleted.ToString();
+                litStatQuizzes.Text = quizzesAttempted.ToString();
+                litStatBadges.Text = badgesEarned.ToString();
+
+                BuildWeeklyChart(conn, studentId);
+                BuildQuizPerformance(conn, studentId);
+                BuildWeakTopics(conn, studentId);
+                LoadBadges(conn, studentId);
+                BuildCertificates(conn, studentId);
+                BuildAIHint(conn, studentId);
+            }
+        }
+
+        private void SetLabels()
+        {
+            litPageTitle.Text = T("Progress &amp; Rewards", "Kemajuan &amp; Ganjaran");
+            litHeroTitle.Text = T("My Progress &amp; Rewards", "Kemajuan &amp; Ganjaran Saya");
+            litHeroSubtitle.Text = T("See your learning journey, badges, quiz results, and certificates in one place.",
+                "Lihat perjalanan pembelajaran, lencana, keputusan kuiz dan sijil anda di satu tempat.");
+            litStatXPLabel.Text = T("Total XP", "Jumlah XP");
+            litStatLessonsLabel.Text = T("Lessons Completed", "Pelajaran Selesai");
+            litStatQuizzesLabel.Text = T("Quizzes Attempted", "Kuiz Dijawab");
+            litStatBadgesLabel.Text = T("Badges Earned", "Lencana Diperolehi");
+            litWeeklyTitle.Text = T("Weekly Activity", "Aktiviti Mingguan");
+            litChartLegend.Text = T("Activities include completed lessons, labs, quizzes, and study plan tasks.",
+                "Aktiviti termasuk pelajaran, makmal, kuiz dan tugasan pelan belajar yang selesai.");
+            litQuizPerfTitle.Text = T("Quiz Performance by Unit", "Prestasi Kuiz Mengikut Unit");
+            litWeakTitle.Text = T("Topics to Review", "Topik untuk Ulangkaji");
+            litBadgeTitle.Text = T("Badge Collection", "Koleksi Lencana");
+            litCertTitle.Text = T("Certificate Status", "Status Sijil");
+            litAIHintTitle.Text = T("Buddy's Study Tip", "Tip Kajian Buddy");
+            litEmptyTitle.Text = T("No Progress Yet", "Tiada Kemajuan Lagi");
+            litEmptyDesc.Text = T("Start your learning journey to see your progress here!", "Mulakan perjalanan pembelajaran anda untuk melihat kemajuan di sini!");
+            litEmptyBtn.Text = T("Start Learning", "Mula Belajar");
+        }
+
+        private void BuildWeeklyChart(SqlConnection conn, string studentId)
+        {
+            DateTime today = DateTime.Today;
+            DateTime weekAgo = today.AddDays(-6);
+
+            // Include SPTask if table exists
+            bool hasSPTask = Tbl(conn, "SPTask");
+            string spTaskUnion = hasSPTask ? @"
+                UNION ALL
+                SELECT spt.completedAt AS actDate FROM SPTask spt
+                INNER JOIN StudyPlan sp ON sp.studyPlanId = spt.studyPlanId
+                INNER JOIN StudentParent stp ON stp.studentParentId = sp.studentParentId
+                WHERE stp.studentId = @s AND spt.isCompleted = 1
+                  AND spt.completedAt >= @startDate AND spt.completedAt < @endDate" : "";
+
+            string sql = string.Format(@"
+                SELECT CAST(actDate AS DATE) AS actDay, COUNT(*) AS cnt FROM (
+                    SELECT completedDate AS actDate FROM LessonProgress WHERE studentId=@s AND isCompleted=1 AND completedDate>=@startDate AND completedDate<@endDate
+                    UNION ALL
+                    SELECT completedDate AS actDate FROM LabProgress WHERE studentId=@s AND isCompleted=1 AND completedDate>=@startDate AND completedDate<@endDate
+                    UNION ALL
+                    SELECT attemptedDate AS actDate FROM QuizResult WHERE studentId=@s AND attemptedDate>=@startDate AND attemptedDate<@endDate
+                    {0}
+                ) AS combined GROUP BY CAST(actDate AS DATE)", spTaskUnion);
+
+            var dailyCounts = new Dictionary<DateTime, int>();
+            using (var cmd = new SqlCommand(sql, conn))
+            {
+                cmd.Parameters.AddWithValue("@s", studentId);
+                cmd.Parameters.AddWithValue("@startDate", weekAgo);
+                cmd.Parameters.AddWithValue("@endDate", today.AddDays(1));
+                using (var rdr = cmd.ExecuteReader())
+                { while (rdr.Read()) { dailyCounts[rdr.GetDateTime(0).Date] = rdr.GetInt32(1); } }
+            }
+
+            int maxCount = 0;
+            foreach (var v in dailyCounts.Values) { if (v > maxCount) maxCount = v; }
+            bool allZero = maxCount == 0;
+            if (maxCount == 0) maxCount = 1;
+
+            string[] dayEN = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+            string[] dayBM = { "Ahd", "Isn", "Sel", "Rab", "Kha", "Jum", "Sab" };
+
+            var html = new System.Text.StringBuilder();
+            if (allZero)
+            {
+                html.Append("<div class=\"st-progress-chart-empty-msg\"><i class=\"bi bi-bar-chart\"></i> ");
+                html.Append(T("No learning activity recorded this week yet. Complete a lesson or quiz to fill this chart!",
+                    "Belum ada aktiviti pembelajaran minggu ini. Selesaikan pelajaran atau kuiz untuk mengisi carta ini!"));
+                html.Append("</div>");
+            }
+            html.Append("<div class=\"st-progress-chart-bars\">");
+            for (int i = 0; i < 7; i++)
+            {
+                DateTime day = weekAgo.AddDays(i);
+                int count; dailyCounts.TryGetValue(day.Date, out count);
+                int heightPct = (int)((double)count / maxCount * 100);
+                if (count > 0 && heightPct < 10) heightPct = 10;
+                string barClass = count > 0 ? "st-progress-chart-bar active" : "st-progress-chart-bar";
+                string dayLabel = CurrentLanguage == "BM" ? dayBM[(int)day.DayOfWeek] : dayEN[(int)day.DayOfWeek];
+
+                html.Append("<div class=\"st-progress-chart-col\">");
+                html.AppendFormat("<div class=\"st-progress-chart-value\">{0}</div>", count);
+                html.Append("<div class=\"st-progress-chart-bar-wrap\">");
+                html.AppendFormat("<div class=\"{0}\" style=\"height:{1}%;\"></div>", barClass, allZero ? 4 : heightPct);
+                html.Append("</div>");
+                html.AppendFormat("<div class=\"st-progress-chart-label\">{0}</div>", dayLabel);
+                html.Append("</div>");
+            }
+            html.Append("</div>");
+            litWeeklyChart.Text = html.ToString();
+        }
+
+        private void BuildQuizPerformance(SqlConnection conn, string studentId)
+        {
+            string col = CurrentLanguage == "BM" ? "u.unitNameBM" : "u.unitNameEN";
+            string sql = string.Format(@"SELECT {0} AS unitName, AVG(qr.percentage) AS avgPct, MAX(qr.percentage) AS bestPct
+                FROM QuizResult qr INNER JOIN Quiz q ON q.quizId=qr.quizId INNER JOIN Unit u ON u.unitId=q.unitId
+                WHERE qr.studentId=@s GROUP BY {0} ORDER BY bestPct DESC", col);
+
+            var dt = new DataTable();
+            using (var cmd = new SqlCommand(sql, conn)) { cmd.Parameters.AddWithValue("@s", studentId); new SqlDataAdapter(cmd).Fill(dt); }
+            if (dt.Rows.Count == 0) { pnlQuizPerf.Visible = false; pnlNoQuizPerf.Visible = true;
+                litNoQuizPerf.Text = T("No quiz attempts yet. Take a quiz to see your performance!", "Tiada percubaan kuiz lagi. Jawab kuiz untuk melihat prestasi anda!"); return; }
+
+            var html = new System.Text.StringBuilder("<div class=\"st-progress-quiz-perf-list\">");
+            foreach (DataRow row in dt.Rows)
+            {
+                string name = row["unitName"] != DBNull.Value ? row["unitName"].ToString() : "\u2014";
+                int best = row["bestPct"] != DBNull.Value ? (int)Convert.ToDecimal(row["bestPct"]) : 0;
+                string cls, lbl;
+                if (best >= 80) { cls = "excellent"; lbl = T("Excellent", "Cemerlang"); }
+                else if (best >= 60) { cls = "good"; lbl = T("Good", "Baik"); }
+                else { cls = "needs-revision"; lbl = T("Needs Revision", "Perlu Ulangkaji"); }
+
+                html.Append("<div class=\"st-progress-quiz-perf-item\">");
+                html.AppendFormat("<div class=\"st-progress-quiz-perf-info\"><span class=\"st-progress-quiz-perf-name\">{0}</span><span class=\"st-progress-quiz-perf-badge {1}\">{2}</span></div>", HttpUtility.HtmlEncode(name), cls, lbl);
+                html.AppendFormat("<div class=\"st-progress-quiz-perf-bar-wrap\"><div class=\"st-progress-quiz-perf-bar {0}\" style=\"width:{1}%;\"></div></div>", cls, best);
+                html.AppendFormat("<div class=\"st-progress-quiz-perf-pct\">{0}%</div>", best);
+                html.Append("</div>");
+            }
+            html.Append("</div>");
+            litQuizPerfContent.Text = html.ToString();
+        }
+
+        private void BuildWeakTopics(SqlConnection conn, string studentId)
+        {
+            string col = CurrentLanguage == "BM" ? "st.subtopicTitleBM" : "st.subtopicTitleEN";
+            string sql = string.Format(@"SELECT TOP 3 {0} AS subtopicName, COUNT(*) AS wrongCount
+                FROM QuizAnswer qa INNER JOIN QuizResult qr ON qr.resultId=qa.resultId
+                INNER JOIN Question q ON q.questionId=qa.questionId
+                INNER JOIN Subtopic st ON st.subtopicId=q.subtopicId
+                WHERE qr.studentId=@s AND qa.isCorrect=0
+                GROUP BY {0} ORDER BY COUNT(*) DESC", col);
+
+            var dt = new DataTable();
+            using (var cmd = new SqlCommand(sql, conn)) { cmd.Parameters.AddWithValue("@s", studentId); new SqlDataAdapter(cmd).Fill(dt); }
+            if (dt.Rows.Count == 0) { pnlWeakTopics.Visible = false; pnlNoWeakTopics.Visible = true;
+                litNoWeakTopics.Text = T("No weak topics found yet. Keep attempting quizzes!", "Tiada topik lemah ditemui lagi. Teruskan menjawab kuiz!"); return; }
+
+            string reviewText = T("Review Lesson", "Ulangkaji Pelajaran");
+            var html = new System.Text.StringBuilder("<div class=\"st-progress-weak-list\">");
+            foreach (DataRow row in dt.Rows)
+            {
+                string name = row["subtopicName"] != DBNull.Value ? row["subtopicName"].ToString() : "\u2014";
+                int cnt = Convert.ToInt32(row["wrongCount"]);
+                html.Append("<div class=\"st-progress-weak-item\">");
+                html.AppendFormat("<div class=\"st-progress-weak-info\"><div class=\"st-progress-weak-name\"><i class=\"bi bi-exclamation-circle\"></i> {0}</div><div class=\"st-progress-weak-count\">{1} {2}</div></div>",
+                    HttpUtility.HtmlEncode(name), cnt, T("wrong answers", "jawapan salah"));
+                html.AppendFormat("<a href=\"{0}\" class=\"st-progress-weak-btn\"><i class=\"bi bi-arrow-repeat\"></i> {1}</a>", ResolveUrl("~/Student/MyLearning.aspx"), reviewText);
+                html.Append("</div>");
+            }
+            html.Append("</div>");
+            litWeakTopicsContent.Text = html.ToString();
+        }
+
+        private void LoadBadges(SqlConnection conn, string studentId)
+        {
+            string sql = @"SELECT b.badgeId,b.badgeNameEN,b.badgeNameBM,b.badgeDescriptionEN,b.badgeDescriptionBM,b.badgeIcon,
+                sb.studentBadgeId,sb.earnedAt FROM Badge b LEFT JOIN StudentBadge sb ON sb.badgeId=b.badgeId AND sb.studentId=@s
+                ORDER BY CASE WHEN sb.studentBadgeId IS NOT NULL THEN 0 ELSE 1 END, b.badgeId";
+            var dt = new DataTable();
+            using (var cmd = new SqlCommand(sql, conn)) { cmd.Parameters.AddWithValue("@s", studentId); new SqlDataAdapter(cmd).Fill(dt); }
+            if (dt.Rows.Count == 0) { pnlBadges.Visible = false; pnlNoBadges.Visible = true;
+                litNoBadges.Text = T("No badges available yet.", "Tiada lencana tersedia lagi."); return; }
+
+            bool isBM = CurrentLanguage == "BM";
+            string earnedLbl = T("Earned", "Diperoleh"); string lockedLbl = T("Locked", "Dikunci");
+            var list = new List<object>();
+            foreach (DataRow row in dt.Rows)
+            {
+                bool earned = row["studentBadgeId"] != DBNull.Value;
+                string name = isBM ? (row["badgeNameBM"]?.ToString() ?? row["badgeNameEN"]?.ToString() ?? "") : (row["badgeNameEN"]?.ToString() ?? "");
+                string desc = isBM ? (row["badgeDescriptionBM"]?.ToString() ?? row["badgeDescriptionEN"]?.ToString() ?? "") : (row["badgeDescriptionEN"]?.ToString() ?? "");
+                string icon = row["badgeIcon"] != DBNull.Value ? row["badgeIcon"].ToString() : "";
+                string iconUrl = "";
+                if (!string.IsNullOrWhiteSpace(icon))
+                    iconUrl = icon.StartsWith("~/") ? ResolveUrl(icon) : icon.StartsWith("Images/") ? ResolveUrl("~/" + icon) : ResolveUrl("~/Images/Badge/" + icon);
+                string earnedDate = earned && row["earnedAt"] != DBNull.Value ? Convert.ToDateTime(row["earnedAt"]).ToString("dd MMM yyyy") : "";
+                string earnedText = earned && !string.IsNullOrEmpty(earnedDate) ? earnedLbl + " &bull; " + earnedDate : earnedLbl;
+
+                list.Add(new { Name = HttpUtility.HtmlEncode(name), Description = HttpUtility.HtmlEncode(desc), IconUrl = iconUrl, IsEarned = earned, EarnedText = earnedText, LockedText = lockedLbl });
+            }
+            rptBadges.DataSource = list; rptBadges.DataBind();
+        }
+
+        private void BuildCertificates(SqlConnection conn, string studentId)
+        {
+            string lvCol = CurrentLanguage == "BM" ? "l.levelNameBM" : "l.levelNameEN";
+            string ctCol = CurrentLanguage == "BM" ? "c.certificateTitleBM" : "c.certificateTitleEN";
+            string sql = string.Format(@"SELECT l.levelId, {0} AS levelName, {1} AS certTitle, c.issuedDate, c.status AS certStatus, c.certificateUrl, c.certificateCode
+                FROM Level l LEFT JOIN Certificate c ON c.levelId=l.levelId AND c.studentId=@s ORDER BY l.levelId", lvCol, ctCol);
+            var dt = new DataTable();
+            using (var cmd = new SqlCommand(sql, conn)) { cmd.Parameters.AddWithValue("@s", studentId); new SqlDataAdapter(cmd).Fill(dt); }
+
+            var html = new System.Text.StringBuilder("<div class=\"st-progress-cert-grid\">");
+            if (dt.Rows.Count == 0)
+            { html.Append("<div class=\"st-progress-empty-state\"><i class=\"bi bi-file-earmark-check\"></i><p>"); html.Append(T("Complete levels to unlock certificates!", "Selesaikan tahap untuk membuka sijil!")); html.Append("</p></div>"); }
+            else
+            {
+                string viewText = T("View Certificate", "Lihat Sijil");
+                string downloadText = T("Download Certificate", "Muat Turun Sijil");
+                string pendingText = T("Certificate pending approval", "Sijil menunggu kelulusan");
+                string lockedText = T("Complete level to unlock", "Selesaikan tahap untuk membuka sijil");
+
+                foreach (DataRow row in dt.Rows)
                 {
-                    const string sqlStudent = @"
-                        SELECT studentId, name, nickname, XP, currentlevelId, personalityId
-                        FROM   Student
-                        WHERE  studentId = @s";
-                    using (var cmd = new SqlCommand(sqlStudent, conn))
+                    string levelName = row["levelName"] != DBNull.Value ? row["levelName"].ToString() : "\u2014";
+                    bool hasCert = row["certTitle"] != DBNull.Value;
+                    string certStatus = hasCert ? (row["certStatus"]?.ToString() ?? "") : "";
+
+                    // Certificate is available if status is Active, Approved, or Available
+                    bool isAvailable = hasCert && (certStatus == "Active" || certStatus == "Approved" || certStatus == "Available");
+                    bool isPending = hasCert && certStatus == "Pending";
+
+                    // Resolve certificate URL - ensure it uses Images/Certificate/ path
+                    string certUrl = "";
+                    if (isAvailable && row["certificateUrl"] != DBNull.Value)
                     {
-                        cmd.Parameters.AddWithValue("@s", studentId);
-                        using (var rdr = cmd.ExecuteReader())
+                        string rawUrl = row["certificateUrl"].ToString().Trim();
+                        if (!string.IsNullOrEmpty(rawUrl))
                         {
-                            if (rdr.Read())
-                            {
-                                studentName = rdr["name"] != DBNull.Value ? rdr["name"].ToString() : "";
-                                nickname = rdr["nickname"] != DBNull.Value ? rdr["nickname"].ToString() : "";
-                                xp = rdr["XP"] != DBNull.Value ? Convert.ToInt32(rdr["XP"]) : 0;
-                                currentLevelId = rdr["currentlevelId"] != DBNull.Value ? rdr["currentlevelId"].ToString() : "";
-                                personalityId = rdr["personalityId"] != DBNull.Value ? rdr["personalityId"].ToString() : "";
-                            }
+                            if (rawUrl.StartsWith("~/")) certUrl = ResolveUrl(rawUrl);
+                            else if (rawUrl.StartsWith("Images/")) certUrl = ResolveUrl("~/" + rawUrl);
+                            else certUrl = ResolveUrl("~/Images/Certificate/" + rawUrl);
                         }
                     }
-                }
+                    bool canView = !string.IsNullOrEmpty(certUrl);
 
-                // 2. Get level name
-                string levelName = "";
-                if (!string.IsNullOrEmpty(currentLevelId) && Tbl(conn, "Level"))
-                {
-                    string sqlLevel = CurrentLanguage == "BM"
-                        ? "SELECT levelNameBM FROM Level WHERE levelId = @lid"
-                        : "SELECT levelNameEN FROM Level WHERE levelId = @lid";
-                    using (var cmd = new SqlCommand(sqlLevel, conn))
+                    html.AppendFormat("<div class=\"st-progress-cert-card {0}\">", isAvailable ? "earned" : "locked");
+                    html.AppendFormat("<div class=\"st-progress-cert-icon-wrap\"><i class=\"bi {0}\"></i></div>", isAvailable ? "bi-file-earmark-check-fill" : isPending ? "bi-hourglass-split" : "bi-lock-fill");
+                    html.AppendFormat("<div class=\"st-progress-cert-level\">{0}</div>", HttpUtility.HtmlEncode(levelName));
+
+                    if (isAvailable)
                     {
-                        cmd.Parameters.AddWithValue("@lid", currentLevelId);
-                        object result = cmd.ExecuteScalar();
-                        if (result != null && result != DBNull.Value)
-                            levelName = result.ToString();
+                        string certTitle = row["certTitle"].ToString();
+                        string issuedDate = row["issuedDate"] != DBNull.Value ? Convert.ToDateTime(row["issuedDate"]).ToString("dd MMM yyyy") : "";
+                        html.AppendFormat("<div class=\"st-progress-cert-title\">{0}</div>", HttpUtility.HtmlEncode(certTitle));
+                        if (!string.IsNullOrEmpty(issuedDate))
+                            html.AppendFormat("<div class=\"st-progress-cert-date\"><i class=\"bi bi-calendar3\"></i> {0}</div>", issuedDate);
+                        if (canView)
+                            html.AppendFormat("<button type=\"button\" class=\"st-progress-cert-download\" onclick=\"openCertModal('{0}')\"><i class=\"bi bi-eye-fill\"></i> {1}</button>", HttpUtility.JavaScriptStringEncode(certUrl), viewText);
                     }
+                    else if (isPending)
+                    { html.AppendFormat("<div class=\"st-progress-cert-pending\">{0}</div>", pendingText); }
+                    else
+                    { html.AppendFormat("<div class=\"st-progress-cert-locked-msg\">{0}</div>", lockedText); }
+                    html.Append("</div>");
                 }
-
-                // 3. Get personality name
-                string personalityName = "";
-                if (!string.IsNullOrEmpty(personalityId) && Tbl(conn, "Personality"))
-                {
-                    string sqlPers = CurrentLanguage == "BM"
-                        ? "SELECT personalityNameBM FROM Personality WHERE personalityId = @pid"
-                        : "SELECT personalityNameEN FROM Personality WHERE personalityId = @pid";
-                    using (var cmd = new SqlCommand(sqlPers, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@pid", personalityId);
-                        object result = cmd.ExecuteScalar();
-                        if (result != null && result != DBNull.Value)
-                            personalityName = result.ToString();
-                    }
-                }
-
-                // 4. Set hero section
-                string displayName = !string.IsNullOrEmpty(nickname) ? nickname : studentName;
-                litHeroName.Text = HttpUtility.HtmlEncode(displayName);
-                litHeroLevel.Text = HttpUtility.HtmlEncode(levelName);
-                litHeroXP.Text = xp.ToString("N0");
-                litHeroPersonality.Text = HttpUtility.HtmlEncode(personalityName);
-                litTotalXP.Text = xp.ToString("N0");
-
-                // 5. Set XP progress bar (milestones: 100, 250, 500, 1000)
-                int[] milestones = { 100, 250, 500, 1000 };
-                int nextMilestone = milestones[milestones.Length - 1];
-                int prevMilestone = 0;
-                foreach (int m in milestones)
-                {
-                    if (xp < m)
-                    {
-                        nextMilestone = m;
-                        break;
-                    }
-                    prevMilestone = m;
-                }
-                if (xp >= milestones[milestones.Length - 1])
-                {
-                    // Beyond all milestones — show full bar
-                    prevMilestone = 0;
-                    nextMilestone = xp;
-                    XpPercent = 100;
-                }
-                else
-                {
-                    int range = nextMilestone - prevMilestone;
-                    int progress = xp - prevMilestone;
-                    XpPercent = range > 0 ? (int)((double)progress / range * 100) : 0;
-                    if (XpPercent < 2) XpPercent = 2;
-                }
-
-                litXpCurrent.Text = xp.ToString("N0") + " XP";
-                litXpNext.Text = nextMilestone.ToString("N0") + " XP";
-                litXpMilestone.Text = T("Next Milestone", "Pencapaian Seterusnya") + ": " + nextMilestone.ToString("N0") + " XP";
-
-                // 6. Count lessons completed
-                int lessonsCount = 0;
-                if (Tbl(conn, "LessonProgress"))
-                {
-                    const string sqlLessons = "SELECT COUNT(*) FROM LessonProgress WHERE studentId = @s AND isCompleted = 1";
-                    using (var cmd = new SqlCommand(sqlLessons, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@s", studentId);
-                        lessonsCount = (int)cmd.ExecuteScalar();
-                    }
-                }
-                litLessonsCount.Text = lessonsCount.ToString();
-
-                // 7. Count labs completed
-                int labsCount = 0;
-                if (Tbl(conn, "LabProgress"))
-                {
-                    const string sqlLabs = "SELECT COUNT(*) FROM LabProgress WHERE studentId = @s AND isCompleted = 1";
-                    using (var cmd = new SqlCommand(sqlLabs, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@s", studentId);
-                        labsCount = (int)cmd.ExecuteScalar();
-                    }
-                }
-                litLabsCount.Text = labsCount.ToString();
-
-                // 8. Count quiz attempts
-                int quizCount = 0;
-                if (Tbl(conn, "QuizResult"))
-                {
-                    const string sqlQuiz = "SELECT COUNT(*) FROM QuizResult WHERE studentId = @s";
-                    using (var cmd = new SqlCommand(sqlQuiz, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@s", studentId);
-                        quizCount = (int)cmd.ExecuteScalar();
-                    }
-                }
-                litQuizzesCount.Text = quizCount.ToString();
-
-                // 9. Count badges earned
-                int badgesCount = 0;
-                if (Tbl(conn, "StudentBadge"))
-                {
-                    const string sqlBadges = "SELECT COUNT(*) FROM StudentBadge WHERE studentId = @s";
-                    using (var cmd = new SqlCommand(sqlBadges, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@s", studentId);
-                        badgesCount = (int)cmd.ExecuteScalar();
-                    }
-                }
-                litBadgesCount.Text = badgesCount.ToString();
-
-                // 10. Count certificates
-                int certsCount = 0;
-                if (Tbl(conn, "Certificate"))
-                {
-                    const string sqlCerts = "SELECT COUNT(*) FROM Certificate WHERE studentId = @s";
-                    using (var cmd = new SqlCommand(sqlCerts, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@s", studentId);
-                        certsCount = (int)cmd.ExecuteScalar();
-                    }
-                }
-                litCertsCount.Text = certsCount.ToString();
-
-                // 11. Load badge collection
-                LoadBadgeCollection(conn, studentId);
-
-                // 12. Load XP transactions
-                LoadXPActivity(conn, studentId);
-
-                // 13. Load certificates
-                LoadCertificates(conn, studentId);
             }
+            html.Append("</div>");
+            litCertContent.Text = html.ToString();
         }
 
-        // ── Load badge collection ─────────────────────────────────────
-        private void LoadBadgeCollection(SqlConnection conn, string studentId)
+        private void BuildAIHint(SqlConnection conn, string studentId)
         {
-            if (!Tbl(conn, "Badge"))
-            {
-                pnlBadges.Visible = false;
-                pnlNoBadges.Visible = true;
-                litNoBadges.Text = T("No badges available yet.", "Tiada lencana tersedia lagi.");
-                return;
-            }
+            string col = CurrentLanguage == "BM" ? "u.unitNameBM" : "u.unitNameEN";
+            string sql = string.Format(@"SELECT {0} AS unitName, AVG(qr.percentage) AS avgPct FROM QuizResult qr
+                INNER JOIN Quiz q ON q.quizId=qr.quizId INNER JOIN Unit u ON u.unitId=q.unitId
+                WHERE qr.studentId=@s GROUP BY {0} ORDER BY avgPct", col);
+            var dt = new DataTable();
+            using (var cmd = new SqlCommand(sql, conn)) { cmd.Parameters.AddWithValue("@s", studentId); new SqlDataAdapter(cmd).Fill(dt); }
 
-            bool hasStudentBadge = Tbl(conn, "StudentBadge");
+            if (dt.Rows.Count < 1) { pnlAIHint.Visible = false; return; }
+            string weakest = dt.Rows[0]["unitName"]?.ToString() ?? "\u2014";
+            string strongest = dt.Rows[dt.Rows.Count - 1]["unitName"]?.ToString() ?? "\u2014";
 
-            string sql = @"
-                SELECT  b.badgeId, b.badgeNameEN, b.badgeNameBM,
-                        b.badgeDescriptionEN, b.badgeDescriptionBM,
-                        b.requirementDescriptionEN, b.requirementDescriptionBM,
-                        b.xpReward, b.badgeIcon, b.badgeType"
-                + (hasStudentBadge ? @",
-                        sb.studentBadgeId, sb.earnedAt" : @",
-                        NULL AS studentBadgeId, NULL AS earnedAt")
-                + @"
-                FROM    Badge b"
-                + (hasStudentBadge ? @"
-                LEFT JOIN StudentBadge sb ON sb.badgeId = b.badgeId AND sb.studentId = @s" : "")
-                + @"
-                ORDER BY b.badgeId";
-
-            using (var cmd = new SqlCommand(sql, conn))
-            {
-                if (hasStudentBadge)
-                    cmd.Parameters.AddWithValue("@s", studentId);
-
-                var da = new SqlDataAdapter(cmd);
-                var dt = new DataTable();
-                da.Fill(dt);
-
-                if (dt.Rows.Count == 0)
-                {
-                    pnlBadges.Visible = false;
-                    pnlNoBadges.Visible = true;
-                    litNoBadges.Text = T("No badges available yet.", "Tiada lencana tersedia lagi.");
-                    return;
-                }
-
-                pnlBadges.Visible = true;
-                pnlNoBadges.Visible = false;
-
-                bool isBM = CurrentLanguage == "BM";
-                string earnedText = T("Earned", "Diperolehi");
-                string lockedText = T("Locked", "Dikunci");
-
-                var badgeList = new List<object>();
-                foreach (DataRow row in dt.Rows)
-                {
-                    bool isEarned = row["studentBadgeId"] != DBNull.Value;
-
-                    string name = isBM
-                        ? (row["badgeNameBM"] != DBNull.Value ? row["badgeNameBM"].ToString() : row["badgeNameEN"].ToString())
-                        : (row["badgeNameEN"] != DBNull.Value ? row["badgeNameEN"].ToString() : "");
-
-                    string description = isBM
-                        ? (row["badgeDescriptionBM"] != DBNull.Value ? row["badgeDescriptionBM"].ToString() : row["badgeDescriptionEN"]?.ToString() ?? "")
-                        : (row["badgeDescriptionEN"] != DBNull.Value ? row["badgeDescriptionEN"].ToString() : "");
-
-                    string requirement = isBM
-                        ? (row["requirementDescriptionBM"] != DBNull.Value ? row["requirementDescriptionBM"].ToString() : row["requirementDescriptionEN"]?.ToString() ?? "")
-                        : (row["requirementDescriptionEN"] != DBNull.Value ? row["requirementDescriptionEN"].ToString() : "");
-
-                    int xpReward = row["xpReward"] != DBNull.Value ? Convert.ToInt32(row["xpReward"]) : 0;
-                    string icon = row["badgeIcon"] != DBNull.Value ? row["badgeIcon"].ToString() : "";
-                    string iconUrl = "";
-                    if (!string.IsNullOrWhiteSpace(icon))
-                    {
-                        iconUrl = icon.StartsWith("~/") ? ResolveUrl(icon)
-                            : icon.StartsWith("Images/") ? ResolveUrl("~/" + icon)
-                            : ResolveUrl("~/Images/Badge/" + icon);
-                    }
-                    string badgeType = row["badgeType"] != DBNull.Value ? row["badgeType"].ToString() : "";
-
-                    string earnedDate = "";
-                    if (isEarned && row["earnedAt"] != DBNull.Value)
-                    {
-                        earnedDate = Convert.ToDateTime(row["earnedAt"]).ToString("dd MMM yyyy");
-                    }
-
-                    badgeList.Add(new
-                    {
-                        Name = HttpUtility.HtmlEncode(name),
-                        Description = HttpUtility.HtmlEncode(description),
-                        Requirement = HttpUtility.HtmlEncode(requirement),
-                        XpReward = xpReward,
-                        IconUrl = iconUrl,
-                        IsEarned = isEarned,
-                        EarnedDate = earnedDate,
-                        BadgeType = HttpUtility.HtmlEncode(badgeType),
-                        EarnedText = earnedText + (isEarned && !string.IsNullOrEmpty(earnedDate) ? " • " + earnedDate : ""),
-                        LockedText = lockedText
-                    });
-                }
-
-                rptBadges.DataSource = badgeList;
-                rptBadges.DataBind();
-            }
+            if (dt.Rows.Count == 1)
+                litAIHintText.Text = T("Keep practising <strong>" + HttpUtility.HtmlEncode(weakest) + "</strong> to improve your score!",
+                    "Teruskan berlatih <strong>" + HttpUtility.HtmlEncode(weakest) + "</strong> untuk meningkatkan markah!");
+            else
+                litAIHintText.Text = T("You're doing great in <strong>" + HttpUtility.HtmlEncode(strongest) + "</strong>! Buddy suggests revising <strong>" + HttpUtility.HtmlEncode(weakest) + "</strong> before your next quiz.",
+                    "Anda cemerlang dalam <strong>" + HttpUtility.HtmlEncode(strongest) + "</strong>! Buddy cadangkan ulangkaji <strong>" + HttpUtility.HtmlEncode(weakest) + "</strong> sebelum kuiz seterusnya.");
         }
 
-        // ── Load XP Activity ──────────────────────────────────────────
-        private void LoadXPActivity(SqlConnection conn, string studentId)
-        {
-            if (!Tbl(conn, "XPTransaction") || !Tbl(conn, "XPAction"))
-            {
-                pnlActivity.Visible = false;
-                pnlNoActivity.Visible = true;
-                return;
-            }
-
-            const string sql = @"
-                SELECT TOP 10 xt.xpAmount, xt.dateEarned,
-                       xa.actionNameEN, xa.actionNameBM
-                FROM   XPTransaction xt
-                INNER JOIN XPAction xa ON xa.xpActionId = xt.xpActionId
-                WHERE  xt.studentId = @s
-                ORDER BY xt.dateEarned DESC";
-
-            using (var cmd = new SqlCommand(sql, conn))
-            {
-                cmd.Parameters.AddWithValue("@s", studentId);
-                var da = new SqlDataAdapter(cmd);
-                var dt = new DataTable();
-                da.Fill(dt);
-
-                if (dt.Rows.Count == 0)
-                {
-                    pnlActivity.Visible = false;
-                    pnlNoActivity.Visible = true;
-                    return;
-                }
-
-                pnlActivity.Visible = true;
-                pnlNoActivity.Visible = false;
-
-                bool isBM = CurrentLanguage == "BM";
-
-                var activityList = new List<object>();
-                foreach (DataRow row in dt.Rows)
-                {
-                    string actionName = isBM
-                        ? (row["actionNameBM"] != DBNull.Value ? row["actionNameBM"].ToString() : row["actionNameEN"].ToString())
-                        : (row["actionNameEN"] != DBNull.Value ? row["actionNameEN"].ToString() : "");
-
-                    int xpAmount = row["xpAmount"] != DBNull.Value ? Convert.ToInt32(row["xpAmount"]) : 0;
-
-                    string date = "";
-                    if (row["dateEarned"] != DBNull.Value)
-                    {
-                        date = Convert.ToDateTime(row["dateEarned"]).ToString("dd MMM yyyy");
-                    }
-
-                    activityList.Add(new
-                    {
-                        ActionName = HttpUtility.HtmlEncode(actionName),
-                        XpAmount = xpAmount,
-                        Date = date
-                    });
-                }
-
-                rptActivity.DataSource = activityList;
-                rptActivity.DataBind();
-            }
-        }
-
-        // ── Load Certificates ─────────────────────────────────────────
-        private void LoadCertificates(SqlConnection conn, string studentId)
-        {
-            if (!Tbl(conn, "Certificate"))
-            {
-                pnlCerts.Visible = false;
-                pnlNoCerts.Visible = true;
-                return;
-            }
-
-            bool hasLevel = Tbl(conn, "Level");
-
-            string sql = @"
-                SELECT  c.certificateId, c.certificateTitleEN, c.certificateTitleBM,
-                        c.certificateDescriptionEN, c.certificateDescriptionBM,
-                        c.issuedDate, c.certificateUrl, c.certificateCode, c.status"
-                + (hasLevel ? @",
-                        l.levelNameEN, l.levelNameBM" : @",
-                        NULL AS levelNameEN, NULL AS levelNameBM")
-                + @"
-                FROM    Certificate c"
-                + (hasLevel ? @"
-                LEFT JOIN Level l ON l.levelId = c.levelId" : "")
-                + @"
-                WHERE   c.studentId = @s
-                ORDER BY c.issuedDate DESC";
-
-            using (var cmd = new SqlCommand(sql, conn))
-            {
-                cmd.Parameters.AddWithValue("@s", studentId);
-                var da = new SqlDataAdapter(cmd);
-                var dt = new DataTable();
-                da.Fill(dt);
-
-                if (dt.Rows.Count == 0)
-                {
-                    pnlCerts.Visible = false;
-                    pnlNoCerts.Visible = true;
-                    return;
-                }
-
-                pnlCerts.Visible = true;
-                pnlNoCerts.Visible = false;
-
-                bool isBM = CurrentLanguage == "BM";
-                string viewCertText = T("View Certificate", "Lihat Sijil");
-
-                var certList = new List<object>();
-                foreach (DataRow row in dt.Rows)
-                {
-                    string title = isBM
-                        ? (row["certificateTitleBM"] != DBNull.Value ? row["certificateTitleBM"].ToString() : row["certificateTitleEN"]?.ToString() ?? "")
-                        : (row["certificateTitleEN"] != DBNull.Value ? row["certificateTitleEN"].ToString() : "");
-
-                    string levelN = isBM
-                        ? (row["levelNameBM"] != DBNull.Value ? row["levelNameBM"].ToString() : row["levelNameEN"]?.ToString() ?? "")
-                        : (row["levelNameEN"] != DBNull.Value ? row["levelNameEN"].ToString() : "");
-
-                    string issuedDate = "";
-                    if (row["issuedDate"] != DBNull.Value)
-                    {
-                        issuedDate = Convert.ToDateTime(row["issuedDate"]).ToString("dd MMM yyyy");
-                    }
-
-                    string url = row["certificateUrl"] != DBNull.Value ? row["certificateUrl"].ToString() : "";
-                    bool hasUrl = !string.IsNullOrEmpty(url);
-
-                    certList.Add(new
-                    {
-                        Title = HttpUtility.HtmlEncode(title),
-                        Level = HttpUtility.HtmlEncode(levelN),
-                        IssuedDate = issuedDate,
-                        Url = HttpUtility.HtmlAttributeEncode(url),
-                        HasUrl = hasUrl,
-                        ViewText = viewCertText
-                    });
-                }
-
-                rptCerts.DataSource = certList;
-                rptCerts.DataBind();
-            }
-        }
-
-        // ── Get studentId for the logged-in user ──────────────────────
         private string GetStudentId(SqlConnection conn)
         {
-            if (!Tbl(conn, "Student")) return null;
-            string userId = Session["userId"] as string;
-            if (string.IsNullOrEmpty(userId)) return null;
-
-            const string sql = "SELECT studentId FROM Student WHERE userId = @userId";
-            using (var cmd = new SqlCommand(sql, conn))
-            {
-                cmd.Parameters.AddWithValue("@userId", userId);
-                object result = cmd.ExecuteScalar();
-                return result != null && result != DBNull.Value ? result.ToString() : null;
-            }
+            string uid = Session["userId"] as string; if (string.IsNullOrEmpty(uid)) return null;
+            using (var cmd = new SqlCommand("SELECT studentId FROM Student WHERE userId=@u", conn))
+            { cmd.Parameters.AddWithValue("@u", uid); var r = cmd.ExecuteScalar(); return r != null && r != DBNull.Value ? r.ToString() : null; }
         }
-
-        // ── Table exists helper ───────────────────────────────────────
-        private static bool Tbl(SqlConnection conn, string tableName)
-        {
-            const string sql = @"
-                SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
-                WHERE  TABLE_NAME = @tableName
-                AND    TABLE_TYPE = 'BASE TABLE'";
-            using (var cmd = new SqlCommand(sql, conn))
-            {
-                cmd.Parameters.AddWithValue("@tableName", tableName);
-                return (int)cmd.ExecuteScalar() > 0;
-            }
-        }
+        private int GetInt(SqlConnection conn, string sql, string studentId)
+        { using (var cmd = new SqlCommand(sql, conn)) { cmd.Parameters.AddWithValue("@s", studentId); var r = cmd.ExecuteScalar(); return r != null && r != DBNull.Value ? Convert.ToInt32(r) : 0; } }
+        private static bool Tbl(SqlConnection conn, string t)
+        { using (var cmd = new SqlCommand("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME=@t AND TABLE_TYPE='BASE TABLE'", conn))
+          { cmd.Parameters.AddWithValue("@t", t); return (int)cmd.ExecuteScalar() > 0; } }
     }
 }
