@@ -61,11 +61,27 @@
         </div>
 
         <%-- Summary --%>
-        <div class="em-summary">
-            <div class="em-sum-card"><span class="em-sum-value"><asp:Literal ID="litSumUnits" runat="server" /></span><span class="em-sum-label"><asp:Literal ID="litSumUnitsLabel" runat="server" /></span></div>
-            <div class="em-sum-card"><span class="em-sum-value"><asp:Literal ID="litSumLessons" runat="server" /></span><span class="em-sum-label"><asp:Literal ID="litSumLessonsLabel" runat="server" /></span></div>
-            <div class="em-sum-card"><span class="em-sum-value"><asp:Literal ID="litSumCompleted" runat="server" /></span><span class="em-sum-label"><asp:Literal ID="litSumCompletedLabel" runat="server" /></span></div>
-            <div class="em-sum-card"><span class="em-sum-value"><asp:Literal ID="litSumProgress" runat="server" /></span><span class="em-sum-label"><asp:Literal ID="litSumProgressLabel" runat="server" /></span></div>
+        <div class="pt-stat-grid">
+            <div class="pt-stat-card">
+                <div class="pt-stat-icon" style="color:#2563EB;"><i class="bi bi-journal-bookmark-fill"></i></div>
+                <div class="pt-stat-number"><asp:Literal ID="litSumUnits" runat="server" /></div>
+                <div class="pt-stat-label"><asp:Literal ID="litSumUnitsLabel" runat="server" /></div>
+            </div>
+            <div class="pt-stat-card">
+                <div class="pt-stat-icon" style="color:#7C3AED;"><i class="bi bi-file-earmark-text-fill"></i></div>
+                <div class="pt-stat-number"><asp:Literal ID="litSumLessons" runat="server" /></div>
+                <div class="pt-stat-label"><asp:Literal ID="litSumLessonsLabel" runat="server" /></div>
+            </div>
+            <div class="pt-stat-card">
+                <div class="pt-stat-icon" style="color:#16A34A;"><i class="bi bi-check2-square"></i></div>
+                <div class="pt-stat-number"><asp:Literal ID="litSumCompleted" runat="server" /></div>
+                <div class="pt-stat-label"><asp:Literal ID="litSumCompletedLabel" runat="server" /></div>
+            </div>
+            <div class="pt-stat-card">
+                <div class="pt-stat-icon" style="color:#F59E0B;"><i class="bi bi-pie-chart-fill"></i></div>
+                <div class="pt-stat-number"><asp:Literal ID="litSumProgress" runat="server" /></div>
+                <div class="pt-stat-label"><asp:Literal ID="litSumProgressLabel" runat="server" /></div>
+            </div>
         </div>
 
         <%-- Filters --%>

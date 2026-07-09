@@ -7,6 +7,7 @@ namespace ScienceBuddy.Parent
         protected global::System.Web.UI.WebControls.Literal litNoChildMsg;
         protected global::System.Web.UI.WebControls.Panel pnlNoPlan;
         protected global::System.Web.UI.WebControls.Literal litNoPlanMsg;
+        protected global::System.Web.UI.WebControls.Button btnCreatePlan;
         protected global::System.Web.UI.WebControls.Panel pnlContent;
         protected global::System.Web.UI.WebControls.Literal litPlanTitle;
         protected global::System.Web.UI.WebControls.Literal litPlanSub;
@@ -30,6 +31,7 @@ namespace ScienceBuddy.Parent
         protected global::System.Web.UI.WebControls.Literal litRemainingDays;
         protected global::System.Web.UI.WebControls.Panel pnlDaysLeftBanner;
         protected global::System.Web.UI.WebControls.Literal litDaysLeftBanner;
+        protected global::System.Web.UI.WebControls.Button btnResetPlan;
         protected global::System.Web.UI.WebControls.Literal litUnreadBadge;
 
     }

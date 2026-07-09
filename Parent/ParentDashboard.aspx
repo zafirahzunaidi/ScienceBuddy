@@ -336,6 +336,7 @@
                         <i class="bi bi-journal-check"></i>
                         <asp:Literal ID="litStudyPlanTitle" runat="server" />
                     </div>
+                    <a href="<%: ResolveUrl("~/Parent/EditStudyPlan.aspx") %>" class="pt-btn-icon" title="<%: T("Edit Plan","Edit Pelan") %>" style="width:30px;height:30px;border-radius:8px;background:#EEF2FF;color:#6366F1;border:none;display:flex;align-items:center;justify-content:center;"><i class="bi bi-pencil-square"></i></a>
                 </div>
                 <div class="pd-lower-card-body">
                     <asp:Panel ID="pnlStudyPlanCard" runat="server" Visible="false">

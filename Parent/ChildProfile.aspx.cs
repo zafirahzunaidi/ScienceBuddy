@@ -144,6 +144,7 @@ namespace ScienceBuddy.Parent
             LoadLearningPath();
             LoadRecentSummary();
             LoadAchievements();
+            LoadBadgeCollection();
         }
 
         // ═══════════════════════════════════════════════════
@@ -386,6 +387,66 @@ namespace ScienceBuddy.Parent
             }
             catch (SqlException) { }
         }
+
+        private void LoadBadgeCollection()
+        {
+            pnlBadgeGrid.Controls.Clear();
+            try
+            {
+                const string sql = @"SELECT b.badgeId, b.badgeNameEN, b.badgeNameBM, b.badgeDescriptionEN, b.badgeDescriptionBM,
+                    b.requirementDescriptionEN, b.xpReward,
+                    sb.earnedAt
+                    FROM dbo.[Badge] b
+                    LEFT JOIN dbo.[StudentBadge] sb ON b.badgeId=sb.badgeId AND sb.studentId=@s
+                    ORDER BY CASE WHEN sb.earnedAt IS NOT NULL THEN 0 ELSE 1 END, sb.earnedAt DESC, b.badgeNameEN";
+                using (var conn = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@s", _studentId);
+                    conn.Open();
+                    using (var r = cmd.ExecuteReader())
+                    {
+                        var html = new System.Text.StringBuilder();
+                        html.Append("<div class=\"pt-badge-grid\">");
+                        bool hasBadges = false;
+                        while (r.Read())
+                        {
+                            hasBadges = true;
+                            bool earned = r["earnedAt"] != DBNull.Value;
+                            string bname = CurrentLanguage == "BM" && r["badgeNameBM"] != DBNull.Value && !string.IsNullOrEmpty(r["badgeNameBM"].ToString()) ? r["badgeNameBM"].ToString() : r["badgeNameEN"] != DBNull.Value ? r["badgeNameEN"].ToString() : "";
+                            string desc = CurrentLanguage == "BM" && r["badgeDescriptionBM"] != DBNull.Value && !string.IsNullOrEmpty(r["badgeDescriptionBM"].ToString()) ? r["badgeDescriptionBM"].ToString() : r["badgeDescriptionEN"] != DBNull.Value ? r["badgeDescriptionEN"].ToString() : "";
+                            string req = r["requirementDescriptionEN"] != DBNull.Value ? r["requirementDescriptionEN"].ToString() : "";
+                            int xp = r["xpReward"] != DBNull.Value ? Convert.ToInt32(r["xpReward"]) : 0;
+                            string earnedDate = earned ? Convert.ToDateTime(r["earnedAt"]).ToString("dd MMM yyyy") : "";
+
+                            string cardClass = earned ? "pt-badge-card pt-badge-card-earned" : "pt-badge-card pt-badge-card-locked";
+                            string lockIcon = earned ? "" : "<div class=\"pt-badge-lock-icon\"><i class=\"bi bi-lock-fill\"></i></div>";
+                            string badgeIcon = earned
+                                ? "<div class=\"pt-badge-icon-wrap pt-badge-icon-earned\"><i class=\"bi bi-award-fill\"></i></div>"
+                                : "<div class=\"pt-badge-icon-wrap pt-badge-icon-locked\"><i class=\"bi bi-award-fill\"></i></div>";
+                            string statusPill = earned
+                                ? "<div class=\"pt-badge-status-pill pt-badge-pill-earned\">" + T("Earned", "Diperoleh") + " &bull; " + earnedDate + "</div>"
+                                : "<div class=\"pt-badge-status-pill pt-badge-pill-locked\">" + T("Locked", "Terkunci") + "</div>";
+
+                            html.Append("<div class=\"" + cardClass + "\">");
+                            html.Append(lockIcon);
+                            html.Append(badgeIcon);
+                            html.Append("<div class=\"pt-badge-card-name\">" + Server.HtmlEncode(bname) + "</div>");
+                            html.Append("<div class=\"pt-badge-card-desc\">" + Server.HtmlEncode(desc.Length > 100 ? desc.Substring(0, 100) + "..." : desc) + "</div>");
+                            html.Append("<div class=\"pt-badge-card-req\">" + Server.HtmlEncode(req.Length > 80 ? req.Substring(0, 80) + "..." : req) + "</div>");
+                            html.Append("<div class=\"pt-badge-card-xp\">+" + xp + " XP</div>");
+                            html.Append(statusPill);
+                            html.Append("</div>");
+                        }
+                        html.Append("</div>");
+                        if (hasBadges) { pnlBadgeGrid.Controls.Add(new LiteralControl(html.ToString())); pnlNoBadges.Visible = false; }
+                        else { pnlNoBadges.Visible = true; }
+                    }
+                }
+            }
+            catch { pnlNoBadges.Visible = true; }
+        }
+
         private void LoadUnreadBadge()
         {
             try

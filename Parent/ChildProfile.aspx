@@ -106,6 +106,15 @@
             </asp:Panel>
         </div>
 
+        <%-- Badge Collection --%>
+        <div class="cp-card">
+            <div class="cp-sec-title"><i class="bi bi-award"></i> <%: T("Badge Collection","Koleksi Lencana") %></div>
+            <asp:Panel ID="pnlBadgeGrid" runat="server"></asp:Panel>
+            <asp:Panel ID="pnlNoBadges" runat="server" Visible="false">
+                <div class="cp-no-data"><%: T("No badges available yet.","Belum ada lencana tersedia.") %></div>
+            </asp:Panel>
+        </div>
+
     </asp:Panel>
 
 </div>

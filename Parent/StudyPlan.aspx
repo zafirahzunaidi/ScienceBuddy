@@ -49,9 +49,8 @@
     <asp:Panel ID="pnlNoPlan" runat="server" Visible="false">
         <div class="pd-empty"><i class="bi bi-journal-x"></i>
             <p><asp:Literal ID="litNoPlanMsg" runat="server" /></p>
-            <a href="<%: ResolveUrl("~/Parent/EditStudyPlan.aspx") %>" class="pt-btn primary" style="margin-top:14px;">
-                <i class="bi bi-plus-circle"></i> <%: T("Create Study Plan","Buat Pelan Belajar") %>
-            </a>
+            <asp:Button ID="btnCreatePlan" runat="server" CssClass="pt-btn primary" style="margin-top:14px;"
+                OnClick="BtnCreatePlan_Click" CausesValidation="false" />
         </div>
     </asp:Panel>
 
@@ -132,6 +131,26 @@
                 <asp:Literal ID="litDaysLeftBanner" runat="server" />
             </div>
         </asp:Panel>
+
+        <%-- Reset Study Plan Button --%>
+        <div style="margin-top:16px;text-align:right;">
+            <button type="button" class="pt-btn soft" style="color:#DC2626;border:1.5px solid #FECACA;" onclick="document.getElementById('resetModal').style.display='flex'; return false;">
+                <i class="bi bi-arrow-counterclockwise"></i> <%: T("Reset Study Plan","Tetapkan Semula Pelan Belajar") %>
+            </button>
+        </div>
+
+        <%-- Reset Confirmation Modal --%>
+        <div class="pt-delete-modal-overlay" id="resetModal" style="display:none;">
+            <div class="pt-delete-modal">
+                <div class="pt-delete-modal-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                <div class="pt-delete-modal-title"><%: T("Reset Study Plan?","Tetapkan Semula Pelan Belajar?") %></div>
+                <div class="pt-delete-modal-msg"><%: T("This will permanently remove the current study plan, all tasks, and all rewards for this child. This action cannot be undone.","Ini akan membuang pelan belajar semasa, semua tugasan, dan semua ganjaran untuk anak ini secara kekal. Tindakan ini tidak boleh dibatalkan.") %></div>
+                <div class="pt-delete-modal-actions">
+                    <button type="button" class="pt-btn soft" onclick="document.getElementById('resetModal').style.display='none'; return false;"><%: T("Cancel","Batal") %></button>
+                    <asp:Button ID="btnResetPlan" runat="server" CssClass="pt-btn danger" Text="Confirm Reset" OnClick="BtnResetPlan_Click" CausesValidation="false" />
+                </div>
+            </div>
+        </div>
 
     </asp:Panel>
 </div>
