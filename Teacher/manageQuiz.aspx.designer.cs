@@ -32,5 +32,18 @@ namespace ScienceBuddy.Teacher
         protected global::System.Web.UI.WebControls.Button btnConfirmDelete;
         protected global::System.Web.UI.WebControls.HiddenField hidDeleteId;
         protected global::System.Web.UI.WebControls.HiddenField hidToast;
+        // Tab controls
+        protected global::System.Web.UI.WebControls.LinkButton btnTabMine;
+        protected global::System.Web.UI.WebControls.LinkButton btnTabDiscover;
+        protected global::System.Web.UI.WebControls.Panel pnlCreateBtn;
+        protected global::System.Web.UI.WebControls.Panel pnlStatusChips;
+        protected global::System.Web.UI.WebControls.LinkButton btnChipAll;
+        protected global::System.Web.UI.WebControls.LinkButton btnChipApproved;
+        protected global::System.Web.UI.WebControls.LinkButton btnChipPending;
+        protected global::System.Web.UI.WebControls.LinkButton btnChipRejected;
+        protected global::System.Web.UI.WebControls.Panel pnlDiscover;
+        protected global::System.Web.UI.WebControls.Repeater rptDiscover;
+        protected global::System.Web.UI.WebControls.Panel pnlDiscoverEmpty;
+        protected global::System.Web.UI.WebControls.HiddenField hidActiveTab;
     }
 }

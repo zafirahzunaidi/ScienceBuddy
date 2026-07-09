@@ -31,6 +31,7 @@ namespace ScienceBuddy.Teacher
             {
                 if (!Authorize()) return;
                 SetupControls();
+                SetTabUI();
                 LoadQuizzes();
             }
         }
@@ -148,18 +149,90 @@ namespace ScienceBuddy.Teacher
                     if (dt.Rows.Count > 0)
                     {
                         pnlQuizzes.Visible = true; pnlEmpty.Visible = false;
+                        pnlDiscover.Visible = false; pnlDiscoverEmpty.Visible = false;
                         rptQuizzes.DataSource = dt; rptQuizzes.DataBind();
                     }
                     else
                     {
                         pnlQuizzes.Visible = false; pnlEmpty.Visible = true;
+                        pnlDiscover.Visible = false; pnlDiscoverEmpty.Visible = false;
                     }
                 }
             }
         }
 
-        protected void btnSearch_Click(object sender, EventArgs e) { LoadQuizzes(); }
-        protected void ddlFilter_Changed(object sender, EventArgs e) { LoadQuizzes(); }
+        protected void btnSearch_Click(object sender, EventArgs e) { LoadForActiveTab(); }
+        protected void ddlFilter_Changed(object sender, EventArgs e) { LoadForActiveTab(); }
+
+        protected void btnTabMine_Click(object sender, EventArgs e) { hidActiveTab.Value = "mine"; SetTabUI(); LoadForActiveTab(); }
+        protected void btnTabDiscover_Click(object sender, EventArgs e) { hidActiveTab.Value = "discover"; SetTabUI(); LoadForActiveTab(); }
+
+        private void SetTabUI()
+        {
+            bool isMine = hidActiveTab.Value != "discover";
+            btnTabMine.CssClass = "mq-tab" + (isMine ? " active" : "");
+            btnTabDiscover.CssClass = "mq-tab" + (!isMine ? " active" : "");
+            pnlCreateBtn.Visible = isMine;
+            pnlStatusChips.Visible = isMine;
+        }
+
+        protected void btnChip_Click(object sender, EventArgs e)
+        {
+            var btn = sender as LinkButton;
+            string status = btn?.CommandArgument ?? "";
+            btnChipAll.CssClass = "mq-chip" + (status == "" ? " active" : "");
+            btnChipApproved.CssClass = "mq-chip" + (status == "Approved" ? " active" : "");
+            btnChipPending.CssClass = "mq-chip" + (status == "Pending" ? " active" : "");
+            btnChipRejected.CssClass = "mq-chip" + (status == "Rejected" ? " active" : "");
+            try { ddlStatus.SelectedValue = status; } catch { }
+            LoadForActiveTab();
+        }
+
+        private void LoadForActiveTab()
+        {
+            SetTabUI();
+            if (hidActiveTab.Value == "discover") LoadDiscoverQuizzes();
+            else LoadQuizzes();
+        }
+
+        private void LoadDiscoverQuizzes()
+        {
+            string userId = Session["userId"].ToString();
+            string search = txtSearch.Text.Trim();
+            string lang = ddlLanguage.SelectedValue;
+
+            string sql = @"
+                SELECT q.[quizId],
+                       ISNULL(q.[quizTitleEN], q.[quizTitleBM]) AS quizTitle,
+                       q.[quizType], q.[language],
+                       COALESCE(t.[name], u.[username], 'Teacher') AS teacherName,
+                       (SELECT COUNT(*) FROM dbo.[Question] WHERE [quizId]=q.[quizId]) AS questionCount
+                FROM dbo.[Quiz] q
+                INNER JOIN dbo.[User] u ON u.[userId]=q.[createdByUserId]
+                LEFT JOIN dbo.[Teacher] t ON t.[userId]=q.[createdByUserId]
+                WHERE q.[createdByUserId]<>@userId AND q.[status]='Approved'";
+            if (!string.IsNullOrEmpty(search))
+                sql += " AND (q.[quizTitleEN] LIKE @s OR q.[quizTitleBM] LIKE @s)";
+            if (!string.IsNullOrEmpty(lang))
+                sql += " AND q.[language]=@lang";
+            sql += " ORDER BY q.[createdAt] DESC";
+
+            using (var conn = new SqlConnection(ConnStr))
+            {
+                conn.Open();
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@userId", userId);
+                    if (!string.IsNullOrEmpty(search)) cmd.Parameters.AddWithValue("@s", "%" + search + "%");
+                    if (!string.IsNullOrEmpty(lang)) cmd.Parameters.AddWithValue("@lang", lang);
+                    var dt = new DataTable(); new SqlDataAdapter(cmd).Fill(dt);
+                    pnlDiscover.Visible = dt.Rows.Count > 0;
+                    pnlDiscoverEmpty.Visible = dt.Rows.Count == 0;
+                    pnlQuizzes.Visible = false; pnlEmpty.Visible = false;
+                    if (dt.Rows.Count > 0) { rptDiscover.DataSource = dt; rptDiscover.DataBind(); }
+                }
+            }
+        }
 
         protected void btnConfirmDelete_Click(object sender, EventArgs e)
         {

@@ -26,14 +26,23 @@ namespace ScienceBuddy.Teacher
                 txtSearch.Attributes["placeholder"] = T("Search student name...", "Cari nama pelajar...");
                 btnSearch.Text = T("Search", "Cari");
                 btnReset.Text = T("Reset", "Set Semula");
-                LoadRanking("");
+                ddlSort.Items.Clear();
+                ddlSort.Items.Add(new ListItem(T("Default","Lalai"), ""));
+                ddlSort.Items.Add(new ListItem("A-Z", "az"));
+                ddlSort.Items.Add(new ListItem("Z-A", "za"));
+                ddlSort.Items.Add(new ListItem(T("Highest Overall","Keseluruhan Tertinggi"), "high"));
+                ddlSort.Items.Add(new ListItem(T("Lowest Overall","Keseluruhan Terendah"), "low"));
+                ddlSort.Items.Add(new ListItem(T("Most Lessons","Paling Banyak Pelajaran"), "most"));
+                ddlSort.Items.Add(new ListItem(T("Least Lessons","Paling Sedikit Pelajaran"), "least"));
+                LoadPodium();
+                LoadTable("");
             }
         }
 
-        protected void btnSearch_Click(object sender, EventArgs e) { LoadRanking(txtSearch.Text.Trim()); }
-        protected void btnReset_Click(object sender, EventArgs e) { txtSearch.Text = ""; LoadRanking(""); }
+        protected void btnSearch_Click(object sender, EventArgs e) { LoadPodium(); LoadTable(txtSearch.Text.Trim()); }
+        protected void btnReset_Click(object sender, EventArgs e) { txtSearch.Text = ""; ddlSort.SelectedIndex = 0; LoadPodium(); LoadTable(""); }
 
-        private void LoadRanking(string search)
+        private List<RankItem> FetchStudents(string search)
         {
             var list = new List<RankItem>();
             try
@@ -57,13 +66,11 @@ namespace ScienceBuddy.Teacher
                         FROM dbo.[Student] s
                         INNER JOIN dbo.[User] u ON u.[userId]=s.[userId]
                         WHERE u.[status]='Active'";
-                    if (!string.IsNullOrEmpty(search))
-                        sql += " AND s.[name] LIKE @s";
+                    if (!string.IsNullOrEmpty(search)) sql += " AND s.[name] LIKE @s";
 
                     using (var cmd = new SqlCommand(sql, c))
                     {
-                        if (!string.IsNullOrEmpty(search))
-                            cmd.Parameters.AddWithValue("@s", "%" + search + "%");
+                        if (!string.IsNullOrEmpty(search)) cmd.Parameters.AddWithValue("@s", "%" + search + "%");
                         using (var r = cmd.ExecuteReader())
                             while (r.Read())
                             {
@@ -78,71 +85,75 @@ namespace ScienceBuddy.Teacher
                             }
                     }
                 }
-            }
-            catch { }
+            } catch { }
+            list.Sort((a, b) => { bool aH=a.HasAttempt,bH=b.HasAttempt; if(aH&&!bH)return-1;if(!aH&&bH)return 1;if(!aH&&!bH)return string.Compare(a.Name,b.Name,StringComparison.OrdinalIgnoreCase); bool aB=a.UnitAvg>=0&&a.LevelAvg>=0,bB=b.UnitAvg>=0&&b.LevelAvg>=0;if(aB&&!bB)return-1;if(!aB&&bB)return 1; int c1=b.CombinedAvg.CompareTo(a.CombinedAvg);if(c1!=0)return c1; int c2=b.UnitVal.CompareTo(a.UnitVal);if(c2!=0)return c2; int c3=b.LevelVal.CompareTo(a.LevelVal);if(c3!=0)return c3; int c4=b.DoneL.CompareTo(a.DoneL);if(c4!=0)return c4; return string.Compare(a.Name,b.Name,StringComparison.OrdinalIgnoreCase); });
+            return list;
+        }
 
-            // Sort
-            list.Sort((a, b) =>
+        private void LoadPodium()
+        {
+            var list = FetchStudents(""); // always ALL students
+            var podiumStudents = new List<RankItem>();
+            for (int i = 0; i < list.Count && podiumStudents.Count < 3; i++)
+                if (list[i].HasAttempt) podiumStudents.Add(list[i]);
+
+            string[] podCssArr = { "first", "second", "third" };
+            string[] medalArr = { "🥇", "🥈", "🥉" };
+            var podiumData = new List<object>();
+            for (int p = 0; p < 3; p++)
             {
-                bool aHas = a.HasAttempt, bHas = b.HasAttempt;
-                if (aHas && !bHas) return -1;
-                if (!aHas && bHas) return 1;
-                if (!aHas && !bHas) return string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase);
+                if (p < podiumStudents.Count)
+                {
+                    var item = podiumStudents[p];
+                    decimal ov = item.CombinedAvg;
+                    string perfCss = ov >= 80 ? "excellent" : ov >= 60 ? "good" : "fair";
+                    string perfLabel = ov >= 80 ? T("Excellent","Cemerlang") : ov >= 60 ? T("Very Good","Sangat Baik") : T("Good","Baik");
+                    podiumData.Add(new { podCss = podCssArr[p], medal = medalArr[p], initials = Initials(item.Name), name = item.Name,
+                        overallStr = ov.ToString("0.0") + "%", perfCss, perfLabel,
+                        lessonsStr = item.DoneL + " / " + item.TotalL + " Lessons", hasData = true });
+                }
+                else
+                {
+                    podiumData.Add(new { podCss = podCssArr[p], medal = medalArr[p], initials = "-", name = "-",
+                        overallStr = "-", perfCss = "", perfLabel = "", lessonsStr = "", hasData = false });
+                }
+            }
+            rptPodium.DataSource = podiumData; rptPodium.DataBind(); pnlPodium.Visible = true;
+        }
 
-                // Both have attempts
-                bool aBoth = a.UnitAvg >= 0 && a.LevelAvg >= 0;
-                bool bBoth = b.UnitAvg >= 0 && b.LevelAvg >= 0;
-                if (aBoth && !bBoth) return -1;
-                if (!aBoth && bBoth) return 1;
+        private void LoadTable(string search)
+        {
+            var list = FetchStudents(search);
 
-                int c1 = b.CombinedAvg.CompareTo(a.CombinedAvg); if (c1 != 0) return c1;
-                int c2 = b.UnitVal.CompareTo(a.UnitVal); if (c2 != 0) return c2;
-                int c3 = b.LevelVal.CompareTo(a.LevelVal); if (c3 != 0) return c3;
-                int c4 = b.DoneL.CompareTo(a.DoneL); if (c4 != 0) return c4;
-                return string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase);
-            });
+            // Apply sort
+            string sort = ddlSort.SelectedValue;
+            switch (sort)
+            {
+                case "az": list.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase)); break;
+                case "za": list.Sort((a, b) => string.Compare(b.Name, a.Name, StringComparison.OrdinalIgnoreCase)); break;
+                case "high": list.Sort((a, b) => b.CombinedAvg.CompareTo(a.CombinedAvg)); break;
+                case "low": list.Sort((a, b) => a.CombinedAvg.CompareTo(b.CombinedAvg)); break;
+                case "most": list.Sort((a, b) => b.DoneL.CompareTo(a.DoneL)); break;
+                case "least": list.Sort((a, b) => a.DoneL.CompareTo(b.DoneL)); break;
+            }
 
-            // Build output — only students with attempts get a rank number
-            int rankCounter = 0;
+            int rowNum = 0;
             var output = new List<object>();
             foreach (var item in list)
             {
-                bool hasRank = item.HasAttempt;
-                if (hasRank) rankCounter++;
-                int rankNum = rankCounter;
-
-                string rowCss = "";
-                string rankHtml = "";
-                bool isTop3 = false;
-
-                if (hasRank)
-                {
-                    if (rankNum == 1) { rankHtml = "<span class='sp-medal'>🥇</span>"; rowCss = "sp-row-gold"; isTop3 = true; }
-                    else if (rankNum == 2) { rankHtml = "<span class='sp-medal'>🥈</span>"; rowCss = "sp-row-silver"; isTop3 = true; }
-                    else if (rankNum == 3) { rankHtml = "<span class='sp-medal'>🥉</span>"; rowCss = "sp-row-bronze"; isTop3 = true; }
-                    else { rankHtml = "<span class='sp-rank-plain'>" + rankNum + "</span>"; }
-                }
-
+                rowNum++;
                 string uStr = item.UnitAvg >= 0 ? item.UnitAvg.ToString("0.0") + "%" : T("No Attempt", "Tiada Cubaan");
                 string lStr = item.LevelAvg >= 0 ? item.LevelAvg.ToString("0.0") + "%" : T("No Attempt", "Tiada Cubaan");
+                string overallStr = item.HasAttempt ? item.CombinedAvg.ToString("0.0") + "%" : T("No Attempt", "Tiada Cubaan");
                 string uBadge = item.UnitAvg >= 80 ? "good" : item.UnitAvg >= 50 ? "fair" : item.UnitAvg >= 0 ? "need" : "na";
                 string lBadge = item.LevelAvg >= 80 ? "good" : item.LevelAvg >= 50 ? "fair" : item.LevelAvg >= 0 ? "need" : "na";
 
-                output.Add(new
-                {
-                    hasRank, isTop3, rowCss, rankHtml,
-                    name = item.Name,
-                    studentId = item.StudentId,
-                    lessonsStr = item.DoneL + " / " + item.TotalL,
-                    unitQuizStr = uStr, levelQuizStr = lStr,
-                    unitBadge = uBadge, levelBadge = lBadge
-                });
+                output.Add(new { rowNum, name = item.Name, studentId = item.StudentId,
+                    lessonsStr = item.DoneL + " / " + item.TotalL, unitQuizStr = uStr, levelQuizStr = lStr,
+                    overallStr, unitBadge = uBadge, levelBadge = lBadge });
             }
-
-            if (output.Count > 0)
-            { rptRanking.DataSource = output; rptRanking.DataBind(); pnlTable.Visible = true; pnlRankingEmpty.Visible = false; }
-            else
-            { rptRanking.DataSource = null; rptRanking.DataBind(); pnlTable.Visible = false; pnlRankingEmpty.Visible = true; }
+            if (output.Count > 0) { rptRanking.DataSource = output; rptRanking.DataBind(); pnlTable.Visible = true; pnlRankingEmpty.Visible = false; }
+            else { rptRanking.DataSource = null; rptRanking.DataBind(); pnlTable.Visible = false; pnlRankingEmpty.Visible = true; }
         }
 
         protected string BadgeLabel(string badge)
@@ -154,6 +165,13 @@ namespace ScienceBuddy.Teacher
                 case "need": return T("Needs Support", "Perlu Sokongan");
                 default: return "";
             }
+        }
+
+        private static string Initials(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return "NA";
+            var p = name.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            return p.Length >= 2 ? (p[0][0].ToString() + p[p.Length - 1][0].ToString()).ToUpper() : p[0][0].ToString().ToUpper();
         }
 
         private class RankItem

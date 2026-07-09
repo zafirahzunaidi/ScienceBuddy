@@ -63,10 +63,8 @@ namespace ScienceBuddy.Teacher
                 conn.Open();
                 litUpcoming.Text = Cnt(conn, "SELECT COUNT(*) FROM dbo.[LiveConsultationSession] WHERE [teacherId]=@t AND [startDateTime]>GETDATE()", teacherId);
                 litCompleted.Text = Cnt(conn, "SELECT COUNT(*) FROM dbo.[LiveConsultationSession] WHERE [teacherId]=@t AND [endDateTime]<GETDATE()", teacherId);
-                litTotalStudents.Text = Cnt(conn, "SELECT COUNT(DISTINCT lsp.[studentId]) FROM dbo.[LiveSessionParticipant] lsp INNER JOIN dbo.[LiveConsultationSession] lcs ON lcs.[sessionId]=lsp.[sessionId] WHERE lcs.[teacherId]=@t", teacherId);
-                // Avg attendance per session
-                using (var cmd = new SqlCommand("SELECT ISNULL(AVG(cnt),0) FROM (SELECT COUNT(*) AS cnt FROM dbo.[LiveSessionParticipant] lsp INNER JOIN dbo.[LiveConsultationSession] lcs ON lcs.[sessionId]=lsp.[sessionId] WHERE lcs.[teacherId]=@t GROUP BY lsp.[sessionId]) AS x", conn))
-                { cmd.Parameters.AddWithValue("@t", teacherId); var v = cmd.ExecuteScalar(); litAvgAttendance.Text = v != null && v != DBNull.Value ? Convert.ToInt32(v).ToString() : "0"; }
+                litCancelled.Text = Cnt(conn, "SELECT COUNT(*) FROM dbo.[LiveConsultationSession] WHERE [teacherId]=@t AND [status]='Cancelled'", teacherId);
+                litStudentsJoined.Text = Cnt(conn, "SELECT COUNT(DISTINCT lsp.[studentId]) FROM dbo.[LiveSessionParticipant] lsp INNER JOIN dbo.[LiveConsultationSession] lcs ON lcs.[sessionId]=lsp.[sessionId] WHERE lcs.[teacherId]=@t", teacherId);
             }
         }
 

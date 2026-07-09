@@ -32,23 +32,9 @@ namespace ScienceBuddy.Teacher
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litCompleted;
 
-        /// <summary>
-        /// litAvgAttendance control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litAvgAttendance;
+        protected global::System.Web.UI.WebControls.Literal litCancelled;
 
-        /// <summary>
-        /// litTotalStudents control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litTotalStudents;
+        protected global::System.Web.UI.WebControls.Literal litStudentsJoined;
 
         /// <summary>
         /// btnTabUpcoming control.

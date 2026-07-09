@@ -11,7 +11,7 @@
 .ls-btn-primary:hover{background:var(--th);box-shadow:0 4px 16px rgba(108,99,255,.25);color:#fff;text-decoration:none;}
 /* Action Cards */
 .ls-action-row{display:flex;gap:20px;margin-bottom:1.75rem;}
-.ls-action-card{width:300px;height:180px;border-radius:18px;padding:1.5rem;cursor:pointer;transition:all .25s;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;color:#fff;}
+.ls-action-card{width:240px;height:155px;border-radius:18px;padding:1.25rem;cursor:pointer;transition:all .25s;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;color:#fff;}
 .ls-action-card:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 12px 32px rgba(0,0,0,.15);}
 .ls-action-card:active{transform:translateY(-1px) scale(1);}
 .ls-action-schedule{background:linear-gradient(135deg,#6D5EF5,#8478FF);box-shadow:0 4px 16px rgba(109,94,245,.25);}
@@ -26,11 +26,16 @@
 .ls-badge-live{background:#DC2626;color:#fff;animation:lsPulse 1.5s infinite;}
 /* Stats */
 .ls-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;}
-.ls-stat{background:var(--tc);border:1.5px solid var(--tb);border-radius:16px;padding:1.25rem;box-shadow:0 2px 6px rgba(0,0,0,.02);transition:transform .2s,box-shadow .2s;}
-.ls-stat:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(108,99,255,.07);}
-.ls-stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;margin-bottom:.6rem;}
-.ls-stat-val{font-size:1.5rem;font-weight:800;color:var(--tt);}
-.ls-stat-label{font-size:.78rem;font-weight:600;color:var(--tm);margin-top:2px;}
+.ls-stat{background:var(--tc);border:1.5px solid var(--tb);border-radius:16px;padding:1.25rem;box-shadow:0 2px 8px rgba(0,0,0,.04);transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden;}
+.ls-stat::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 16px 16px;}
+.ls-stat:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.08);}
+.ls-stat.stat-upcoming::after{background:#3B82F6;}.ls-stat.stat-upcoming:hover{box-shadow:0 8px 24px rgba(59,130,246,.12);}
+.ls-stat.stat-completed::after{background:#10B981;}.ls-stat.stat-completed:hover{box-shadow:0 8px 24px rgba(16,185,129,.12);}
+.ls-stat.stat-cancelled::after{background:#EF4444;}.ls-stat.stat-cancelled:hover{box-shadow:0 8px 24px rgba(239,68,68,.12);}
+.ls-stat.stat-students::after{background:#6366F1;}.ls-stat.stat-students:hover{box-shadow:0 8px 24px rgba(99,102,241,.12);}
+.ls-stat-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.15rem;margin-bottom:.6rem;}
+.ls-stat-val{font-size:1.6rem;font-weight:800;color:var(--tt);}
+.ls-stat-label{font-size:.82rem;font-weight:600;color:var(--tm);margin-top:3px;}
 /* Toolbar */
 .ls-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;flex-wrap:wrap;}
 .ls-search{width:260px;height:40px;border-radius:10px;border:1.5px solid var(--tb);padding:0 .75rem 0 2.2rem;font-size:.82rem;background:var(--tc);position:relative;transition:border-color .2s;}
@@ -50,18 +55,18 @@
 .ls-card-day{font-size:1.3rem;font-weight:800;color:var(--tt);line-height:1;}
 .ls-card-month{font-size:.65rem;font-weight:700;color:var(--tm);text-transform:uppercase;margin-top:2px;}
 .ls-card-body{flex:1;min-width:200px;}
-.ls-card-title{font-size:.92rem;font-weight:700;color:var(--tt);margin-bottom:4px;}
-.ls-card-meta{font-size:.76rem;color:var(--tm);display:flex;flex-wrap:wrap;gap:10px;margin-bottom:6px;}
+.ls-card-title{font-size:.96rem;font-weight:700;color:var(--tt);margin-bottom:4px;}
+.ls-card-meta{font-size:.8rem;color:var(--tm);display:flex;flex-wrap:wrap;gap:10px;margin-bottom:6px;}
 .ls-card-meta span{display:inline-flex;align-items:center;gap:4px;}
 .ls-badge{padding:3px 10px;border-radius:6px;font-size:.68rem;font-weight:700;}
-.ls-badge-upcoming{background:#EDE9FE;color:var(--tp);}
+.ls-badge-upcoming{background:#DBEAFE;color:#1D4ED8;}
 .ls-badge-completed{background:#D1FAE5;color:#047857;}
 .ls-badge-cancelled{background:#FEE2E2;color:#B91C1C;}
 .ls-card-actions{display:flex;gap:6px;flex-shrink:0;align-self:center;}
-.ls-act{font-size:.74rem;font-weight:600;padding:5px 10px;border-radius:8px;border:1.5px solid;cursor:pointer;background:transparent;text-decoration:none;display:inline-flex;align-items:center;gap:3px;transition:all .15s;}
+.ls-act{font-size:.78rem;font-weight:600;padding:6px 12px;border-radius:8px;border:1.5px solid;cursor:pointer;background:transparent;text-decoration:none;display:inline-flex;align-items:center;gap:4px;transition:all .15s;}
 .ls-act-view{color:var(--ti);border-color:#DBEAFE;}.ls-act-view:hover{background:#EFF6FF;}
 .ls-act-edit{color:var(--tp);border-color:#EDE9FE;}.ls-act-edit:hover{background:var(--tl);}
-.ls-act-cancel{color:var(--te);border-color:#FEE2E2;}.ls-act-cancel:hover{background:#FEF2F2;}
+.ls-act-cancel{color:#fff;border-color:var(--te);background:var(--te);}.ls-act-cancel:hover{background:#DC2626;border-color:#DC2626;}
 /* Empty */
 .ls-empty{display:flex;flex-direction:column;align-items:center;text-align:center;padding:3.5rem 2rem;}
 .ls-empty i{font-size:3rem;color:var(--tm);opacity:.35;margin-bottom:1rem;}
@@ -136,10 +141,10 @@
 
 <%-- Stats --%>
 <div class="ls-stats">
-    <div class="ls-stat"><div class="ls-stat-icon" style="background:#EDE9FE;color:var(--tp);"><i class="bi bi-calendar-event"></i></div><div class="ls-stat-val"><asp:Literal ID="litUpcoming" runat="server" Text="0" /></div><div class="ls-stat-label"><%: T("Upcoming Sessions","Sesi Akan Datang") %></div></div>
-    <div class="ls-stat"><div class="ls-stat-icon" style="background:#D1FAE5;color:#047857;"><i class="bi bi-check-circle"></i></div><div class="ls-stat-val"><asp:Literal ID="litCompleted" runat="server" Text="0" /></div><div class="ls-stat-label"><%: T("Completed Sessions","Sesi Selesai") %></div></div>
-    <div class="ls-stat"><div class="ls-stat-icon" style="background:#DBEAFE;color:var(--ti);"><i class="bi bi-people"></i></div><div class="ls-stat-val"><asp:Literal ID="litAvgAttendance" runat="server" Text="0" /></div><div class="ls-stat-label"><%: T("Avg. Attendance","Purata Kehadiran") %></div></div>
-    <div class="ls-stat"><div class="ls-stat-icon" style="background:#FEF3C7;color:#B45309;"><i class="bi bi-person-check"></i></div><div class="ls-stat-val"><asp:Literal ID="litTotalStudents" runat="server" Text="0" /></div><div class="ls-stat-label"><%: T("Total Students Joined","Jumlah Pelajar") %></div></div>
+    <div class="ls-stat stat-upcoming"><div class="ls-stat-icon" style="background:#DBEAFE;color:#2563EB;"><i class="bi bi-calendar-event"></i></div><div class="ls-stat-val"><asp:Literal ID="litUpcoming" runat="server" Text="0" /></div><div class="ls-stat-label"><%: T("Upcoming Sessions","Sesi Akan Datang") %></div></div>
+    <div class="ls-stat stat-completed"><div class="ls-stat-icon" style="background:#D1FAE5;color:#047857;"><i class="bi bi-check-circle"></i></div><div class="ls-stat-val"><asp:Literal ID="litCompleted" runat="server" Text="0" /></div><div class="ls-stat-label"><%: T("Completed Sessions","Sesi Selesai") %></div></div>
+    <div class="ls-stat stat-cancelled"><div class="ls-stat-icon" style="background:#FEE2E2;color:#B91C1C;"><i class="bi bi-x-circle"></i></div><div class="ls-stat-val"><asp:Literal ID="litCancelled" runat="server" Text="0" /></div><div class="ls-stat-label"><%: T("Cancelled Sessions","Sesi Dibatalkan") %></div></div>
+    <div class="ls-stat stat-students"><div class="ls-stat-icon" style="background:#E0E7FF;color:#4338CA;"><i class="bi bi-people"></i></div><div class="ls-stat-val"><asp:Literal ID="litStudentsJoined" runat="server" Text="0" /></div><div class="ls-stat-label"><%: T("Students Joined","Pelajar Menyertai") %></div></div>
 </div>
 
 <%-- Tabs --%>
@@ -160,7 +165,7 @@
                         <div class="ls-card-meta">
                             <span><i class="bi bi-clock"></i> <%# Eval("timeRange") %></span>
                             <span><i class="bi bi-bookmark"></i> <%# HttpUtility.HtmlEncode(Eval("topic")) %></span>
-                            <span><i class="bi bi-people"></i> <%# Eval("students") %> <%: T("students","pelajar") %></span>
+                            <%# !Convert.ToBoolean(Eval("isUpcoming")) && Convert.ToInt32(Eval("students")) > 0 ? "<span><i class='bi bi-people'></i> " + Eval("students") + " " + T("students","pelajar") + "</span>" : "" %>
                             <%# Eval("duration").ToString()!="" ? "<span><i class='bi bi-hourglass-split'></i> " + Eval("duration") + "</span>" : "" %>
                         </div>
                         <span class='ls-badge <%# Eval("badgeCss") %>'><%# Eval("badgeLabel") %></span>

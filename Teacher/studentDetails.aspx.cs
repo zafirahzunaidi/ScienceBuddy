@@ -20,16 +20,71 @@ namespace ScienceBuddy.Teacher
         {
             if (Session["userId"] == null || Session["role"]?.ToString() != "Teacher")
             { Response.Redirect("~/Login.aspx", false); Context.ApplicationInstance.CompleteRequest(); return; }
+
+            // Handle AJAX request for answer details
+            if (Request.QueryString["handler"] == "answers")
+            { HandleAnswerRequest(); return; }
+
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
             if (!IsPostBack)
             {
                 string sid = (Request.QueryString["studentId"] ?? "").Trim();
                 if (string.IsNullOrEmpty(sid)) { ShowError(T("No student specified.", "Tiada pelajar dinyatakan.")); return; }
-                Load(sid);
+                LoadStudentDetails(sid);
             }
         }
 
-        private void Load(string sid)
+        private void HandleAnswerRequest()
+        {
+            Response.Clear();
+            Response.ContentType = "text/html";
+            string resultId = (Request.QueryString["resultId"] ?? "").Trim();
+            if (string.IsNullOrEmpty(resultId)) { Response.Write("<div class=\"sd-empty\">Invalid request.</div>"); Response.End(); return; }
+            try
+            {
+                using (var c = new SqlConnection(ConnStr))
+                {
+                    c.Open();
+                    var sb = new System.Text.StringBuilder();
+                    using (var cmd = new SqlCommand(@"SELECT qst.[questionTextEN], qa.[selectedAnswer], qst.[correctAnswer], qa.[isCorrect]
+                        FROM dbo.[QuizAnswer] qa
+                        INNER JOIN dbo.[Question] qst ON qst.[questionId]=qa.[questionId]
+                        WHERE qa.[resultId]=@rid
+                        ORDER BY qa.[answerId]", c))
+                    {
+                        cmd.Parameters.AddWithValue("@rid", resultId);
+                        using (var r = cmd.ExecuteReader())
+                        {
+                            int qNum = 0;
+                            while (r.Read())
+                            {
+                                qNum++;
+                                string qText = r["questionTextEN"]?.ToString() ?? "";
+                                string selected = r["selectedAnswer"] != DBNull.Value ? r["selectedAnswer"].ToString() : "-";
+                                string correct = r["correctAnswer"]?.ToString() ?? "-";
+                                bool isCorrect = r["isCorrect"] != DBNull.Value && Convert.ToBoolean(r["isCorrect"]);
+                                string statusLabel = isCorrect ? T("Correct", "Betul") : T("Wrong", "Salah");
+                                string badgeCss = isCorrect ? "correct" : "wrong";
+
+                                sb.Append("<div class=\"sd-ans-card\">");
+                                sb.AppendFormat("<div class=\"sd-ans-q\">Q{0}. {1}</div>", qNum, HttpUtility.HtmlEncode(qText));
+                                sb.Append("<div class=\"sd-ans-row\">");
+                                sb.AppendFormat("<span><strong>{0}:</strong> {1}</span>", T("Student's Answer", "Jawapan Pelajar"), HttpUtility.HtmlEncode(selected));
+                                sb.AppendFormat("<span><strong>{0}:</strong> {1}</span>", T("Correct Answer", "Jawapan Betul"), HttpUtility.HtmlEncode(correct));
+                                sb.AppendFormat("<span class=\"sd-ans-badge {0}\">{1}</span>", badgeCss, statusLabel);
+                                sb.Append("</div></div>");
+                            }
+                            if (qNum == 0) sb.AppendFormat("<div class=\"sd-empty\">{0}</div>", T("No answer records found.", "Tiada rekod jawapan dijumpai."));
+                        }
+                    }
+                    Response.Write(sb.ToString());
+                }
+            }
+            catch { Response.Write("<div class=\"sd-empty\">" + T("Error loading answers.", "Ralat memuatkan jawapan.") + "</div>"); }
+            Response.End();
+        }
+
+        private void LoadStudentDetails(string sid)
         {
             try
             {
@@ -89,7 +144,7 @@ namespace ScienceBuddy.Teacher
 
         private decimal Avg(SqlConnection c, string sid, string qt) { using (var cmd = new SqlCommand("SELECT AVG(CAST(qr.[percentage] AS DECIMAL(5,2))) FROM dbo.[QuizResult] qr INNER JOIN dbo.[Quiz] q ON q.[quizId]=qr.[quizId] WHERE qr.[studentId]=@s AND q.[quizType]=@t", c)) { cmd.Parameters.AddWithValue("@s", sid); cmd.Parameters.AddWithValue("@t", qt); var v = cmd.ExecuteScalar(); return (v != null && v != DBNull.Value) ? Convert.ToDecimal(v) : -1; } }
 
-        private void BindQuiz(SqlConnection c, string sid, string qt, Repeater rpt) { var rows = new List<object>(); using (var cmd = new SqlCommand(@"SELECT quizName,score,totalMarks,percentage,resultStatus,attemptNo,attemptedDate FROM(SELECT COALESCE(q.[quizTitleEN],'Quiz') AS quizName,qr.[score],qr.[totalMarks],qr.[percentage],qr.[resultStatus],qr.[attemptNo],qr.[attemptedDate],ROW_NUMBER() OVER(PARTITION BY qr.[quizId] ORDER BY qr.[attemptedDate] DESC,qr.[attemptNo] DESC) AS rn FROM dbo.[QuizResult] qr INNER JOIN dbo.[Quiz] q ON q.[quizId]=qr.[quizId] WHERE qr.[studentId]=@s AND q.[quizType]=@t) sub WHERE rn=1 ORDER BY attemptedDate DESC", c)) { cmd.Parameters.AddWithValue("@s", sid); cmd.Parameters.AddWithValue("@t", qt); using (var r = cmd.ExecuteReader()) while (r.Read()) { string dt = r["attemptedDate"] != DBNull.Value ? Convert.ToDateTime(r["attemptedDate"]).ToString("d MMM yyyy") : "-"; string pct = r["percentage"] != DBNull.Value ? Convert.ToDecimal(r["percentage"]).ToString("0.0") + "%" : "-"; string sc = r["score"] != DBNull.Value ? Convert.ToDecimal(r["score"]).ToString("0") + "/" + Convert.ToDecimal(r["totalMarks"]).ToString("0") : "-"; string res = r["resultStatus"]?.ToString() ?? "-"; rows.Add(new { quizName = r["quizName"].ToString(), score = sc, pct, result = res, resCss = res == "Passed" ? "pass" : "fail", attempts = r["attemptNo"]?.ToString() ?? "1", date = dt }); } } if (rows.Count > 0) { rpt.DataSource = rows; rpt.DataBind(); } }
+        private void BindQuiz(SqlConnection c, string sid, string qt, Repeater rpt) { var rows = new List<object>(); using (var cmd = new SqlCommand(@"SELECT quizName,score,totalMarks,percentage,resultStatus,attemptNo,attemptedDate,resultId,correctCount,wrongCount FROM(SELECT COALESCE(q.[quizTitleEN],'Quiz') AS quizName,qr.[score],qr.[totalMarks],qr.[percentage],qr.[resultStatus],qr.[attemptNo],qr.[attemptedDate],qr.[resultId],(SELECT COUNT(*) FROM dbo.[QuizAnswer] qa WHERE qa.[resultId]=qr.[resultId] AND qa.[isCorrect]=1) AS correctCount,(SELECT COUNT(*) FROM dbo.[QuizAnswer] qa WHERE qa.[resultId]=qr.[resultId] AND qa.[isCorrect]=0) AS wrongCount,ROW_NUMBER() OVER(PARTITION BY qr.[quizId] ORDER BY qr.[attemptedDate] DESC,qr.[attemptNo] DESC) AS rn FROM dbo.[QuizResult] qr INNER JOIN dbo.[Quiz] q ON q.[quizId]=qr.[quizId] WHERE qr.[studentId]=@s AND q.[quizType]=@t) sub WHERE rn=1 ORDER BY attemptedDate DESC", c)) { cmd.Parameters.AddWithValue("@s", sid); cmd.Parameters.AddWithValue("@t", qt); using (var r = cmd.ExecuteReader()) while (r.Read()) { string dt = r["attemptedDate"] != DBNull.Value ? Convert.ToDateTime(r["attemptedDate"]).ToString("d MMM yyyy") : "-"; string pct = r["percentage"] != DBNull.Value ? Convert.ToDecimal(r["percentage"]).ToString("0.0") + "%" : "-"; string sc = r["score"] != DBNull.Value ? Convert.ToDecimal(r["score"]).ToString("0") + "/" + Convert.ToDecimal(r["totalMarks"]).ToString("0") : "-"; string res = r["resultStatus"]?.ToString() ?? "-"; int corr = r["correctCount"] != DBNull.Value ? Convert.ToInt32(r["correctCount"]) : 0; int wrng = r["wrongCount"] != DBNull.Value ? Convert.ToInt32(r["wrongCount"]) : 0; rows.Add(new { quizName = r["quizName"].ToString(), score = sc, pct, result = res, resCss = res == "Passed" ? "pass" : "fail", attempts = r["attemptNo"]?.ToString() ?? "1", date = dt, resultId = r["resultId"].ToString(), correctCount = corr, wrongCount = wrng }); } } if (rows.Count > 0) { rpt.DataSource = rows; rpt.DataBind(); } }
 
         private void Insight(string name, decimal u, decimal l, List<object> weak, int lPct) { var ins = new List<string>(); if (u >= 80 && l >= 80) ins.Add(T("Excellent! " + name + " is performing strongly in main quizzes.", "Cemerlang! " + name + " menunjukkan prestasi mantap.")); else if (u >= 60 && l >= 60) ins.Add(T(name + " shows good progress.", name + " menunjukkan kemajuan baik.")); if (u >= 0 && u < 50) ins.Add(T("Unit Quiz below 50%. Targeted revision recommended.", "Kuiz Unit bawah 50%. Ulang kaji bersasar disyorkan.")); if (l >= 0 && l < 50) ins.Add(T("Level Quiz needs improvement.", "Kuiz Tahap perlu ditingkatkan.")); if (lPct >= 80) ins.Add(T("Great lesson completion!", "Penyelesaian pelajaran hebat!")); else if (lPct < 30) ins.Add(T("Low lesson completion.", "Penyelesaian pelajaran rendah.")); if (weak.Count > 0) { string top = ((dynamic)weak[0]).subtopic; ins.Add(T("Weak in: " + top + ". Assign revision materials.", "Lemah dalam: " + top + ". Berikan bahan ulang kaji.")); } else ins.Add(T("No weak subtopics detected.", "Tiada subtopik lemah dikesan.")); if (ins.Count == 0) ins.Add(T("No issues detected.", "Tiada isu dikesan.")); litInsight.Text = string.Join("<br/>", ins); }
 
