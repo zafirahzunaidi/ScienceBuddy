@@ -49,7 +49,7 @@ namespace ScienceBuddy.Admin
         // ── Main load ────────────────────────────────────────────────
         private void LoadDashboard(string userId)
         {
-            // Hero
+            // Hero date
             litDate.Text = DateTime.Now.ToString("dddd, d MMMM yyyy");
 
             using (var conn = new SqlConnection(ConnStr))
@@ -60,20 +60,31 @@ namespace ScienceBuddy.Admin
                 SetAdminName(conn, userId);
 
                 // Summary counts
-                litStudents.Text        = SafeCount(conn, "SELECT COUNT(*) FROM dbo.[Student]").ToString();
-                litParents.Text         = SafeCount(conn, "SELECT COUNT(*) FROM dbo.[Parent]").ToString();
-                litTeachers.Text        = SafeCount(conn, "SELECT COUNT(*) FROM dbo.[Teacher]").ToString();
-                litLessons.Text         = SafeCount(conn, "SELECT COUNT(*) FROM dbo.[Lesson]").ToString();
-                litQuizzes.Text         = SafeCount(conn, "SELECT COUNT(*) FROM dbo.[Quiz]").ToString();
+                int studentCount  = SafeCount(conn, "SELECT COUNT(*) FROM dbo.[Student]");
+                int parentCount   = SafeCount(conn, "SELECT COUNT(*) FROM dbo.[Parent]");
+                int teacherCount  = SafeCount(conn, "SELECT COUNT(*) FROM dbo.[Teacher]");
+                int lessonCount   = SafeCount(conn, "SELECT COUNT(*) FROM dbo.[Lesson]");
+                int quizCount     = SafeCount(conn, "SELECT COUNT(*) FROM dbo.[Quiz]");
+                int questionCount = SafeCount(conn, "SELECT COUNT(*) FROM dbo.[Question]");
+                int materialCount = SafeCount(conn, "SELECT COUNT(*) FROM dbo.[Material]");
 
-                // Pending question requests count
-                int pendingCount = SafeCount(conn,
-                    "SELECT COUNT(*) FROM dbo.[Question] WHERE [status]='Pending'");
-                litPendingRequests.Text = pendingCount.ToString();
+                litStudents.Text  = studentCount.ToString();
+                litParents.Text   = parentCount.ToString();
+                litTeachers.Text  = teacherCount.ToString();
+                litLessons.Text   = lessonCount.ToString();
+                litQuizzes.Text   = quizCount.ToString();
+                litQuestions.Text  = questionCount.ToString();
+                litMaterials.Text  = materialCount.ToString();
 
-                // Pending by type
-                litPendingQ.Text = pendingCount.ToString();
-                litPendingM.Text = SafeCount(conn, "SELECT COUNT(*) FROM dbo.[Material] WHERE [status]='Pending'").ToString();
+                // Pending counts
+                int pendingQ = SafeCount(conn, "SELECT COUNT(*) FROM dbo.[Question] WHERE [status]='Pending'");
+                int pendingM = SafeCount(conn, "SELECT COUNT(*) FROM dbo.[Material] WHERE [status]='Pending'");
+                int forumReports = SafeCount(conn, "SELECT COUNT(*) FROM dbo.[ForumPost] WHERE [status]='Reported'");
+
+                litPendingRequests.Text = (pendingQ + pendingM).ToString();
+                litPendingQ.Text = pendingQ.ToString();
+                litPendingM.Text = pendingM.ToString();
+                litForumReports.Text = forumReports.ToString();
 
                 // Load pending requests table (latest 5)
                 LoadPendingRequests(conn);
@@ -84,7 +95,7 @@ namespace ScienceBuddy.Admin
                 // Recent logs (latest 5)
                 LoadRecentLogs(conn);
 
-                // Recent notifications (latest 5 system-wide)
+                // Recent notifications (latest 5)
                 LoadNotifications(conn, userId);
             }
         }
@@ -120,7 +131,6 @@ namespace ScienceBuddy.Admin
         // ── Pending content requests (latest 5) ──────────────────────
         private void LoadPendingRequests(SqlConnection conn)
         {
-            // Pending Questions awaiting approval
             const string sql = @"
                 SELECT TOP 5
                     q.[questionId]   AS requestId,
@@ -153,11 +163,19 @@ namespace ScienceBuddy.Admin
                     DateTime submitted = row["submittedDate"] == DBNull.Value
                         ? DateTime.Now : Convert.ToDateTime(row["submittedDate"]);
 
+                    // Assign priority based on age
+                    var age = DateTime.Now - submitted;
+                    string priority = age.TotalDays > 7 ? "high" : age.TotalDays > 3 ? "medium" : "low";
+                    string priorityLabel = age.TotalDays > 7 ? T("High", "Tinggi") : age.TotalDays > 3 ? T("Medium", "Sederhana") : T("Low", "Rendah");
+
                     list.Add(new
                     {
-                        requestType  = row["requestType"].ToString(),
-                        requestedBy  = row["requestedBy"]?.ToString() ?? "—",
+                        requestType   = row["requestType"].ToString(),
+                        badgeType     = row["requestType"].ToString().ToLower(),
+                        requestedBy   = row["requestedBy"]?.ToString() ?? "—",
                         requestedDate = submitted.ToString("d MMM yyyy"),
+                        priority      = priority,
+                        priorityLabel = priorityLabel
                     });
                 }
 
@@ -208,13 +226,12 @@ namespace ScienceBuddy.Admin
                     {
                         action      = action,
                         description = description.Length > 80
-                                        ? description.Substring(0, 80) + "…"
+                                        ? description.Substring(0, 80) + "\u2026"
                                         : description,
                         status      = status,
                         username    = username,
                         timeAgo     = FormatTimeAgo(logDt),
-                        iconClass   = GetLogIcon(action),
-                        iconStyle   = GetLogIconStyle(action, status)
+                        dotColor    = GetDotColor(action, status)
                     });
                 }
 
@@ -225,7 +242,7 @@ namespace ScienceBuddy.Admin
             }
         }
 
-        // ── Recent notifications (latest 5 system-wide) ────────────────
+        // ── Recent notifications (latest 5) ────────────────────────────
         private void LoadNotifications(SqlConnection conn, string userId)
         {
             const string sql = @"
@@ -264,7 +281,7 @@ namespace ScienceBuddy.Admin
                     string message = CurrentLanguage == "BM"
                         ? (NullSafe(row["messageBM"]) != "" ? NullSafe(row["messageBM"]) : NullSafe(row["messageEN"]))
                         : NullSafe(row["messageEN"]);
-                    if (message.Length > 90) message = message.Substring(0, 90) + "…";
+                    if (message.Length > 90) message = message.Substring(0, 90) + "\u2026";
 
                     bool isRead = row["isRead"] != DBNull.Value && Convert.ToBoolean(row["isRead"]);
                     DateTime createdAt = row["createdAt"] == DBNull.Value
@@ -305,6 +322,23 @@ namespace ScienceBuddy.Admin
             catch { return 0; }
         }
 
+        // ── Utility: timeline dot colour based on action ─────────────
+        private static string GetDotColor(string action, string status)
+        {
+            if (string.IsNullOrEmpty(action)) return "blue";
+            string a = action.ToLower();
+            string s = (status ?? "").ToLower();
+            if (s == "failed" || a.Contains("fail") || a.Contains("reject") || a.Contains("suspicious") || a.Contains("block"))
+                return "red";
+            if (a.Contains("approv") || a.Contains("certif") || s == "success" || a.Contains("register"))
+                return "green";
+            if (a.Contains("submit") || a.Contains("pending"))
+                return "orange";
+            if (a.Contains("lesson") || a.Contains("quiz") || a.Contains("update"))
+                return "blue";
+            return "purple";
+        }
+
         // ── Utility: status badge HTML ───────────────────────────────
         protected string BuildStatusBadge(string status)
         {
@@ -315,7 +349,6 @@ namespace ScienceBuddy.Admin
                          : lower == "warning"  ? "sb-badge-warning"
                          : lower == "info"     ? "sb-badge-primary"
                          : "sb-badge-gray";
-            // Translate status label
             string label = status;
             switch (lower)
             {
@@ -333,39 +366,6 @@ namespace ScienceBuddy.Admin
                 "<span class=\"sb-badge {0}\" style=\"margin-left:4px;\">{1}</span>",
                 cls,
                 HttpUtility.HtmlEncode(label));
-        }
-
-        // ── Utility: log icon per action keyword ─────────────────────
-        private static string GetLogIcon(string action)
-        {
-            if (string.IsNullOrEmpty(action)) return "bi bi-circle";
-            string a = action.ToLower();
-            if (a.Contains("login") && a.Contains("fail")) return "bi bi-x-circle-fill";
-            if (a.Contains("suspicious"))                   return "bi bi-exclamation-triangle-fill";
-            if (a.Contains("login"))                        return "bi bi-box-arrow-in-right";
-            if (a.Contains("logout"))                       return "bi bi-box-arrow-right";
-            if (a.Contains("block"))                        return "bi bi-slash-circle-fill";
-            if (a.Contains("approv") || a.Contains("certif")) return "bi bi-check-circle-fill";
-            if (a.Contains("reject"))                       return "bi bi-x-circle-fill";
-            if (a.Contains("lesson") || a.Contains("quiz")) return "bi bi-pencil-fill";
-            if (a.Contains("notif"))                        return "bi bi-bell-fill";
-            if (a.Contains("config"))                       return "bi bi-gear-fill";
-            return "bi bi-activity";
-        }
-
-        private static string GetLogIconStyle(string action, string status)
-        {
-            string lower  = (action ?? "").ToLower();
-            string sLower = (status ?? "").ToLower();
-            if (sLower == "failed" || lower.Contains("fail") || lower.Contains("reject") || lower.Contains("suspicious"))
-                return "background:#FEE2E2;color:#DC2626;";
-            if (lower.Contains("approv") || lower.Contains("certif") || sLower == "success")
-                return "background:#D1FAE5;color:#059669;";
-            if (lower.Contains("block"))
-                return "background:#FEF3C7;color:#D97706;";
-            if (lower.Contains("login"))
-                return "background:#DBEAFE;color:#2563EB;";
-            return "background:#EDE9FE;color:#7C3AED;";
         }
 
         // ── Utility: relative time ───────────────────────────────────

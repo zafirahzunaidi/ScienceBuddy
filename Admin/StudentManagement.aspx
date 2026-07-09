@@ -1,6 +1,6 @@
 <%@ Page Language="C#" AutoEventWireup="true" CodeBehind="StudentManagement.aspx.cs"
     Inherits="ScienceBuddy.Admin.StudentManagement" MasterPageFile="~/Site.Master"
-    Title="Student Management" %>
+    Title="Student Management" ValidateRequest="false" EnableEventValidation="false" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
 <style>
@@ -369,21 +369,22 @@ function submitAddStudent(){
     // Hide overlay so SweetAlert is visible on top
     closeAddStudent();
     Swal.fire({
-        title:'<%= T("Create this student?","Cipta pelajar ini?") %>',
-        html:'<div style="text-align:left;margin-top:8px;"><b><%= T("Name","Nama") %>:</b> '+n+'<br><b>Username:</b> '+u+'<br><b>Email:</b> '+e+'</div>',
+        title:'<%= T("Create New Account?","Cipta Akaun Baharu?") %>',
+        text:'<%= T("Are you sure you want to create this account?","Adakah anda pasti ingin mencipta akaun ini?") %>',
         icon:'question',showCancelButton:true,
-        confirmButtonText:'<i class="bi bi-person-plus-fill"></i> <%= T("Yes, Create","Ya, Cipta") %>',
+        confirmButtonText:'<i class="bi bi-person-plus-fill"></i> <%= T("Create","Cipta") %>',
         cancelButtonText:'<%= T("Cancel","Batal") %>',
         confirmButtonColor:'#2563EB',
         reverseButtons:true
     }).then(function(r){
         if(!r.isConfirmed){openAddStudent();return;} // reopen if cancelled
-        fetch(window.location.pathname+'?handler=StudentCRUD&action=add&name='+encodeURIComponent(n)+'&username='+encodeURIComponent(u)+'&email='+encodeURIComponent(e)+'&password='+encodeURIComponent(pw)+'&phone='+encodeURIComponent(ph)+'&lang='+lang+'&levelId='+lv,{method:'POST',headers:{'X-Requested-With':'XMLHttpRequest'}})
+        var fd=new FormData();fd.append('name',n);fd.append('username',u);fd.append('email',e);fd.append('password',pw);fd.append('phone',ph);fd.append('lang',lang);fd.append('levelId',lv);
+        fetch(window.location.pathname+'?handler=StudentCRUD&action=add',{method:'POST',body:fd})
         .then(function(r){return r.json();})
         .then(function(d){
             if(d.success){
-                Swal.fire({icon:'success',title:'<%= T("Student Created!","Pelajar Dicipta!") %>',text:'<%= T("The account has been added to ScienceBuddy.","Akaun telah ditambah ke ScienceBuddy.") %>',confirmButtonColor:'#2563EB',timer:3000,timerProgressBar:true})
-                .then(function(){location.reload();});
+                Swal.fire({icon:'success',title:'<%= T("Student Created!","Pelajar Dicipta!") %>',text:'<%= T("The student account has been created successfully.","Akaun pelajar telah berjaya dicipta.") %>',confirmButtonColor:'#2563EB',timer:3000,timerProgressBar:true})
+                .then(function(){__doPostBack('<%= btnSearch.UniqueID %>','');});
             } else {
                 openAddStudent();
                 Swal.fire({icon:'error',title:'<%= T("Error","Ralat") %>',text:d.msg,confirmButtonColor:'#DC2626'});
