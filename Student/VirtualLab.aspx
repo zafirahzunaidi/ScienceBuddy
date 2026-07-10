@@ -68,7 +68,7 @@
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 <asp:Panel ID="pnlError" runat="server" Visible="false">
     <div class="st-virtuallab-error">
-        <div class="st-virtuallab-error-icon">??</div>
+        <div class="st-virtuallab-error-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
         <div class="st-virtuallab-error-title"><asp:Literal ID="litErrorTitle" runat="server" /></div>
         <div class="st-virtuallab-error-desc"><asp:Literal ID="litErrorDesc" runat="server" /></div>
         <a href="<%: ResolveUrl("~/Student/VirtualLabs.aspx") %>" class="sb-btn sb-btn-primary sb-btn-sm">

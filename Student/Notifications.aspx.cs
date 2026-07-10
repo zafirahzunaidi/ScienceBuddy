@@ -9,31 +9,35 @@ using System.Web.UI.WebControls;
 
 namespace ScienceBuddy.Student
 {
-    public partial class Notifications1 : Page
+    public partial class Notifications : Page
     {
-        private string ConnStr =>
-            ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+        private string ConnStr
+        {
+            get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
+        }
 
         private string CurrentLanguage = "EN";
 
-        private string T(string en, string bm)
+        private string T(string englishText, string malayText)
         {
-            return CurrentLanguage == "BM" ? bm : en;
+            if (CurrentLanguage == "BM")
+            {
+                return malayText;
+            }
+            return englishText;
         }
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["userId"] == null || Session["role"] == null ||
-                Session["role"].ToString() != "Student")
+            if (Session["userId"] == null || Session["role"] == null || Session["role"].ToString() != "Student")
             {
                 Response.Redirect("~/Login.aspx", false);
                 return;
             }
 
-            var master = (ScienceBuddy.SiteMaster)Master;
+            ScienceBuddy.SiteMaster master = (ScienceBuddy.SiteMaster)Master;
             master.LayoutMode = "Sidebar";
 
-            // Always init language and labels (fixes BM toggle + postback text loss)
             InitLanguage();
             SetLabels();
 
@@ -45,7 +49,13 @@ namespace ScienceBuddy.Student
 
         private void InitLanguage()
         {
-            string lang = Session["preferredLanguage"] as string;
+            string lang = null;
+
+            if (Session["preferredLanguage"] != null)
+            {
+                lang = Session["preferredLanguage"].ToString();
+            }
+
             if (!string.IsNullOrEmpty(lang))
             {
                 CurrentLanguage = lang;
@@ -58,12 +68,12 @@ namespace ScienceBuddy.Student
                 try
                 {
                     const string sql = "SELECT preferredLanguage FROM [User] WHERE userId = @userId";
-                    using (var conn = new SqlConnection(ConnStr))
-                    using (var cmd = new SqlCommand(sql, conn))
+                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlCommand command = new SqlCommand(sql, connection))
                     {
-                        cmd.Parameters.AddWithValue("@userId", userId);
-                        conn.Open();
-                        object result = cmd.ExecuteScalar();
+                        command.Parameters.AddWithValue("@userId", userId);
+                        connection.Open();
+                        object result = command.ExecuteScalar();
                         if (result != null && result != DBNull.Value)
                         {
                             lang = result.ToString();
@@ -73,7 +83,10 @@ namespace ScienceBuddy.Student
                         }
                     }
                 }
-                catch (SqlException) { }
+                catch (SqlException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Error loading preferred language: " + ex.Message);
+                }
             }
 
             CurrentLanguage = "EN";
@@ -83,24 +96,54 @@ namespace ScienceBuddy.Student
         private void SetLabels()
         {
             litPageTitle.Text = T("Notifications", "Pemberitahuan");
-            litTitle.Text     = T("Notifications", "Pemberitahuan");
-            litSubtitle.Text  = T("Stay updated with your learning activities.",
-                                  "Kekal dikemas kini dengan aktiviti pembelajaran anda.");
+            litTitle.Text = T("Notifications", "Pemberitahuan");
+            litSubtitle.Text = T("Stay updated with your learning activities.", "Kekal dikemas kini dengan aktiviti pembelajaran anda.");
             litFilterAll.Text = T("All", "Semua");
             litFilterUnread.Text = T("Unread", "Belum Dibaca");
             litFilterRead.Text = T("Read", "Dibaca");
-            litMarkAll.Text   = T("Mark All Read", "Tandai Semua Dibaca");
+            litMarkAll.Text = T("Mark All Read", "Tandai Semua Dibaca");
             litEmptyTitle.Text = T("All caught up!", "Semuanya dikemas kini!");
-            litEmptyDesc.Text  = T("No notifications here. Keep learning and updates will appear!",
-                                   "Tiada pemberitahuan di sini. Teruskan belajar dan kemas kini akan muncul!");
-            litEmptyBtn.Text   = T("Continue Learning", "Teruskan Belajar");
+            litEmptyDesc.Text = T("No notifications here. Keep learning and updates will appear!", "Tiada pemberitahuan di sini. Teruskan belajar dan kemas kini akan muncul!");
+            litEmptyBtn.Text = T("Continue Learning", "Teruskan Belajar");
             txtSearch.Attributes["placeholder"] = T("Search notifications...", "Cari pemberitahuan...");
 
             // Update filter chip active state
-            string filter = ViewState["Filter"] as string ?? "all";
-            btnFilterAll.CssClass = filter == "all" ? "st-notifications-chip active" : "st-notifications-chip";
-            btnFilterUnread.CssClass = filter == "unread" ? "st-notifications-chip active" : "st-notifications-chip";
-            btnFilterRead.CssClass = filter == "read" ? "st-notifications-chip active" : "st-notifications-chip";
+            string filter;
+            if (ViewState["Filter"] != null)
+            {
+                filter = ViewState["Filter"].ToString();
+            }
+            else
+            {
+                filter = "all";
+            }
+
+            if (filter == "all")
+            {
+                btnFilterAll.CssClass = "st-notifications-chip active";
+            }
+            else
+            {
+                btnFilterAll.CssClass = "st-notifications-chip";
+            }
+
+            if (filter == "unread")
+            {
+                btnFilterUnread.CssClass = "st-notifications-chip active";
+            }
+            else
+            {
+                btnFilterUnread.CssClass = "st-notifications-chip";
+            }
+
+            if (filter == "read")
+            {
+                btnFilterRead.CssClass = "st-notifications-chip active";
+            }
+            else
+            {
+                btnFilterRead.CssClass = "st-notifications-chip";
+            }
         }
 
         private void LoadNotifications()
@@ -113,7 +156,16 @@ namespace ScienceBuddy.Student
                 return;
             }
 
-            string filter = ViewState["Filter"] as string ?? "all";
+            string filter;
+            if (ViewState["Filter"] != null)
+            {
+                filter = ViewState["Filter"].ToString();
+            }
+            else
+            {
+                filter = "all";
+            }
+
             string search = txtSearch.Text.Trim();
 
             string sql = @"
@@ -122,55 +174,117 @@ namespace ScienceBuddy.Student
                 FROM   Notification
                 WHERE  toUserId = @userId";
 
-            if (filter == "unread") sql += " AND isRead = 0";
-            else if (filter == "read") sql += " AND isRead = 1";
+            if (filter == "unread")
+            {
+                sql += " AND isRead = 0";
+            }
+            else if (filter == "read")
+            {
+                sql += " AND isRead = 1";
+            }
 
             if (!string.IsNullOrEmpty(search))
+            {
                 sql += " AND (titleEN LIKE @search OR titleBM LIKE @search OR messageEN LIKE @search OR messageBM LIKE @search)";
+            }
 
             sql += " ORDER BY createdAt DESC";
 
-            DataTable dt;
-            using (var conn = new SqlConnection(ConnStr))
-            using (var cmd = new SqlCommand(sql, conn))
+            DataTable dataTable;
+            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlCommand command = new SqlCommand(sql, connection))
             {
-                cmd.Parameters.AddWithValue("@userId", userId);
+                command.Parameters.AddWithValue("@userId", userId);
                 if (!string.IsNullOrEmpty(search))
-                    cmd.Parameters.AddWithValue("@search", "%" + search + "%");
-                var da = new SqlDataAdapter(cmd);
-                dt = new DataTable();
-                conn.Open();
-                da.Fill(dt);
+                {
+                    command.Parameters.AddWithValue("@search", "%" + search + "%");
+                }
+                SqlDataAdapter adapter = new SqlDataAdapter(command);
+                dataTable = new DataTable();
+                connection.Open();
+                adapter.Fill(dataTable);
             }
 
             int unread = 0;
-            var list = new List<object>();
+            List<object> list = new List<object>();
             bool isBM = CurrentLanguage == "BM";
 
-            foreach (DataRow row in dt.Rows)
+            foreach (DataRow row in dataTable.Rows)
             {
                 bool isRead = Convert.ToBoolean(row["isRead"]);
-                if (!isRead) unread++;
+                if (!isRead)
+                {
+                    unread++;
+                }
 
-                DateTime created = row["createdAt"] == DBNull.Value
-                    ? DateTime.Now : Convert.ToDateTime(row["createdAt"]);
+                DateTime created;
+                if (row["createdAt"] == DBNull.Value)
+                {
+                    created = DateTime.Now;
+                }
+                else
+                {
+                    created = Convert.ToDateTime(row["createdAt"]);
+                }
 
-                string title = isBM ? row["titleBM"].ToString() : row["titleEN"].ToString();
-                if (string.IsNullOrWhiteSpace(title)) title = row["titleEN"].ToString();
+                string title;
+                if (isBM)
+                {
+                    title = row["titleBM"].ToString();
+                }
+                else
+                {
+                    title = row["titleEN"].ToString();
+                }
+                if (string.IsNullOrWhiteSpace(title))
+                {
+                    title = row["titleEN"].ToString();
+                }
 
-                string message = isBM ? row["messageBM"].ToString() : row["messageEN"].ToString();
-                if (string.IsNullOrWhiteSpace(message)) message = row["messageEN"].ToString();
+                string message;
+                if (isBM)
+                {
+                    message = row["messageBM"].ToString();
+                }
+                else
+                {
+                    message = row["messageEN"].ToString();
+                }
+                if (string.IsNullOrWhiteSpace(message))
+                {
+                    message = row["messageEN"].ToString();
+                }
+
+                string iconBg;
+                if (isRead)
+                {
+                    iconBg = "#F0F7FF";
+                }
+                else
+                {
+                    iconBg = "#FFF0E8";
+                }
+
+                string iconColor;
+                if (isRead)
+                {
+                    iconColor = "#64748B";
+                }
+                else
+                {
+                    iconColor = "#FF6B2C";
+                }
 
                 list.Add(new
                 {
-                    Id        = row["notificationId"].ToString(),
-                    Title     = HttpUtility.HtmlEncode(title),
-                    Message   = HttpUtility.HtmlEncode(message),
-                    IsRead    = isRead,
-                    TimeAgo   = FormatTimeAgo(created),
-                    Icon      = GetIcon(title),
-                    IconBg    = isRead ? "#F0F7FF" : "#FFF0E8",
-                    IconColor = isRead ? "#64748B" : "#FF6B2C"
+                    Id = row["notificationId"].ToString(),
+                    Title = HttpUtility.HtmlEncode(title),
+                    Message = HttpUtility.HtmlEncode(message),
+                    IsRead = isRead,
+                    TimeAgo = FormatTimeAgo(created),
+                    Icon = GetIcon(title),
+                    IconBg = iconBg,
+                    IconColor = iconColor
                 });
             }
 
@@ -180,7 +294,7 @@ namespace ScienceBuddy.Student
                 return;
             }
 
-            pnlList.Visible  = true;
+            pnlList.Visible = true;
             pnlEmpty.Visible = false;
             // Show Mark All Read based on GLOBAL unread count, not filtered
             btnMarkAllRead.Visible = GetGlobalUnreadCount(userId) > 0;
@@ -190,7 +304,7 @@ namespace ScienceBuddy.Student
 
         private void ShowEmpty(string userId)
         {
-            pnlList.Visible  = false;
+            pnlList.Visible = false;
             pnlEmpty.Visible = true;
             // Still show Mark All Read if unread exist globally
             btnMarkAllRead.Visible = GetGlobalUnreadCount(userId) > 0;
@@ -198,12 +312,12 @@ namespace ScienceBuddy.Student
 
         private int GetGlobalUnreadCount(string userId)
         {
-            using (var conn = new SqlConnection(ConnStr))
-            using (var cmd = new SqlCommand("SELECT COUNT(*) FROM Notification WHERE toUserId=@uid AND isRead=0", conn))
+            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM Notification WHERE toUserId=@uid AND isRead=0", connection))
             {
-                cmd.Parameters.AddWithValue("@uid", userId);
-                conn.Open();
-                return (int)cmd.ExecuteScalar();
+                command.Parameters.AddWithValue("@uid", userId);
+                connection.Open();
+                return (int)command.ExecuteScalar();
             }
         }
 
@@ -216,12 +330,12 @@ namespace ScienceBuddy.Student
                 UPDATE Notification SET isRead = 1
                 WHERE  toUserId = @userId AND isRead = 0";
 
-            using (var conn = new SqlConnection(ConnStr))
-            using (var cmd = new SqlCommand(sql, conn))
+            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlCommand command = new SqlCommand(sql, connection))
             {
-                cmd.Parameters.AddWithValue("@userId", userId);
-                conn.Open();
-                cmd.ExecuteNonQuery();
+                command.Parameters.AddWithValue("@userId", userId);
+                connection.Open();
+                command.ExecuteNonQuery();
             }
 
             InitLanguage();
@@ -231,8 +345,8 @@ namespace ScienceBuddy.Student
 
         protected void btnFilter_Click(object sender, EventArgs e)
         {
-            var btn = (LinkButton)sender;
-            ViewState["Filter"] = btn.CommandArgument;
+            LinkButton button = (LinkButton)sender;
+            ViewState["Filter"] = button.CommandArgument;
             InitLanguage();
             SetLabels();
             LoadNotifications();
@@ -243,20 +357,20 @@ namespace ScienceBuddy.Student
             if (e.CommandName == "MarkRead")
             {
                 string notifId = e.CommandArgument.ToString();
-                string userId  = Session["userId"].ToString();
+                string userId = Session["userId"].ToString();
 
                 const string sql = @"
                     UPDATE Notification SET isRead = 1
                     WHERE  notificationId = @notifId
                     AND    toUserId = @userId";
 
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(sql, conn))
+                using (SqlConnection connection = new SqlConnection(ConnStr))
+                using (SqlCommand command = new SqlCommand(sql, connection))
                 {
-                    cmd.Parameters.AddWithValue("@notifId", notifId);
-                    cmd.Parameters.AddWithValue("@userId",  userId);
-                    conn.Open();
-                    cmd.ExecuteNonQuery();
+                    command.Parameters.AddWithValue("@notifId", notifId);
+                    command.Parameters.AddWithValue("@userId", userId);
+                    connection.Open();
+                    command.ExecuteNonQuery();
                 }
 
                 InitLanguage();
@@ -269,24 +383,57 @@ namespace ScienceBuddy.Student
 
         private static string GetIcon(string title)
         {
-            if (string.IsNullOrEmpty(title)) return "bi-bell";
+            if (string.IsNullOrEmpty(title))
+            {
+                return "bi-bell";
+            }
             string t = title.ToLower();
-            if (t.Contains("badge") || t.Contains("lencana"))  return "bi-award-fill";
-            if (t.Contains("quiz") || t.Contains("kuiz"))      return "bi-patch-question-fill";
-            if (t.Contains("lesson") || t.Contains("pelajaran")) return "bi-book-fill";
-            if (t.Contains("live") || t.Contains("langsung"))  return "bi-camera-video-fill";
-            if (t.Contains("xp"))                               return "bi-lightning-charge-fill";
-            if (t.Contains("forum"))                            return "bi-chat-dots-fill";
+            if (t.Contains("badge") || t.Contains("lencana"))
+            {
+                return "bi-award-fill";
+            }
+            if (t.Contains("quiz") || t.Contains("kuiz"))
+            {
+                return "bi-patch-question-fill";
+            }
+            if (t.Contains("lesson") || t.Contains("pelajaran"))
+            {
+                return "bi-book-fill";
+            }
+            if (t.Contains("live") || t.Contains("langsung"))
+            {
+                return "bi-camera-video-fill";
+            }
+            if (t.Contains("xp"))
+            {
+                return "bi-lightning-charge-fill";
+            }
+            if (t.Contains("forum"))
+            {
+                return "bi-chat-dots-fill";
+            }
             return "bi-bell-fill";
         }
 
         private static string FormatTimeAgo(DateTime dt)
         {
-            var span = DateTime.Now - dt;
-            if (span.TotalMinutes < 1)  return "Just now";
-            if (span.TotalHours   < 1)  return (int)span.TotalMinutes + " min ago";
-            if (span.TotalDays    < 1)  return (int)span.TotalHours   + " hr ago";
-            if (span.TotalDays    < 7)  return (int)span.TotalDays    + " day" + ((int)span.TotalDays == 1 ? "" : "s") + " ago";
+            TimeSpan span = DateTime.Now - dt;
+            if (span.TotalMinutes < 1)
+            {
+                return "Just now";
+            }
+            if (span.TotalHours < 1)
+            {
+                return (int)span.TotalMinutes + " min ago";
+            }
+            if (span.TotalDays < 1)
+            {
+                return (int)span.TotalHours + " hr ago";
+            }
+            if (span.TotalDays < 7)
+            {
+                return (int)span.TotalDays + " day" + ((int)span.TotalDays == 1 ? "" : "s") + " ago";
+            }
             return dt.ToString("d MMM yyyy");
         }
 
@@ -295,12 +442,12 @@ namespace ScienceBuddy.Student
             const string sql = @"
                 SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
                 WHERE TABLE_NAME = @tableName AND TABLE_TYPE = 'BASE TABLE'";
-            using (var conn = new SqlConnection(ConnStr))
-            using (var cmd = new SqlCommand(sql, conn))
+            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlCommand command = new SqlCommand(sql, connection))
             {
-                cmd.Parameters.AddWithValue("@tableName", tableName);
-                conn.Open();
-                return (int)cmd.ExecuteScalar() > 0;
+                command.Parameters.AddWithValue("@tableName", tableName);
+                connection.Open();
+                return (int)command.ExecuteScalar() > 0;
             }
         }
     }

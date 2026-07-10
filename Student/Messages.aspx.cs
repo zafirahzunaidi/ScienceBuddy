@@ -12,15 +12,21 @@ namespace ScienceBuddy.Student
     public partial class Messages1 : Page
     {
         // ── Connection string ─────────────────────────────────────────
-        private string ConnStr =>
-            ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+        private string ConnStr
+        {
+            get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
+        }
 
         // ── Language helper ────────────────────────────────────────────
         public string CurrentLanguage = "EN";
 
         public string T(string en, string bm)
         {
-            return CurrentLanguage == "BM" ? bm : en;
+            if (CurrentLanguage == "BM")
+            {
+                return bm;
+            }
+            return en;
         }
 
         // ── Page Load ─────────────────────────────────────────────────
@@ -60,12 +66,12 @@ namespace ScienceBuddy.Student
                 try
                 {
                     const string sql = "SELECT preferredLanguage FROM [User] WHERE userId = @userId";
-                    using (var conn = new SqlConnection(ConnStr))
-                    using (var cmd = new SqlCommand(sql, conn))
+                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlCommand command = new SqlCommand(sql, connection))
                     {
-                        cmd.Parameters.AddWithValue("@userId", userId);
-                        conn.Open();
-                        object result = cmd.ExecuteScalar();
+                        command.Parameters.AddWithValue("@userId", userId);
+                        connection.Open();
+                        object result = command.ExecuteScalar();
                         if (result != null && result != DBNull.Value)
                         {
                             lang = result.ToString();
@@ -75,7 +81,10 @@ namespace ScienceBuddy.Student
                         }
                     }
                 }
-                catch (SqlException) { }
+                catch (SqlException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Database error: " + ex.Message);
+                }
             }
 
             CurrentLanguage = "EN";
@@ -100,11 +109,11 @@ namespace ScienceBuddy.Student
         {
             string uid = Session["userId"].ToString();
 
-            using (var conn = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnStr))
             {
-                conn.Open();
+                connection.Open();
 
-                if (!Tbl(conn, "userChat") || !Tbl(conn, "privateMessage"))
+                if (!Tbl(connection, "userChat") || !Tbl(connection, "privateMessage"))
                 {
                     pnlChatsContent.Visible = false;
                     pnlChatsEmpty.Visible = true;
@@ -120,14 +129,14 @@ namespace ScienceBuddy.Student
                     WHERE  c.userId = @uid OR c.user2Id = @uid
                     ORDER BY c.createdAt DESC";
 
-                var chats = new List<object>();
+                List<object> chats = new List<object>();
 
-                using (var cmd = new SqlCommand(sql, conn))
+                using (SqlCommand command = new SqlCommand(sql, connection))
                 {
-                    cmd.Parameters.AddWithValue("@uid", uid);
-                    using (var reader = cmd.ExecuteReader())
+                    command.Parameters.AddWithValue("@uid", uid);
+                    using (SqlDataReader reader = command.ExecuteReader())
                     {
-                        var chatRows = new List<Tuple<string, string>>();
+                        List<Tuple<string, string>> chatRows = new List<Tuple<string, string>>();
                         while (reader.Read())
                         {
                             chatRows.Add(Tuple.Create(
@@ -136,7 +145,7 @@ namespace ScienceBuddy.Student
                         }
                         reader.Close();
 
-                        foreach (var chat in chatRows)
+                        foreach (Tuple<string, string> chat in chatRows)
                         {
                             string chatId = chat.Item1;
                             string otherUserId = chat.Item2;
@@ -144,28 +153,50 @@ namespace ScienceBuddy.Student
                             // Get teacher info
                             string teacherName = "";
                             string qualification = "";
-                            using (var cmd2 = new SqlCommand(@"
+                            using (SqlCommand cmd2 = new SqlCommand(@"
                                 SELECT t.name, t.academicQualification
                                 FROM   Teacher t
-                                WHERE  t.userId = @otherUserId", conn))
+                                WHERE  t.userId = @otherUserId", connection))
                             {
                                 cmd2.Parameters.AddWithValue("@otherUserId", otherUserId);
-                                using (var r2 = cmd2.ExecuteReader())
+                                using (SqlDataReader r2 = cmd2.ExecuteReader())
                                 {
                                     if (r2.Read())
                                     {
-                                        teacherName = r2["name"] != DBNull.Value ? r2["name"].ToString() : "";
-                                        qualification = r2["academicQualification"] != DBNull.Value ? r2["academicQualification"].ToString() : "";
+                                        if (r2["name"] != DBNull.Value)
+                                        {
+                                            teacherName = r2["name"].ToString();
+                                        }
+                                        else
+                                        {
+                                            teacherName = "";
+                                        }
+
+                                        if (r2["academicQualification"] != DBNull.Value)
+                                        {
+                                            qualification = r2["academicQualification"].ToString();
+                                        }
+                                        else
+                                        {
+                                            qualification = "";
+                                        }
                                     }
                                     else
                                     {
                                         // Other user might not be a teacher - use User table
                                         r2.Close();
-                                        using (var cmd3 = new SqlCommand("SELECT username FROM [User] WHERE userId = @uid2", conn))
+                                        using (SqlCommand cmd3 = new SqlCommand("SELECT username FROM [User] WHERE userId = @uid2", connection))
                                         {
                                             cmd3.Parameters.AddWithValue("@uid2", otherUserId);
                                             object res = cmd3.ExecuteScalar();
-                                            teacherName = res != null ? res.ToString() : "User";
+                                            if (res != null)
+                                            {
+                                                teacherName = res.ToString();
+                                            }
+                                            else
+                                            {
+                                                teacherName = "User";
+                                            }
                                         }
                                         qualification = "";
                                         goto afterTeacherRead;
@@ -177,20 +208,40 @@ namespace ScienceBuddy.Student
                             // Get last message
                             string lastMsg = "";
                             string lastDate = "";
-                            using (var cmd4 = new SqlCommand(@"
+                            using (SqlCommand cmd4 = new SqlCommand(@"
                                 SELECT TOP 1 msgText, sentAt
                                 FROM   privateMessage
                                 WHERE  chatId = @cid
-                                ORDER BY sentAt DESC", conn))
+                                ORDER BY sentAt DESC", connection))
                             {
                                 cmd4.Parameters.AddWithValue("@cid", chatId);
-                                using (var r4 = cmd4.ExecuteReader())
+                                using (SqlDataReader r4 = cmd4.ExecuteReader())
                                 {
                                     if (r4.Read())
                                     {
-                                        lastMsg = r4["msgText"] != DBNull.Value ? r4["msgText"].ToString() : "";
-                                        if (lastMsg.Length > 60) lastMsg = lastMsg.Substring(0, 60) + "...";
-                                        DateTime sentAt = r4["sentAt"] != DBNull.Value ? Convert.ToDateTime(r4["sentAt"]) : DateTime.Now;
+                                        if (r4["msgText"] != DBNull.Value)
+                                        {
+                                            lastMsg = r4["msgText"].ToString();
+                                        }
+                                        else
+                                        {
+                                            lastMsg = "";
+                                        }
+
+                                        if (lastMsg.Length > 60)
+                                        {
+                                            lastMsg = lastMsg.Substring(0, 60) + "...";
+                                        }
+
+                                        DateTime sentAt;
+                                        if (r4["sentAt"] != DBNull.Value)
+                                        {
+                                            sentAt = Convert.ToDateTime(r4["sentAt"]);
+                                        }
+                                        else
+                                        {
+                                            sentAt = DateTime.Now;
+                                        }
                                         lastDate = FormatTimeAgo(sentAt);
                                     }
                                 }
@@ -198,9 +249,9 @@ namespace ScienceBuddy.Student
 
                             // Count unread
                             int unreadCount = 0;
-                            using (var cmd5 = new SqlCommand(@"
+                            using (SqlCommand cmd5 = new SqlCommand(@"
                                 SELECT COUNT(*) FROM privateMessage
-                                WHERE  chatId = @cid AND senderUserId != @uid AND isRead = 0", conn))
+                                WHERE  chatId = @cid AND senderUserId != @uid AND isRead = 0", connection))
                             {
                                 cmd5.Parameters.AddWithValue("@cid", chatId);
                                 cmd5.Parameters.AddWithValue("@uid", uid);
@@ -240,11 +291,11 @@ namespace ScienceBuddy.Student
         // ── Load teachers ─────────────────────────────────────────────
         private void LoadTeachers()
         {
-            using (var conn = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnStr))
             {
-                conn.Open();
+                connection.Open();
 
-                if (!Tbl(conn, "Teacher"))
+                if (!Tbl(connection, "Teacher"))
                 {
                     pnlTeachersContent.Visible = false;
                     pnlTeachersEmpty.Visible = true;
@@ -259,19 +310,49 @@ namespace ScienceBuddy.Student
                     AND    u.status = 'Active'
                     ORDER BY t.name";
 
-                var teachers = new List<object>();
+                List<object> teachers = new List<object>();
 
-                using (var cmd = new SqlCommand(sql, conn))
-                using (var reader = cmd.ExecuteReader())
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                using (SqlDataReader reader = command.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        string name = reader["name"] != DBNull.Value ? reader["name"].ToString() : "";
-                        string qual = reader["academicQualification"] != DBNull.Value ? reader["academicQualification"].ToString() : "";
-                        string bio = reader["bio"] != DBNull.Value ? reader["bio"].ToString() : "";
+                        string name;
+                        if (reader["name"] != DBNull.Value)
+                        {
+                            name = reader["name"].ToString();
+                        }
+                        else
+                        {
+                            name = "";
+                        }
+
+                        string qual;
+                        if (reader["academicQualification"] != DBNull.Value)
+                        {
+                            qual = reader["academicQualification"].ToString();
+                        }
+                        else
+                        {
+                            qual = "";
+                        }
+
+                        string bio;
+                        if (reader["bio"] != DBNull.Value)
+                        {
+                            bio = reader["bio"].ToString();
+                        }
+                        else
+                        {
+                            bio = "";
+                        }
+
                         string teacherUserId = reader["userId"].ToString();
 
-                        if (bio.Length > 100) bio = bio.Substring(0, 100) + "...";
+                        if (bio.Length > 100)
+                        {
+                            bio = bio.Substring(0, 100) + "...";
+                        }
 
                         teachers.Add(new
                         {
@@ -323,16 +404,19 @@ namespace ScienceBuddy.Student
         // ── Start Chat command ────────────────────────────────────────
         protected void rptTeachers_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
-            if (e.CommandName != "StartChat") return;
+            if (e.CommandName != "StartChat")
+            {
+                return;
+            }
 
             string teacherUserId = e.CommandArgument.ToString();
             string uid = Session["userId"].ToString();
 
-            using (var conn = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnStr))
             {
-                conn.Open();
+                connection.Open();
 
-                if (!Tbl(conn, "userChat"))
+                if (!Tbl(connection, "userChat"))
                 {
                     // Table doesn't exist, can't proceed
                     return;
@@ -345,11 +429,11 @@ namespace ScienceBuddy.Student
                     OR     (userId = @teacherUid AND user2Id = @uid)";
 
                 string existingChatId = null;
-                using (var cmd = new SqlCommand(checkSql, conn))
+                using (SqlCommand command = new SqlCommand(checkSql, connection))
                 {
-                    cmd.Parameters.AddWithValue("@uid", uid);
-                    cmd.Parameters.AddWithValue("@teacherUid", teacherUserId);
-                    object result = cmd.ExecuteScalar();
+                    command.Parameters.AddWithValue("@uid", uid);
+                    command.Parameters.AddWithValue("@teacherUid", teacherUserId);
+                    object result = command.ExecuteScalar();
                     if (result != null && result != DBNull.Value)
                     {
                         existingChatId = result.ToString();
@@ -365,19 +449,22 @@ namespace ScienceBuddy.Student
                 // Create new chat
                 string newChatId = "C" + DateTime.Now.ToString("yyMMddHHmm").Substring(0, 9);
                 // Ensure 10 chars max
-                if (newChatId.Length > 10) newChatId = newChatId.Substring(0, 10);
+                if (newChatId.Length > 10)
+                {
+                    newChatId = newChatId.Substring(0, 10);
+                }
 
                 const string insertSql = @"
                     INSERT INTO userChat (chatId, userId, user2Id, createdAt)
                     VALUES (@chatId, @uid, @teacherUid, @createdAt)";
 
-                using (var cmd = new SqlCommand(insertSql, conn))
+                using (SqlCommand command = new SqlCommand(insertSql, connection))
                 {
-                    cmd.Parameters.AddWithValue("@chatId", newChatId);
-                    cmd.Parameters.AddWithValue("@uid", uid);
-                    cmd.Parameters.AddWithValue("@teacherUid", teacherUserId);
-                    cmd.Parameters.AddWithValue("@createdAt", DateTime.Now);
-                    cmd.ExecuteNonQuery();
+                    command.Parameters.AddWithValue("@chatId", newChatId);
+                    command.Parameters.AddWithValue("@uid", uid);
+                    command.Parameters.AddWithValue("@teacherUid", teacherUserId);
+                    command.Parameters.AddWithValue("@createdAt", DateTime.Now);
+                    command.ExecuteNonQuery();
                 }
 
                 Response.Redirect("~/Student/Chat.aspx?chatId=" + HttpUtility.UrlEncode(newChatId), false);
@@ -408,20 +495,37 @@ namespace ScienceBuddy.Student
         // ── Utility helpers ───────────────────────────────────────────
         private static string GetInitials(string name)
         {
-            if (string.IsNullOrWhiteSpace(name)) return "T";
-            var parts = name.Trim().Split(' ');
-            return parts.Length >= 2
-                ? (parts[0][0].ToString() + parts[parts.Length - 1][0].ToString()).ToUpper()
-                : name[0].ToString().ToUpper();
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return "T";
+            }
+            string[] parts = name.Trim().Split(' ');
+            if (parts.Length >= 2)
+            {
+                return (parts[0][0].ToString() + parts[parts.Length - 1][0].ToString()).ToUpper();
+            }
+            return name[0].ToString().ToUpper();
         }
 
         private static string FormatTimeAgo(DateTime dt)
         {
-            var span = DateTime.Now - dt;
-            if (span.TotalMinutes < 1) return "Just now";
-            if (span.TotalHours < 1) return (int)span.TotalMinutes + " min ago";
-            if (span.TotalDays < 1) return (int)span.TotalHours + " hr ago";
-            if (span.TotalDays < 7) return (int)span.TotalDays + " day" + ((int)span.TotalDays == 1 ? "" : "s") + " ago";
+            TimeSpan span = DateTime.Now - dt;
+            if (span.TotalMinutes < 1)
+            {
+                return "Just now";
+            }
+            if (span.TotalHours < 1)
+            {
+                return (int)span.TotalMinutes + " min ago";
+            }
+            if (span.TotalDays < 1)
+            {
+                return (int)span.TotalHours + " hr ago";
+            }
+            if (span.TotalDays < 7)
+            {
+                return (int)span.TotalDays + " day" + ((int)span.TotalDays == 1 ? "" : "s") + " ago";
+            }
             return dt.ToString("d MMM yyyy");
         }
 
@@ -429,16 +533,16 @@ namespace ScienceBuddy.Student
         /// Returns true if the given table exists in the current database.
         /// Uses INFORMATION_SCHEMA so it never throws on a missing table.
         /// </summary>
-        private static bool Tbl(SqlConnection conn, string tableName)
+        private static bool Tbl(SqlConnection connection, string tableName)
         {
             const string sql = @"
                 SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
                 WHERE  TABLE_NAME = @tableName
                 AND    TABLE_TYPE = 'BASE TABLE'";
-            using (var cmd = new SqlCommand(sql, conn))
+            using (SqlCommand command = new SqlCommand(sql, connection))
             {
-                cmd.Parameters.AddWithValue("@tableName", tableName);
-                return (int)cmd.ExecuteScalar() > 0;
+                command.Parameters.AddWithValue("@tableName", tableName);
+                return (int)command.ExecuteScalar() > 0;
             }
         }
     }

@@ -1,4 +1,4 @@
-<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Notifications.aspx.cs" Inherits="ScienceBuddy.Student.Notifications1" %>
+<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Notifications.aspx.cs" Inherits="ScienceBuddy.Student.Notifications" %>
 <asp:Content ID="HeadStyle" ContentPlaceHolderID="HeadContent" runat="server">
     <link href="<%: ResolveUrl("~/Content/Student.css") %>" rel="stylesheet" />
 </asp:Content>
@@ -73,11 +73,22 @@
     </div>
 </asp:Content>
 
-<asp:Content ID="cPageTitle" ContentPlaceHolderID="PageTitle" runat="server">
+
+<asp:Content ID="StudentSidebarFooter" ContentPlaceHolderID="SidebarFooter" runat="server">
+</asp:Content>
+
+<asp:Content ID="DashboardPageTitle" ContentPlaceHolderID="PageTitle" runat="server">
     <asp:Literal ID="litPageTitle" runat="server" Text="Notifications" />
 </asp:Content>
 
-<asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
+<asp:Content ID="StudentUserDropdownMenu" ContentPlaceHolderID="UserDropdownMenu" runat="server">
+</asp:Content>
+
+<asp:Content ID="NotificationsBreadcrumb" ContentPlaceHolderID="BreadcrumbContent" runat="server">
+</asp:Content>
+
+<%-- Dashboard Main Content --%>
+<asp:Content ID="NotificationsMainContent" ContentPlaceHolderID="MainContentSidebar" runat="server">
 
 <%-- Page Header --%>
 <div class="st-notifications-header">
@@ -135,7 +146,7 @@
 <%-- Empty State --%>
 <asp:Panel ID="pnlEmpty" runat="server" Visible="false">
     <div class="sb-empty-state" style="padding:var(--space-3xl) 0;">
-        <div class="empty-icon" style="font-size:3.5rem;">??</div>
+        <div class="empty-icon" style="font-size:3.5rem;"><i class="bi bi-bell-slash"></i></div>
         <div class="empty-title"><asp:Literal ID="litEmptyTitle" runat="server" /></div>
         <div class="empty-desc"><asp:Literal ID="litEmptyDesc" runat="server" /></div>
         <a href="<%: ResolveUrl("~/Student/Dashboard.aspx") %>" class="sb-btn sb-btn-primary sb-btn-sm mt-lg">
@@ -144,4 +155,7 @@
     </div>
 </asp:Panel>
 
+</asp:Content>
+
+<asp:Content ID="NotificationsScripts" ContentPlaceHolderID="ScriptsContent" runat="server">
 </asp:Content>
