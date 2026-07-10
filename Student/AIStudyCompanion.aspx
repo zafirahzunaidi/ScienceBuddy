@@ -1,12 +1,21 @@
 <%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AIStudyCompanion.aspx.cs"
     Inherits="ScienceBuddy.Student.AIStudyCompanion1" MasterPageFile="~/Site.Master"
     Title="AI Study Companion" %>
-<asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
-<link href="<%: ResolveUrl("~/Content/Student.css") %>" rel="stylesheet" />
+<asp:Content ID="HeadStyle" ContentPlaceHolderID="HeadContent" runat="server">
+    <link href="<%: ResolveUrl("~/Content/Student.css") %>" rel="stylesheet" />
 </asp:Content>
 
-<%-- ════ SIDEBAR ════ --%>
-<asp:Content ID="cSidebarMenu" ContentPlaceHolderID="SidebarMenu" runat="server">
+<asp:Content ID="TopNavigationLinks" ContentPlaceHolderID="TopNavLinks" runat="server">
+</asp:Content>
+
+<asp:Content ID="TopNavActions" ContentPlaceHolderID="TopNavActions" runat="server">
+</asp:Content>
+
+<asp:Content ID="TopNavigationMainContent" ContentPlaceHolderID="MainContent" runat="server">
+</asp:Content>
+
+<%-- Student Sidebar --%>
+<asp:Content ID="StudentSidebarMenu" ContentPlaceHolderID="SidebarMenu" runat="server">
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Main</div>
         <a href="<%: ResolveUrl("~/Student/Dashboard.aspx") %>" class="sb-sidebar-item">
@@ -66,12 +75,21 @@
     </div>
 </asp:Content>
 
-<asp:Content ID="cPageTitle" ContentPlaceHolderID="PageTitle" runat="server">
-    <asp:Literal ID="litPageTitle" runat="server" Text="AI Study Companion" />
+<asp:Content ID="StudentSidebarFooter" ContentPlaceHolderID="SidebarFooter" runat="server">
 </asp:Content>
 
-<%-- ════ MAIN CONTENT ════ --%>
-<asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
+<asp:Content ID="AIStudyCompanionPageTitle" ContentPlaceHolderID="PageTitle" runat="server">
+        <asp:Literal ID="Literal1" runat="server" Text="AI Study Companion" />
+</asp:Content>
+
+<asp:Content ID="StudentUserDropdownMenu" ContentPlaceHolderID="UserDropdownMenu" runat="server">
+</asp:Content>
+
+<asp:Content ID="AIStudyCompanionBreadcrumb" ContentPlaceHolderID="BreadcrumbContent" runat="server">
+</asp:Content>
+
+<%-- AIStudyCompanion Main Content --%>
+<asp:Content ID="AIStudyCompanionMainContent" ContentPlaceHolderID="MainContentSidebar" runat="server">
 
 <%-- ── AI HERO CARD ── --%>
 <div class="st-ai-hero">
@@ -206,4 +224,7 @@
     </div>
 </asp:Panel>
 
+</asp:Content>
+
+<asp:Content ID="AIStudyCompanionScripts" ContentPlaceHolderID="ScriptsContent" runat="server">
 </asp:Content>
