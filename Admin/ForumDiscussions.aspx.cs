@@ -55,7 +55,7 @@ namespace ScienceBuddy.Admin
                             list.Add(new { forumId = NS(r, "forumId"), title = NS(r, "title"), messagePreview = msgPreview, discussionType = dtype,
                                 username = NS(r, "username"), role = NS(r, "role"), createdByUserId = NS(r, "createdBy"),
                                 createdAt = r["createdAt"] != DBNull.Value ? Convert.ToDateTime(r["createdAt"]).ToString("dd MMM yyyy") : "-",
-                                typeCls = dtype == "Public" ? "fd-badge-public" : "fd-badge-private", jsonData = json });
+                                typeCls = dtype == "Public" ? "ad-forum-discussions-badge-public" : "ad-forum-discussions-badge-private", jsonData = json });
                         }
                     }
                 }

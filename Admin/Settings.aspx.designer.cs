@@ -9,5 +9,11 @@ namespace ScienceBuddy.Admin
     public partial class Settings
     {
         protected global::System.Web.UI.WebControls.Literal litLang;
+        protected global::System.Web.UI.WebControls.Literal litStatus;
+        protected global::System.Web.UI.WebControls.Literal litRole;
+        protected global::System.Web.UI.WebControls.Literal litLastLogin;
+        protected global::System.Web.UI.WebControls.Literal litLastPwChange;
+        protected global::System.Web.UI.WebControls.Literal litDbName;
+        protected global::System.Web.UI.WebControls.Literal litServerTime;
     }
 }

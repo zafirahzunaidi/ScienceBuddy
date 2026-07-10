@@ -3,118 +3,7 @@
     Title="Student Management" ValidateRequest="false" EnableEventValidation="false" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
-<style>
-:root { --sm-accent:#6366F1; --sm-accent-light:#EEF2FF; --sm-green:#10B981; --sm-orange:#F59E0B; --sm-pink:#EC4899; --sm-cyan:#06B6D4; }
-
-/* Page header */
-.sm-header { display:flex; align-items:center; justify-content:space-between; gap:var(--space-lg); margin-bottom:var(--space-xl); flex-wrap:wrap; }
-.sm-header-left {}
-.sm-header-title { font-family:var(--font-primary); font-size:1.75rem; font-weight:800; color:var(--color-text); display:flex; align-items:center; gap:var(--space-sm); margin-bottom:var(--space-xs); }
-.sm-header-sub { font-size:.9375rem; color:var(--color-text-secondary); max-width:460px; line-height:1.5; }
-.sm-badge-dir { display:inline-flex; align-items:center; gap:4px; background:var(--sm-accent-light); color:var(--sm-accent); font-size:.75rem; font-weight:700; padding:4px 12px; border-radius:var(--border-radius-full); margin-top:var(--space-sm); }
-.sm-header-icon { width:72px; height:72px; border-radius:var(--border-radius-xl); background:linear-gradient(135deg,var(--sm-accent),#818CF8); display:flex; align-items:center; justify-content:center; font-size:2rem; color:#fff; box-shadow:0 8px 24px rgba(99,102,241,.3); flex-shrink:0; }
-
-/* Insight cards */
-.sm-insights { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--space-md); margin-bottom:var(--space-xl); }
-.sm-insight {
-    border-radius:var(--border-radius-xl); padding:var(--space-lg); color:#fff;
-    display:flex; flex-direction:column; gap:var(--space-sm);
-    transition:transform .2s,box-shadow .2s; position:relative; overflow:hidden;
-}
-.sm-insight:hover { transform:translateY(-4px); box-shadow:var(--shadow-lg); }
-.sm-insight::after { content:''; position:absolute; width:120px; height:120px; border-radius:50%; background:rgba(255,255,255,.08); top:-30px; right:-30px; pointer-events:none; }
-.sm-insight.gi-total   { background:linear-gradient(135deg,#6366F1,#818CF8); }
-.sm-insight.gi-xp      { background:linear-gradient(135deg,#F59E0B,#FBBF24); }
-.sm-insight.gi-level   { background:linear-gradient(135deg,#10B981,#34D399); }
-.sm-insight.gi-active  { background:linear-gradient(135deg,#EC4899,#F472B6); }
-.sm-insight-ico { font-size:1.75rem; opacity:.9; }
-.sm-insight-val { font-family:var(--font-primary); font-size:2rem; font-weight:800; line-height:1; }
-.sm-insight-lbl { font-size:.8125rem; opacity:.85; font-weight:600; }
-
-/* Search panel */
-.sm-search-panel {
-    background:var(--color-white); border-radius:var(--border-radius-xl);
-    border:1.5px solid var(--border-color); box-shadow:var(--shadow-md);
-    padding:var(--space-lg) var(--space-xl);
-    display:flex; align-items:center; gap:var(--space-md); flex-wrap:wrap;
-    margin-bottom:var(--space-xl); transition:box-shadow .2s ease;
-}
-.sm-search-panel:focus-within { box-shadow:0 8px 32px rgba(99,102,241,.12); }
-.sm-search-panel .sb-input { flex:1; min-width:200px; max-width:320px; }
-.sm-search-panel .sb-select { max-width:170px; }
-
-/* Student grid */
-.sm-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--space-lg); }
-.sm-card {
-    background:var(--color-white); border-radius:var(--border-radius-xl);
-    border:1.5px solid var(--border-color); box-shadow:var(--shadow-sm);
-    padding:var(--space-xl) var(--space-lg); display:flex; flex-direction:column;
-    align-items:center; text-align:center; transition:transform .25s ease,box-shadow .25s ease;
-    position:relative; animation:sm-fadeIn .4s ease both;
-}
-.sm-card:nth-child(2) { animation-delay:.05s; }
-.sm-card:nth-child(3) { animation-delay:.1s; }
-.sm-card:nth-child(4) { animation-delay:.15s; }
-.sm-card:nth-child(5) { animation-delay:.2s; }
-.sm-card:nth-child(6) { animation-delay:.25s; }
-.sm-card:nth-child(7) { animation-delay:.3s; }
-.sm-card:nth-child(8) { animation-delay:.35s; }
-.sm-card:hover { transform:translateY(-6px); box-shadow:0 12px 32px rgba(99,102,241,.15); }
-@keyframes sm-fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
-.sm-avatar {
-    width:64px; height:64px; border-radius:50%;
-    background:linear-gradient(135deg,var(--sm-accent),#818CF8);
-    display:flex; align-items:center; justify-content:center;
-    color:#fff; font-size:1.375rem; font-weight:800; margin-bottom:var(--space-md);
-    position:relative; flex-shrink:0;
-}
-.sm-avatar-status {
-    position:absolute; bottom:2px; right:2px; width:14px; height:14px;
-    border-radius:50%; border:2.5px solid #fff;
-}
-.sm-avatar-status.active { background:var(--sm-green); }
-.sm-avatar-status.inactive { background:#94A3B8; }
-.sm-name { font-family:var(--font-primary); font-size:1rem; font-weight:700; color:var(--color-text); margin-bottom:2px; }
-.sm-username { font-size:.8125rem; color:var(--color-text-muted); margin-bottom:var(--space-sm); }
-.sm-badges { display:flex; flex-wrap:wrap; gap:4px; justify-content:center; margin-bottom:var(--space-md); }
-.sm-badge-pill { font-size:.6875rem; font-weight:700; padding:3px 8px; border-radius:var(--border-radius-full); transition:transform .15s ease; }
-.sm-badge-pill:hover { transform:scale(1.08); }
-.sm-badge-level { background:#DBEAFE; color:#1D4ED8; }
-.sm-badge-personality { background:#F3E8FF; color:#7C3AED; }
-.sm-badge-lang { background:#ECFDF5; color:#059669; }
-.sm-progress-section { width:100%; margin-bottom:var(--space-md); text-align:left; }
-.sm-progress-row { display:flex; align-items:center; justify-content:space-between; font-size:.75rem; color:var(--color-text-muted); margin-bottom:4px; }
-.sm-progress-bar { height:6px; background:#F1F5F9; border-radius:var(--border-radius-full); overflow:hidden; margin-bottom:6px; }
-.sm-progress-fill { height:100%; border-radius:var(--border-radius-full); background:linear-gradient(90deg,var(--sm-accent),#818CF8); transition:width .8s cubic-bezier(.4,0,.2,1); }
-.sm-meta { font-size:.75rem; color:var(--color-text-muted); display:flex; gap:var(--space-md); justify-content:center; margin-bottom:var(--space-md); }
-.sm-meta span { display:flex; align-items:center; gap:3px; }
-.sm-card-footer { width:100%; display:flex; gap:var(--space-sm); justify-content:center; margin-top:auto; }
-
-/* Empty state */
-.sm-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:var(--space-3xl); }
-.sm-empty-ico { font-size:4rem; margin-bottom:var(--space-lg); opacity:.4; }
-.sm-empty-msg { font-size:1.0625rem; font-weight:700; color:var(--color-text-secondary); }
-.sm-empty-sub { font-size:.875rem; color:var(--color-text-muted); margin-top:4px; }
-
-/* Modal overlay fix — only cover content area, not sidebar */
-.sm-modal-wrap .sb-modal-overlay { left:var(--sidebar-width); }
-.sidebar-collapsed .sm-modal-wrap .sb-modal-overlay { left:var(--sidebar-collapsed); }
-@media(max-width:767px) { .sm-modal-wrap .sb-modal-overlay { left:0; } }
-
-/* Responsive */
-@media(max-width:1279px) { .sm-grid { grid-template-columns:repeat(3,1fr); } .sm-insights { grid-template-columns:repeat(2,1fr); } }
-@media(max-width:1023px) { .sm-grid { grid-template-columns:repeat(2,1fr); } }
-@media(max-width:767px) {
-    .sm-header { flex-direction:column; align-items:flex-start; }
-    .sm-header-icon { display:none; }
-    .sm-grid { grid-template-columns:1fr; }
-    .sm-insights { grid-template-columns:1fr 1fr; }
-    .sm-search-panel { flex-direction:column; align-items:stretch; }
-    .sm-search-panel .sb-input,.sm-search-panel .sb-select { max-width:100%; }
-    .sm-header-title { font-size:1.375rem; }
-}
-@media(max-width:479px) { .sm-insights { grid-template-columns:1fr; } }
-</style>
+<link href="<%: ResolveUrl("~/Content/Admin.css") %>" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="<%: ResolveUrl("~/Scripts/admin-signout.js") %>"></script>
@@ -166,14 +55,14 @@
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 
 <%-- PAGE HEADER --%>
-<div class="sm-header">
-    <div class="sm-header-left">
-        <h1 class="sm-header-title"><i class="bi bi-mortarboard-fill" style="color:var(--sm-accent);"></i> <%= T("Student Management", "Pengurusan Pelajar") %></h1>
-        <p class="sm-header-sub"><%= T("Manage, monitor and explore student learning progress across ScienceBuddy.", "Urus, pantau dan terokai kemajuan pembelajaran pelajar di ScienceBuddy.") %></p>
-        <span class="sm-badge-dir"><i class="bi bi-people-fill"></i> <%= T("Student Directory", "Direktori Pelajar") %></span>
+<div class="ad-student-management-header">
+    <div class="ad-student-management-header-left">
+        <h1 class="ad-student-management-header-title"><i class="bi bi-mortarboard-fill" style="color:var(--ad-student-management-accent);"></i> <%= T("Student Management", "Pengurusan Pelajar") %></h1>
+        <p class="ad-student-management-header-sub"><%= T("Manage, monitor and explore student learning progress across ScienceBuddy.", "Urus, pantau dan terokai kemajuan pembelajaran pelajar di ScienceBuddy.") %></p>
+        <span class="ad-student-management-badge-dir"><i class="bi bi-people-fill"></i> <%= T("Student Directory", "Direktori Pelajar") %></span>
     </div>
     <div style="display:flex;align-items:center;gap:var(--space-md);">
-        <div class="sm-header-icon"><i class="bi bi-mortarboard-fill"></i></div>
+        <div class="ad-student-management-header-icon"><i class="bi bi-mortarboard-fill"></i></div>
         <a href="javascript:;" onclick="openAddStudent()" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:linear-gradient(135deg,#1D4ED8,#2563EB,#3B82F6);color:#fff;border-radius:12px;font-weight:700;font-size:.9rem;text-decoration:none;box-shadow:0 6px 20px rgba(37,99,235,.35);transition:all .25s;">
             <i class="bi bi-person-plus-fill"></i> <%= T("+ Add Student", "+ Tambah Pelajar") %>
         </a>
@@ -181,31 +70,31 @@
 </div>
 
 <%-- INSIGHT CARDS --%>
-<div class="sm-insights">
-    <div class="sm-insight gi-total">
-        <div class="sm-insight-ico"><i class="bi bi-book-fill"></i></div>
-        <div class="sm-insight-val"><asp:Literal ID="litTotal" runat="server" Text="0" /></div>
-        <div class="sm-insight-lbl"><%= T("Registered learners", "Pelajar berdaftar") %></div>
+<div class="ad-student-management-insights">
+    <div class="ad-student-management-insight ad-student-management-gi-total">
+        <div class="ad-student-management-insight-ico"><i class="bi bi-book-fill"></i></div>
+        <div class="ad-student-management-insight-val"><asp:Literal ID="litTotal" runat="server" Text="0" /></div>
+        <div class="ad-student-management-insight-lbl"><%= T("Registered learners", "Pelajar berdaftar") %></div>
     </div>
-    <div class="sm-insight gi-xp">
-        <div class="sm-insight-ico"><i class="bi bi-star-fill"></i></div>
-        <div class="sm-insight-val"><asp:Literal ID="litAvgXP" runat="server" Text="0" /></div>
-        <div class="sm-insight-lbl"><%= T("Average XP earned", "Purata XP diperoleh") %></div>
+    <div class="ad-student-management-insight ad-student-management-gi-xp">
+        <div class="ad-student-management-insight-ico"><i class="bi bi-star-fill"></i></div>
+        <div class="ad-student-management-insight-val"><asp:Literal ID="litAvgXP" runat="server" Text="0" /></div>
+        <div class="ad-student-management-insight-lbl"><%= T("Average XP earned", "Purata XP diperoleh") %></div>
     </div>
-    <div class="sm-insight gi-level">
-        <div class="sm-insight-ico"><i class="bi bi-trophy-fill"></i></div>
-        <div class="sm-insight-val"><asp:Literal ID="litHighLevel" runat="server" Text="-" /></div>
-        <div class="sm-insight-lbl"><%= T("Highest level reached", "Tahap tertinggi dicapai") %></div>
+    <div class="ad-student-management-insight ad-student-management-gi-level">
+        <div class="ad-student-management-insight-ico"><i class="bi bi-trophy-fill"></i></div>
+        <div class="ad-student-management-insight-val"><asp:Literal ID="litHighLevel" runat="server" Text="-" /></div>
+        <div class="ad-student-management-insight-lbl"><%= T("Highest level reached", "Tahap tertinggi dicapai") %></div>
     </div>
-    <div class="sm-insight gi-active">
-        <div class="sm-insight-ico"><i class="bi bi-fire"></i></div>
-        <div class="sm-insight-val"><asp:Literal ID="litActive" runat="server" Text="0" /></div>
-        <div class="sm-insight-lbl"><%= T("Active students", "Pelajar aktif") %></div>
+    <div class="ad-student-management-insight ad-student-management-gi-active">
+        <div class="ad-student-management-insight-ico"><i class="bi bi-fire"></i></div>
+        <div class="ad-student-management-insight-val"><asp:Literal ID="litActive" runat="server" Text="0" /></div>
+        <div class="ad-student-management-insight-lbl"><%= T("Active students", "Pelajar aktif") %></div>
     </div>
 </div>
 
 <%-- SEARCH PANEL --%>
-<div class="sm-search-panel">
+<div class="ad-student-management-search-panel">
     <i class="bi bi-search text-muted"></i>
     <asp:TextBox ID="txtSearch" runat="server" CssClass="sb-input sb-input-sm" AutoPostBack="false" />
     <asp:DropDownList ID="ddlLevel" runat="server" CssClass="sb-select sb-input-sm" AutoPostBack="false">
@@ -233,30 +122,30 @@
 
 <%-- STUDENT CARDS --%>
 <asp:Panel ID="pnlStudents" runat="server" Visible="false">
-    <div class="sm-grid">
+    <div class="ad-student-management-grid">
         <asp:Repeater ID="rptStudents" runat="server" OnItemCommand="rptStudents_ItemCommand">
             <ItemTemplate>
-                <div class="sm-card">
-                    <div class="sm-avatar" style='<%# Eval("avatarGradient") %>'>
+                <div class="ad-student-management-card">
+                    <div class="ad-student-management-avatar" style='<%# Eval("avatarGradient") %>'>
                         <%# HttpUtility.HtmlEncode(Eval("initials")) %>
-                        <span class='sm-avatar-status <%# Eval("statusClass") %>'></span>
+                        <span class='ad-student-management-avatar-status <%# Eval("statusClass") %>'></span>
                     </div>
-                    <div class="sm-name"><%# HttpUtility.HtmlEncode(Eval("displayName")) %></div>
-                    <div class="sm-username">@<%# HttpUtility.HtmlEncode(Eval("username")) %></div>
-                    <div class="sm-badges">
-                        <span class="sm-badge-pill sm-badge-level"><%# HttpUtility.HtmlEncode(Eval("levelName")) %></span>
-                        <span class="sm-badge-pill sm-badge-personality"><%# HttpUtility.HtmlEncode(Eval("personalityName")) %></span>
-                        <span class="sm-badge-pill sm-badge-lang"><%# HttpUtility.HtmlEncode(Eval("language")) %></span>
+                    <div class="ad-student-management-name"><%# HttpUtility.HtmlEncode(Eval("displayName")) %></div>
+                    <div class="ad-student-management-username">@<%# HttpUtility.HtmlEncode(Eval("username")) %></div>
+                    <div class="ad-student-management-badges">
+                        <span class="ad-student-management-badge-pill ad-student-management-badge-level"><%# HttpUtility.HtmlEncode(Eval("levelName")) %></span>
+                        <span class="ad-student-management-badge-pill ad-student-management-badge-personality"><%# HttpUtility.HtmlEncode(Eval("personalityName")) %></span>
+                        <span class="ad-student-management-badge-pill ad-student-management-badge-lang"><%# HttpUtility.HtmlEncode(Eval("language")) %></span>
                     </div>
-                    <div class="sm-progress-section">
-                        <div class="sm-progress-row"><span>XP</span><span><%# Eval("xp") %></span></div>
-                        <div class="sm-progress-bar"><div class="sm-progress-fill" style='width:<%# Eval("xpPct") %>%'></div></div>
+                    <div class="ad-student-management-progress-section">
+                        <div class="ad-student-management-progress-row"><span>XP</span><span><%# Eval("xp") %></span></div>
+                        <div class="ad-student-management-progress-bar"><div class="ad-student-management-progress-fill" style='width:<%# Eval("xpPct") %>%'></div></div>
                     </div>
-                    <div class="sm-meta">
+                    <div class="ad-student-management-meta">
                         <span><i class="bi bi-book"></i> <%# Eval("lessonsCompleted") %></span>
                         <span><i class="bi bi-trophy"></i> <%# Eval("badgesEarned") %></span>
                     </div>
-                    <div class="sm-card-footer">
+                    <div class="ad-student-management-card-footer">
                         <asp:LinkButton ID="lnkViewDetails" runat="server" CssClass="sb-btn sb-btn-light sb-btn-xs"
                             CommandName="ViewStudent" CommandArgument='<%# Eval("studentId") %>'>
                             <i class="bi bi-eye"></i> <%= T("View Details", "Lihat Butiran") %>
@@ -273,15 +162,15 @@
 
 <%-- EMPTY STATE --%>
 <asp:Panel ID="pnlEmpty" runat="server">
-    <div class="sm-empty">
-        <div class="sm-empty-ico"><i class="bi bi-mortarboard-fill"></i></div>
-        <div class="sm-empty-msg"><%= T("No students found.", "Tiada pelajar ditemui.") %></div>
-        <div class="sm-empty-sub"><%= T("Try adjusting your search or filters.", "Cuba laraskan carian atau penapis anda.") %></div>
+    <div class="ad-student-management-empty">
+        <div class="ad-student-management-empty-ico"><i class="bi bi-mortarboard-fill"></i></div>
+        <div class="ad-student-management-empty-msg"><%= T("No students found.", "Tiada pelajar ditemui.") %></div>
+        <div class="ad-student-management-empty-sub"><%= T("Try adjusting your search or filters.", "Cuba laraskan carian atau penapis anda.") %></div>
     </div>
 </asp:Panel>
 
 <%-- ══ STUDENT DETAIL MODAL ══ --%>
-<asp:Panel ID="pnlModal" runat="server" Visible="false" CssClass="sm-modal-wrap">
+<asp:Panel ID="pnlModal" runat="server" Visible="false" CssClass="ad-student-management-modal-wrap">
 <div class="sb-modal-overlay active" style="display:flex;margin-left:0;">
     <div class="sb-modal" style="max-width:560px;max-height:90vh;overflow-y:auto;">
         <%-- Modal gradient header --%>
@@ -324,30 +213,25 @@
 
 <%-- ADD STUDENT MODAL --%>
 <div id="addStudentOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:2000;align-items:center;justify-content:center;padding:20px;">
-<div style="background:#fff;border-radius:20px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.2);animation:smIn .3s ease;">
-<style>@keyframes smIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
-.add-field{margin-bottom:16px;}.add-label{font-size:.75rem;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;display:block;}
-.add-input{width:100%;padding:10px 14px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:.9rem;transition:border-color .2s;}.add-input:focus{outline:none;border-color:#2563EB;box-shadow:0 0 0 3px rgba(37,99,235,.1);}
-.add-input.error{border-color:#DC2626;}.add-err{font-size:.75rem;color:#DC2626;margin-top:3px;display:none;}.add-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-</style>
+<div style="background:#fff;border-radius:20px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.2);animation:ad-student-management-modalIn .3s ease;">
 <div style="padding:24px 28px;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;">
     <div><div style="font-family:var(--font-primary);font-size:1.1rem;font-weight:800;display:flex;align-items:center;gap:8px;"><i class="bi bi-person-plus-fill" style="color:#2563EB;"></i> <%= T("Add New Student","Tambah Pelajar Baharu") %></div><div style="font-size:.8rem;color:#64748B;margin-top:2px;"><%= T("Create a new student account.","Cipta akaun pelajar baharu.") %></div></div>
     <button onclick="closeAddStudent()" style="width:36px;height:36px;border:none;background:#F1F5F9;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;"><i class="bi bi-x-lg"></i></button>
 </div>
 <div style="padding:24px 28px;">
-<div class="add-grid">
-<div class="add-field"><label class="add-label"><%= T("Full Name *","Nama Penuh *") %></label><input id="s_name" class="add-input" type="text" /><div class="add-err" id="e_name">Required</div></div>
-<div class="add-field"><label class="add-label"><%= T("Username *","Nama Pengguna *") %></label><input id="s_username" class="add-input" type="text" /><div class="add-err" id="e_username">Required</div></div>
-<div class="add-field"><label class="add-label"><%= T("Email *","E-mel *") %></label><input id="s_email" class="add-input" type="email" /><div class="add-err" id="e_email">Required</div></div>
-<div class="add-field"><label class="add-label"><%= T("Phone","Telefon") %></label><input id="s_phone" class="add-input" type="text" /></div>
-<div class="add-field"><label class="add-label"><%= T("Password *","Kata Laluan *") %></label><input id="s_pw" class="add-input" type="password" /><div class="add-err" id="e_pw">Min 8 chars</div></div>
-<div class="add-field"><label class="add-label"><%= T("Confirm Password *","Sahkan Kata Laluan *") %></label><input id="s_pw2" class="add-input" type="password" /><div class="add-err" id="e_pw2">Passwords do not match</div></div>
-<div class="add-field"><label class="add-label"><%= T("Language","Bahasa") %></label><select id="s_lang" class="add-input"><option value="EN">English</option><option value="BM">Bahasa Melayu</option></select></div>
-<div class="add-field"><label class="add-label"><%= T("Level","Tahap") %></label><select id="s_level" class="add-input"><option value="LV001">Beginner</option><option value="LV002">Intermediate</option><option value="LV003">Advanced</option></select></div>
+<div class="ad-student-management-add-grid">
+<div class="ad-student-management-add-field"><label class="ad-student-management-add-label"><%= T("Full Name *","Nama Penuh *") %></label><input id="s_name" class="ad-student-management-add-input" type="text" /><div class="ad-student-management-add-err" id="e_name">Required</div></div>
+<div class="ad-student-management-add-field"><label class="ad-student-management-add-label"><%= T("Username *","Nama Pengguna *") %></label><input id="s_username" class="ad-student-management-add-input" type="text" /><div class="ad-student-management-add-err" id="e_username">Required</div></div>
+<div class="ad-student-management-add-field"><label class="ad-student-management-add-label"><%= T("Email *","E-mel *") %></label><input id="s_email" class="ad-student-management-add-input" type="email" /><div class="ad-student-management-add-err" id="e_email">Required</div></div>
+<div class="ad-student-management-add-field"><label class="ad-student-management-add-label"><%= T("Phone *","Telefon *") %></label><input id="s_phone" class="ad-student-management-add-input" type="text" /><div class="ad-student-management-add-err" id="e_phone">Required</div></div>
+<div class="ad-student-management-add-field"><label class="ad-student-management-add-label"><%= T("Password *","Kata Laluan *") %></label><input id="s_pw" class="ad-student-management-add-input" type="password" /><div class="ad-student-management-add-err" id="e_pw"><%= T("Password must be at least 8 characters.","Kata laluan mestilah sekurang-kurangnya 8 aksara.") %></div></div>
+<div class="ad-student-management-add-field"><label class="ad-student-management-add-label"><%= T("Confirm Password *","Sahkan Kata Laluan *") %></label><input id="s_pw2" class="ad-student-management-add-input" type="password" /><div class="ad-student-management-add-err" id="e_pw2">Passwords do not match</div></div>
+<div class="ad-student-management-add-field"><label class="ad-student-management-add-label"><%= T("Language","Bahasa") %></label><select id="s_lang" class="ad-student-management-add-input"><option value="EN">English</option><option value="BM">Bahasa Melayu</option></select></div>
+<div class="ad-student-management-add-field"><label class="ad-student-management-add-label"><%= T("Nickname","Nama Panggilan") %></label><input id="s_nickname" class="ad-student-management-add-input" type="text" placeholder="<%= T("Optional - auto-generated if empty","Pilihan - dijana automatik jika kosong") %>" /></div>
 </div>
 <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid #F1F5F9;">
-<button onclick="closeAddStudent()" style="padding:10px 22px;border-radius:10px;border:1.5px solid #E2E8F0;background:#fff;font-weight:600;cursor:pointer;"><%= T("Cancel","Batal") %></button>
-<button onclick="submitAddStudent()" style="padding:10px 26px;border-radius:10px;border:none;background:linear-gradient(135deg,#1D4ED8,#3B82F6);color:#fff;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(37,99,235,.3);"><i class="bi bi-person-plus-fill"></i> <%= T("Create Student","Cipta Pelajar") %></button>
+<button type="button" onclick="closeAddStudent()" style="padding:10px 22px;border-radius:10px;border:1.5px solid #E2E8F0;background:#fff;font-weight:600;cursor:pointer;"><%= T("Cancel","Batal") %></button>
+<button type="button" onclick="submitAddStudent()" style="padding:10px 26px;border-radius:10px;border:none;background:linear-gradient(135deg,#1D4ED8,#3B82F6);color:#fff;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(37,99,235,.3);"><i class="bi bi-person-plus-fill"></i> <%= T("Create Student","Cipta Pelajar") %></button>
 </div>
 </div></div></div>
 
@@ -355,41 +239,75 @@
 function openAddStudent(){var o=document.getElementById('addStudentOverlay');o.style.display='flex';}
 function closeAddStudent(){document.getElementById('addStudentOverlay').style.display='none';}
 function submitAddStudent(){
-    var n=document.getElementById('s_name').value.trim(),u=document.getElementById('s_username').value.trim(),e=document.getElementById('s_email').value.trim(),pw=document.getElementById('s_pw').value,pw2=document.getElementById('s_pw2').value;
+    var n=document.getElementById('s_name').value.trim(),u=document.getElementById('s_username').value.trim(),e=document.getElementById('s_email').value.trim(),ph=document.getElementById('s_phone').value.trim(),pw=document.getElementById('s_pw').value,pw2=document.getElementById('s_pw2').value;
     var ok=true;
-    ['e_name','e_username','e_email','e_pw','e_pw2'].forEach(function(id){document.getElementById(id).style.display='none';});
-    if(!n){document.getElementById('e_name').style.display='block';ok=false;}
-    if(!u){document.getElementById('e_username').style.display='block';ok=false;}
-    if(!e||e.indexOf('@')<0){document.getElementById('e_email').style.display='block';ok=false;}
-    if(pw.length<8){document.getElementById('e_pw').style.display='block';ok=false;}
-    if(pw!==pw2){document.getElementById('e_pw2').style.display='block';ok=false;}
+    ['e_name','e_username','e_email','e_phone','e_pw','e_pw2'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
+    document.querySelectorAll('#addStudentOverlay .ad-student-management-add-input').forEach(function(el){el.classList.remove('error');});
+    if(!n){document.getElementById('e_name').style.display='block';document.getElementById('s_name').classList.add('error');ok=false;}
+    if(!u){document.getElementById('e_username').style.display='block';document.getElementById('s_username').classList.add('error');ok=false;}
+    if(!e||e.indexOf('@')<0){document.getElementById('e_email').style.display='block';document.getElementById('s_email').classList.add('error');ok=false;}
+    if(!ph){document.getElementById('e_phone').style.display='block';document.getElementById('s_phone').classList.add('error');ok=false;}
+    if(pw.length<8){document.getElementById('e_pw').style.display='block';document.getElementById('s_pw').classList.add('error');ok=false;}
+    if(pw!==pw2){document.getElementById('e_pw2').style.display='block';document.getElementById('s_pw2').classList.add('error');ok=false;}
     if(!ok)return;
-    // Collect extra fields before closing overlay
-    var ph=document.getElementById('s_phone').value.trim(),lang=document.getElementById('s_lang').value,lv=document.getElementById('s_level').value;
-    // Hide overlay so SweetAlert is visible on top
+    var lang=document.getElementById('s_lang').value;
+    var nickname=document.getElementById('s_nickname').value.trim();
     closeAddStudent();
     Swal.fire({
-        title:'<%= T("Create New Account?","Cipta Akaun Baharu?") %>',
-        text:'<%= T("Are you sure you want to create this account?","Adakah anda pasti ingin mencipta akaun ini?") %>',
+        title:'<%= T("Create Student Account?","Cipta Akaun Pelajar?") %>',
+        text:'<%= T("Are you sure you want to create this student account?","Adakah anda pasti ingin mencipta akaun pelajar ini?") %>',
         icon:'question',showCancelButton:true,
         confirmButtonText:'<i class="bi bi-person-plus-fill"></i> <%= T("Create","Cipta") %>',
         cancelButtonText:'<%= T("Cancel","Batal") %>',
         confirmButtonColor:'#2563EB',
         reverseButtons:true
     }).then(function(r){
-        if(!r.isConfirmed){openAddStudent();return;} // reopen if cancelled
-        var fd=new FormData();fd.append('name',n);fd.append('username',u);fd.append('email',e);fd.append('password',pw);fd.append('phone',ph);fd.append('lang',lang);fd.append('levelId',lv);
-        fetch(window.location.pathname+'?handler=StudentCRUD&action=add',{method:'POST',body:fd})
+        if(!r.isConfirmed){openAddStudent();return;}
+        var fd=new FormData();fd.append('name',n);fd.append('username',u);fd.append('email',e);fd.append('password',pw);fd.append('phone',ph);fd.append('lang',lang);fd.append('nickname',nickname);
+        fetch(window.location.pathname + (window.location.pathname.indexOf('.aspx') === -1 ? '.aspx' : '') + '?handler=StudentCRUD&action=add',{method:'POST',body:fd})
         .then(function(r){return r.json();})
         .then(function(d){
             if(d.success){
-                Swal.fire({icon:'success',title:'<%= T("Student Created!","Pelajar Dicipta!") %>',text:'<%= T("The student account has been created successfully.","Akaun pelajar telah berjaya dicipta.") %>',confirmButtonColor:'#2563EB',timer:3000,timerProgressBar:true})
-                .then(function(){__doPostBack('<%= btnSearch.UniqueID %>','');});
+                var copyBtnHtml = '<button type="button" id="swalCopyBtn" style="padding:3px 10px;border-radius:6px;border:1px solid #DBEAFE;background:#EFF6FF;color:#2563EB;font-size:.7rem;font-weight:700;cursor:pointer;margin-left:6px;"><i class="bi bi-clipboard"></i> Copy</button>';
+                var successHtml = '<div style="text-align:left;font-size:.88rem;line-height:1.7;color:#334155;">' +
+                    '<p style="margin-bottom:12px;color:#475569;"><%= T("The new student account has been created successfully.","Akaun pelajar baharu telah berjaya dicipta.") %></p>' +
+                    '<div style="background:#F8FAFC;border-radius:10px;padding:14px 16px;margin-bottom:14px;border:1px solid #E2E8F0;">' +
+                    '<div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#94A3B8;margin-bottom:8px;"><%= T("Student Details","Butiran Pelajar") %></div>' +
+                    '<div><strong><%= T("Student ID","ID Pelajar") %>:</strong> ' + d.studentId + '</div>' +
+                    '<div><strong><%= T("User ID","ID Pengguna") %>:</strong> ' + d.userId + '</div>' +
+                    '<div><strong><%= T("Username","Nama Pengguna") %>:</strong> ' + d.username + '</div>' +
+                    '<div><strong><%= T("Full Name","Nama Penuh") %>:</strong> ' + d.name + '</div>' +
+                    '<div><strong><%= T("Parent Code","Kod Ibu Bapa") %>:</strong> <span id="swalParentCode" style="font-weight:800;color:#2563EB;font-size:1rem;">' + d.parentCode + '</span> ' + copyBtnHtml + '</div></div>' +
+                    '<div style="background:#EFF6FF;border-radius:10px;padding:12px 14px;border:1px solid #BFDBFE;display:flex;gap:8px;align-items:flex-start;">' +
+                    '<i class="bi bi-info-circle-fill" style="color:#2563EB;margin-top:2px;flex-shrink:0;"></i>' +
+                    '<div style="font-size:.8rem;color:#1E40AF;"><strong><%= T("Parent Code","Kod Ibu Bapa") %></strong><br/><%= T("Please provide this Parent Code to the student parent. The parent will use this code to link their account inside ScienceBuddy.","Sila berikan Kod Ibu Bapa ini kepada ibu bapa pelajar. Ibu bapa akan menggunakan kod ini untuk menghubungkan akaun mereka di dalam ScienceBuddy.") %></div>' +
+                    '</div></div>';
+                Swal.fire({
+                    icon:'success',
+                    title:'<%= T("Student Created Successfully","Pelajar Berjaya Dicipta") %>',
+                    html:successHtml,
+                    confirmButtonText:'<%= T("Done","Selesai") %>',
+                    confirmButtonColor:'#2563EB',
+                    allowOutsideClick:false,
+                    width:520,
+                    didOpen:function(){
+                        var btn=document.getElementById('swalCopyBtn');
+                        if(btn){btn.addEventListener('click',function(){
+                            navigator.clipboard.writeText(d.parentCode).then(function(){
+                                btn.innerHTML='<i class="bi bi-check-lg"></i> Copied';
+                                setTimeout(function(){btn.innerHTML='<i class="bi bi-clipboard"></i> Copy';},2000);
+                            });
+                        });}
+                    }
+                }).then(function(){
+                    document.getElementById('s_name').value='';document.getElementById('s_username').value='';document.getElementById('s_email').value='';document.getElementById('s_phone').value='';document.getElementById('s_pw').value='';document.getElementById('s_pw2').value='';document.getElementById('s_nickname').value='';
+                    __doPostBack('<%= btnSearch.UniqueID %>','');
+                });
             } else {
                 openAddStudent();
                 Swal.fire({icon:'error',title:'<%= T("Error","Ralat") %>',text:d.msg,confirmButtonColor:'#DC2626'});
             }
-        }).catch(function(){openAddStudent();Swal.fire({icon:'error',title:'Network Error',text:'Please try again.'});});
+        }).catch(function(err){openAddStudent();Swal.fire({icon:'error',title:'<%= T("Network Error","Ralat Rangkaian") %>',text:'<%= T("Please try again.","Sila cuba lagi.") %>',confirmButtonColor:'#DC2626'});});
     });
 }
 </script>

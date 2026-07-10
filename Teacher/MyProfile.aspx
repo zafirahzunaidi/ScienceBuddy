@@ -4,68 +4,91 @@
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
 <style>
-:root{--tp:#6C63FF;--tp2:#8B5CF6;--tp-h:#5A52E0;--tl:#F5F3FF;--tc:#FFF;--tb:#E5E7EB;--tt:#374151;--tm:#6B7280;--ts:#10B981;--te:#EF4444;--tw:#F59E0B;}
-.mp-hero{background:linear-gradient(135deg,#4F46E5 0%,#6C63FF 40%,#8B5CF6 80%,#A78BFA 100%);border-radius:20px;padding:2.5rem;color:#fff;display:flex;align-items:center;gap:2rem;position:relative;overflow:hidden;margin-bottom:1.5rem;box-shadow:0 12px 40px rgba(108,99,255,.2);}
-.mp-hero::before{content:'';position:absolute;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.04);top:-80px;right:-40px;}
-.mp-hero::after{content:'';position:absolute;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.03);bottom:-40px;left:20px;}
-.mp-avatar{width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.2);border:3px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;font-size:1.75rem;font-weight:800;flex-shrink:0;position:relative;z-index:1;}
+:root{--tp:#6C63FF;--tp2:#8B5CF6;--tp-h:#5A52E0;--tl:#F5F3FF;--tc:#FFF;--tb:#E5E7EB;--tt:#1F2937;--tm:#6B7280;--ts:#10B981;--te:#EF4444;--tw:#F59E0B;--cyan:#06B6D4;}
+/* Hero Banner - Premium */
+.mp-hero{background:linear-gradient(135deg,#0F172A 0%,#1E293B 20%,#1E3A5F 45%,#1D4ED8 75%,#3B82F6 100%);border-radius:24px;padding:3rem 2.8rem;color:#fff;display:flex;align-items:center;gap:2.4rem;position:relative;overflow:hidden;margin-bottom:2rem;box-shadow:0 20px 60px rgba(30,64,175,.3);}
+.mp-hero::before{content:'';position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,.15),transparent 70%);top:-120px;right:-80px;}
+.mp-hero::after{content:'';position:absolute;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(99,102,241,.1),transparent 70%);bottom:-80px;left:40px;}
+.mp-avatar{width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,rgba(255,255,255,.2),rgba(255,255,255,.05));border:3px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-size:2.1rem;font-weight:800;flex-shrink:0;position:relative;z-index:1;backdrop-filter:blur(8px);box-shadow:0 8px 32px rgba(0,0,0,.2);}
 .mp-hero-info{position:relative;z-index:1;flex:1;}
-.mp-hero-name{font-size:1.5rem;font-weight:800;margin-bottom:4px;}
-.mp-hero-role{font-size:.82rem;opacity:.8;margin-bottom:8px;}
-.mp-hero-meta{display:flex;gap:.75rem;flex-wrap:wrap;align-items:center;}
-.mp-badge{padding:4px 12px;border-radius:50px;font-size:.7rem;font-weight:700;display:inline-flex;align-items:center;gap:4px;}
-.mp-badge-green{background:rgba(16,185,129,.2);color:#6EE7B7;border:1px solid rgba(16,185,129,.3);}
-.mp-badge-orange{background:rgba(245,158,11,.2);color:#FCD34D;border:1px solid rgba(245,158,11,.3);}
-.mp-badge-red{background:rgba(239,68,68,.2);color:#FCA5A5;border:1px solid rgba(239,68,68,.3);}
-.mp-badge-grey{background:rgba(255,255,255,.15);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.2);}
-.mp-hero-bio{font-size:.82rem;opacity:.85;margin-top:8px;line-height:1.5;max-width:500px;}
-.mp-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.5rem;}
-.mp-card{background:var(--tc);border:1.5px solid var(--tb);border-radius:16px;padding:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,.03);transition:transform .2s,box-shadow .2s;}
-.mp-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(108,99,255,.08);}
-.mp-card-title{font-size:.85rem;font-weight:700;color:var(--tt);margin-bottom:1rem;display:flex;align-items:center;gap:8px;}
-.mp-card-title i{color:var(--tp);font-size:1rem;}
-.mp-field{margin-bottom:1rem;}
-.mp-field:last-child{margin-bottom:0;}
-.mp-field-label{font-size:.72rem;font-weight:600;color:var(--tm);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
-.mp-field-value{font-size:.88rem;font-weight:600;color:var(--tt);}
-.mp-input{width:100%;border-radius:10px;border:1.5px solid var(--tb);padding:.6rem .8rem;font-size:.84rem;transition:all .2s;}
+.mp-hero-name{font-size:1.85rem;font-weight:800;margin-bottom:6px;letter-spacing:-.4px;background:linear-gradient(90deg,#fff 0%,#E0E7FF 50%,#fff 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:mpShimmer 4s ease-in-out infinite;}
+@keyframes mpShimmer{0%,100%{background-position:0% center;}50%{background-position:200% center;}}
+.mp-hero-role{font-size:.88rem;opacity:.75;margin-bottom:12px;font-weight:600;letter-spacing:.3px;}
+.mp-hero-meta{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;}
+.mp-badge{padding:6px 14px;border-radius:50px;font-size:.76rem;font-weight:700;display:inline-flex;align-items:center;gap:5px;backdrop-filter:blur(4px);}
+.mp-badge-green{background:rgba(16,185,129,.2);color:#6EE7B7;border:1px solid rgba(16,185,129,.35);}
+.mp-badge-orange{background:rgba(245,158,11,.2);color:#FCD34D;border:1px solid rgba(245,158,11,.35);}
+.mp-badge-red{background:rgba(239,68,68,.2);color:#FCA5A5;border:1px solid rgba(239,68,68,.35);}
+.mp-badge-grey{background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.2);}
+.mp-hero-bio{font-size:.9rem;opacity:.82;margin-top:14px;line-height:1.7;max-width:540px;}
+/* Grid & Cards */
+.mp-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.8rem;}
+.mp-card{background:var(--tc);border:1.5px solid var(--tb);border-radius:18px;padding:1.8rem;box-shadow:0 4px 16px rgba(0,0,0,.05);transition:transform .2s,box-shadow .2s;}
+.mp-card:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(108,99,255,.1);}
+.mp-card-title{font-size:1rem;font-weight:800;color:var(--tt);margin-bottom:1.2rem;display:flex;align-items:center;gap:9px;}
+.mp-card-title i{color:var(--tp);font-size:1.15rem;}
+.mp-field{margin-bottom:1.1rem;}.mp-field:last-child{margin-bottom:0;}
+.mp-field-label{font-size:.78rem;font-weight:700;color:var(--tm);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;}
+.mp-field-value{font-size:.94rem;font-weight:600;color:var(--tt);}
+.mp-input{width:100%;border-radius:10px;border:1.5px solid var(--tb);padding:.65rem .9rem;font-size:.9rem;transition:all .2s;}
 .mp-input:focus{border-color:var(--tp);outline:none;box-shadow:0 0 0 3px rgba(108,99,255,.08);}
 .mp-input.invalid{border-color:var(--te);box-shadow:0 0 0 3px rgba(239,68,68,.08);}
-.mp-textarea{min-height:100px;resize:vertical;line-height:1.6;}
-.mp-char{font-size:.7rem;color:var(--tm);text-align:right;margin-top:3px;}
-.mp-val-msg{font-size:.72rem;color:var(--te);margin-top:3px;display:none;}
-.mp-val-msg.show{display:block;}
-/* Progress */
-.mp-progress-card{background:var(--tc);border:1.5px solid var(--tb);border-radius:16px;padding:1.25rem 1.5rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:1.25rem;box-shadow:0 2px 8px rgba(0,0,0,.03);}
-.mp-pct{font-size:1.5rem;font-weight:800;color:var(--tp);}
-.mp-progress-bar{flex:1;height:8px;background:#EDE9FE;border-radius:8px;overflow:hidden;}
-.mp-progress-fill{height:100%;background:linear-gradient(90deg,var(--tp),#A78BFA);border-radius:8px;transition:width .6s ease;}
-.mp-progress-msg{font-size:.78rem;color:var(--tm);font-weight:600;}
-/* Cert */
-.mp-cert-file{display:flex;align-items:center;gap:12px;padding:.75rem 1rem;background:var(--tl);border-radius:12px;border:1.5px solid #EDE9FE;}
-.mp-cert-icon{width:40px;height:40px;border-radius:10px;background:#EDE9FE;color:var(--tp);display:flex;align-items:center;justify-content:center;font-size:1.2rem;}
-.mp-cert-name{font-size:.84rem;font-weight:600;color:var(--tt);flex:1;}
-.mp-cert-btn{font-size:.78rem;font-weight:700;color:var(--tp);text-decoration:none;padding:5px 12px;border-radius:8px;border:1.5px solid #EDE9FE;background:var(--tc);transition:all .2s;}
-.mp-cert-btn:hover{background:var(--tl);border-color:var(--tp);}
-/* Checklist */
-.mp-check-list{list-style:none;padding:0;margin:0;}
-.mp-check-list li{display:flex;align-items:center;gap:10px;padding:.5rem 0;font-size:.82rem;font-weight:600;color:var(--tm);}
-.mp-check-list li.active{color:var(--ts);}
-.mp-check-ico{width:20px;height:20px;border-radius:50%;border:2px solid var(--tb);display:flex;align-items:center;justify-content:center;font-size:.6rem;flex-shrink:0;}
-.mp-check-list li.active .mp-check-ico{border-color:var(--ts);background:var(--ts);color:#fff;}
+.mp-textarea{min-height:110px;resize:vertical;line-height:1.6;}
+.mp-char{font-size:.74rem;color:var(--tm);text-align:right;margin-top:4px;}
+.mp-val-msg{font-size:.76rem;color:var(--te);margin-top:4px;display:none;}.mp-val-msg.show{display:block;}
+/* Progress - Cyan/Teal */
+.mp-progress-card{background:var(--tc);border:1.5px solid var(--tb);border-radius:18px;padding:1.4rem 1.6rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1.4rem;box-shadow:0 4px 16px rgba(0,0,0,.05);}
+.mp-pct{font-size:1.6rem;font-weight:800;color:#0891B2;}
+.mp-progress-bar{flex:1;height:10px;background:#ECFEFF;border-radius:10px;overflow:hidden;}
+.mp-progress-fill{height:100%;background:linear-gradient(90deg,#06B6D4,#22D3EE);border-radius:10px;transition:width .6s ease;}
+.mp-progress-msg{font-size:.82rem;color:var(--tm);font-weight:600;}
+/* Certificate */
+.mp-cert-file{display:flex;align-items:center;gap:14px;padding:1.1rem 1.3rem;background:#FAFAFA;border-radius:14px;border:1.5px solid #F0F0F0;}
+.mp-cert-icon{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;}
+.mp-cert-icon.pdf{background:#FEF2F2;color:#DC2626;}
+.mp-cert-icon.img{background:#ECFDF5;color:#059669;}
+.mp-cert-icon.doc{background:#EFF6FF;color:#2563EB;}
+.mp-cert-icon.ppt{background:#FFF7ED;color:#EA580C;}
+.mp-cert-icon.other{background:#F3F4F6;color:#6B7280;}
+.mp-cert-name{font-size:.95rem;font-weight:700;color:var(--tt);}
+.mp-cert-btn{font-size:.82rem;font-weight:700;color:var(--tp);text-decoration:none;padding:8px 16px;border-radius:10px;border:1.5px solid var(--tb);background:var(--tc);transition:all .2s;cursor:pointer;}
+.mp-cert-btn:hover{border-color:var(--tp);background:var(--tl);color:var(--tp-h);}
+.mp-cert-date{font-size:.78rem;font-weight:700;color:var(--ts);margin-top:4px;display:flex;align-items:center;gap:4px;}
+/* Certificate Modal */
+.mp-cert-modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:9999;display:none;align-items:center;justify-content:center;padding:1.5rem;}
+.mp-cert-modal-overlay.active{display:flex;}
+.mp-cert-modal{background:#fff;border-radius:18px;width:100%;max-width:820px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.25);}
+.mp-cert-modal-hd{display:flex;align-items:center;justify-content:space-between;padding:1.2rem 1.6rem;border-bottom:1px solid var(--tb);}
+.mp-cert-modal-hd h4{margin:0;font-size:1rem;font-weight:800;color:var(--tt);}
+.mp-cert-modal-close{background:none;border:none;font-size:1.5rem;color:var(--tm);cursor:pointer;line-height:1;padding:4px;border-radius:6px;transition:background .15s;}
+.mp-cert-modal-close:hover{background:#F3F4F6;color:var(--tt);}
+.mp-cert-modal-body{flex:1;overflow:auto;padding:0;}
+.mp-cert-modal-body iframe,.mp-cert-modal-body img{width:100%;height:100%;min-height:500px;border:none;display:block;}
+/* Permissions - Minimal */
+.mp-perm-list{list-style:none;padding:0;margin:0;}
+.mp-perm-list li{display:flex;align-items:center;padding:.7rem 0;font-size:.88rem;border-bottom:1px solid #F3F4F6;transition:background .12s,padding .12s;}
+.mp-perm-list li:last-child{border-bottom:none;}
+.mp-perm-list li:hover{background:#FAFAFA;padding-left:.5rem;padding-right:.5rem;border-radius:8px;}
+.mp-perm-ico{width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:.82rem;flex-shrink:0;margin-right:10px;}
+.mp-perm-name{flex:1;font-weight:600;color:var(--tt);}
+.mp-perm-status{font-size:.78rem;font-weight:700;padding:3px 10px;border-radius:6px;}
+.mp-perm-status.allowed{color:#047857;background:#ECFDF5;}
+.mp-perm-status.restricted{color:#6B7280;background:#F3F4F6;}
+.mp-perm-list li.enabled .mp-perm-ico{color:#059669;}
+.mp-perm-list li.restricted .mp-perm-ico{color:#9CA3AF;}
 /* Actions */
-.mp-actions{display:flex;gap:.75rem;justify-content:flex-end;margin-top:1.5rem;}
-.mp-btn{padding:.6rem 1.5rem;border-radius:12px;font-size:.84rem;font-weight:700;cursor:pointer;border:none;transition:all .2s;}
+.mp-actions{display:flex;gap:.85rem;justify-content:flex-end;margin-top:1.8rem;}
+.mp-btn{padding:.7rem 1.6rem;border-radius:12px;font-size:.9rem;font-weight:700;cursor:pointer;border:none;transition:all .2s;}
 .mp-btn:hover{transform:translateY(-1px);}
-.mp-btn-primary{background:linear-gradient(135deg,var(--tp),var(--tp2));color:#fff;box-shadow:0 4px 12px rgba(108,99,255,.25);}
-.mp-btn-primary:hover{box-shadow:0 6px 20px rgba(108,99,255,.35);}
+.mp-btn-primary{background:linear-gradient(135deg,var(--tp),var(--tp2));color:#fff;box-shadow:0 4px 14px rgba(108,99,255,.25);}
+.mp-btn-primary:hover{box-shadow:0 6px 22px rgba(108,99,255,.35);}
 .mp-btn-cancel{background:var(--tc);color:var(--tt);border:1.5px solid var(--tb);}
 /* Toast */
 .mp-toast-container{position:fixed;top:1.25rem;right:1.25rem;z-index:9999;display:flex;flex-direction:column;gap:.5rem;}
-.mp-toast{background:#10B981;color:#fff;padding:.75rem 1.25rem;border-radius:10px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(16,185,129,.3);animation:mpSlide .3s ease;}
+.mp-toast{background:#10B981;color:#fff;padding:.8rem 1.3rem;border-radius:12px;font-size:.88rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(16,185,129,.3);animation:mpSlide .3s ease;}
 .mp-toast-out{opacity:0;transform:translateX(30px);transition:all .4s;}
 @keyframes mpSlide{from{opacity:0;transform:translateX(30px);}to{opacity:1;transform:translateX(0);}}
-@media(max-width:768px){.mp-hero{flex-direction:column;text-align:center;padding:1.75rem;}.mp-grid{grid-template-columns:1fr;}.mp-actions{flex-direction:column;}}
+@media(max-width:768px){.mp-hero{flex-direction:column;text-align:center;padding:2rem 1.5rem;}.mp-grid{grid-template-columns:1fr;}.mp-actions{flex-direction:column;}.mp-cert-modal{max-width:100%;border-radius:12px;}}
 </style>
 </asp:Content>
 
@@ -134,62 +157,55 @@
     </div>
 </div>
 
-<%-- Certificate + Verification --%>
-<div style="display:flex;flex-direction:column;gap:1.25rem;">
+<%-- Certificate + Verification + Access --%>
+<div style="display:flex;flex-direction:column;gap:1.5rem;">
 
 <div class="mp-card">
-    <div class="mp-card-title"><i class="bi bi-file-earmark-check"></i> <%: T("Teaching Certificate","Sijil Pengajaran") %></div>
+    <div class="mp-card-title"><i class="bi bi-file-earmark-check-fill"></i> <%: T("Teaching Certificate","Sijil Pengajaran") %></div>
     <asp:Panel ID="pnlCertExists" runat="server" Visible="false">
         <div class="mp-cert-file">
-            <div class="mp-cert-icon"><i class="bi bi-file-earmark-pdf-fill"></i></div>
+            <div class="mp-cert-icon" id="certIconDiv" runat="server"><i id="certIconI" runat="server" class="bi bi-file-earmark-fill"></i></div>
             <div style="flex:1;">
                 <div class="mp-cert-name"><asp:Literal ID="litCertName" runat="server" /></div>
                 <asp:Panel ID="pnlApprovedDate" runat="server" Visible="false">
-                    <div style="font-size:.72rem;font-weight:700;color:var(--ts);margin-top:3px;"><i class="bi bi-calendar-check"></i> <%: T("Approved","Diluluskan") %>: <asp:Literal ID="litApprovedDate" runat="server" /></div>
+                    <div class="mp-cert-date"><i class="bi bi-calendar-check"></i> <%: T("Approved","Diluluskan") %>: <asp:Literal ID="litApprovedDate" runat="server" /></div>
                 </asp:Panel>
             </div>
-            <a id="lnkCert" runat="server" target="_blank" class="mp-cert-btn"><i class="bi bi-eye"></i> <%: T("View","Lihat") %></a>
+            <a id="lnkCert" runat="server" class="mp-cert-btn" onclick="openCertModal(event);return false;"><i class="bi bi-eye"></i> <%: T("View","Lihat") %></a>
         </div>
     </asp:Panel>
     <asp:Panel ID="pnlCertEmpty" runat="server" Visible="false">
-        <div style="text-align:center;padding:1.5rem;color:var(--tm);">
-            <i class="bi bi-file-earmark-x" style="font-size:2rem;opacity:.4;"></i>
-            <p style="font-size:.82rem;margin-top:.5rem;"><%: T("No teaching certificate uploaded.","Tiada sijil pengajaran dimuat naik.") %></p>
+        <div style="text-align:center;padding:2rem;color:var(--tm);">
+            <i class="bi bi-file-earmark-x" style="font-size:2.5rem;opacity:.4;"></i>
+            <p style="font-size:.88rem;margin-top:.6rem;font-weight:600;"><%: T("No teaching certificate uploaded.","Tiada sijil pengajaran dimuat naik.") %></p>
         </div>
     </asp:Panel>
 </div>
 
 <div class="mp-card">
-    <div class="mp-card-title"><i class="bi bi-patch-check-fill"></i> <%: T("Verification Status","Status Pengesahan") %></div>
+    <div class="mp-card-title"><i class="bi bi-shield-check"></i> <%: T("Teacher Access Status","Status Akses Guru") %></div>
     <asp:Panel ID="pnlVerCertified" runat="server" Visible="false">
-        <ul class="mp-check-list">
-            <li class="active"><span class="mp-check-ico"><i class="bi bi-check"></i></span><%: T("Certificate reviewed","Sijil disemak") %></li>
-            <li class="active"><span class="mp-check-ico"><i class="bi bi-check"></i></span><%: T("Eligible to upload materials","Layak memuat naik bahan") %></li>
-            <li class="active"><span class="mp-check-ico"><i class="bi bi-check"></i></span><%: T("Eligible to create quizzes","Layak mencipta kuiz") %></li>
-            <li class="active"><span class="mp-check-ico"><i class="bi bi-check"></i></span><%: T("Eligible to support student learning","Layak menyokong pembelajaran pelajar") %></li>
-        </ul>
+        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;background:#ECFDF5;border-radius:8px;font-size:.82rem;font-weight:700;color:#047857;margin-bottom:1rem;">
+            <i class="bi bi-patch-check-fill"></i> <%: T("Verified Educator","Pendidik Disahkan") %>
+        </div>
     </asp:Panel>
     <asp:Panel ID="pnlVerPending" runat="server" Visible="false">
-        <div style="display:flex;align-items:flex-start;gap:10px;padding:.75rem 1rem;background:#FEF3C7;border:1px solid #FDE68A;border-radius:10px;">
-            <i class="bi bi-hourglass-split" style="color:var(--tw);font-size:1.1rem;margin-top:2px;"></i>
-            <div>
-                <div style="font-size:.82rem;font-weight:700;color:#92400E;"><%: T("Pending Verification","Pengesahan Belum Selesai") %></div>
-                <div style="font-size:.76rem;color:#92400E;margin-top:3px;line-height:1.4;"><%: T("Awaiting certificate approval. Access may be limited until verification is complete.","Menunggu kelulusan sijil. Akses mungkin terhad sehingga pengesahan selesai.") %></div>
-            </div>
+        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;background:#FEF3C7;border-radius:8px;font-size:.82rem;font-weight:700;color:#92400E;margin-bottom:1rem;">
+            <i class="bi bi-hourglass-split"></i> <%: T("Pending Verification","Pengesahan Belum Selesai") %>
         </div>
     </asp:Panel>
     <asp:Panel ID="pnlVerRejected" runat="server" Visible="false">
-        <div style="display:flex;align-items:flex-start;gap:10px;padding:.75rem 1rem;background:#FEF2F2;border:1px solid #FEE2E2;border-radius:10px;">
-            <i class="bi bi-x-circle-fill" style="color:var(--te);font-size:1.1rem;margin-top:2px;"></i>
-            <div>
-                <div style="font-size:.82rem;font-weight:700;color:#B91C1C;"><%: T("Verification Rejected","Pengesahan Ditolak") %></div>
-                <div style="font-size:.76rem;color:#B91C1C;margin-top:3px;line-height:1.4;"><%: T("Certificate was not approved. Please contact admin.","Sijil tidak diluluskan. Sila hubungi admin.") %></div>
-            </div>
+        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;background:#FEF2F2;border-radius:8px;font-size:.82rem;font-weight:700;color:#B91C1C;margin-bottom:1rem;">
+            <i class="bi bi-x-circle-fill"></i> <%: T("Verification Rejected","Pengesahan Ditolak") %>
         </div>
     </asp:Panel>
     <asp:Panel ID="pnlVerUnknown" runat="server" Visible="false">
-        <div style="text-align:center;padding:1rem;color:var(--tm);font-size:.82rem;"><%: T("Status unavailable.","Status tidak tersedia.") %></div>
+        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;background:#F3F4F6;border-radius:8px;font-size:.82rem;font-weight:700;color:var(--tm);margin-bottom:1rem;">
+            <i class="bi bi-question-circle"></i> <%: T("Status unavailable","Status tidak tersedia") %>
+        </div>
     </asp:Panel>
+
+    <asp:Literal ID="litPermissions" runat="server" />
 </div>
 
 </div>
@@ -203,12 +219,37 @@
 
 <asp:HiddenField ID="hidToast" runat="server" Value="" />
 <div id="mpToast" class="mp-toast-container"></div>
+
+<%-- Certificate View Modal --%>
+<div id="certModal" class="mp-cert-modal-overlay" onclick="if(event.target===this)closeCertModal()">
+    <div class="mp-cert-modal">
+        <div class="mp-cert-modal-hd">
+            <h4><i class="bi bi-file-earmark-text"></i> <%: T("Teaching Certificate","Sijil Pengajaran") %></h4>
+            <button type="button" class="mp-cert-modal-close" onclick="closeCertModal()">&times;</button>
+        </div>
+        <div class="mp-cert-modal-body" id="certModalBody"></div>
+    </div>
+</div>
 </asp:Content>
 
 <asp:Content ID="cScripts" ContentPlaceHolderID="ScriptsContent" runat="server">
 <script>
 var bio=document.querySelector('[id$="txtBio"]');
 if(bio){bio.addEventListener('input',function(){document.getElementById('bioCounter').textContent=this.value.length+' / 500';});}
+// Certificate modal
+function openCertModal(e){
+    e.preventDefault();
+    var link=e.currentTarget;
+    var url=link.getAttribute('href');
+    var body=document.getElementById('certModalBody');
+    var ext=(url.split('.').pop()||'').toLowerCase().split('?')[0];
+    if(ext==='pdf'){body.innerHTML='<iframe src="'+url+'" style="width:100%;height:560px;border:none;"></iframe>';}
+    else if(['png','jpg','jpeg','gif','webp'].indexOf(ext)>-1){body.innerHTML='<img src="'+url+'" style="width:100%;height:auto;min-height:auto;padding:1.5rem;" alt="Certificate"/>';}
+    else{body.innerHTML='<div style="text-align:center;padding:3rem;"><p style="font-size:.94rem;color:#6B7280;margin-bottom:1rem;"><%: T("Cannot preview this file type.","Tidak dapat pratonton jenis fail ini.") %></p><a href="'+url+'" target="_blank" style="color:#6C63FF;font-weight:700;text-decoration:none;"><%: T("Download File","Muat Turun Fail") %> <i class="bi bi-download"></i></a></div>';}
+    document.getElementById('certModal').classList.add('active');
+}
+function closeCertModal(){document.getElementById('certModal').classList.remove('active');}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeCertModal();});
 // Client-side validation highlighting
 function validateProfile(){
     var valid=true;
@@ -216,29 +257,23 @@ function validateProfile(){
     var phoneEl=document.querySelector('[id$="txtPhone"]');
     var valName=document.getElementById('valName');
     var valPhone=document.getElementById('valPhone');
-    // Reset
     nameEl.classList.remove('invalid');phoneEl.classList.remove('invalid');
     valName.classList.remove('show');valName.textContent='';
     valPhone.classList.remove('show');valPhone.textContent='';
-    // Name
     if(!nameEl.value.trim()){nameEl.classList.add('invalid');valName.textContent='<%: T("Full Name is required.","Nama Penuh diperlukan.") %>';valName.classList.add('show');valid=false;}
-    // Phone
     if(!phoneEl.value.trim()){phoneEl.classList.add('invalid');valPhone.textContent='<%: T("Phone Number is required.","Nombor Telefon diperlukan.") %>';valPhone.classList.add('show');valid=false;}
     else if(!/^\d+$/.test(phoneEl.value.trim())){phoneEl.classList.add('invalid');valPhone.textContent='<%: T("Phone Number must contain digits only.","Nombor Telefon mesti mengandungi digit sahaja.") %>';valPhone.classList.add('show');valid=false;}
     if(!valid){var first=document.querySelector('.mp-input.invalid');if(first)first.focus();}
     return valid;
 }
-// Clear validation on input
 document.addEventListener('input',function(e){
     if(e.target.id&&e.target.id.indexOf('txtName')>-1){e.target.classList.remove('invalid');document.getElementById('valName').classList.remove('show');}
     if(e.target.id&&e.target.id.indexOf('txtPhone')>-1){e.target.classList.remove('invalid');document.getElementById('valPhone').classList.remove('show');}
 });
-// Toast
 window.addEventListener('load',function(){
     var h=document.getElementById('<%=hidToast.ClientID%>');
     if(h&&h.value){var c=document.getElementById('mpToast'),t=document.createElement('div');t.className='mp-toast';t.innerHTML='<i class="bi bi-check-circle-fill"></i> '+h.value;c.appendChild(t);setTimeout(function(){t.classList.add('mp-toast-out');},3e3);setTimeout(function(){t.remove();},3500);h.value='';}
     if(bio)document.getElementById('bioCounter').textContent=bio.value.length+' / 500';
-    // Hook save button to validate client-side first
     var saveBtn=document.querySelector('[id$="btnSave"]');
     if(saveBtn){saveBtn.addEventListener('click',function(e){if(!validateProfile())e.preventDefault();});}
 });

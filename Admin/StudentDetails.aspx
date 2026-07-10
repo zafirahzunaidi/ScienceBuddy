@@ -3,49 +3,10 @@
     Title="Student Details" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
-<style>
-:root{--sd:#2563EB;--sd-light:#EFF6FF;}
-.sd-back{display:inline-flex;align-items:center;gap:6px;font-size:.875rem;font-weight:600;color:var(--color-text-secondary);text-decoration:none;margin-bottom:var(--space-lg);transition:color .2s;}
-.sd-back:hover{color:var(--sd);}
-.sd-profile{background:var(--color-white);border-radius:var(--border-radius-xl);border:1.5px solid var(--border-color);box-shadow:var(--shadow-sm);padding:var(--space-xl);display:flex;align-items:center;gap:var(--space-xl);margin-bottom:var(--space-xl);flex-wrap:wrap;}
-.sd-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#2563EB,#3B82F6);display:flex;align-items:center;justify-content:center;font-size:1.75rem;font-weight:800;color:#fff;flex-shrink:0;}
-.sd-info{flex:1;min-width:200px;}
-.sd-name{font-family:var(--font-primary);font-size:1.5rem;font-weight:800;color:var(--color-text);}
-.sd-meta{display:flex;gap:var(--space-md);flex-wrap:wrap;margin-top:6px;font-size:.8rem;color:var(--color-text-muted);}
-.sd-meta span{display:flex;align-items:center;gap:4px;}
-.sd-quick{display:flex;gap:var(--space-md);flex-wrap:wrap;}
-.sd-quick-item{text-align:center;padding:var(--space-sm) var(--space-md);background:var(--color-surface-alt);border-radius:var(--border-radius);min-width:70px;}
-.sd-quick-val{font-family:var(--font-primary);font-size:1.25rem;font-weight:800;color:var(--color-text);}
-.sd-quick-lbl{font-size:.7rem;color:var(--color-text-muted);font-weight:600;}
-.sd-tabs{display:flex;gap:4px;margin-bottom:var(--space-lg);border-bottom:2px solid var(--border-color);padding-bottom:0;}
-.sd-tab{padding:10px 20px;font-size:.875rem;font-weight:600;color:var(--color-text-secondary);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;border-radius:var(--border-radius) var(--border-radius) 0 0;}
-.sd-tab:hover{color:var(--sd);background:var(--sd-light);}
-.sd-tab.active{color:var(--sd);border-bottom-color:var(--sd);background:var(--sd-light);}
-.sd-panel{display:none;background:var(--color-white);border-radius:var(--border-radius-xl);border:1.5px solid var(--border-color);box-shadow:var(--shadow-sm);padding:var(--space-xl);}
-.sd-panel.active{display:block;}
-.sd-field{display:flex;align-items:center;padding:12px 0;border-bottom:1px solid #F1F5F9;}
-.sd-field:last-child{border-bottom:none;}
-.sd-field-label{width:160px;font-size:.8rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;}
-.sd-field-value{font-size:.9rem;font-weight:600;color:var(--color-text);flex:1;}
-.sd-actions{display:flex;gap:var(--space-sm);flex-wrap:wrap;margin-top:var(--space-lg);}
-.sd-btn{padding:8px 18px;border-radius:var(--border-radius);font-size:.8rem;font-weight:700;cursor:pointer;border:1.5px solid var(--border-color);transition:all .2s;display:inline-flex;align-items:center;gap:6px;text-decoration:none;background:var(--color-white);color:var(--color-text-secondary);}
-.sd-btn:hover{transform:translateY(-1px);box-shadow:var(--shadow-sm);}
-.sd-btn-primary{background:linear-gradient(135deg,#2563EB,#3B82F6);color:#fff;border:none;box-shadow:0 2px 8px rgba(37,99,235,.25);}
-.sd-btn-danger{border-color:#DC2626;color:#DC2626;}.sd-btn-danger:hover{background:#FEF2F2;}
-.sd-btn-warning{border-color:#D97706;color:#D97706;}.sd-btn-warning:hover{background:#FFFBEB;}
-.sd-btn-success{border-color:#059669;color:#059669;}.sd-btn-success:hover{background:#ECFDF5;}
-.sd-log-item{display:flex;align-items:flex-start;gap:var(--space-md);padding:12px 0;border-bottom:1px solid #F1F5F9;}
-.sd-log-item:last-child{border-bottom:none;}
-.sd-log-ico{width:32px;height:32px;border-radius:var(--border-radius);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;background:var(--sd-light);color:var(--sd);}
-.sd-log-body{flex:1;}
-.sd-log-action{font-weight:700;font-size:.85rem;color:var(--color-text);}
-.sd-log-desc{font-size:.78rem;color:var(--color-text-muted);margin-top:2px;}
-.sd-log-time{font-size:.7rem;color:var(--color-text-muted);margin-top:3px;}
-@media(max-width:767px){.sd-profile{flex-direction:column;align-items:flex-start;}.sd-tabs{overflow-x:auto;}.sd-field{flex-direction:column;align-items:flex-start;gap:4px;}.sd-field-label{width:auto;}}
-</style>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="<%: ResolveUrl("~/Scripts/admin-signout.js") %>"></script>
+    <link href="<%: ResolveUrl("~/Content/Admin.css") %>" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="<%: ResolveUrl("~/Scripts/admin-signout.js") %>"></script>
 </asp:Content>
 
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
@@ -91,61 +52,61 @@
 
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 
-<a href="<%: ResolveUrl("~/Admin/StudentManagement.aspx") %>" class="sd-back"><i class="bi bi-arrow-left"></i> <%= T("Back to Students", "Kembali ke Pelajar") %></a>
+<a href="<%: ResolveUrl("~/Admin/StudentManagement.aspx") %>" class="ad-student-details-back"><i class="bi bi-arrow-left"></i> <%= T("Back to Students", "Kembali ke Pelajar") %></a>
 
 <!-- Profile Card -->
-<div class="sd-profile">
-    <div class="sd-avatar"><asp:Literal ID="litInitials" runat="server" /></div>
-    <div class="sd-info">
-        <div class="sd-name"><asp:Literal ID="litName" runat="server" /></div>
-        <div class="sd-meta">
+<div class="ad-student-details-profile">
+    <div class="ad-student-details-avatar"><asp:Literal ID="litInitials" runat="server" /></div>
+    <div class="ad-student-details-info">
+        <div class="ad-student-details-name"><asp:Literal ID="litName" runat="server" /></div>
+        <div class="ad-student-details-meta">
             <span><i class="bi bi-hash"></i> <asp:Literal ID="litStudentId" runat="server" /></span>
             <span><i class="bi bi-person"></i> <asp:Literal ID="litUsername" runat="server" /></span>
             <span><i class="bi bi-envelope"></i> <asp:Literal ID="litEmail" runat="server" /></span>
             <span><asp:Literal ID="litStatusBadge" runat="server" /></span>
         </div>
     </div>
-    <div class="sd-quick">
-        <div class="sd-quick-item"><div class="sd-quick-val"><asp:Literal ID="litXP" runat="server" Text="0" /></div><div class="sd-quick-lbl">XP</div></div>
-        <div class="sd-quick-item"><div class="sd-quick-val"><asp:Literal ID="litBadges" runat="server" Text="0" /></div><div class="sd-quick-lbl"><%= T("Badges","Lencana") %></div></div>
-        <div class="sd-quick-item"><div class="sd-quick-val"><asp:Literal ID="litLessons" runat="server" Text="0" /></div><div class="sd-quick-lbl"><%= T("Lessons","Pelajaran") %></div></div>
+    <div class="ad-student-details-quick">
+        <div class="ad-student-details-quick-item"><div class="ad-student-details-quick-val"><asp:Literal ID="litXP" runat="server" Text="0" /></div><div class="ad-student-details-quick-lbl">XP</div></div>
+        <div class="ad-student-details-quick-item"><div class="ad-student-details-quick-val"><asp:Literal ID="litBadges" runat="server" Text="0" /></div><div class="ad-student-details-quick-lbl"><%= T("Badges","Lencana") %></div></div>
+        <div class="ad-student-details-quick-item"><div class="ad-student-details-quick-val"><asp:Literal ID="litLessons" runat="server" Text="0" /></div><div class="ad-student-details-quick-lbl"><%= T("Lessons","Pelajaran") %></div></div>
     </div>
 </div>
 
 <!-- Tabs -->
-<div class="sd-tabs">
-    <div class="sd-tab active" onclick="switchTab('profile')"><i class="bi bi-person"></i> <%= T("Profile","Profil") %></div>
-    <div class="sd-tab" onclick="switchTab('account')"><i class="bi bi-gear"></i> <%= T("Account","Akaun") %></div>
-    <div class="sd-tab" onclick="switchTab('activity')"><i class="bi bi-clock-history"></i> <%= T("Activity","Aktiviti") %></div>
-    <div class="sd-tab" onclick="switchTab('security')"><i class="bi bi-shield-lock"></i> <%= T("Security","Keselamatan") %></div>
+<div class="ad-student-details-tabs">
+    <div class="ad-student-details-tab active" onclick="switchTab('profile')"><i class="bi bi-person"></i> <%= T("Profile","Profil") %></div>
+    <div class="ad-student-details-tab" onclick="switchTab('account')"><i class="bi bi-gear"></i> <%= T("Account","Akaun") %></div>
+    <div class="ad-student-details-tab" onclick="switchTab('activity')"><i class="bi bi-clock-history"></i> <%= T("Activity","Aktiviti") %></div>
+    <div class="ad-student-details-tab" onclick="switchTab('security')"><i class="bi bi-shield-lock"></i> <%= T("Security","Keselamatan") %></div>
 </div>
 
 <!-- Profile Tab -->
-<div class="sd-panel active" id="tab-profile">
+<div class="ad-student-details-panel active" id="tab-profile">
     <asp:Literal ID="litProfileFields" runat="server" />
-    <div class="sd-actions">
-        <a href="javascript:;" class="sd-btn sd-btn-primary" onclick="editProfile()"><i class="bi bi-pencil"></i> <%= T("Edit Profile","Sunting Profil") %></a>
+    <div class="ad-student-details-actions">
+        <a href="javascript:;" class="ad-student-details-btn ad-student-details-btn-primary" onclick="editProfile()"><i class="bi bi-pencil"></i> <%= T("Edit Profile","Sunting Profil") %></a>
     </div>
 </div>
 
 <!-- Account Tab -->
-<div class="sd-panel" id="tab-account">
+<div class="ad-student-details-panel" id="tab-account">
     <asp:Literal ID="litAccountFields" runat="server" />
-    <div class="sd-actions">
-        <a href="javascript:;" class="sd-btn sd-btn-success" onclick="changeStatus('Active')"><i class="bi bi-check-circle"></i> <%= T("Activate","Aktifkan") %></a>
-        <a href="javascript:;" class="sd-btn sd-btn-warning" onclick="changeStatus('Blocked')"><i class="bi bi-slash-circle"></i> <%= T("Block","Sekat") %></a>
-        <a href="javascript:;" class="sd-btn sd-btn-danger" onclick="archiveUser()"><i class="bi bi-archive"></i> <%= T("Archive","Arkib") %></a>
-        <a href="javascript:;" class="sd-btn" onclick="resetPassword()"><i class="bi bi-key"></i> <%= T("Reset Password","Tetapkan Semula Kata Laluan") %></a>
+    <div class="ad-student-details-actions">
+        <a href="javascript:;" class="ad-student-details-btn ad-student-details-btn-success" onclick="changeStatus('Active')"><i class="bi bi-check-circle"></i> <%= T("Activate","Aktifkan") %></a>
+        <a href="javascript:;" class="ad-student-details-btn ad-student-details-btn-warning" onclick="changeStatus('Blocked')"><i class="bi bi-slash-circle"></i> <%= T("Block","Sekat") %></a>
+        <a href="javascript:;" class="ad-student-details-btn ad-student-details-btn-danger" onclick="archiveUser()"><i class="bi bi-archive"></i> <%= T("Archive","Arkib") %></a>
+        <a href="javascript:;" class="ad-student-details-btn" onclick="resetPassword()"><i class="bi bi-key"></i> <%= T("Reset Password","Tetapkan Semula Kata Laluan") %></a>
     </div>
 </div>
 
 <!-- Activity Tab -->
-<div class="sd-panel" id="tab-activity">
+<div class="ad-student-details-panel" id="tab-activity">
     <asp:Literal ID="litActivityLog" runat="server" />
 </div>
 
 <!-- Security Tab -->
-<div class="sd-panel" id="tab-security">
+<div class="ad-student-details-panel" id="tab-security">
     <asp:Literal ID="litSecurityLog" runat="server" />
 </div>
 
@@ -158,8 +119,8 @@ var userId = document.getElementById('<%= hfUserId.ClientID %>').value;
 var basePath = window.location.pathname;
 
 function switchTab(tab){
-    document.querySelectorAll('.sd-tab').forEach(function(t,i){t.classList.remove('active');});
-    document.querySelectorAll('.sd-panel').forEach(function(p){p.classList.remove('active');});
+    document.querySelectorAll('.ad-student-details-tab').forEach(function(t,i){t.classList.remove('active');});
+    document.querySelectorAll('.ad-student-details-panel').forEach(function(p){p.classList.remove('active');});
     event.currentTarget.classList.add('active');
     document.getElementById('tab-'+tab).classList.add('active');
 }

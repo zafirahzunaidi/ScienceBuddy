@@ -134,6 +134,34 @@
 .qb-save-status{display:flex;align-items:center;gap:8px;padding:.6rem 1rem;border-radius:10px;font-size:.78rem;font-weight:600;margin-bottom:1rem;background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;transition:all .3s;}
 .qb-save-status.ready{background:#ECFDF5;color:#047857;border-color:#D1FAE5;}
 .qb-char-count{font-size:.7rem;color:var(--tc-muted);font-weight:500;}
+/* Hero Header */
+.cq-hero{position:relative;background:linear-gradient(135deg,#FEFDF8 0%,#FBF9F1 40%,#F5F0E8 100%);border-radius:18px;padding:2rem 2.2rem 1.6rem;margin-bottom:1.25rem;overflow:hidden;border:1px solid #EDE8DC;}
+.cq-hero::before{content:'';position:absolute;inset:0;opacity:.06;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='180'%3E%3Ccircle cx='340' cy='40' r='22' fill='none' stroke='%234A7C59' stroke-width='1.5'/%3E%3Ccircle cx='340' cy='40' r='10' fill='none' stroke='%234A7C59' stroke-width='1'/%3E%3Cellipse cx='340' cy='40' rx='35' ry='35' fill='none' stroke='%234A7C59' stroke-width='.8'/%3E%3Cpath d='M60 130 Q70 100 80 130' fill='none' stroke='%234A7C59' stroke-width='1.5'/%3E%3Cpath d='M80 130 Q90 100 100 130' fill='none' stroke='%234A7C59' stroke-width='1.5'/%3E%3Ccircle cx='90' cy='90' r='6' fill='none' stroke='%234A7C59' stroke-width='1'/%3E%3Crect x='280' y='100' width='22' height='40' rx='3' fill='none' stroke='%234A7C59' stroke-width='1.2'/%3E%3Ccircle cx='291' cy='95' r='8' fill='none' stroke='%234A7C59' stroke-width='1'/%3E%3Cpath d='M180 30 C185 20 195 20 200 30 C205 20 215 20 220 30' fill='none' stroke='%234A7C59' stroke-width='1'/%3E%3Cpath d='M150 140 L158 155 L142 155 Z' fill='none' stroke='%234A7C59' stroke-width='1'/%3E%3C/svg%3E");background-size:cover;background-position:center;pointer-events:none;}
+.cq-hero-content{display:flex;align-items:center;gap:14px;position:relative;z-index:1;margin-bottom:1.2rem;}
+.cq-hero-icon{width:48px;height:48px;border-radius:14px;background:#F0EDE4;color:#6B7F5B;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;border:1px solid #E0D9CB;}
+.cq-hero-title{font-size:1.6rem;font-weight:800;color:#2D3B2D;margin:0;letter-spacing:-.3px;}
+.cq-hero-desc{font-size:.88rem;color:#6B7280;margin:4px 0 0;font-weight:500;}
+.cq-hero-meta{display:flex;align-items:center;gap:1.2rem;position:relative;z-index:1;}
+.cq-meta-item{display:flex;align-items:center;gap:8px;}
+.cq-meta-item>i{font-size:1rem;color:#6B7F5B;background:#EDE9DC;width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;}
+.cq-meta-label{font-size:.7rem;font-weight:600;color:#6B7280;display:block;}
+.cq-meta-val{font-size:.9rem;font-weight:700;color:#2D3B2D;display:block;}
+.cq-meta-divider{width:1px;height:28px;background:#D4CFC4;}
+/* Quiz Titles Panel */
+.cq-titles-panel{display:grid;grid-template-columns:1fr 1fr;gap:0;background:#fff;border-radius:14px;border:1.5px solid #E5E7EB;margin-bottom:1.25rem;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.03);}
+.cq-title-col{padding:1.2rem 1.5rem;}
+.cq-title-col:first-child{border-right:1px solid #F0F0F0;}
+.cq-title-label{font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;display:block;}
+.cq-title-label-en{color:#6B7F5B;}
+.cq-title-label-bm{color:#C07A5A;}
+.cq-title-val{font-size:1.05rem;font-weight:700;color:#1F2937;line-height:1.4;}
+/* Info Notice */
+.cq-info-notice{display:flex;align-items:flex-start;gap:12px;background:#FAFAF5;border-left:4px solid #8FA87A;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.5rem;}
+.cq-info-icon{color:#6B7F5B;font-size:1.15rem;margin-top:1px;flex-shrink:0;}
+.cq-info-body{flex:1;}
+.cq-info-title{font-size:.84rem;font-weight:700;color:#4A5D3E;margin-bottom:3px;}
+.cq-info-text{font-size:.8rem;color:#4B5563;line-height:1.55;}
+@media(max-width:640px){.cq-hero-meta{flex-direction:column;align-items:flex-start;gap:.6rem;}.cq-meta-divider{display:none;}.cq-titles-panel{grid-template-columns:1fr;}.cq-title-col:first-child{border-right:none;border-bottom:1px solid #F0F0F0;}}
 </style>
 </asp:Content>
 
@@ -162,32 +190,50 @@
 
 <asp:Panel ID="pnlBuilder" runat="server" Visible="false">
 
-<%-- Context Header --%>
-<%-- Summary Cards --%>
-<div class="qb-summary-row">
-    <div class="qb-summary-card">
-        <div class="qb-summary-icon"><i class="bi bi-collection-fill"></i></div>
-        <div class="qb-summary-label"><%: T("Quiz Type","Jenis Kuiz") %></div>
-        <div class="qb-summary-value"><asp:Literal ID="litMode" runat="server" /></div>
+<%-- Hero Header --%>
+<div class="cq-hero">
+    <div class="cq-hero-content">
+        <div class="cq-hero-icon"><i class="bi bi-journal-bookmark-fill"></i></div>
+        <div>
+            <h1 class="cq-hero-title"><asp:Literal ID="litMode" runat="server" /></h1>
+            <p class="cq-hero-desc"><%: T("Create and manage questions for this quiz.","Cipta dan urus soalan untuk kuiz ini.") %></p>
+        </div>
     </div>
-    <div class="qb-summary-card">
-        <div class="qb-summary-icon"><i class="bi bi-puzzle-fill"></i></div>
-        <div class="qb-summary-label"><%: T("Unit / Level","Unit / Tahap") %></div>
-        <div class="qb-summary-value"><asp:Literal ID="litScope" runat="server" /></div>
-    </div>
-    <div class="qb-summary-card">
-        <div class="qb-summary-icon"><i class="bi bi-bookmark-fill"></i></div>
-        <div class="qb-summary-label"><%: T("Subtopic","Subtopik") %></div>
-        <div class="qb-summary-value"><asp:Literal ID="litSubtopic" runat="server" /></div>
+    <div class="cq-hero-meta">
+        <div class="cq-meta-item"><i class="bi bi-layers"></i><div><span class="cq-meta-label"><%: T("Unit","Unit") %></span><span class="cq-meta-val"><asp:Literal ID="litScope" runat="server" /></span></div></div>
+        <div class="cq-meta-divider"></div>
+        <div class="cq-meta-item"><i class="bi bi-bookmark"></i><div><span class="cq-meta-label"><%: T("Subtopic","Subtopik") %></span><span class="cq-meta-val"><asp:Literal ID="litSubtopic" runat="server" /></span></div></div>
     </div>
 </div>
 
-<%-- Language Notice --%>
-<div class="qb-notice">
-    <div class="qb-notice-icon"><i class="bi bi-info-circle-fill"></i></div>
-    <div class="qb-notice-body">
-        <div class="qb-notice-title"><%: T("Unit Quiz Information","Maklumat Kuiz Unit") %></div>
-        <div class="qb-notice-text"><%: T("This quiz requires BOTH English and Bahasa Melayu versions for every question. Teachers must complete both language tabs before a question can be saved.","Kuiz ini memerlukan KEDUA-DUA versi Bahasa Inggeris dan Bahasa Melayu untuk setiap soalan. Guru mesti melengkapkan kedua-dua tab bahasa sebelum soalan boleh disimpan.") %></div>
+<%-- Quiz Titles Panel --%>
+<asp:Panel ID="pnlQuizTitles" runat="server" Visible="false">
+<div class="cq-titles-panel">
+    <div class="cq-title-col">
+        <span class="cq-title-label cq-title-label-en">English Title</span>
+        <div class="cq-title-val"><asp:Literal ID="litQuizTitleEN" runat="server" /></div>
+    </div>
+    <div class="cq-title-col">
+        <span class="cq-title-label cq-title-label-bm">Bahasa Melayu Title</span>
+        <div class="cq-title-val"><asp:Literal ID="litQuizTitleBM" runat="server" /></div>
+    </div>
+</div>
+</asp:Panel>
+
+<%-- Subtopic Selection (legacy flow fallback) --%>
+<asp:Panel ID="pnlSubtopicSelect" runat="server" Visible="false">
+<div style="margin-bottom:1.25rem;padding:1rem 1.25rem;background:#FAFAF8;border-radius:12px;border:1px solid #E5E7EB;">
+    <div style="font-size:.8rem;font-weight:700;color:var(--tc-text);margin-bottom:6px;"><%: T("Select Subtopic","Pilih Subtopik") %> *</div>
+    <asp:DropDownList ID="ddlSubtopic" runat="server" CssClass="qb-input" style="padding:.55rem .75rem;" />
+</div>
+</asp:Panel>
+
+<%-- Information Notice --%>
+<div class="cq-info-notice">
+    <div class="cq-info-icon"><i class="bi bi-info-circle-fill"></i></div>
+    <div class="cq-info-body">
+        <div class="cq-info-title"><%: T("Unit Quiz Information","Maklumat Kuiz Unit") %></div>
+        <div class="cq-info-text"><%: T("Each question must include both English and Bahasa Melayu versions before it can be submitted successfully.","Setiap soalan mesti mengandungi kedua-dua versi Bahasa Inggeris dan Bahasa Melayu sebelum boleh dihantar.") %></div>
     </div>
 </div>
 
