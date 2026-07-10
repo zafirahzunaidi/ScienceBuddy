@@ -44,11 +44,13 @@ namespace ScienceBuddy.Admin
 
         private void HandleReview()
         {
+            Response.Clear();
             Response.ContentType = "application/json";
+            Response.CacheControl = "no-cache";
             try
             {
                 if (Session["userId"] == null || Session["role"]?.ToString() != "Admin")
-                { Response.Write("{\"success\":false,\"msg\":\"Unauthorized\"}"); Response.End(); return; }
+                { Response.Write("{\"success\":false,\"msg\":\"Unauthorized\"}"); goto done; }
 
                 string qId = Request.QueryString["qId"] ?? "";
                 string action = Request.QueryString["action"] ?? "";
@@ -56,7 +58,7 @@ namespace ScienceBuddy.Admin
                 string userId = Session["userId"].ToString();
 
                 if (string.IsNullOrEmpty(qId) || (action != "Approve" && action != "Reject"))
-                { Response.Write("{\"success\":false,\"msg\":\"Invalid\"}"); Response.End(); return; }
+                { Response.Write("{\"success\":false,\"msg\":\"Invalid\"}"); goto done; }
 
                 string newStatus = action == "Approve" ? "Approved" : "Rejected";
                 string reviewedAt = "";
@@ -65,6 +67,8 @@ namespace ScienceBuddy.Admin
                 {
                     conn.Open();
                     DateTime now = DateTime.Now;
+
+                    // Update question status
                     using (var cmd = new SqlCommand("UPDATE dbo.[Question] SET [status]=@s,[reviewedDate]=@d WHERE [questionId]=@id", conn))
                     {
                         cmd.Parameters.AddWithValue("@s", newStatus);
@@ -73,6 +77,37 @@ namespace ScienceBuddy.Admin
                         cmd.ExecuteNonQuery();
                     }
                     reviewedAt = now.ToString("d MMM yyyy");
+
+                    // If approving, check if all questions in the same quiz are now approved
+                    if (action == "Approve")
+                    {
+                        string quizId = "";
+                        using (var cmd = new SqlCommand("SELECT [quizId] FROM dbo.[Question] WHERE [questionId]=@id", conn))
+                        {
+                            cmd.Parameters.AddWithValue("@id", qId);
+                            var v = cmd.ExecuteScalar();
+                            quizId = v != null && v != DBNull.Value ? v.ToString() : "";
+                        }
+
+                        if (!string.IsNullOrEmpty(quizId))
+                        {
+                            int notApproved = 0;
+                            using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.[Question] WHERE [quizId]=@qz AND [status]<>'Approved'", conn))
+                            {
+                                cmd.Parameters.AddWithValue("@qz", quizId);
+                                notApproved = Convert.ToInt32(cmd.ExecuteScalar());
+                            }
+
+                            if (notApproved == 0)
+                            {
+                                using (var cmd = new SqlCommand("UPDATE dbo.[Quiz] SET [status]='Approved' WHERE [quizId]=@qz", conn))
+                                {
+                                    cmd.Parameters.AddWithValue("@qz", quizId);
+                                    cmd.ExecuteNonQuery();
+                                }
+                            }
+                        }
+                    }
 
                     string logAction = action == "Approve" ? "Approved Question " + qId : "Rejected Question " + qId;
                     InsertLog(conn, userId, logAction, logAction + ".", "Success");
@@ -95,16 +130,17 @@ namespace ScienceBuddy.Admin
                     int rejected = SC(conn, "SELECT COUNT(*) FROM dbo.[Question] WHERE [status]='Rejected'");
                     int today = SC(conn, "SELECT COUNT(*) FROM dbo.[Question] WHERE [reviewedDate] IS NOT NULL AND CAST([reviewedDate] AS DATE)=CAST(GETDATE() AS DATE)");
 
-                    string json = "{\"success\":true,\"status\":\"" + newStatus + "\",\"reviewedAt\":\"" + reviewedAt + "\"," +
-                        "\"pending\":" + pending + ",\"approved\":" + approved + ",\"rejected\":" + rejected + ",\"today\":" + today + "}";
-                    Response.Write(json);
+                    Response.Write("{\"success\":true,\"status\":\"" + newStatus + "\",\"reviewedAt\":\"" + reviewedAt + "\"," +
+                        "\"pending\":" + pending + ",\"approved\":" + approved + ",\"rejected\":" + rejected + ",\"today\":" + today + "}");
                 }
             }
             catch (Exception ex)
             {
-                Response.Write("{\"success\":false,\"msg\":\"" + ex.Message.Replace("\"", "'") + "\"}");
+                Response.Clear();
+                Response.Write("{\"success\":false,\"msg\":\"" + ex.Message.Replace("\"", "'").Replace("\r", "").Replace("\n", " ") + "\"}");
             }
-            Response.End();
+            done:
+            try { Response.End(); } catch (System.Threading.ThreadAbortException) { }
         }
 
         private void SetUserInfo()
@@ -297,9 +333,9 @@ namespace ScienceBuddy.Admin
         {
             switch ((d?.ToString() ?? "").ToLower())
             {
-                case "easy": return "qr-diff-easy";
-                case "medium": return "qr-diff-medium";
-                case "hard": return "qr-diff-hard";
+                case "easy": return "ad-question-request-diff-easy";
+                case "medium": return "ad-question-request-diff-medium";
+                case "hard": return "ad-question-request-diff-hard";
                 default: return "sb-badge sb-badge-gray";
             }
         }

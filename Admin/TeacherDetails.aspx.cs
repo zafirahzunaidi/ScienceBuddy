@@ -55,7 +55,7 @@ namespace ScienceBuddy.Admin
                 using (var cmd = new SqlCommand("SELECT TOP 20 [action],[description],[logDateTime] FROM dbo.[Log] WHERE [userId]=@u ORDER BY [logDateTime] DESC", conn))
                 {
                     cmd.Parameters.AddWithValue("@u", hfUserId.Value); string html = ""; bool has = false;
-                    using (var rd = cmd.ExecuteReader()) { while (rd.Read()) { has = true; string dt = rd["logDateTime"] != DBNull.Value ? Convert.ToDateTime(rd["logDateTime"]).ToString("dd MMM yyyy HH:mm") : "-"; html += "<div class='sd-log-item'><div class='sd-log-ico'><i class='bi bi-activity'></i></div><div class='sd-log-body'><div class='sd-log-action'>" + HttpUtility.HtmlEncode(NS(rd["action"])) + "</div><div class='sd-log-desc'>" + HttpUtility.HtmlEncode(NS(rd["description"])) + "</div><div class='sd-log-time'>" + dt + "</div></div></div>"; } }
+                    using (var rd = cmd.ExecuteReader()) { while (rd.Read()) { has = true; string dt = rd["logDateTime"] != DBNull.Value ? Convert.ToDateTime(rd["logDateTime"]).ToString("dd MMM yyyy HH:mm") : "-"; html += "<div class='ad-teacher-details-log-item'><div class='ad-teacher-details-log-ico'><i class='bi bi-activity'></i></div><div class='ad-teacher-details-log-body'><div class='ad-teacher-details-log-action'>" + HttpUtility.HtmlEncode(NS(rd["action"])) + "</div><div class='ad-teacher-details-log-desc'>" + HttpUtility.HtmlEncode(NS(rd["description"])) + "</div><div class='ad-teacher-details-log-time'>" + dt + "</div></div></div>"; } }
                     litActivityLog.Text = has ? html : "<div style='text-align:center;padding:2rem;color:var(--color-text-muted);'><i class='bi bi-clock-history' style='font-size:2rem;opacity:.4;'></i><p style='margin-top:8px;'>" + T("No activity.", "Tiada aktiviti.") + "</p></div>";
                 }
             }
@@ -103,7 +103,7 @@ namespace ScienceBuddy.Admin
             Response.End();
         }
 
-        private string F(string l, string v) { return "<div class='sd-field'><div class='sd-field-label'>" + HttpUtility.HtmlEncode(l) + "</div><div class='sd-field-value'>" + HttpUtility.HtmlEncode(v ?? "-") + "</div></div>"; }
+        private string F(string l, string v) { return "<div class='ad-teacher-details-field'><div class='ad-teacher-details-field-label'>" + HttpUtility.HtmlEncode(l) + "</div><div class='ad-teacher-details-field-value'>" + HttpUtility.HtmlEncode(v ?? "-") + "</div></div>"; }
         private void ILog(SqlConnection c, string uid, string act, string desc) { string id = GID(c, "Log", "logId", "LOG"); using (var cmd = new SqlCommand("INSERT INTO dbo.[Log]([logId],[userId],[action],[description],[logDateTime],[status]) VALUES(@a,@b,@c,@d,@e,'Success')", c)) { cmd.Parameters.AddWithValue("@a", id); cmd.Parameters.AddWithValue("@b", uid); cmd.Parameters.AddWithValue("@c", act); cmd.Parameters.AddWithValue("@d", desc); cmd.Parameters.AddWithValue("@e", DateTime.Now); cmd.ExecuteNonQuery(); } }
         private string GID(SqlConnection c, string tbl, string col, string pfx) { using (var cmd = new SqlCommand(string.Format("SELECT TOP 1 [{0}] FROM dbo.[{1}] ORDER BY [{0}] DESC", col, tbl), c)) { var v = cmd.ExecuteScalar(); if (v == null || v == DBNull.Value) return pfx + "001"; string l = v.ToString(); int n; int.TryParse(l.Substring(pfx.Length), out n); n++; return pfx + n.ToString().PadLeft(l.Length - pfx.Length, '0'); } }
         private static string NS(object v) { return (v == null || v == DBNull.Value) ? "" : v.ToString(); }

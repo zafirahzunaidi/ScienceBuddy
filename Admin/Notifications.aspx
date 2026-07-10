@@ -3,71 +3,10 @@
     Title="Notifications" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
-<style>
-:root { --admin:#2563EB; --admin-dark:#1D4ED8; --admin-light:#DBEAFE; }
-
-/* Page header */
-.an-page-header { margin-bottom:var(--space-xl); padding-bottom:var(--space-md); border-bottom:1.5px solid var(--border-color); }
-.an-page-title { font-family:var(--font-primary); font-size:1.75rem; font-weight:800; color:var(--color-text); margin-bottom:var(--space-xs); }
-.an-page-sub { font-size:.9375rem; color:var(--color-text-secondary); max-width:560px; line-height:1.5; }
-
-/* Send card */
-.an-send-card {
-    background:var(--color-white); border-radius:var(--border-radius-xl);
-    border:1.5px solid var(--border-color); box-shadow:var(--shadow-sm);
-    padding:var(--space-xl); margin-bottom:var(--space-xl);
-}
-.an-send-title {
-    font-family:var(--font-primary); font-size:1.0625rem; font-weight:800;
-    color:var(--color-text); margin-bottom:var(--space-lg);
-    display:flex; align-items:center; gap:var(--space-sm);
-}
-.an-form-row { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md); margin-bottom:var(--space-md); }
-.an-form-full { margin-bottom:var(--space-md); }
-.an-form-label { display:block; font-weight:600; font-size:.875rem; color:var(--color-text); margin-bottom:var(--space-xs); }
-
-/* Section header */
-.an-sec-hd { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:var(--space-md); margin-top:var(--space-lg); flex-wrap:wrap; gap:var(--space-md); }
-.an-sec-title { font-family:var(--font-primary); font-size:1.0625rem; font-weight:800; color:var(--color-text); display:flex; align-items:center; gap:var(--space-sm); }
-.an-sec-sub { font-size:.8125rem; color:var(--color-text-muted); margin-top:2px; }
-
-/* Filter bar */
-.an-filter-bar {
-    background:var(--color-white); border-radius:var(--border-radius-xl);
-    border:1.5px solid var(--border-color); box-shadow:var(--shadow-sm);
-    padding:var(--space-md) var(--space-lg);
-    display:flex; align-items:center; gap:var(--space-md); flex-wrap:wrap;
-    margin-bottom:var(--space-md);
-}
-.an-filter-bar .sb-input { flex:1; min-width:160px; max-width:280px; }
-.an-filter-bar .sb-select { max-width:160px; }
-
-/* Table card */
-.an-card {
-    background:var(--color-white); border-radius:var(--border-radius-xl);
-    border:1.5px solid var(--border-color); box-shadow:var(--shadow-sm);
-    overflow:hidden; margin-bottom:var(--space-xl);
-}
-
-/* Empty */
-.an-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:var(--space-2xl) var(--space-xl); color:var(--color-text-muted); }
-.an-empty-ico { font-size:2.75rem; margin-bottom:var(--space-md); opacity:.5; }
-.an-empty-msg { font-size:.9375rem; font-weight:600; color:var(--color-text-secondary); }
-
-/* Toast */
-.an-toast { position:fixed; bottom:24px; right:24px; z-index:3000; max-width:400px; }
-
-/* Responsive */
-@media(max-width:767px) {
-    .an-page-title { font-size:1.375rem; }
-    .an-form-row { grid-template-columns:1fr; }
-    .an-filter-bar { flex-direction:column; align-items:stretch; }
-    .an-filter-bar .sb-input, .an-filter-bar .sb-select { max-width:100%; }
-}
-</style>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="<%: ResolveUrl("~/Scripts/admin-signout.js") %>"></script>
+    <link href="<%: ResolveUrl("~/Content/Admin.css") %>" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="<%: ResolveUrl("~/Scripts/admin-signout.js") %>"></script>
 </asp:Content>
 
 <%-- ════ SIDEBAR ════ --%>
@@ -116,17 +55,17 @@
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 
 <%-- PAGE HEADER --%>
-<div class="an-page-header">
-    <h1 class="an-page-title"><%= T("Notifications", "Notifikasi") %></h1>
-    <p class="an-page-sub"><%= T("Send notifications to users and manage all sent notifications.", "Hantar notifikasi kepada pengguna dan urus semua notifikasi yang dihantar.") %></p>
+<div class="ad-notification-page-header">
+    <h1 class="ad-notification-page-title"><%= T("Notifications", "Notifikasi") %></h1>
+    <p class="ad-notification-page-sub"><%= T("Send notifications to users and manage all sent notifications.", "Hantar notifikasi kepada pengguna dan urus semua notifikasi yang dihantar.") %></p>
 </div>
 
 <%-- ══ SECTION 1: SEND NOTIFICATION ══ --%>
-<div class="an-send-card">
-    <div class="an-send-title"><i class="bi bi-send-fill" style="color:var(--admin);"></i> <%= T("Send Notification", "Hantar Notifikasi") %></div>
+<div class="ad-notification-send-card">
+    <div class="ad-notification-send-title"><i class="bi bi-send-fill" style="color:var(--ad-notification-accent);"></i> <%= T("Send Notification", "Hantar Notifikasi") %></div>
 
-    <div class="an-form-full">
-        <label class="an-form-label"><%= T("Recipient", "Penerima") %></label>
+    <div class="ad-notification-form-full">
+        <label class="ad-notification-form-label"><%= T("Recipient", "Penerima") %></label>
         <asp:DropDownList ID="ddlRecipient" runat="server" CssClass="sb-select" AutoPostBack="true" OnSelectedIndexChanged="ddlRecipient_Changed">
             <asp:ListItem Value="AllStudents">All Students / Semua Pelajar</asp:ListItem>
             <asp:ListItem Value="AllParents">All Parents / Semua Ibu Bapa</asp:ListItem>
@@ -138,29 +77,29 @@
     </div>
 
     <asp:Panel ID="pnlIndividual" runat="server" Visible="false">
-        <div class="an-form-full">
-            <label class="an-form-label"><%= T("Select Recipient", "Pilih Penerima") %></label>
+        <div class="ad-notification-form-full">
+            <label class="ad-notification-form-label"><%= T("Select Recipient", "Pilih Penerima") %></label>
             <asp:DropDownList ID="ddlUser" runat="server" CssClass="sb-select" />
         </div>
     </asp:Panel>
 
-    <div class="an-form-row">
+    <div class="ad-notification-form-row">
         <div>
-            <label class="an-form-label"><%= T("Title (EN)", "Tajuk (EN)") %></label>
+            <label class="ad-notification-form-label"><%= T("Title (EN)", "Tajuk (EN)") %></label>
             <asp:TextBox ID="txtTitleEN" runat="server" CssClass="sb-input" />
         </div>
         <div>
-            <label class="an-form-label"><%= T("Title (BM)", "Tajuk (BM)") %></label>
+            <label class="ad-notification-form-label"><%= T("Title (BM)", "Tajuk (BM)") %></label>
             <asp:TextBox ID="txtTitleBM" runat="server" CssClass="sb-input" />
         </div>
     </div>
-    <div class="an-form-row">
+    <div class="ad-notification-form-row">
         <div>
-            <label class="an-form-label"><%= T("Message (EN)", "Mesej (EN)") %></label>
+            <label class="ad-notification-form-label"><%= T("Message (EN)", "Mesej (EN)") %></label>
             <asp:TextBox ID="txtMsgEN" runat="server" CssClass="sb-textarea" TextMode="MultiLine" Rows="3" />
         </div>
         <div>
-            <label class="an-form-label"><%= T("Message (BM)", "Mesej (BM)") %></label>
+            <label class="ad-notification-form-label"><%= T("Message (BM)", "Mesej (BM)") %></label>
             <asp:TextBox ID="txtMsgBM" runat="server" CssClass="sb-textarea" TextMode="MultiLine" Rows="3" />
         </div>
     </div>
@@ -171,14 +110,14 @@
 </div>
 
 <%-- ══ SECTION 2: SENT NOTIFICATIONS ══ --%>
-<div class="an-sec-hd">
+<div class="ad-notification-sec-hd">
     <div>
-        <div class="an-sec-title"><i class="bi bi-clock-history" style="color:#7C3AED;"></i> <%= T("Sent Notifications", "Notifikasi Dihantar") %></div>
-        <div class="an-sec-sub"><%= T("All notifications sent from the admin panel.", "Semua notifikasi yang dihantar daripada panel pentadbir.") %></div>
+        <div class="ad-notification-sec-title"><i class="bi bi-clock-history" style="color:#7C3AED;"></i> <%= T("Sent Notifications", "Notifikasi Dihantar") %></div>
+        <div class="ad-notification-sec-sub"><%= T("All notifications sent from the admin panel.", "Semua notifikasi yang dihantar daripada panel pentadbir.") %></div>
     </div>
 </div>
 
-<div class="an-filter-bar">
+<div class="ad-notification-filter-bar">
     <i class="bi bi-search text-muted" style="font-size:1rem;flex-shrink:0;"></i>
     <asp:TextBox ID="txtSearch" runat="server" CssClass="sb-input sb-input-sm" AutoPostBack="false" />
     <asp:DropDownList ID="ddlFilter" runat="server" CssClass="sb-select sb-input-sm" AutoPostBack="false">
@@ -190,7 +129,7 @@
     <asp:Button ID="btnReset" runat="server" CssClass="sb-btn sb-btn-ghost sb-btn-sm" OnClick="btnReset_Click" />
 </div>
 
-<div class="an-card">
+<div class="ad-notification-card">
     <asp:Panel ID="pnlSent" runat="server" Visible="false">
         <div class="sb-table-wrapper" style="border:none;border-radius:0;box-shadow:none;">
             <table class="sb-table">
@@ -220,9 +159,9 @@
         </div>
     </asp:Panel>
     <asp:Panel ID="pnlEmpty" runat="server">
-        <div class="an-empty">
-            <div class="an-empty-ico">🔔</div>
-            <div class="an-empty-msg"><%= T("No notifications sent yet.", "Tiada notifikasi yang dihantar lagi.") %></div>
+        <div class="ad-notification-empty">
+            <div class="ad-notification-empty-ico">🔔</div>
+            <div class="ad-notification-empty-msg"><%= T("No notifications sent yet.", "Tiada notifikasi yang dihantar lagi.") %></div>
         </div>
     </asp:Panel>
 </div>
