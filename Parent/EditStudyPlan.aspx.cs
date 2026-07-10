@@ -71,7 +71,6 @@ namespace ScienceBuddy.Parent
         private string GetActivePlanId()
         {
             try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT TOP 1 studyPlanId FROM dbo.StudyPlan WHERE studentParentId=@sp AND status='Ongoing' ORDER BY createdAt DESC", c)) { cmd.Parameters.AddWithValue("@sp", _studentParentId); c.Open(); var r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) return r.ToString(); } } catch { }
-            try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT TOP 1 studyPlanId FROM dbo.StudyPlan WHERE studentParentId=@sp ORDER BY createdAt DESC", c)) { cmd.Parameters.AddWithValue("@sp", _studentParentId); c.Open(); var r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) return r.ToString(); } } catch { }
             return null;
         }
 
@@ -156,6 +155,7 @@ namespace ScienceBuddy.Parent
         {
             if (string.IsNullOrWhiteSpace(txtTaskTitle.Text)) { ShowMsg(T("Task title cannot be empty.", "Tajuk tugasan tidak boleh kosong."), false); return; }
             string editId = hidEditTaskId.Value;
+            string taskTitle = txtTaskTitle.Text.Trim();
             try
             {
                 using (var c = new SqlConnection(ConnStr)) { c.Open(); using (var txn = c.BeginTransaction()) { try {
@@ -164,12 +164,22 @@ namespace ScienceBuddy.Parent
                         int maxOrder = 0; using (var cmd = new SqlCommand("SELECT ISNULL(MAX(orderNo),0) FROM dbo.SPTask WHERE studyPlanId=@id", c, txn)) { cmd.Parameters.AddWithValue("@id", _planId); maxOrder = (int)cmd.ExecuteScalar(); }
                         string newId = GenId(c, txn, "SPTask", "spTaskId", "SPT");
                         using (var cmd = new SqlCommand("INSERT INTO dbo.SPTask(spTaskId,studyPlanId,taskTitle,suggestedAction,orderNo,isCompleted,completedAt) VALUES(@id,@pid,@t,@a,@o,0,NULL)", c, txn))
-                        { cmd.Parameters.AddWithValue("@id", newId); cmd.Parameters.AddWithValue("@pid", _planId); cmd.Parameters.AddWithValue("@t", txtTaskTitle.Text.Trim()); cmd.Parameters.AddWithValue("@a", ddlSuggestedAction.SelectedValue); cmd.Parameters.AddWithValue("@o", maxOrder + 1); cmd.ExecuteNonQuery(); }
+                        { cmd.Parameters.AddWithValue("@id", newId); cmd.Parameters.AddWithValue("@pid", _planId); cmd.Parameters.AddWithValue("@t", taskTitle); cmd.Parameters.AddWithValue("@a", ddlSuggestedAction.SelectedValue); cmd.Parameters.AddWithValue("@o", maxOrder + 1); cmd.ExecuteNonQuery(); }
+                        // Notify child: new task added
+                        string childUid = GetChildUserId(c, txn);
+                        if (!string.IsNullOrEmpty(childUid))
+                            CreateNotification(c, txn, childUid, "New study task added", "Tugasan belajar baharu ditambah",
+                                "Your parent added a new study task: " + taskTitle + ".", "Ibu bapa anda menambah tugasan belajar baharu: " + taskTitle + ".");
                     }
                     else
                     {
                         using (var cmd = new SqlCommand("UPDATE dbo.SPTask SET taskTitle=@t, suggestedAction=@a WHERE spTaskId=@id AND studyPlanId=@pid", c, txn))
-                        { cmd.Parameters.AddWithValue("@t", txtTaskTitle.Text.Trim()); cmd.Parameters.AddWithValue("@a", ddlSuggestedAction.SelectedValue); cmd.Parameters.AddWithValue("@id", editId); cmd.Parameters.AddWithValue("@pid", _planId); cmd.ExecuteNonQuery(); }
+                        { cmd.Parameters.AddWithValue("@t", taskTitle); cmd.Parameters.AddWithValue("@a", ddlSuggestedAction.SelectedValue); cmd.Parameters.AddWithValue("@id", editId); cmd.Parameters.AddWithValue("@pid", _planId); cmd.ExecuteNonQuery(); }
+                        // Notify child: task updated
+                        string childUid = GetChildUserId(c, txn);
+                        if (!string.IsNullOrEmpty(childUid))
+                            CreateNotification(c, txn, childUid, "Study task updated", "Tugasan belajar dikemas kini",
+                                "Your parent updated a study task: " + taskTitle + ".", "Ibu bapa anda mengemas kini tugasan belajar: " + taskTitle + ".");
                     }
                     txn.Commit();
                 } catch { txn.Rollback(); throw; } } }
@@ -186,6 +196,11 @@ namespace ScienceBuddy.Parent
                 using (var cmd = new SqlCommand("DELETE FROM dbo.SPTask WHERE spTaskId=@id AND studyPlanId=@pid", c, txn)) { cmd.Parameters.AddWithValue("@id", taskId); cmd.Parameters.AddWithValue("@pid", _planId); cmd.ExecuteNonQuery(); }
                 // Reorder
                 int order = 1; using (var cmd = new SqlCommand("SELECT spTaskId FROM dbo.SPTask WHERE studyPlanId=@pid ORDER BY orderNo", c, txn)) { cmd.Parameters.AddWithValue("@pid", _planId); using (var r = cmd.ExecuteReader()) { var ids = new List<string>(); while (r.Read()) ids.Add(r["spTaskId"].ToString()); r.Close(); foreach (var id in ids) { using (var u = new SqlCommand("UPDATE dbo.SPTask SET orderNo=@o WHERE spTaskId=@id", c, txn)) { u.Parameters.AddWithValue("@o", order++); u.Parameters.AddWithValue("@id", id); u.ExecuteNonQuery(); } } } }
+                // Notify child: task removed
+                string childUid = GetChildUserId(c, txn);
+                if (!string.IsNullOrEmpty(childUid))
+                    CreateNotification(c, txn, childUid, "Study task removed", "Tugasan belajar dibuang",
+                        "Your parent removed a study task from your plan.", "Ibu bapa anda membuang satu tugasan daripada pelan belajar anda.");
                 txn.Commit();
             } catch { txn.Rollback(); throw; } } } ShowMsg(T("Task deleted.", "Tugasan dipadam."), true); } catch { ShowMsg(T("Error deleting task.", "Ralat memadam tugasan."), false); }
             LoadTaskList(); LoadRewardList(); BuildPreviewMarkers();
@@ -226,8 +241,8 @@ namespace ScienceBuddy.Parent
         {
             pnlRewardList.Controls.Clear();
             int count = 0;
-            try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT rewardId, rewardName, requiredProgress FROM dbo.SPReward WHERE studyPlanId=@id ORDER BY requiredProgress", c)) { cmd.Parameters.AddWithValue("@id", _planId); c.Open(); using (var r = cmd.ExecuteReader()) { StringBuilder sb = new StringBuilder();
-                while (r.Read()) { count++; string raw = r["rewardName"] != DBNull.Value ? r["rewardName"].ToString() : ""; string name, img; ParseRN(raw, out name, out img); int pct = r["requiredProgress"] != DBNull.Value ? Convert.ToInt32(r["requiredProgress"]) : 0; string imgUrl = !string.IsNullOrEmpty(img) ? ResolveUrl("~/Images/Rewards/" + img) : "";
+            try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT rewardId, rewardName, requiredProgress, rewardImage FROM dbo.SPReward WHERE studyPlanId=@id ORDER BY requiredProgress", c)) { cmd.Parameters.AddWithValue("@id", _planId); c.Open(); using (var r = cmd.ExecuteReader()) { StringBuilder sb = new StringBuilder();
+                while (r.Read()) { count++; string name = r["rewardName"] != DBNull.Value ? r["rewardName"].ToString() : ""; string img = r["rewardImage"] != DBNull.Value ? r["rewardImage"].ToString() : ""; int pct = r["requiredProgress"] != DBNull.Value ? Convert.ToInt32(r["requiredProgress"]) : 0; string imgUrl = !string.IsNullOrEmpty(img) ? ResolveUrl("~/Images/Rewards/" + img) : "";
                     sb.AppendFormat(@"<div class=""pt-reward-list-item""><div class=""pt-reward-list-img"">{0}</div><div class=""pt-reward-list-info""><div class=""pt-reward-list-name"">{1}</div><div class=""pt-reward-list-pct"">{2}%</div></div>
                         <button type=""button"" class=""pt-btn-icon"" onclick=""document.getElementById('{3}').value='{4}';document.getElementById('{5}').click();return false;""><i class=""bi bi-pencil""></i></button>
                         <button type=""button"" class=""pt-btn-icon pt-btn-icon-danger"" onclick=""showDeleteModal('reward','{4}','{6}','{7}');return false;""><i class=""bi bi-trash""></i></button>
@@ -261,7 +276,7 @@ namespace ScienceBuddy.Parent
         private void BuildPreviewMarkers()
         {
             pnlPreviewMarkers.Controls.Clear();
-            try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT rewardName, requiredProgress FROM dbo.SPReward WHERE studyPlanId=@id ORDER BY requiredProgress", c)) { cmd.Parameters.AddWithValue("@id", _planId); c.Open(); StringBuilder sb = new StringBuilder(); using (var r = cmd.ExecuteReader()) { while (r.Read()) { string raw = r["rewardName"] != DBNull.Value ? r["rewardName"].ToString() : ""; string name, img; ParseRN(raw, out name, out img); int pct = r["requiredProgress"] != DBNull.Value ? Convert.ToInt32(r["requiredProgress"]) : 0; string imgUrl = !string.IsNullOrEmpty(img) ? ResolveUrl("~/Images/Rewards/" + img) : ""; int left = Math.Max(2, Math.Min(98, pct));
+            try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT rewardName, requiredProgress, rewardImage FROM dbo.SPReward WHERE studyPlanId=@id ORDER BY requiredProgress", c)) { cmd.Parameters.AddWithValue("@id", _planId); c.Open(); StringBuilder sb = new StringBuilder(); using (var r = cmd.ExecuteReader()) { while (r.Read()) { string name = r["rewardName"] != DBNull.Value ? r["rewardName"].ToString() : ""; string img = r["rewardImage"] != DBNull.Value ? r["rewardImage"].ToString() : ""; int pct = r["requiredProgress"] != DBNull.Value ? Convert.ToInt32(r["requiredProgress"]) : 0; string imgUrl = !string.IsNullOrEmpty(img) ? ResolveUrl("~/Images/Rewards/" + img) : ""; int left = Math.Max(2, Math.Min(98, pct));
                 sb.AppendFormat(@"<div class=""pt-reward-marker pt-reward-marker-unlocked"" style=""left:{0}%;"" title=""{1} ({2}%)"">{3}</div>", left, Server.HtmlEncode(name), pct, !string.IsNullOrEmpty(imgUrl) ? "<img src='" + imgUrl + "'/>" : "<i class='bi bi-gift-fill'></i>"); } }
                 pnlPreviewMarkers.Controls.Add(new LiteralControl(sb.ToString())); } } catch { }
         }
@@ -272,7 +287,7 @@ namespace ScienceBuddy.Parent
         protected void BtnEditRewardTrigger_Click(object sender, EventArgs e)
         {
             string rid = hidEditRewardIdTrigger.Value;
-            try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT rewardName, requiredProgress FROM dbo.SPReward WHERE rewardId=@id AND studyPlanId=@pid", c)) { cmd.Parameters.AddWithValue("@id", rid); cmd.Parameters.AddWithValue("@pid", _planId); c.Open(); using (var r = cmd.ExecuteReader()) { if (r.Read()) { string raw = r["rewardName"] != DBNull.Value ? r["rewardName"].ToString() : ""; string name, img; ParseRN(raw, out name, out img); txtRewardName.Text = name; hidSelectedImage.Value = img; txtUnlockPct.Text = r["requiredProgress"] != DBNull.Value ? r["requiredProgress"].ToString() : ""; } } } } catch { }
+            try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT rewardName, requiredProgress, rewardImage FROM dbo.SPReward WHERE rewardId=@id AND studyPlanId=@pid", c)) { cmd.Parameters.AddWithValue("@id", rid); cmd.Parameters.AddWithValue("@pid", _planId); c.Open(); using (var r = cmd.ExecuteReader()) { if (r.Read()) { txtRewardName.Text = r["rewardName"] != DBNull.Value ? r["rewardName"].ToString() : ""; hidSelectedImage.Value = r["rewardImage"] != DBNull.Value ? r["rewardImage"].ToString() : ""; txtUnlockPct.Text = r["requiredProgress"] != DBNull.Value ? r["requiredProgress"].ToString() : ""; } } } } catch { }
             hidEditRewardId.Value = rid; litRewardFormTitle.Text = T("Edit Reward", "Edit Ganjaran"); pnlRewardForm.Visible = true; LoadTaskList(); LoadRewardList(); BuildImageGrid(); BuildPreviewMarkers();
         }
 
@@ -284,7 +299,6 @@ namespace ScienceBuddy.Parent
             if (!int.TryParse(txtUnlockPct.Text, out pct) || pct < 1 || pct > 100) { ShowMsg(T("Unlock percentage must be between 1 and 100.", "Peratus buka mesti antara 1 dan 100."), false); return; }
 
             string editId = hidEditRewardId.Value;
-            string encodedName = name + "|||" + img;
 
             try { using (var c = new SqlConnection(ConnStr)) { c.Open();
                 // Check duplicate pct
@@ -298,14 +312,19 @@ namespace ScienceBuddy.Parent
                         int cnt = 0; using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.SPReward WHERE studyPlanId=@pid", c, txn)) { cmd.Parameters.AddWithValue("@pid", _planId); cnt = (int)cmd.ExecuteScalar(); }
                         if (cnt >= 5) { txn.Rollback(); ShowMsg(T("Maximum 5 rewards allowed.", "Maksimum 5 ganjaran dibenarkan."), false); return; }
                         string newId = GenId(c, txn, "SPReward", "rewardId", "SPR");
-                        using (var cmd = new SqlCommand("INSERT INTO dbo.SPReward(rewardId,studyPlanId,rewardName,requiredProgress,isUnlocked,unlockedAt) VALUES(@id,@pid,@n,@p,0,NULL)", c, txn))
-                        { cmd.Parameters.AddWithValue("@id", newId); cmd.Parameters.AddWithValue("@pid", _planId); cmd.Parameters.AddWithValue("@n", encodedName); cmd.Parameters.AddWithValue("@p", pct); cmd.ExecuteNonQuery(); }
+                        using (var cmd = new SqlCommand("INSERT INTO dbo.SPReward(rewardId,studyPlanId,rewardName,requiredProgress,isUnlocked,unlockedAt,rewardImage) VALUES(@id,@pid,@n,@p,0,NULL,@img)", c, txn))
+                        { cmd.Parameters.AddWithValue("@id", newId); cmd.Parameters.AddWithValue("@pid", _planId); cmd.Parameters.AddWithValue("@n", name); cmd.Parameters.AddWithValue("@p", pct); cmd.Parameters.AddWithValue("@img", string.IsNullOrEmpty(img) ? (object)DBNull.Value : img); cmd.ExecuteNonQuery(); }
                     }
                     else
                     {
-                        using (var cmd = new SqlCommand("UPDATE dbo.SPReward SET rewardName=@n, requiredProgress=@p WHERE rewardId=@id AND studyPlanId=@pid", c, txn))
-                        { cmd.Parameters.AddWithValue("@n", encodedName); cmd.Parameters.AddWithValue("@p", pct); cmd.Parameters.AddWithValue("@id", editId); cmd.Parameters.AddWithValue("@pid", _planId); cmd.ExecuteNonQuery(); }
+                        using (var cmd = new SqlCommand("UPDATE dbo.SPReward SET rewardName=@n, requiredProgress=@p, rewardImage=@img WHERE rewardId=@id AND studyPlanId=@pid", c, txn))
+                        { cmd.Parameters.AddWithValue("@n", name); cmd.Parameters.AddWithValue("@p", pct); cmd.Parameters.AddWithValue("@img", string.IsNullOrEmpty(img) ? (object)DBNull.Value : img); cmd.Parameters.AddWithValue("@id", editId); cmd.Parameters.AddWithValue("@pid", _planId); cmd.ExecuteNonQuery(); }
                     }
+                    // Notify child: reward milestone
+                    string childUid = GetChildUserId(c, txn);
+                    if (!string.IsNullOrEmpty(childUid))
+                        CreateNotification(c, txn, childUid, "New reward milestone", "Ganjaran baharu",
+                            "A reward milestone was added to your study plan: " + name + ".", "Ganjaran telah ditambah pada pelan belajar anda: " + name + ".");
                     txn.Commit();
                 } catch { txn.Rollback(); throw; } } }
                 pnlRewardForm.Visible = false; ShowMsg(T("Reward saved!", "Ganjaran disimpan!"), true);
@@ -322,7 +341,44 @@ namespace ScienceBuddy.Parent
         }
 
         // ═══ HELPERS ═══
-        private void ParseRN(string raw, out string name, out string img) { if (raw.Contains("|||")) { var p = raw.Split(new[] { "|||" }, StringSplitOptions.None); name = p[0]; img = p.Length > 1 ? p[1] : ""; } else { name = raw; img = ""; } }
+        private void CreateNotification(SqlConnection c, SqlTransaction t, string toUserId, string titleEN, string titleBM, string messageEN, string messageBM)
+        {
+            try
+            {
+                string nid = GenId(c, t, "Notification", "notificationId", "N");
+                using (var cmd = new SqlCommand(@"INSERT INTO dbo.Notification(notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt)
+                    VALUES(@id,@to,@te,@tb,@me,@mb,0,@now)", c, t))
+                {
+                    cmd.Parameters.AddWithValue("@id", nid);
+                    cmd.Parameters.AddWithValue("@to", toUserId);
+                    cmd.Parameters.AddWithValue("@te", titleEN);
+                    cmd.Parameters.AddWithValue("@tb", titleBM);
+                    cmd.Parameters.AddWithValue("@me", messageEN);
+                    cmd.Parameters.AddWithValue("@mb", messageBM);
+                    cmd.Parameters.AddWithValue("@now", DateTime.Now);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch { }
+        }
+
+        private string GetChildUserId(SqlConnection c, SqlTransaction t)
+        {
+            try
+            {
+                using (var cmd = new SqlCommand(@"SELECT u.userId FROM dbo.Student s INNER JOIN dbo.[User] u ON s.userId=u.userId
+                    INNER JOIN dbo.StudentParent sp ON s.studentId=sp.studentId
+                    WHERE sp.studentParentId=@spid", c, t))
+                {
+                    cmd.Parameters.AddWithValue("@spid", _studentParentId);
+                    var r = cmd.ExecuteScalar();
+                    if (r != null && r != DBNull.Value) return r.ToString();
+                }
+            }
+            catch { }
+            return null;
+        }
+
         private string GenId(SqlConnection c, SqlTransaction t, string table, string col, string prefix) { int n = 1; using (var cmd = new SqlCommand(string.Format("SELECT MAX({0}) FROM dbo.[{1}]", col, table), c, t)) { var r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) { string last = r.ToString(); if (last.Length > prefix.Length) { int num; if (int.TryParse(last.Substring(prefix.Length), out num)) n = num + 1; } } } return prefix + n.ToString("D3"); }
         private void ShowMsg(string msg, bool ok) { pnlMessage.Visible = true; divMessage.InnerHtml = msg; iMsgIcon.Attributes["class"] = ok ? "bi bi-check-circle-fill" : "bi bi-exclamation-circle-fill"; }
         protected void BtnCloseMsg_Click(object sender, EventArgs e) { pnlMessage.Visible = false; LoadPage(); }

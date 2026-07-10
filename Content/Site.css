@@ -498,6 +498,13 @@ ul, ol { list-style: none; }
 
 .sb-sidebar.collapsed {
     width: var(--sidebar-collapsed);
+    overflow: visible; /* allow popover to float outside */
+}
+
+/* Collapsed: ensure nav section also allows overflow for popovers */
+.sb-sidebar.collapsed .sb-sidebar-nav {
+    overflow-x: visible;
+    overflow-y: auto;
 }
 
 /* ── Sidebar Brand (always visible, never scrolls) ── */
@@ -673,19 +680,39 @@ ul, ol { list-style: none; }
 .sb-sidebar.collapsed .sb-sidebar-item {
     justify-content: center;
     padding: 11px 0;
+    border-radius: 10px;
+    margin: 2px 8px;
+    width: calc(var(--sidebar-collapsed) - 16px);
 }
 
 .sb-sidebar.collapsed .item-label {
     opacity: 0;
     max-width: 0;
+    position: absolute;
+    pointer-events: none;
 }
 
-.sb-sidebar.collapsed .item-badge { opacity: 0; }
+.sb-sidebar.collapsed .item-badge { opacity: 0; pointer-events: none; }
 
 /* Collapsed active bar stays centred */
 .sb-sidebar.collapsed .sb-sidebar-item.active::before {
     left: 0;
     height: 65%;
+    border-radius: 0 3px 3px 0;
+}
+
+/* Collapsed: hide section labels completely */
+.sb-sidebar.collapsed .sb-nav-section-label {
+    opacity: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+/* Collapsed: hide nav menu placeholder padding */
+.sb-sidebar.collapsed .sb-nav-menu-placeholder {
+    padding: 4px 0;
 }
 
 /* Placeholder menu area */

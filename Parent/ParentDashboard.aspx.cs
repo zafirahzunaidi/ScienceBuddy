@@ -193,7 +193,6 @@ namespace ScienceBuddy.Parent
             litSnapNoActivity.Text  = T("No recent activity yet.", "Tiada aktiviti terkini lagi.");
             litSnapBtnProfile.Text  = T("View Profile", "Lihat Profil");
             litSnapBtnProgress.Text = T("View Progress", "Lihat Kemajuan");
-            litSnapBtnReport.Text   = T("Report Card", "Kad Laporan");
             litHeroNoChild.Text   = T(
                 "No linked child found. Link a child account to start monitoring progress.",
                 "Tiada akaun anak dipautkan. Paut akaun anak untuk mula memantau kemajuan.");
@@ -680,7 +679,6 @@ namespace ScienceBuddy.Parent
 
                 int totalTasks    = 0;
                 int completedCount = 0;
-                bool hasOverdue   = false;
                 var taskHtmlList  = new System.Collections.Generic.List<string>();
 
                 using (var conn = new SqlConnection(ConnStr))
@@ -723,7 +721,6 @@ namespace ScienceBuddy.Parent
                             {
                                 // Pending or overdue
                                 bool isOverdue = planEnd < DateTime.Today;
-                                if (isOverdue) hasOverdue = true;
 
                                 string rowClass  = isOverdue ? "pd-sp-task-row overdue" : "pd-sp-task-row";
                                 string badgeText = isOverdue ? T("Overdue", "Lewat") : T("Pending", "Belum selesai");
@@ -760,20 +757,41 @@ namespace ScienceBuddy.Parent
                         + T("All tasks completed", "Semua tugasan selesai")
                         + "</div>";
                 }
-                else if (hasOverdue)
+                else if (planEnd != DateTime.MaxValue)
                 {
-                    statusHtml = "<div style='display:flex;align-items:center;gap:6px;padding:8px 12px;margin-bottom:10px;"
-                        + "background:#FEF2F2;border-radius:10px;font-size:0.82rem;font-weight:600;color:#991B1B;'>"
-                        + "<i class='bi bi-exclamation-triangle-fill'></i> "
-                        + T("Some tasks are overdue", "Beberapa tugasan lewat")
-                        + "</div>";
+                    int daysLeft = (planEnd.Date - DateTime.Today).Days;
+                    string dueDateStr = planEnd.ToString("dd MMM yyyy");
+                    if (daysLeft < 0)
+                    {
+                        statusHtml = "<div style='display:flex;align-items:center;gap:6px;padding:8px 12px;margin-bottom:10px;"
+                            + "background:#FEF2F2;border-radius:10px;font-size:0.82rem;font-weight:600;color:#991B1B;'>"
+                            + "<i class='bi bi-calendar-x'></i> "
+                            + string.Format(T("Due date was {0} (overdue)", "Tarikh akhir {0} (lewat)"), dueDateStr)
+                            + "</div>";
+                    }
+                    else if (daysLeft == 0)
+                    {
+                        statusHtml = "<div style='display:flex;align-items:center;gap:6px;padding:8px 12px;margin-bottom:10px;"
+                            + "background:#FEF3C7;border-radius:10px;font-size:0.82rem;font-weight:600;color:#92400E;'>"
+                            + "<i class='bi bi-calendar-event'></i> "
+                            + T("Due today!", "Tamat hari ini!")
+                            + "</div>";
+                    }
+                    else
+                    {
+                        statusHtml = "<div style='display:flex;align-items:center;gap:6px;padding:8px 12px;margin-bottom:10px;"
+                            + "background:#EEF2FF;border-radius:10px;font-size:0.82rem;font-weight:600;color:#4338CA;'>"
+                            + "<i class='bi bi-calendar-check'></i> "
+                            + string.Format(T("Due on {0} ({1} days left)", "Tarikh akhir {0} ({1} hari lagi)"), dueDateStr, daysLeft)
+                            + "</div>";
+                    }
                 }
                 else
                 {
                     statusHtml = "<div style='display:flex;align-items:center;gap:6px;padding:8px 12px;margin-bottom:10px;"
-                        + "background:#FEF9EE;border-radius:10px;font-size:0.82rem;font-weight:600;color:#92400E;'>"
-                        + "<i class='bi bi-clock'></i> "
-                        + T("Some tasks are still pending", "Beberapa tugasan masih belum selesai")
+                        + "background:#F8FAFC;border-radius:10px;font-size:0.82rem;font-weight:600;color:#64748B;'>"
+                        + "<i class='bi bi-calendar'></i> "
+                        + T("No due date set", "Tiada tarikh akhir ditetapkan")
                         + "</div>";
                 }
 

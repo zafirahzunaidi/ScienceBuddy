@@ -878,6 +878,12 @@ namespace ScienceBuddy.Parent
                                 cmd.ExecuteNonQuery();
                             }
 
+                            // Notify child
+                            string childUid = GetChildUserId(conn, txn);
+                            if (!string.IsNullOrEmpty(childUid))
+                                CreateNotification(conn, txn, childUid, "New study task added", "Tugasan belajar baharu ditambah",
+                                    "Your parent added a new study task: " + txtTaskName.Text.Trim() + ".", "Ibu bapa anda menambah tugasan belajar baharu: " + txtTaskName.Text.Trim() + ".");
+
                             txn.Commit();
 
                             txtTaskName.Text = "";
@@ -897,7 +903,7 @@ namespace ScienceBuddy.Parent
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 ShowMessage(T("An error occurred while adding the task.", "Ralat berlaku semasa menambah tugasan."), false);
             }
@@ -922,6 +928,29 @@ namespace ScienceBuddy.Parent
                 }
             }
             return prefix + nextNum.ToString("D3");
+        }
+
+        private void CreateNotification(SqlConnection c, SqlTransaction t, string toUserId, string titleEN, string titleBM, string messageEN, string messageBM)
+        {
+            try
+            {
+                string nid = GenerateId(c, t, "Notification", "notificationId", "N");
+                using (var cmd = new SqlCommand(@"INSERT INTO dbo.Notification(notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt)
+                    VALUES(@id,@to,@te,@tb,@me,@mb,0,@now)", c, t))
+                { cmd.Parameters.AddWithValue("@id", nid); cmd.Parameters.AddWithValue("@to", toUserId); cmd.Parameters.AddWithValue("@te", titleEN); cmd.Parameters.AddWithValue("@tb", titleBM); cmd.Parameters.AddWithValue("@me", messageEN); cmd.Parameters.AddWithValue("@mb", messageBM); cmd.Parameters.AddWithValue("@now", DateTime.Now); cmd.ExecuteNonQuery(); }
+            }
+            catch { }
+        }
+
+        private string GetChildUserId(SqlConnection c, SqlTransaction t)
+        {
+            try
+            {
+                using (var cmd = new SqlCommand(@"SELECT u.userId FROM dbo.Student s INNER JOIN dbo.[User] u ON s.userId=u.userId WHERE s.studentId=@sid", c, t))
+                { cmd.Parameters.AddWithValue("@sid", _selectedChildId); var r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) return r.ToString(); }
+            }
+            catch { }
+            return null;
         }
 
         private void ShowMessage(string msg, bool success)
