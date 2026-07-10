@@ -24,6 +24,12 @@
 .mq-select:focus{border-color:var(--tc-primary);outline:none;}
 .mq-btn-search{width:90px;height:40px;background:var(--tc-primary);border:none;border-radius:10px;font-weight:700;font-size:.83rem;color:#fff;cursor:pointer;transition:background .2s;}
 .mq-btn-search:hover{background:var(--tc-hover);}
+/* Segmented Filter */
+.mq-seg-wrap{margin-bottom:1.25rem;}
+.mq-seg{display:inline-flex;border-radius:10px;border:1.5px solid var(--tc-border);background:#F9FAFB;padding:3px;gap:0;}
+.mq-seg-btn{padding:.5rem 1.1rem;border:none;border-radius:8px;background:transparent;font-size:.84rem;font-weight:600;color:var(--tc-text);cursor:pointer;transition:all .15s;white-space:nowrap;}
+.mq-seg-btn:hover{background:#F3F4F6;}
+.mq-seg-active{background:var(--tc-primary) !important;color:#fff !important;box-shadow:0 2px 6px rgba(108,99,255,.2);}
 /* Carousel (Discover only) */
 .mq-carousel-wrap{position:relative;overflow:hidden;padding:.25rem 0;}
 .mq-carousel{display:flex;gap:1rem;overflow-x:auto;scroll-behavior:smooth;padding:.5rem .25rem;-ms-overflow-style:none;scrollbar-width:none;}
@@ -34,7 +40,25 @@
 .mq-arrow-left{left:6px;}
 .mq-arrow-right{right:6px;}
 /* Discover cards keep fixed width for slider */
+.mq-carousel .mq-dcard{min-width:280px;max-width:280px;flex-shrink:0;}
 .mq-carousel .mq-card{min-width:270px;max-width:270px;flex-shrink:0;}
+/* Discover Card */
+.mq-dcard{background:var(--tc-card-bg);border-radius:16px;overflow:hidden;box-shadow:0 3px 12px rgba(0,0,0,.06);transition:transform .25s ease,box-shadow .25s ease;border:1px solid #F0F0F0;display:flex;flex-direction:column;}
+.mq-dcard:hover{transform:translateY(-5px);box-shadow:0 12px 36px rgba(108,99,255,.14);}
+.mq-dcard-img-wrap{position:relative;width:100%;height:160px;overflow:hidden;border-radius:16px 16px 0 0;}
+.mq-dcard-cover{width:100%;height:100%;background:linear-gradient(135deg,#0D9488 0%,#14B8A6 40%,#5EEAD4 100%);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='200'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%230F766E'/%3E%3Cstop offset='50%25' stop-color='%230D9488'/%3E%3Cstop offset='100%25' stop-color='%2314B8A6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23g)' width='400' height='200'/%3E%3Ccircle cx='60' cy='80' r='28' fill='none' stroke='rgba(255,255,255,.12)' stroke-width='2'/%3E%3Ccircle cx='60' cy='80' r='12' fill='none' stroke='rgba(255,255,255,.1)' stroke-width='1.5'/%3E%3Cellipse cx='60' cy='80' rx='42' ry='42' fill='none' stroke='rgba(255,255,255,.07)' stroke-width='1'/%3E%3Ccircle cx='320' cy='50' r='20' fill='none' stroke='rgba(255,255,255,.1)' stroke-width='2'/%3E%3Cpath d='M180 140 Q190 100 200 140' fill='none' stroke='rgba(255,255,255,.12)' stroke-width='2'/%3E%3Cpath d='M200 140 Q210 100 220 140' fill='none' stroke='rgba(255,255,255,.12)' stroke-width='2'/%3E%3Crect x='280' y='100' width='30' height='50' rx='4' fill='none' stroke='rgba(255,255,255,.1)' stroke-width='1.5'/%3E%3Ccircle cx='295' cy='95' r='10' fill='none' stroke='rgba(255,255,255,.1)' stroke-width='1.5'/%3E%3Cpath d='M130 40 L140 60 L120 60 Z' fill='none' stroke='rgba(255,255,255,.1)' stroke-width='1.5'/%3E%3Ctext x='340' y='160' font-size='14' fill='rgba(255,255,255,.08)' font-family='sans-serif'%3EH2O%3C/text%3E%3Ctext x='100' y='160' font-size='12' fill='rgba(255,255,255,.08)' font-family='sans-serif'%3ECO2%3C/text%3E%3C/svg%3E");background-size:cover;background-position:center;transition:transform .4s ease;}
+.mq-dcard:hover .mq-dcard-cover{transform:scale(1.06);}
+.mq-dcard-badge{position:absolute;bottom:10px;padding:4px 11px;border-radius:50px;background:rgba(255,255,255,.95);font-size:.72rem;font-weight:700;color:var(--tc-text);box-shadow:0 2px 8px rgba(0,0,0,.1);backdrop-filter:blur(4px);}
+.mq-dcard-badge-left{left:10px;}
+.mq-dcard-badge-right{right:10px;}
+.mq-dcard-body{padding:1.1rem 1.2rem;flex:1;display:flex;flex-direction:column;gap:8px;}
+.mq-dcard-title{font-size:.95rem;font-weight:800;color:var(--tc-text);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.mq-dcard-teacher{display:flex;align-items:center;gap:8px;margin-top:auto;}
+.mq-dcard-teacher-avatar{width:28px;height:28px;border-radius:50%;background:#EDE9FE;color:var(--tc-primary);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0;border:1.5px solid #E5E7EB;}
+.mq-dcard-teacher-name{font-size:.8rem;font-weight:600;color:var(--tc-muted);}
+.mq-dcard-actions{padding:.75rem 1.2rem;border-top:1px solid #F3F4F6;}
+.mq-dcard-view{display:flex;align-items:center;justify-content:center;gap:5px;width:100%;padding:.55rem 0;border-radius:10px;background:#F0F7FF;color:var(--tc-info);font-size:.82rem;font-weight:700;text-decoration:none;border:1.5px solid #DBEAFE;transition:background .15s,border-color .15s;}
+.mq-dcard-view:hover{background:#DBEAFE;border-color:#93C5FD;text-decoration:none;color:var(--tc-info);}
 /* Card Grid (My Quizzes) */
 .mq-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;padding:.25rem 0;}
 /* Status chips */
@@ -79,6 +103,46 @@
 /* Empty */
 .mq-empty{display:flex;flex-direction:column;align-items:center;padding:3.5rem;text-align:center;}
 .mq-empty-title{font-size:1rem;font-weight:700;color:var(--tc-text);}
+/* Table */
+.mq-tbl{width:100%;border-collapse:collapse;font-size:.86rem;}
+.mq-tbl th{background:#F9FAFB;font-weight:700;color:var(--tc-text);padding:.75rem .85rem;text-align:left;border-bottom:2px solid var(--tc-border);font-size:.8rem;text-transform:uppercase;letter-spacing:.3px;}
+.mq-tbl td{padding:.75rem .85rem;border-bottom:1px solid #F3F4F6;color:var(--tc-text);vertical-align:middle;}
+.mq-tbl tr:hover td{background:#FAFAFA;}
+/* Unit/Level Cards - Grid layout */
+.mq-ulq-card{display:grid;grid-template-columns:minmax(180px,1.8fr) minmax(120px,1fr) minmax(80px,.7fr) minmax(80px,.7fr) minmax(80px,.7fr) minmax(120px,.9fr) minmax(180px,auto);align-items:center;gap:14px;padding:1.4rem 1.5rem;border-radius:14px;border:1.5px solid #F0F0F0;background:#fff;margin-bottom:.75rem;box-shadow:0 2px 8px rgba(0,0,0,.04);transition:box-shadow .2s,transform .15s;width:100%;max-width:100%;box-sizing:border-box;min-width:0;}
+.mq-ulq-card:hover{box-shadow:0 6px 20px rgba(0,0,0,.07);transform:translateY(-1px);}
+.mq-ulq-left{display:flex;align-items:center;gap:10px;min-width:0;overflow:hidden;}
+.mq-ulq-icon{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+.mq-ulq-icon-unit{background:#EFF6FF;color:#2563EB;}
+.mq-ulq-icon-level{background:#FEF3C7;color:#D97706;}
+.mq-ulq-info{min-width:0;overflow:hidden;}
+.mq-ulq-title{font-size:1.1rem;font-weight:800;color:var(--tc-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mq-ulq-labels{display:none;}
+.mq-ulq-col{text-align:center;min-width:0;}
+.mq-ulq-col-label{font-size:.82rem;font-weight:700;color:var(--tc-muted);margin-bottom:3px;line-height:1.2;}
+.mq-ulq-col-val{font-size:1.5rem;font-weight:800;color:var(--tc-text);}
+.mq-ulq-badge{display:inline-block;padding:3px 10px;border-radius:7px;font-size:.74rem;font-weight:700;text-align:center;white-space:nowrap;}
+.mq-ulq-badge-green{background:#D1FAE5;color:#047857;}
+.mq-ulq-badge-amber{background:#FEF3C7;color:#B45309;}
+.mq-ulq-badge-red{background:#FEE2E2;color:#B91C1C;}
+.mq-ulq-badge-count{font-size:1.5rem;font-weight:800;margin-top:3px;text-align:center;}
+.mq-ulq-badge-count-green{color:#047857;}
+.mq-ulq-badge-count-amber{color:#B45309;}
+.mq-ulq-badge-count-red{color:#B91C1C;}
+.mq-ulq-date{text-align:center;min-width:0;}
+.mq-ulq-date-label{font-size:.82rem;font-weight:700;color:var(--tc-muted);margin-bottom:3px;}
+.mq-ulq-date-val{font-size:.92rem;font-weight:600;color:var(--tc-text);}
+.mq-ulq-btn-col{text-align:center;min-width:0;display:flex;gap:6px;align-items:center;justify-content:flex-end;}
+.mq-ulq-btn{display:inline-flex;align-items:center;gap:4px;padding:.5rem .85rem;border-radius:9px;border:1.5px solid #DBEAFE;background:#F0F7FF;color:var(--tc-info);font-size:.82rem;font-weight:700;cursor:pointer;transition:background .15s,border-color .15s;white-space:nowrap;text-decoration:none;}
+.mq-ulq-btn:hover{background:#DBEAFE;border-color:#93C5FD;text-decoration:none;color:var(--tc-info);}
+.mq-ulq-btn-add{border-color:#C7D2FE;background:#EEF2FF;color:var(--tc-primary);}
+.mq-ulq-btn-add:hover{background:#E0E7FF;border-color:#A5B4FC;color:var(--tc-primary);}
+.mq-ul-empty{text-align:center;padding:2rem;font-size:.9rem;color:var(--tc-muted);background:#FAFAFA;border-radius:12px;border:1.5px dashed #E5E7EB;}
+.mq-unit-group{margin-bottom:1.5rem;}
+.mq-unit-group-hd{margin-bottom:.6rem;padding-bottom:.4rem;border-bottom:1.5px solid #EEF2FF;}
+.mq-unit-group-num{display:none;}
+.mq-unit-group-label{font-size:1.3rem;font-weight:800;color:#1E3A8A;}
+@media(max-width:1000px){.mq-ulq-card{grid-template-columns:1fr 1fr 1fr;gap:.6rem;padding:1rem;}.mq-ulq-left{grid-column:1/-1;}.mq-ulq-btn-col{grid-column:1/-1;text-align:left;margin-top:.4rem;}}
 /* Modal */
 .mq-modal-overlay{position:fixed;inset:0;background:rgba(17,24,39,.5);z-index:9000;display:flex;align-items:center;justify-content:center;padding:1rem;}
 .mq-modal{background:#fff;border-radius:16px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:mqFade .2s ease;}
@@ -87,6 +151,64 @@
 .mq-modal-header h3{font-size:1.05rem;font-weight:800;color:var(--tc-text);margin:0;}
 .mq-modal-close{background:none;border:none;font-size:1.4rem;color:var(--tc-muted);cursor:pointer;}.mq-modal-close:hover{color:var(--tc-text);}
 .mq-modal-body{padding:1.5rem;text-align:center;}.mq-modal-body p{font-size:.9rem;color:var(--tc-text);margin:0;}
+/* View Questions Popup */
+.vq-header{margin-bottom:1.2rem;padding:1rem 1.1rem;background:#F8FAFC;border-radius:10px;border:1px solid #E2E8F0;}
+.vq-header-titles{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:8px;}
+.vq-header-col{}
+.vq-header-lang{font-size:.7rem;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.3px;margin-bottom:3px;}
+.vq-header-title{font-size:.92rem;font-weight:700;color:#1F2937;}
+.vq-header-sub{font-size:.84rem;color:#6B7280;margin-top:2px;}
+.vq-header-meta{font-size:.78rem;color:#6B7280;padding-top:6px;border-top:1px solid #E5E7EB;}
+.vq-card{border:1.5px solid #E5E7EB;border-radius:12px;margin-bottom:.7rem;background:#fff;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.03);}
+.vq-card-hd{display:flex;align-items:center;gap:8px;padding:.8rem 1rem;cursor:pointer;user-select:none;transition:background .12s;}
+.vq-card-hd:hover{background:#F9FAFB;}
+.vq-card-num{font-size:.92rem;font-weight:800;color:#1F2937;}
+.vq-status-badge{margin-left:auto;}
+.vq-chevron{font-size:.85rem;color:#9CA3AF;transition:transform .2s;margin-left:8px;}
+.vq-expanded .vq-chevron{transform:rotate(180deg);}
+.vq-card-body{display:none;padding:1rem 1.1rem;border-top:1px solid #F3F4F6;}
+.vq-expanded .vq-card-body{display:block;}
+.vq-badge{padding:3px 9px;border-radius:6px;font-size:.7rem;font-weight:700;}
+.vq-badge-blue{background:#DBEAFE;color:#1D4ED8;}
+.vq-badge-green{background:#D1FAE5;color:#047857;}
+.vq-badge-amber{background:#FEF3C7;color:#B45309;}
+.vq-badge-red{background:#FEE2E2;color:#B91C1C;}
+.vq-format-row{margin-bottom:12px;display:flex;align-items:center;gap:6px;font-size:.84rem;}
+.vq-format-label{font-weight:700;color:#374151;}
+.vq-format-val{font-weight:600;color:#374151;}
+/* Drag & Drop */
+.vq-dd-section{margin-bottom:10px;}
+.vq-dd-label{font-size:.76rem;font-weight:700;color:#6B7280;margin-bottom:5px;}
+.vq-dd-items{display:flex;flex-wrap:wrap;gap:6px;}
+.vq-dd-item{padding:6px 12px;border-radius:8px;border:1.5px solid #E5E7EB;background:#F9FAFB;font-size:.82rem;font-weight:600;color:#374151;}
+.vq-dd-order{margin-bottom:10px;padding:.6rem .8rem;border-radius:8px;background:#F0FDF4;border:1px solid #BBF7D0;}
+.vq-dd-order-list{margin:0;padding:0 0 0 1.4rem;font-size:.82rem;font-weight:600;color:#047857;line-height:1.9;list-style-type:decimal;}
+.vq-cols{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;}
+.vq-col-hd{font-size:.82rem;font-weight:700;color:#374151;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #F3F4F6;}
+.vq-question{font-size:.88rem;font-weight:600;color:#374151;margin-bottom:10px;line-height:1.5;}
+.vq-options{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
+.vq-opt{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;border:1.5px solid #E5E7EB;background:#fff;font-size:.82rem;color:#374151;transition:background .12s;}
+.vq-opt-correct{background:#ECFDF5;border-color:#A7F3D0;color:#047857;font-weight:600;}
+.vq-opt-correct i{color:#059669;margin-left:auto;font-size:.85rem;}
+.vq-opt-label{width:22px;height:22px;border-radius:6px;background:#F3F4F6;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;color:#6B7280;flex-shrink:0;}
+.vq-opt-correct .vq-opt-label{background:#D1FAE5;color:#047857;}
+.vq-opt-text{flex:1;min-width:0;}
+.vq-expl{padding:.6rem .8rem;border-radius:8px;margin-bottom:8px;font-size:.8rem;line-height:1.5;}
+.vq-expl-title{font-size:.74rem;font-weight:700;margin-bottom:3px;display:flex;align-items:center;gap:4px;}
+.vq-expl-correct{background:#F0FDF4;border:1px solid #BBF7D0;}.vq-expl-correct .vq-expl-title{color:#047857;}
+.vq-expl-wrong{background:#FEF2F2;border:1px solid #FECACA;}.vq-expl-wrong .vq-expl-title{color:#B91C1C;}
+.vq-img-row{margin-top:8px;font-size:.8rem;color:#6B7280;display:flex;align-items:center;gap:5px;}
+.vq-img-link{color:#2563EB;font-weight:600;text-decoration:none;}.vq-img-link:hover{text-decoration:underline;}
+/* Image Preview Modal */
+.vq-img-modal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9500;display:none;align-items:center;justify-content:center;padding:2rem;}
+.vq-img-modal.active{display:flex;}
+.vq-img-modal-box{background:#fff;border-radius:14px;max-width:680px;width:100%;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.vq-img-modal-hd{display:flex;align-items:center;justify-content:space-between;padding:.8rem 1.2rem;border-bottom:1px solid #E5E7EB;}
+.vq-img-modal-hd span{font-size:.88rem;font-weight:700;color:#374151;}
+.vq-img-modal-close{background:none;border:none;font-size:1.3rem;color:#6B7280;cursor:pointer;}.vq-img-modal-close:hover{color:#374151;}
+.vq-img-modal-body{flex:1;overflow:auto;padding:1rem;text-align:center;}
+.vq-img-modal-body img{max-width:100%;max-height:65vh;border-radius:8px;}
+@media(max-width:700px){.vq-cols{grid-template-columns:1fr;}.vq-header-titles{grid-template-columns:1fr;}}
 .mq-modal-footer{display:flex;gap:.75rem;justify-content:center;padding:1rem 1.5rem;border-top:1px solid var(--tc-border);}
 .mq-btn-cancel{background:#fff;border:1.5px solid var(--tc-border);border-radius:10px;padding:.55rem 1.1rem;font-weight:600;font-size:.84rem;color:var(--tc-text);cursor:pointer;}
 .mq-btn-danger{background:var(--tc-error);border:none;border-radius:10px;padding:.55rem 1.25rem;font-weight:700;font-size:.84rem;color:#fff;cursor:pointer;}
@@ -139,16 +261,27 @@
     <asp:Panel ID="pnlCreateBtn" runat="server">
         <button type="button" class="mq-btn-create" onclick="document.getElementById('createModal').style.display='flex'"><i class="bi bi-plus-lg"></i> <%: T("Create Quiz","Cipta Kuiz") %></button>
     </asp:Panel>
+    <asp:Panel ID="pnlCreateULBtn" runat="server" Visible="false"></asp:Panel>
 </div>
 
 <%-- Tabs --%>
 <div class="mq-tabs">
-    <asp:LinkButton ID="btnTabMine" runat="server" CssClass="mq-tab active" OnClick="btnTabMine_Click" CausesValidation="false"><i class="bi bi-folder2-open"></i> <%: T("My Quizzes","Kuiz Saya") %></asp:LinkButton>
+    <asp:LinkButton ID="btnTabUnitLevel" runat="server" CssClass="mq-tab active" OnClick="btnTabUnitLevel_Click" CausesValidation="false"><i class="bi bi-journal-text"></i> <%: T("Unit / Level Quizzes","Kuiz Unit / Tahap") %></asp:LinkButton>
+    <asp:LinkButton ID="btnTabMine" runat="server" CssClass="mq-tab" OnClick="btnTabMine_Click" CausesValidation="false"><i class="bi bi-folder2-open"></i> <%: T("Practice Quizzes","Kuiz Latihan") %></asp:LinkButton>
     <asp:LinkButton ID="btnTabDiscover" runat="server" CssClass="mq-tab" OnClick="btnTabDiscover_Click" CausesValidation="false"><i class="bi bi-globe2"></i> <%: T("Discover Quizzes","Terokai Kuiz") %></asp:LinkButton>
 </div>
 
+<%-- Segmented Filter (Unit/Level tab only, client-side) --%>
+<div id="ulSegFilter" class="mq-seg-wrap" style="display:none;">
+    <div class="mq-seg">
+        <button type="button" class="mq-seg-btn mq-seg-active" onclick="filterUL('all',this)"><%: T("All Quizzes","Semua Kuiz") %></button>
+        <button type="button" class="mq-seg-btn" onclick="filterUL('unit',this)"><%: T("Unit Quizzes","Kuiz Unit") %></button>
+        <button type="button" class="mq-seg-btn" onclick="filterUL('level',this)"><%: T("Level Quizzes","Kuiz Tahap") %></button>
+    </div>
+</div>
+
 <%-- Search & Filter --%>
-<div class="mq-filter-bar">
+<div class="mq-filter-bar" id="mqFilterBar">
     <div class="mq-search-wrap"><i class="bi bi-search"></i>
         <asp:TextBox ID="txtSearch" runat="server" CssClass="mq-search-input" /></div>
     <asp:DropDownList ID="ddlDifficulty" runat="server" CssClass="mq-select" Visible="false" />
@@ -207,6 +340,100 @@
     </div>
 </asp:Panel>
 
+<%-- ═══ UNIT / LEVEL QUESTIONS ═══ --%>
+<asp:Panel ID="pnlUnitLevel" runat="server" Visible="false">
+
+<%-- Unit Quiz Section --%>
+<div id="ulSectionUnit" style="margin-bottom:2.5rem;">
+    <h3 style="font-size:1.05rem;font-weight:800;color:var(--tc-text);margin:0 0 1rem;display:flex;align-items:center;gap:8px;"><i class="bi bi-layers" style="color:#2563EB;"></i> <%: T("Unit Quiz Questions","Soalan Kuiz Unit") %></h3>
+    <asp:Literal ID="litUnitGrouped" runat="server" />
+</div>
+
+<%-- Level Quiz Section --%>
+<div id="ulSectionLevel">
+    <h3 style="font-size:1.05rem;font-weight:800;color:var(--tc-text);margin:0 0 1rem;display:flex;align-items:center;gap:8px;"><i class="bi bi-trophy" style="color:#D97706;"></i> <%: T("Level Quiz Questions","Soalan Kuiz Tahap") %></h3>
+    <asp:Repeater ID="rptLevelQs" runat="server">
+        <ItemTemplate>
+            <div class="mq-ulq-card">
+                <div class="mq-ulq-left">
+                    <div class="mq-ulq-icon mq-ulq-icon-level"><i class="bi bi-trophy-fill"></i></div>
+                    <div class="mq-ulq-info">
+                        <div class="mq-ulq-title"><%# HttpUtility.HtmlEncode(Eval("levelName")) %></div>
+                    </div>
+                </div>
+                <div class="mq-ulq-col">
+                    <div class="mq-ulq-col-label"><%: T("Total Submitted Questions","Jumlah Soalan Dihantar") %></div>
+                    <div class="mq-ulq-col-val"><%# Eval("totalCount") %></div>
+                </div>
+                <div class="mq-ulq-col"><span class="mq-ulq-badge mq-ulq-badge-green"><%: T("Approved","Diluluskan") %></span><div class="mq-ulq-badge-count mq-ulq-badge-count-green"><%# Eval("approvedCount") %></div></div>
+                <div class="mq-ulq-col"><span class="mq-ulq-badge mq-ulq-badge-amber"><%: T("Pending","Menunggu") %></span><div class="mq-ulq-badge-count mq-ulq-badge-count-amber"><%# Eval("pendingCount") %></div></div>
+                <div class="mq-ulq-col"><span class="mq-ulq-badge mq-ulq-badge-red"><%: T("Rejected","Ditolak") %></span><div class="mq-ulq-badge-count mq-ulq-badge-count-red"><%# Eval("rejectedCount") %></div></div>
+                <div class="mq-ulq-date">
+                    <div class="mq-ulq-date-label"><%: T("Last Submitted","Terakhir Dihantar") %></div>
+                    <div class="mq-ulq-date-val"><%# Eval("lastDate") %></div>
+                </div>
+                <div class="mq-ulq-btn-col">
+                    <a href="#" class="mq-ulq-btn mq-ulq-btn-add" onclick='openSubtopicModal("<%# Eval("quizId") %>");return false;'><i class="bi bi-plus-lg"></i> <%: T("Add","Tambah") %></a>
+                    <button type="button" class="mq-ulq-btn" onclick='openULModal("<%# Eval("quizId") %>")'><i class="bi bi-eye"></i> <%: T("View","Lihat") %></button>
+                </div>
+            </div>
+        </ItemTemplate>
+    </asp:Repeater>
+</div>
+
+</asp:Panel>
+
+<asp:Panel ID="pnlUnitLevelEmpty" runat="server" Visible="false"></asp:Panel>
+<asp:Panel ID="pnlUnitCards" runat="server" Visible="false"></asp:Panel>
+<asp:Panel ID="pnlUnitEmpty" runat="server" Visible="false"></asp:Panel>
+<asp:Panel ID="pnlLevelCards" runat="server" Visible="false"></asp:Panel>
+<asp:Panel ID="pnlLevelEmpty" runat="server" Visible="false"></asp:Panel>
+
+<%-- Unit/Level Question Detail Modal --%>
+<div id="ulModal" class="mq-modal-overlay" style="display:none;" onclick="if(event.target===this)closeULModal()">
+    <div class="mq-modal" style="max-width:880px;max-height:88vh;display:flex;flex-direction:column;">
+        <div class="mq-modal-header" style="background:linear-gradient(135deg,#EFF6FF,#DBEAFE);border-bottom:1px solid #BFDBFE;">
+            <h3 style="color:#1E40AF;"><i class="bi bi-journal-text" style="color:#2563EB;"></i> <%: T("Submitted Questions","Soalan Dihantar") %></h3>
+            <button type="button" class="mq-modal-close" onclick="closeULModal()">×</button>
+        </div>
+        <div class="mq-modal-body" id="ulModalBody" style="text-align:left;overflow-y:auto;padding:1.25rem 1.5rem;">
+            <div class="mq-empty"><%: T("Loading...","Memuatkan...") %></div>
+        </div>
+    </div>
+</div>
+
+<%-- Image Preview Modal --%>
+<div id="vqImgModal" class="vq-img-modal" onclick="if(event.target===this)closeImgPreview()">
+    <div class="vq-img-modal-box">
+        <div class="vq-img-modal-hd"><span id="vqImgName"></span><button type="button" class="vq-img-modal-close" onclick="closeImgPreview()">×</button></div>
+        <div class="vq-img-modal-body"><img id="vqImgPreview" src="" alt="Preview" /></div>
+    </div>
+</div>
+
+<%-- Subtopic Selection Modal --%>
+<div id="subtopicModal" class="mq-modal-overlay" style="display:none;" onclick="if(event.target===this)closeSubtopicModal()">
+    <div class="mq-modal" style="max-width:460px;">
+        <div class="mq-modal-header">
+            <div>
+                <h3><%: T("Select Subtopic","Pilih Subtopik") %></h3>
+                <p style="font-size:.78rem;color:var(--tc-muted);margin:3px 0 0;"><%: T("Choose the subtopic for the questions you want to add.","Pilih subtopik untuk soalan yang ingin ditambah.") %></p>
+            </div>
+            <button type="button" class="mq-modal-close" onclick="closeSubtopicModal()">×</button>
+        </div>
+        <div class="mq-modal-body" style="text-align:left;padding:1.25rem 1.5rem;">
+            <div id="stScopeInfo" style="font-size:.84rem;font-weight:600;color:var(--tc-text);margin-bottom:1rem;padding:.6rem .85rem;background:#F9FAFB;border-radius:8px;border:1px solid #E5E7EB;"></div>
+            <label style="font-size:.8rem;font-weight:700;color:var(--tc-text);display:block;margin-bottom:5px;"><%: T("Subtopic","Subtopik") %> *</label>
+            <select id="stDropdown" class="mq-select" style="width:100%;height:42px;">
+                <option value=""><%: T("— Select Subtopic —","— Pilih Subtopik —") %></option>
+            </select>
+        </div>
+        <div class="mq-modal-footer">
+            <button type="button" class="mq-btn-cancel" onclick="closeSubtopicModal()"><%: T("Cancel","Batal") %></button>
+            <button type="button" id="stContinueBtn" class="mq-btn-create" style="box-shadow:none;opacity:.5;pointer-events:none;" onclick="goToCreatePage()"><%: T("Continue","Teruskan") %></button>
+        </div>
+    </div>
+</div>
+
 <%-- ═══ DISCOVER QUIZZES ═══ --%>
 <asp:Panel ID="pnlDiscover" runat="server" Visible="false">
     <div class="mq-carousel-wrap">
@@ -214,19 +441,21 @@
         <div class="mq-carousel" id="discoverCarousel">
             <asp:Repeater ID="rptDiscover" runat="server">
                 <ItemTemplate>
-                    <div class="mq-card accent-discover">
-                        <div class="mq-card-header"><span style="font-size:.72rem;font-weight:600;color:var(--tc-muted);"><%: T("By","Oleh") %> <%# HttpUtility.HtmlEncode(Eval("teacherName")) %></span></div>
-                        <div class="mq-card-body">
-                            <div class="mq-card-icon"><i class="bi bi-patch-question-fill"></i></div>
-                            <div class="mq-card-title"><%# HttpUtility.HtmlEncode(Eval("quizTitle")) %></div>
-                            <div class="mq-card-category"><%# HttpUtility.HtmlEncode(Eval("quizType")) %> <%: T("Quiz","Kuiz") %></div>
-                            <div class="mq-card-meta">
-                                <span><i class="bi bi-translate"></i> <%# HttpUtility.HtmlEncode(Eval("language")) %></span>
-                                <span><i class="bi bi-list-check"></i> <%# Eval("questionCount") %> <%: T("Q","S") %></span>
+                    <div class="mq-dcard">
+                        <div class="mq-dcard-img-wrap">
+                            <div class="mq-dcard-cover"></div>
+                            <span class="mq-dcard-badge mq-dcard-badge-left"><i class="bi bi-list-check"></i> <%# Eval("questionCount") %> Qs</span>
+                            <span class="mq-dcard-badge mq-dcard-badge-right"><%# Eval("language") %></span>
+                        </div>
+                        <div class="mq-dcard-body">
+                            <div class="mq-dcard-title"><%# HttpUtility.HtmlEncode(Eval("quizTitle")) %></div>
+                            <div class="mq-dcard-teacher">
+                                <div class="mq-dcard-teacher-avatar"><%# GetTeacherInitial(Eval("teacherName").ToString()) %></div>
+                                <span class="mq-dcard-teacher-name"><%# HttpUtility.HtmlEncode(Eval("teacherName")) %></span>
                             </div>
                         </div>
-                        <div class="mq-card-actions">
-                            <a href="#" class="mq-act mq-act-view"><i class="bi bi-eye"></i> <%: T("View","Lihat") %></a>
+                        <div class="mq-dcard-actions">
+                            <a href="#" class="mq-dcard-view"><i class="bi bi-eye"></i> <%: T("View Quiz","Lihat Kuiz") %></a>
                         </div>
                     </div>
                 </ItemTemplate>
@@ -323,8 +552,71 @@ function scrollCarousel(dir){var c=document.getElementById('quizCarousel');if(c)
 function scrollDiscover(dir){var c=document.getElementById('discoverCarousel');if(c)c.scrollBy({left:dir*320,behavior:'smooth'});}
 function openDeleteModal(id){document.getElementById('<%=hidDeleteId.ClientID%>').value=id;document.getElementById('deleteModal').style.display='flex';}
 function closeDeleteModal(){document.getElementById('deleteModal').style.display='none';}
+function openULModal(quizId){
+    var modal=document.getElementById('ulModal');var body=document.getElementById('ulModalBody');
+    body.innerHTML='<div class="mq-empty">Loading...</div>';modal.style.display='flex';
+    var xhr=new XMLHttpRequest();
+    xhr.open('GET','manageQuiz.aspx?handler=ulquestions&quizId='+encodeURIComponent(quizId),true);
+    xhr.onreadystatechange=function(){if(xhr.readyState===4){body.innerHTML=xhr.status===200?xhr.responseText:'<div class="mq-empty">Error</div>';}};
+    xhr.send();
+}
+function closeULModal(){document.getElementById('ulModal').style.display='none';}
+function toggleVQ(el){var card=el.parentElement;card.classList.toggle('vq-expanded');}
+function openImgPreview(url){var m=document.getElementById('vqImgModal');document.getElementById('vqImgPreview').src=url;document.getElementById('vqImgName').textContent=url.split('/').pop();m.classList.add('active');}
+function closeImgPreview(){document.getElementById('vqImgModal').classList.remove('active');}
+var _stQuizId='';
+function openSubtopicModal(quizId){
+    _stQuizId=quizId;
+    var modal=document.getElementById('subtopicModal');
+    var dd=document.getElementById('stDropdown');
+    var info=document.getElementById('stScopeInfo');
+    var btn=document.getElementById('stContinueBtn');
+    dd.innerHTML='<option value="">Loading...</option>';
+    info.textContent='Loading...';
+    btn.style.opacity='.5';btn.style.pointerEvents='none';
+    modal.style.display='flex';
+    var xhr=new XMLHttpRequest();
+    xhr.open('GET','manageQuiz.aspx?handler=subtopics&quizId='+encodeURIComponent(quizId),true);
+    xhr.onreadystatechange=function(){
+        if(xhr.readyState===4&&xhr.status===200){
+            try{
+                var data=JSON.parse(xhr.responseText);
+                info.textContent=data.quizType+' — '+data.scopeName;
+                dd.innerHTML='<option value="">— <%: T("Select Subtopic","Pilih Subtopik") %> —</option>';
+                for(var i=0;i<data.subtopics.length;i++){
+                    var o=document.createElement('option');o.value=data.subtopics[i].id;o.textContent=data.subtopics[i].name;dd.appendChild(o);
+                }
+            }catch(e){info.textContent='Error';dd.innerHTML='<option value="">Error</option>';}
+        }
+    };
+    xhr.send();
+    dd.onchange=function(){
+        if(this.value){btn.style.opacity='1';btn.style.pointerEvents='auto';}
+        else{btn.style.opacity='.5';btn.style.pointerEvents='none';}
+    };
+}
+function closeSubtopicModal(){document.getElementById('subtopicModal').style.display='none';_stQuizId='';}
+function goToCreatePage(){
+    var st=document.getElementById('stDropdown').value;
+    if(!st||!_stQuizId)return;
+    window.location.href='createUnitLevelQuiz.aspx?quizId='+encodeURIComponent(_stQuizId)+'&subtopicId='+encodeURIComponent(st);
+}
+function filterUL(mode,btn){
+    var u=document.getElementById('ulSectionUnit'),l=document.getElementById('ulSectionLevel');
+    if(u)u.style.display=(mode==='level'?'none':'');
+    if(l)l.style.display=(mode==='unit'?'none':'');
+    var btns=btn.parentElement.querySelectorAll('.mq-seg-btn');
+    for(var i=0;i<btns.length;i++)btns[i].classList.remove('mq-seg-active');
+    btn.classList.add('mq-seg-active');
+}
 function showToast(msg){var c=document.getElementById('mqToast'),t=document.createElement('div');t.className='mq-toast';t.innerHTML='<i class="bi bi-check-circle-fill"></i> '+msg;c.appendChild(t);setTimeout(function(){t.classList.add('mq-toast-out');},3e3);setTimeout(function(){t.remove();},3500);}
 window.addEventListener('load',function(){var h=document.getElementById('<%=hidToast.ClientID%>');if(h&&h.value){showToast(h.value);h.value='';}
-var cm=document.getElementById('<%=hidShowCreateModal.ClientID%>');if(cm&&cm.value==='1'){document.getElementById('createModal').style.display='flex';cm.value='';}});
+var cm=document.getElementById('<%=hidShowCreateModal.ClientID%>');if(cm&&cm.value==='1'){document.getElementById('createModal').style.display='flex';cm.value='';}
+// Show/hide segmented filter and search bar based on active tab
+var activeTab=document.getElementById('<%=hidActiveTab.ClientID%>');
+var seg=document.getElementById('ulSegFilter');var fb=document.getElementById('mqFilterBar');
+if(activeTab&&activeTab.value==='unitlevel'){if(seg)seg.style.display='';if(fb)fb.style.display='none';}
+else{if(seg)seg.style.display='none';if(fb)fb.style.display='';}
+});
 </script>
 </asp:Content>

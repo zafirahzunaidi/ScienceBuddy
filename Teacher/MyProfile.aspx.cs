@@ -9,6 +9,10 @@ namespace ScienceBuddy.Teacher
 {
     public partial class MyProfile : Page
     {
+        protected global::System.Web.UI.WebControls.Literal litPermissions;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl certIconDiv;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl certIconI;
+
         protected string CurrentLanguage
         { get { string l = Session["preferredLanguage"] as string; return string.IsNullOrEmpty(l) ? "EN" : l; } }
         protected string T(string en, string bm) { return CurrentLanguage == "BM" ? bm : en; }
@@ -59,6 +63,9 @@ namespace ScienceBuddy.Teacher
                         else if (isRejected) pnlVerRejected.Visible = true;
                         else pnlVerUnknown.Visible = true;
 
+                        // Access Permissions
+                        RenderPermissions(IsCertified);
+
                         // Hero
                         string initials = "T";
                         var parts = name.Trim().Split(' ');
@@ -90,6 +97,18 @@ namespace ScienceBuddy.Teacher
                             pnlCertExists.Visible = true;
                             litCertName.Text = HttpUtility.HtmlEncode(Path.GetFileName(cert));
                             lnkCert.HRef = ResolveUrl("~/") + cert;
+
+                            // Set icon based on file type
+                            string ext = Path.GetExtension(cert).ToLowerInvariant();
+                            string iconClass = "bi bi-file-earmark-fill";
+                            string iconCssClass = "mp-cert-icon other";
+                            if (ext == ".pdf") { iconClass = "bi bi-file-earmark-pdf-fill"; iconCssClass = "mp-cert-icon pdf"; }
+                            else if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".gif" || ext == ".webp") { iconClass = "bi bi-file-earmark-image-fill"; iconCssClass = "mp-cert-icon img"; }
+                            else if (ext == ".doc" || ext == ".docx") { iconClass = "bi bi-file-earmark-word-fill"; iconCssClass = "mp-cert-icon doc"; }
+                            else if (ext == ".ppt" || ext == ".pptx") { iconClass = "bi bi-file-earmark-ppt-fill"; iconCssClass = "mp-cert-icon ppt"; }
+                            certIconDiv.Attributes["class"] = iconCssClass;
+                            certIconI.Attributes["class"] = iconClass;
+
                             // Approved date
                             var approvedDateVal = r["approvedDate"];
                             if (approvedDateVal != null && approvedDateVal != DBNull.Value)
@@ -161,5 +180,46 @@ namespace ScienceBuddy.Teacher
 
         protected void btnCancel_Click(object sender, EventArgs e)
         { Response.Redirect("~/Teacher/Dashboard.aspx", false); Context.ApplicationInstance.CompleteRequest(); }
+
+        private void RenderPermissions(bool isApproved)
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.Append("<ul class=\"mp-perm-list\">");
+
+            if (isApproved)
+            {
+                AppendPerm(sb, true, T("Upload Learning Materials", "Muat Naik Bahan Pembelajaran"));
+                AppendPerm(sb, true, T("Create Quizzes", "Cipta Kuiz"));
+                AppendPerm(sb, true, T("View Student Progress", "Lihat Prestasi Pelajar"));
+                AppendPerm(sb, true, T("Conduct Live Sessions", "Jalankan Sesi Langsung"));
+                AppendPerm(sb, true, T("Forum", "Forum"));
+                AppendPerm(sb, true, T("Private Messages", "Mesej Peribadi"));
+                AppendPerm(sb, true, T("Discover Shared Materials", "Temui Bahan Dikongsi"));
+            }
+            else
+            {
+                AppendPerm(sb, false, T("Upload Learning Materials", "Muat Naik Bahan Pembelajaran"));
+                AppendPerm(sb, false, T("Create Quizzes", "Cipta Kuiz"));
+                AppendPerm(sb, false, T("View Student Progress", "Lihat Prestasi Pelajar"));
+                AppendPerm(sb, false, T("Conduct Live Sessions", "Jalankan Sesi Langsung"));
+                AppendPerm(sb, true, T("Forum", "Forum"));
+                AppendPerm(sb, true, T("Private Messages", "Mesej Peribadi"));
+                AppendPerm(sb, true, T("Discover Materials", "Temui Bahan"));
+            }
+
+            sb.Append("</ul>");
+            litPermissions.Text = sb.ToString();
+        }
+
+        private void AppendPerm(System.Text.StringBuilder sb, bool allowed, string name)
+        {
+            string liClass = allowed ? "enabled" : "restricted";
+            string icon = allowed ? "bi bi-check-lg" : "bi bi-lock-fill";
+            string statusLabel = allowed ? T("Allowed", "Dibenarkan") : T("Restricted", "Terhad");
+            string statusCss = allowed ? "mp-perm-status allowed" : "mp-perm-status restricted";
+            sb.AppendFormat(
+                "<li class=\"{0}\"><span class=\"mp-perm-ico\"><i class=\"{1}\"></i></span><span class=\"mp-perm-name\">{2}</span><span class=\"{3}\">{4}</span></li>",
+                liClass, icon, HttpUtility.HtmlEncode(name), statusCss, statusLabel);
+        }
     }
 }
