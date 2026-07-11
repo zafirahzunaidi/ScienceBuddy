@@ -90,25 +90,38 @@ namespace ScienceBuddy.Parent
             pnlRewardMarkers.Controls.Clear();
             if (rewards.Count == 0) return;
             StringBuilder sb = new StringBuilder();
-            // Find next reward
-            string nextRewardId = "";
-            foreach (var rw in rewards) { if (!rw.IsUnlocked && progressPct < rw.RequiredProgress) { nextRewardId = rw.Id; break; } }
+
+            // Determine if ALL rewards are unlocked
+            bool allUnlocked = rewards.Count > 0 && rewards.TrueForAll(r => r.IsUnlocked);
 
             foreach (var rw in rewards)
             {
                 string imgUrl = !string.IsNullOrEmpty(rw.ImageFile) ? ResolveUrl("~/Images/Rewards/" + rw.ImageFile) : "";
-                string unlockedClass = rw.IsUnlocked ? "pt-reward-marker-unlocked" : "pt-reward-marker-locked";
-                string nextClass = rw.Id == nextRewardId ? " pt-reward-marker-next" : "";
                 string leftPct = Math.Max(2, Math.Min(98, rw.RequiredProgress)).ToString();
 
-                sb.AppendFormat(@"<div class=""pt-reward-marker {0}{1}"" style=""left:{2}%;"" title=""{3}""
-                    onclick=""document.getElementById('{4}').value='{5}';document.getElementById('{6}').click();"">",
-                    unlockedClass, nextClass, leftPct, Server.HtmlEncode(rw.Name), hidRewardClick.ClientID, rw.Id, btnRewardClick.ClientID);
+                // Determine bubble state class
+                string stateClass;
+                if (allUnlocked)
+                    stateClass = "pt-reward-state-complete";
+                else if (rw.IsUnlocked || progressPct >= rw.RequiredProgress)
+                    stateClass = "pt-reward-state-unlocked";
+                else if (rw.RequiredProgress - progressPct <= 10 && rw.RequiredProgress - progressPct > 0)
+                    stateClass = "pt-reward-state-almost";
+                else
+                    stateClass = "pt-reward-state-locked";
 
+                sb.AppendFormat(@"<div class=""pt-reward-marker {0}"" style=""left:{1}%;"" title=""{2}""
+                    onclick=""document.getElementById('{3}').value='{4}';document.getElementById('{5}').click();"">",
+                    stateClass, leftPct, Server.HtmlEncode(rw.Name), hidRewardClick.ClientID, rw.Id, btnRewardClick.ClientID);
+
+                sb.Append("<div class='pt-reward-bubble-inner'>");
                 if (!string.IsNullOrEmpty(imgUrl))
                     sb.AppendFormat("<img src=\"{0}\" alt=\"{1}\" />", imgUrl, Server.HtmlEncode(rw.Name));
                 else
                     sb.Append("<i class=\"bi bi-gift-fill\"></i>");
+                sb.Append("</div>");
+                sb.AppendFormat("<div class='pt-reward-bubble-pct'>{0}%</div>", rw.RequiredProgress);
+                sb.Append("<div class='pt-reward-bubble-tail'></div>");
                 sb.Append("</div>");
             }
             pnlRewardMarkers.Controls.Add(new LiteralControl(sb.ToString()));

@@ -646,27 +646,39 @@ namespace ScienceBuddy.Parent
             catch { }
 
             // Determine progress level
-            string level; // slow, good, amazing
-            if (activitiesThisWeek < 2 || daysSinceLastActivity >= 5 || overdueTasks > 0)
-                level = "slow";
-            else if (activeLearningDaysMonth >= 8 || activitiesThisMonth >= 8 || streak >= 3)
+            string level; // none, slow, good, amazing
+            if (daysSinceLastActivity > 14 || daysSinceLastActivity == 999)
+                level = "none";
+            else if (activitiesThisWeek >= 2 && activitiesThisMonth >= 6 && daysSinceLastActivity <= 3)
                 level = "amazing";
-            else
+            else if (activitiesThisWeek >= 1 && activitiesThisMonth >= 3 && daysSinceLastActivity <= 7)
                 level = "good";
+            else
+                level = "slow";
 
             // Set fox image
-            string imgPath = level == "slow" ? "../Images/Parent/low-progress.png" :
+            string imgPath = level == "slow" || level == "none" ? "../Images/Parent/low-progress.png" :
                              level == "amazing" ? "../Images/Parent/amazing-progress.png" :
                              "../Images/Parent/good-progress.png";
             imgFox.ImageUrl = imgPath;
-            imgFox.AlternateText = level == "slow" ? "😴 🦊" : level == "amazing" ? "🎉 🦊" : "😊 🦊";
+            imgFox.AlternateText = level == "slow" || level == "none" ? "😴 🦊" : level == "amazing" ? "🎉 🦊" : "😊 🦊";
 
             // Set message
-            if (level == "slow")
+            if (level == "none")
+            {
+                litCoachMessage.Text = string.Format(
+                    T("{0} has not been active for a while. A gentle reminder might help restart their learning!",
+                      "{0} tidak aktif sejak sekian lama. Peringatan lembut mungkin membantu memulakan semula pembelajaran!"), _selectedChildName);
+                pnlCoachTip.Visible = true;
+                litCoachTip.Text = T("Try setting a small daily goal or exploring a new topic together.", "Cuba tetapkan matlamat harian kecil atau terokai topik baharu bersama.");
+                pnlAddStudyPlanBtn.Visible = true;
+            }
+            else if (level == "slow")
             {
                 string recommendation = GetRecommendation();
                 litCoachMessage.Text = string.Format(
-                    T("{0} has low activity this month.", "{0} mempunyai aktiviti rendah bulan ini."), _selectedChildName);
+                    T("{0} needs a little encouragement. Activity has been low this month.",
+                      "{0} memerlukan sedikit galakan. Aktiviti masih rendah bulan ini."), _selectedChildName);
                 pnlCoachTip.Visible = true;
                 litCoachTip.Text = recommendation;
                 pnlAddStudyPlanBtn.Visible = true;
@@ -674,8 +686,8 @@ namespace ScienceBuddy.Parent
             else if (level == "amazing")
             {
                 litCoachMessage.Text = string.Format(
-                    T("Great job! {0} has completed {1} learning activities this month. Keep the streak going!",
-                      "Tahniah! {0} telah menyelesaikan {1} aktiviti pembelajaran bulan ini. Teruskan momentum!"),
+                    T("Amazing! {0} has completed {1} learning activities this month. Keep the streak going!",
+                      "Luar biasa! {0} telah menyelesaikan {1} aktiviti pembelajaran bulan ini. Teruskan momentum!"),
                     _selectedChildName, activitiesThisMonth);
                 pnlCoachTip.Visible = false;
                 pnlAddStudyPlanBtn.Visible = false;
@@ -683,9 +695,9 @@ namespace ScienceBuddy.Parent
             else
             {
                 litCoachMessage.Text = string.Format(
-                    T("Good progress! {0} is building a steady learning habit. Keep supporting the routine.",
-                      "Kemajuan yang baik! {0} sedang membina tabiat pembelajaran yang stabil. Teruskan sokongan."),
-                    _selectedChildName);
+                    T("Good progress! {0} is building a steady learning habit with {1} activities this month.",
+                      "Kemajuan baik! {0} sedang membina tabiat pembelajaran yang stabil dengan {1} aktiviti bulan ini."),
+                    _selectedChildName, activitiesThisMonth);
                 pnlCoachTip.Visible = false;
                 pnlAddStudyPlanBtn.Visible = false;
             }

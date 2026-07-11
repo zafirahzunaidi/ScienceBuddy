@@ -1,8 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
+using System.Text;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 
 namespace ScienceBuddy.Parent
 {
@@ -10,17 +11,8 @@ namespace ScienceBuddy.Parent
     {
         private string ConnStr => ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
         protected string CurrentLanguage = "EN";
-        protected string T(string en, string bm) { return CurrentLanguage == "BM" ? bm : en; }
-
-        private string _userId = "";
-        private string _parentId = "";
-        private string _studentId = "";
-
-        private string ActiveFilter
-        {
-            get { return ViewState["Filter"] as string ?? "All"; }
-            set { ViewState["Filter"] = value; }
-        }
+        protected string T(string en, string bm) => CurrentLanguage == "BM" ? bm : en;
+        private string _userId = "", _parentId = "", _studentId = "";
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -29,50 +21,14 @@ namespace ScienceBuddy.Parent
 
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
             _userId = Session["userId"].ToString();
-            LoadLanguage();
-            LoadParentId();
-            ResolveChild();
+            LoadLanguage(); LoadParentId(); ResolveChild(); LoadUnreadBadge();
 
             if (!IsPostBack)
             {
-                SetLabels();
                 PopulateSidebarChild();
-                if (!string.IsNullOrEmpty(_studentId))
-                { pnlContent.Visible = true; pnlNoChild.Visible = false; LoadPage(); }
-                else
-                { pnlContent.Visible = false; pnlNoChild.Visible = true; }
+                LoadView();
             }
-            else
-            {
-                SetLabels();
-            }
-        }
-
-        private void PopulateSidebarChild()
-        {
-            ddlSidebarChild.Items.Clear();
-            if (string.IsNullOrEmpty(_parentId)) return;
-            try
-            {
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand("SELECT sp.studentId, s.name, s.nickname FROM dbo.[StudentParent] sp INNER JOIN dbo.[Student] s ON s.studentId=sp.studentId WHERE sp.parentId=@p", conn))
-                {
-                    cmd.Parameters.AddWithValue("@p", _parentId); conn.Open();
-                    using (var r = cmd.ExecuteReader())
-                    {
-                        while (r.Read())
-                        {
-                            string sid = r["studentId"]?.ToString() ?? "";
-                            string nm = r["nickname"]?.ToString() ?? "";
-                            string n = r["name"]?.ToString() ?? "";
-                            ddlSidebarChild.Items.Add(new System.Web.UI.WebControls.ListItem(!string.IsNullOrWhiteSpace(nm) ? nm : n, sid));
-                        }
-                    }
-                }
-                if (!string.IsNullOrEmpty(_studentId) && ddlSidebarChild.Items.FindByValue(_studentId) != null)
-                    ddlSidebarChild.SelectedValue = _studentId;
-            }
-            catch (SqlException) { }
+            else { LoadView(); }
         }
 
         protected void SidebarChildChanged(object sender, EventArgs e)
@@ -81,653 +37,340 @@ namespace ScienceBuddy.Parent
             if (!string.IsNullOrEmpty(sel) && IsLinked(sel))
             {
                 Session["selectedChildId"] = sel;
-                Response.Redirect(Request.RawUrl, false);
-                Context.ApplicationInstance.CompleteRequest();
+                _studentId = sel;
             }
+            LoadView();
         }
 
-        private void LoadLanguage()
+        private void LoadView()
         {
-            string lang = Session["preferredLanguage"] as string;
-            if (!string.IsNullOrEmpty(lang)) { CurrentLanguage = lang; return; }
-            try
-            {
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand("SELECT preferredLanguage FROM dbo.[User] WHERE userId=@u", conn))
-                { cmd.Parameters.AddWithValue("@u", _userId); conn.Open(); object r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) { CurrentLanguage = r.ToString(); Session["preferredLanguage"] = CurrentLanguage; } }
-            }
-            catch (SqlException) { }
-        }
+            pnlLevels.Visible = false; pnlLevelDetail.Visible = false; pnlUnitDetail.Visible = false; pnlNoChild.Visible = false;
+            if (string.IsNullOrEmpty(_studentId)) { pnlNoChild.Visible = true; return; }
 
-        private void LoadParentId()
-        {
-            try
-            {
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand("SELECT parentId FROM dbo.[Parent] WHERE userId=@u", conn))
-                { cmd.Parameters.AddWithValue("@u", _userId); conn.Open(); object r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) _parentId = r.ToString(); }
-            }
-            catch (SqlException) { }
-        }
+            string qsLevel = Request.QueryString["levelId"];
+            string qsUnit = Request.QueryString["unitId"];
 
-        private void ResolveChild()
-        {
-            string saved = Session["selectedChildId"] as string;
-            if (!string.IsNullOrEmpty(saved) && IsLinked(saved)) { _studentId = saved; return; }
-            if (string.IsNullOrEmpty(_parentId)) return;
-            try
-            {
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand("SELECT TOP 1 studentId FROM dbo.[StudentParent] WHERE parentId=@p", conn))
-                { cmd.Parameters.AddWithValue("@p", _parentId); conn.Open(); object r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) { _studentId = r.ToString(); Session["selectedChildId"] = _studentId; } }
-            }
-            catch (SqlException) { }
-        }
-
-        private bool IsLinked(string sid)
-        {
-            if (string.IsNullOrEmpty(_parentId) || string.IsNullOrEmpty(sid)) return false;
-            try
-            {
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.[StudentParent] WHERE parentId=@p AND studentId=@s", conn))
-                { cmd.Parameters.AddWithValue("@p", _parentId); cmd.Parameters.AddWithValue("@s", sid); conn.Open(); return Convert.ToInt32(cmd.ExecuteScalar()) > 0; }
-            }
-            catch (SqlException) { return false; }
-        }
-
-        private void SetLabels()
-        {
-            litNoChild.Text = T("No linked child found. Please link a child account first.",
-                                "Tiada anak dipautkan. Sila paut akaun anak terlebih dahulu.");
-            litHeroTitle.Text = T("What My Child Is Learning", "Apa Yang Anak Saya Pelajari");
-            litHeroSub.Text = T("Track your child's Science learning units, topics, and lesson progress.",
-                                "Pantau unit pembelajaran Sains, topik, dan kemajuan pelajaran anak anda.");
-            litSumUnitsLabel.Text = T("Total Units", "Jumlah Unit");
-            litSumLessonsLabel.Text = T("Total Lessons", "Jumlah Pelajaran");
-            litSumCompletedLabel.Text = T("Completed", "Selesai");
-            litSumProgressLabel.Text = T("Progress", "Kemajuan");
-            litNoUnits.Text = T("No enrolled modules found.", "Tiada modul didaftarkan ditemui.");
-        }
-
-        private void LoadPage()
-        {
-            LoadHeroChild();
-            LoadSummary();
-            LoadJourneyMap();
-            LoadUnits();
-        }
-
-        private void LoadHeroChild()
-        {
-            try
-            {
-                const string sql = @"SELECT s.name, s.nickname, l.levelNameEN, l.levelNameBM
-                    FROM dbo.[Student] s LEFT JOIN dbo.[Level] l ON l.levelId=s.currentLevelId
-                    WHERE s.studentId=@s";
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@s", _studentId); conn.Open();
-                    using (var r = cmd.ExecuteReader())
-                    {
-                        if (r.Read())
-                        {
-                            string name = r["name"]?.ToString() ?? "-";
-                            string nick = r["nickname"]?.ToString() ?? "";
-                            string lvl = CurrentLanguage == "BM" ? (r["levelNameBM"]?.ToString() ?? "-") : (r["levelNameEN"]?.ToString() ?? "-");
-                            string display = !string.IsNullOrWhiteSpace(nick) ? nick : name;
-                            litHeroChild.Text = Server.HtmlEncode(display) + " · " + Server.HtmlEncode(lvl);
-                        }
-                    }
-                }
-            }
-            catch (SqlException) { }
-        }
-
-        private void LoadSummary()
-        {
-            int totalUnits = 0, totalLessons = 0, completedLessons = 0;
-            try
-            {
-                const string sql = @"
-                    SELECT
-                        (SELECT COUNT(DISTINCT u.unitId) FROM dbo.[Unit] u INNER JOIN dbo.[Enrollment] e ON e.levelId=u.levelId WHERE e.studentId=@s) AS units,
-                        (SELECT COUNT(*) FROM dbo.[Lesson] l INNER JOIN dbo.[Subtopic] st ON st.subtopicId=l.subtopicId INNER JOIN dbo.[Unit] u ON u.unitId=st.unitId INNER JOIN dbo.[Enrollment] e ON e.levelId=u.levelId WHERE e.studentId=@s) AS lessons,
-                        (SELECT COUNT(*) FROM dbo.[LessonProgress] WHERE studentId=@s AND isCompleted=1) AS completed";
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@s", _studentId); conn.Open();
-                    using (var r = cmd.ExecuteReader())
-                    {
-                        if (r.Read())
-                        {
-                            totalUnits = r["units"] != DBNull.Value ? Convert.ToInt32(r["units"]) : 0;
-                            totalLessons = r["lessons"] != DBNull.Value ? Convert.ToInt32(r["lessons"]) : 0;
-                            completedLessons = r["completed"] != DBNull.Value ? Convert.ToInt32(r["completed"]) : 0;
-                        }
-                    }
-                }
-            }
-            catch (SqlException) { }
-
-            int pct = totalLessons > 0 ? (int)Math.Round((double)completedLessons / totalLessons * 100) : 0;
-            litSumUnits.Text = totalUnits.ToString();
-            litSumLessons.Text = totalLessons.ToString();
-            litSumCompleted.Text = completedLessons.ToString();
-            litSumProgress.Text = pct + "%";
-        }
-
-        // ═══════════════════════════════════════════════════
-        //  JOURNEY MAP
-        // ═══════════════════════════════════════════════════
-
-        private void LoadJourneyMap()
-        {
-            pnlJourneyMap.Controls.Clear();
-
-            try
-            {
-                const string sql = @"
-                    SELECT u.unitId, u.unitNameEN, u.unitNameBM, u.orderNo,
-                        (SELECT COUNT(*) FROM dbo.[Lesson] ls INNER JOIN dbo.[Subtopic] st ON st.subtopicId=ls.subtopicId WHERE st.unitId=u.unitId) AS totalLessons,
-                        (SELECT COUNT(*) FROM dbo.[LessonProgress] lp INNER JOIN dbo.[Lesson] ls ON ls.lessonId=lp.lessonId INNER JOIN dbo.[Subtopic] st ON st.subtopicId=ls.subtopicId WHERE st.unitId=u.unitId AND lp.studentId=@s AND lp.isCompleted=1) AS completedLessons
-                    FROM dbo.[Unit] u
-                    INNER JOIN dbo.[Enrollment] e ON e.levelId=u.levelId
-                    WHERE e.studentId=@s
-                    ORDER BY u.levelId, u.orderNo";
-
-                var nodes = new List<string[]>(); // [name, status, pct, orderNo]
-
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@s", _studentId);
-                    conn.Open();
-                    using (var r = cmd.ExecuteReader())
-                    {
-                        int idx = 0;
-                        while (r.Read())
-                        {
-                            idx++;
-                            string name = CurrentLanguage == "BM"
-                                ? (r["unitNameBM"]?.ToString() ?? r["unitNameEN"]?.ToString() ?? "-")
-                                : (r["unitNameEN"]?.ToString() ?? "-");
-                            int total = r["totalLessons"] != DBNull.Value ? Convert.ToInt32(r["totalLessons"]) : 0;
-                            int completed = r["completedLessons"] != DBNull.Value ? Convert.ToInt32(r["completedLessons"]) : 0;
-                            string status = GetStatus(total, completed).ToLower().Replace(" ", "");
-                            int pct = total > 0 ? (int)Math.Round((double)completed / total * 100) : 0;
-                            nodes.Add(new string[] { name, status, pct.ToString(), idx.ToString() });
-                        }
-                    }
-                }
-
-                if (nodes.Count == 0) return;
-
-                // Science icons by position (CSS-safe, no images needed)
-                string[] icons = { "🔬", "🧪", "🧲", "🌱", "⚡", "🌍", "💧", "🔭", "🧬", "🪐", "☀️", "🌊", "🔥", "❄️", "🌡️" };
-
-                string html = "<div class='em-journey'>"
-                    + "<div class='em-journey-title'>" + T("Learning Journey", "Perjalanan Pembelajaran") + "</div>"
-                    + "<div class='em-journey-path'>";
-
-                for (int i = 0; i < nodes.Count; i++)
-                {
-                    string name = nodes[i][0];
-                    string status = nodes[i][1];
-                    string pct = nodes[i][2];
-                    string num = nodes[i][3];
-                    string icon = icons[i % icons.Length];
-
-                    string badgeText = status == "completed" ? T("Completed", "Selesai")
-                        : status == "inprogress" ? T("In Progress", "Sedang Belajar")
-                        : T("Not Started", "Belum Mula");
-
-                    string pctText = status == "completed" ? "100%"
-                        : status == "notstarted" ? "0%"
-                        : pct + "%";
-
-                    // Card node
-                    html += "<div class='em-jnode'>"
-                        + "<div class='em-jcard " + status + "'>"
-                        + "<span class='em-jcard-icon'>" + icon + "</span>"
-                        + "<div class='em-jcard-num'>" + T("Unit ", "Unit ") + num + "</div>"
-                        + "<div class='em-jcard-name'>" + Server.HtmlEncode(name) + "</div>"
-                        + "<span class='em-jcard-badge " + status + "'>" + badgeText + "</span>"
-                        + "<div class='em-jcard-pct'>" + pctText + " " + T("done", "selesai") + "</div>"
-                        + "</div></div>";
-                }
-
-                html += "</div></div>";
-                pnlJourneyMap.Controls.Add(new LiteralControl(html));
-            }
-            catch (SqlException) { }
-        }
-
-        // ═══════════════════════════════════════════════════
-        //  FILTER / SEARCH
-        // ═══════════════════════════════════════════════════
-
-        protected void Filter_Click(object sender, EventArgs e)
-        {
-            var btn = sender as System.Web.UI.WebControls.LinkButton;
-            ActiveFilter = btn?.CommandArgument ?? "All";
-            SetFilterStyles();
-            LoadUnits();
-        }
-
-        protected void Search_Changed(object sender, EventArgs e)
-        {
-            LoadUnits();
-        }
-
-        private void SetFilterStyles()
-        {
-            lnkAll.CssClass = ActiveFilter == "All" ? "em-filter-btn active" : "em-filter-btn";
-            lnkInProgress.CssClass = ActiveFilter == "InProgress" ? "em-filter-btn active" : "em-filter-btn";
-            lnkCompleted.CssClass = ActiveFilter == "Completed" ? "em-filter-btn active" : "em-filter-btn";
-            lnkNotStarted.CssClass = ActiveFilter == "NotStarted" ? "em-filter-btn active" : "em-filter-btn";
-        }
-
-        // ═══════════════════════════════════════════════════
-        //  UNIT CARDS
-        // ═══════════════════════════════════════════════════
-
-        private void LoadUnits()
-        {
-            pnlUnits.Controls.Clear();
-            pnlNoUnits.Visible = false;
-            SetFilterStyles();
-
-            string keyword = txtSearch.Text.Trim();
-
-            try
-            {
-                const string sql = @"
-                    SELECT u.unitId, u.unitNameEN, u.unitNameBM, u.unitDescriptionEN, u.unitDescriptionBM, u.orderNo,
-                        (SELECT COUNT(*) FROM dbo.[Lesson] ls INNER JOIN dbo.[Subtopic] st ON st.subtopicId=ls.subtopicId WHERE st.unitId=u.unitId) AS totalLessons,
-                        (SELECT COUNT(*) FROM dbo.[LessonProgress] lp INNER JOIN dbo.[Lesson] ls ON ls.lessonId=lp.lessonId INNER JOIN dbo.[Subtopic] st ON st.subtopicId=ls.subtopicId WHERE st.unitId=u.unitId AND lp.studentId=@s AND lp.isCompleted=1) AS completedLessons
-                    FROM dbo.[Unit] u
-                    INNER JOIN dbo.[Enrollment] e ON e.levelId=u.levelId
-                    WHERE e.studentId=@s
-                    ORDER BY u.levelId, u.orderNo";
-
-                var units = new List<UnitData>();
-
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@s", _studentId);
-                    conn.Open();
-                    using (var r = cmd.ExecuteReader())
-                    {
-                        while (r.Read())
-                        {
-                            var u = new UnitData();
-                            u.UnitId = r["unitId"]?.ToString() ?? "";
-                            u.NameEN = r["unitNameEN"]?.ToString() ?? "";
-                            u.NameBM = r["unitNameBM"]?.ToString() ?? "";
-                            u.DescEN = r["unitDescriptionEN"]?.ToString() ?? "";
-                            u.DescBM = r["unitDescriptionBM"]?.ToString() ?? "";
-                            u.Total = r["totalLessons"] != DBNull.Value ? Convert.ToInt32(r["totalLessons"]) : 0;
-                            u.Completed = r["completedLessons"] != DBNull.Value ? Convert.ToInt32(r["completedLessons"]) : 0;
-                            units.Add(u);
-                        }
-                    }
-                }
-
-                bool hasVisible = false;
-                foreach (var u in units)
-                {
-                    string status = GetStatus(u.Total, u.Completed);
-                    if (ActiveFilter != "All" && ActiveFilter != status) continue;
-
-                    string name = CurrentLanguage == "BM" ? (string.IsNullOrWhiteSpace(u.NameBM) ? u.NameEN : u.NameBM) : u.NameEN;
-                    string desc = CurrentLanguage == "BM" ? (string.IsNullOrWhiteSpace(u.DescBM) ? u.DescEN : u.DescBM) : u.DescEN;
-
-                    // Keyword filter
-                    if (!string.IsNullOrEmpty(keyword))
-                    {
-                        if (name.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) < 0 &&
-                            desc.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) < 0)
-                            continue;
-                    }
-
-                    hasVisible = true;
-                    int pct = u.Total > 0 ? (int)Math.Round((double)u.Completed / u.Total * 100) : 0;
-                    string cssClass = "em-unit " + status.ToLower().Replace(" ", "");
-                    string badgeClass = "em-unit-badge " + status.ToLower().Replace(" ", "");
-                    string badgeText = status == "Completed" ? T("Completed", "Selesai")
-                        : status == "InProgress" ? T("In Progress", "Sedang Belajar")
-                        : T("Not Started", "Belum Mula");
-
-                    string html = "<div class='" + cssClass + "'>"
-                        + "<div class='em-unit-header'>"
-                        + "<span class='em-unit-name'>" + Server.HtmlEncode(name) + "</span>"
-                        + "<span class='" + badgeClass + "'>" + badgeText + "</span>"
-                        + "</div>";
-
-                    if (!string.IsNullOrWhiteSpace(desc))
-                        html += "<div class='em-unit-desc'>" + Server.HtmlEncode(desc.Length > 120 ? desc.Substring(0, 120) + "..." : desc) + "</div>";
-
-                    html += "<div class='em-unit-bar'><div class='em-unit-bar-fill' style='width:" + pct + "%'></div></div>"
-                        + "<div class='em-unit-stats'><span>" + u.Completed + " / " + u.Total + " " + T("lessons", "pelajaran") + "</span><span>" + pct + "%</span></div>";
-
-                    // Load subtopics
-                    html += LoadSubtopics(u.UnitId);
-
-                    html += "</div>";
-                    pnlUnits.Controls.Add(new LiteralControl(html));
-                }
-
-                if (!hasVisible) pnlNoUnits.Visible = true;
-            }
-            catch (SqlException)
-            {
-                pnlNoUnits.Visible = true;
-            }
-        }
-
-        private string LoadSubtopics(string unitId)
-        {
-            var subtopicNames = new List<string>();
-            string html = "";
-
-            try
-            {
-                // Get subtopics
-                const string stSql = @"SELECT st.subtopicId, st.subtopicTitleEN, st.subtopicTitleBM
-                    FROM dbo.[Subtopic] st WHERE st.unitId=@uid ORDER BY st.orderNo";
-
-                var subtopics = new List<string[]>(); // [subtopicId, title]
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(stSql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@uid", unitId);
-                    conn.Open();
-                    using (var r = cmd.ExecuteReader())
-                    {
-                        while (r.Read())
-                        {
-                            string stId = r["subtopicId"]?.ToString() ?? "";
-                            string stTitle = CurrentLanguage == "BM"
-                                ? (r["subtopicTitleBM"]?.ToString() ?? r["subtopicTitleEN"]?.ToString() ?? "-")
-                                : (r["subtopicTitleEN"]?.ToString() ?? "-");
-                            subtopics.Add(new string[] { stId, stTitle });
-                            subtopicNames.Add(stTitle);
-                        }
-                    }
-                }
-
-                if (subtopics.Count == 0)
-                {
-                    return "<div class='em-unit-summary'>" + T("Lesson information is not available yet.", "Maklumat pelajaran belum tersedia lagi.") + "</div>";
-                }
-
-                // Generate summary
-                int totalLessonsForSummary = 0;
-                // First pass: count total lessons for summary text
-                foreach (var st in subtopics)
-                {
-                    totalLessonsForSummary += CountLessonsInSubtopic(st[0]);
-                }
-
-                string summaryText = GenerateUnitSummary(subtopicNames, totalLessonsForSummary);
-                html += "<div class='em-unit-summary'>" + Server.HtmlEncode(summaryText) + "</div>";
-
-                // Subtopics & Learning Items section
-                html += "<div class='em-st-section-title'>" + T("Subtopics & Learning Items", "Subtopik & Item Pembelajaran") + "</div>";
-
-                foreach (var st in subtopics)
-                {
-                    string stId = st[0];
-                    string stTitle = st[1];
-
-                    // Get lessons, quizzes, materials for this subtopic
-                    var lessons = GetLessonsForSubtopic(stId);
-                    var quizzes = GetQuizzesForSubtopic(stId);
-                    var materials = GetMaterialsForSubtopic(stId);
-
-                    html += "<div class='em-st-row'>";
-                    html += "<div class='em-st-header'><i class='bi bi-bookmark-fill' style='color:#2563EB;font-size:0.7rem;'></i> "
-                        + Server.HtmlEncode(stTitle) + "</div>";
-
-                    // Lessons
-                    if (lessons.Count > 0)
-                    {
-                        html += "<div class='em-item-type lessons'><i class='bi bi-book-half'></i> " + T("Lessons", "Pelajaran") + "</div>";
-                        html += "<div class='em-lesson-list'>";
-                        foreach (var l in lessons)
-                        {
-                            bool isDone = l[2] == "1";
-                            string icon = isDone
-                                ? "<i class='bi bi-check-circle-fill done'></i>"
-                                : "<i class='bi bi-circle pending'></i>";
-                            html += "<div class='em-lesson-item'>" + icon + " " + Server.HtmlEncode(l[1]) + "</div>";
-                        }
-                        html += "</div>";
-                    }
-
-                    // Quizzes
-                    if (quizzes.Count > 0)
-                    {
-                        html += "<div class='em-item-type quizzes'><i class='bi bi-patch-question-fill'></i> " + T("Quizzes", "Kuiz") + "</div>";
-                        html += "<div class='em-lesson-list'>";
-                        foreach (var q in quizzes)
-                        {
-                            bool attempted = q[2] == "1";
-                            string icon = attempted
-                                ? "<i class='bi bi-check-circle-fill done'></i>"
-                                : "<i class='bi bi-circle pending'></i>";
-                            html += "<div class='em-lesson-item'>" + icon + " " + Server.HtmlEncode(q[1]) + "</div>";
-                        }
-                        html += "</div>";
-                    }
-
-                    // Materials
-                    if (materials.Count > 0)
-                    {
-                        html += "<div class='em-item-type materials'><i class='bi bi-file-earmark-text-fill'></i> " + T("Materials", "Bahan") + "</div>";
-                        html += "<div class='em-lesson-list'>";
-                        foreach (var m in materials)
-                        {
-                            html += "<div class='em-lesson-item'><i class='bi bi-file-earmark' style='color:#7C3AED;font-size:0.72rem;'></i> " + Server.HtmlEncode(m) + "</div>";
-                        }
-                        html += "</div>";
-                    }
-
-                    html += "</div>";
-                }
-            }
-            catch (SqlException) { }
-
-            return html;
-        }
-
-        private int CountLessonsInSubtopic(string subtopicId)
-        {
-            try
-            {
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.[Lesson] WHERE subtopicId=@st", conn))
-                {
-                    cmd.Parameters.AddWithValue("@st", subtopicId);
-                    conn.Open();
-                    return Convert.ToInt32(cmd.ExecuteScalar());
-                }
-            }
-            catch (SqlException) { return 0; }
-        }
-
-        private List<string[]> GetLessonsForSubtopic(string subtopicId)
-        {
-            var lessons = new List<string[]>(); // [lessonId, title, isCompleted("0"/"1")]
-            try
-            {
-                const string sql = @"
-                    SELECT l.lessonId,
-                           CASE WHEN @lang='BM' THEN ISNULL(l.lessonTitleBM, l.lessonTitleEN) ELSE l.lessonTitleEN END AS lessonTitle,
-                           ISNULL((SELECT CAST(lp.isCompleted AS INT) FROM dbo.[LessonProgress] lp WHERE lp.lessonId=l.lessonId AND lp.studentId=@s), 0) AS isCompleted
-                    FROM dbo.[Lesson] l WHERE l.subtopicId=@st ORDER BY l.orderNo";
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@st", subtopicId);
-                    cmd.Parameters.AddWithValue("@s", _studentId);
-                    cmd.Parameters.AddWithValue("@lang", CurrentLanguage);
-                    conn.Open();
-                    using (var r = cmd.ExecuteReader())
-                    {
-                        while (r.Read())
-                        {
-                            lessons.Add(new string[] {
-                                r["lessonId"]?.ToString() ?? "",
-                                r["lessonTitle"]?.ToString() ?? "-",
-                                (r["isCompleted"] != DBNull.Value && Convert.ToInt32(r["isCompleted"]) == 1) ? "1" : "0"
-                            });
-                        }
-                    }
-                }
-            }
-            catch (SqlException) { }
-            return lessons;
-        }
-
-        private List<string[]> GetQuizzesForSubtopic(string subtopicId)
-        {
-            var quizzes = new List<string[]>(); // [quizId, title, attempted("0"/"1")]
-            try
-            {
-                const string sql = @"
-                    SELECT q.quizId,
-                           CASE WHEN @lang='BM' THEN ISNULL(q.quizTitleBM, q.quizTitleEN) ELSE q.quizTitleEN END AS quizTitle,
-                           CASE WHEN (SELECT COUNT(*) FROM dbo.[QuizResult] qr WHERE qr.quizId=q.quizId AND qr.studentId=@s) > 0 THEN 1 ELSE 0 END AS attempted
-                    FROM dbo.[Quiz] q WHERE q.subtopicId=@st";
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@st", subtopicId);
-                    cmd.Parameters.AddWithValue("@s", _studentId);
-                    cmd.Parameters.AddWithValue("@lang", CurrentLanguage);
-                    conn.Open();
-                    using (var r = cmd.ExecuteReader())
-                    {
-                        while (r.Read())
-                        {
-                            quizzes.Add(new string[] {
-                                r["quizId"]?.ToString() ?? "",
-                                r["quizTitle"]?.ToString() ?? "-",
-                                (r["attempted"] != DBNull.Value && Convert.ToInt32(r["attempted"]) == 1) ? "1" : "0"
-                            });
-                        }
-                    }
-                }
-            }
-            catch (SqlException) { }
-            return quizzes;
-        }
-
-        private List<string> GetMaterialsForSubtopic(string subtopicId)
-        {
-            var materials = new List<string>();
-            try
-            {
-                const string sql = "SELECT materialTitle FROM dbo.[Material] WHERE subtopicId=@st AND (status='Approved' OR status IS NULL)";
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@st", subtopicId);
-                    conn.Open();
-                    using (var r = cmd.ExecuteReader())
-                    {
-                        while (r.Read())
-                        {
-                            string title = r["materialTitle"]?.ToString() ?? "";
-                            if (!string.IsNullOrWhiteSpace(title))
-                                materials.Add(title);
-                        }
-                    }
-                }
-            }
-            catch (SqlException) { }
-            return materials;
-        }
-
-        private string GenerateUnitSummary(List<string> subtopicNames, int totalLessons)
-        {
-            if (subtopicNames.Count == 0)
-                return T("Lesson information is not available yet.", "Maklumat pelajaran belum tersedia lagi.");
-
-            string joined;
-            if (subtopicNames.Count == 1)
-                joined = subtopicNames[0];
-            else if (subtopicNames.Count == 2)
-                joined = subtopicNames[0] + " " + T("and", "dan") + " " + subtopicNames[1];
+            if (!string.IsNullOrEmpty(qsUnit) && !string.IsNullOrEmpty(qsLevel))
+            { LoadUnitDetailView(qsUnit, qsLevel); }
+            else if (!string.IsNullOrEmpty(qsLevel))
+            { LoadLevelDetailView(qsLevel); }
             else
-                joined = string.Join(", ", subtopicNames.GetRange(0, subtopicNames.Count - 1))
-                    + ", " + T("and", "dan") + " " + subtopicNames[subtopicNames.Count - 1];
-
-            return T(
-                "This unit helps your child learn about " + joined + " through " + totalLessons + " lessons.",
-                "Unit ini membantu anak anda belajar tentang " + joined + " melalui " + totalLessons + " pelajaran.");
+            { LoadLevelsView(); }
         }
 
-        private bool IsSubtopicDone(string subtopicId)
+        // ══════════════════════════════════════════════════════════════
+        //  LEVELS VIEW
+        // ══════════════════════════════════════════════════════════════
+        private void LoadLevelsView()
         {
+            pnlLevels.Visible = true;
+            pnlLevelsGrid.Controls.Clear();
+            string[] bgColors = { "#E0F7FA", "#FFF3E0", "#F3E5F5" };
+            string[] icons = { "🔬", "🚀", "⚡" };
+            int idx = 0;
             try
             {
-                const string sql = @"
-                    SELECT CASE WHEN COUNT(*)>0 AND COUNT(*)=(SELECT COUNT(*) FROM dbo.[Lesson] WHERE subtopicId=@st)
-                    THEN 1 ELSE 0 END
-                    FROM dbo.[LessonProgress] lp
-                    INNER JOIN dbo.[Lesson] l ON l.lessonId=lp.lessonId
-                    WHERE l.subtopicId=@st AND lp.studentId=@s AND lp.isCompleted=1";
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(sql, conn))
+                using (var c = new SqlConnection(ConnStr))
                 {
-                    cmd.Parameters.AddWithValue("@st", subtopicId);
-                    cmd.Parameters.AddWithValue("@s", _studentId);
-                    conn.Open();
-                    return Convert.ToInt32(cmd.ExecuteScalar()) == 1;
-                }
-            }
-            catch (SqlException) { return false; }
-        }
-
-        private string GetStatus(int total, int completed)
-        {
-            if (total == 0) return "NotStarted";
-            if (completed >= total) return "Completed";
-            if (completed > 0) return "InProgress";
-            return "NotStarted";
-        }
-
-        private class UnitData
-        {
-            public string UnitId { get; set; }
-            public string NameEN { get; set; }
-            public string NameBM { get; set; }
-            public string DescEN { get; set; }
-            public string DescBM { get; set; }
-            public int Total { get; set; }
-            public int Completed { get; set; }
-        }
-        private void LoadUnreadBadge()
-        {
-            try
-            {
-                using (var c = new System.Data.SqlClient.SqlConnection(ConnStr))
-                using (var cmd = new System.Data.SqlClient.SqlCommand("SELECT COUNT(*) FROM dbo.Notification WHERE toUserId=@uid AND isRead=0", c))
-                {
-                    cmd.Parameters.AddWithValue("@uid", Session["userId"].ToString());
                     c.Open();
-                    int count = (int)cmd.ExecuteScalar();
-                    if (count > 0) litUnreadBadge.Text = "<span class='pt-sidebar-badge'>" + count + "</span>";
-                    else litUnreadBadge.Text = "";
+                    using (var cmd = new SqlCommand("SELECT levelId, levelNameEN, levelNameBM, levelDescriptionEN, levelDescriptionBM FROM dbo.[Level] ORDER BY levelId", c))
+                    using (var r = cmd.ExecuteReader())
+                    {
+                        StringBuilder sb = new StringBuilder();
+                        while (r.Read())
+                        {
+                            string levelId = r["levelId"].ToString();
+                            string name = CurrentLanguage == "BM" ? r["levelNameBM"].ToString() : r["levelNameEN"].ToString();
+                            string desc = CurrentLanguage == "BM" ? (r["levelDescriptionBM"] != DBNull.Value ? r["levelDescriptionBM"].ToString() : "") : (r["levelDescriptionEN"] != DBNull.Value ? r["levelDescriptionEN"].ToString() : "");
+                            bool unlocked = IsLevelUnlocked(levelId);
+                            int unitCount = GetUnitCount(levelId);
+                            string bg = bgColors[idx % 3];
+                            string icon = icons[idx % 3];
+                            idx++;
+
+                            if (unlocked)
+                            {
+                                sb.AppendFormat(@"<a href='EnrolledModules.aspx?levelId={0}' class='pt-level-card pt-level-card-unlocked' style='--card-bg:{1};'>
+                                    <div class='pt-level-image'><span class='pt-level-emoji'>{2}</span></div>
+                                    <div class='pt-level-body'>
+                                        <div class='pt-level-name'>{3}</div>
+                                        <div class='pt-level-count'>{4} {5}</div>
+                                        <div class='pt-level-desc'>{6}</div>
+                                        <span class='pt-learning-badge pt-badge-unlocked'><i class='bi bi-unlock-fill'></i> {7}</span>
+                                    </div>
+                                </a>", levelId, bg, icon, Server.HtmlEncode(name), unitCount, T("units", "unit"), Server.HtmlEncode(desc.Length > 80 ? desc.Substring(0, 80) + "..." : desc), T("Unlocked", "Dibuka"));
+                            }
+                            else
+                            {
+                                sb.AppendFormat(@"<div class='pt-level-card pt-level-card-locked'>
+                                    <div class='pt-level-lock-overlay'><i class='bi bi-lock-fill'></i></div>
+                                    <div class='pt-level-image'><span class='pt-level-emoji'>{0}</span></div>
+                                    <div class='pt-level-body'>
+                                        <div class='pt-level-name'>{1}</div>
+                                        <div class='pt-level-count'>{2} {3}</div>
+                                        <span class='pt-learning-badge pt-badge-locked'><i class='bi bi-lock-fill'></i> {4}</span>
+                                        <div class='pt-level-locked-msg'>{5}</div>
+                                    </div>
+                                </div>", icon, Server.HtmlEncode(name), unitCount, T("units", "unit"), T("Locked", "Dikunci"), T("This level has not been unlocked by your child yet.", "Tahap ini belum dibuka oleh anak anda."));
+                            }
+                        }
+                        if (sb.Length > 0) pnlLevelsGrid.Controls.Add(new LiteralControl(sb.ToString()));
+                    }
                 }
             }
             catch { }
         }
+
+        // ══════════════════════════════════════════════════════════════
+        //  LEVEL DETAILS VIEW
+        // ══════════════════════════════════════════════════════════════
+        private void LoadLevelDetailView(string levelId)
+        {
+            if (!IsLevelUnlocked(levelId)) { LoadLevelsView(); return; }
+            pnlLevelDetail.Visible = true;
+
+            // Hero
+            try
+            {
+                using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT levelNameEN, levelNameBM, levelDescriptionEN, levelDescriptionBM FROM dbo.[Level] WHERE levelId=@id", c))
+                {
+                    cmd.Parameters.AddWithValue("@id", levelId); c.Open();
+                    using (var r = cmd.ExecuteReader())
+                    {
+                        if (r.Read())
+                        {
+                            string name = CurrentLanguage == "BM" ? r["levelNameBM"].ToString() : r["levelNameEN"].ToString();
+                            string desc = CurrentLanguage == "BM" ? (r["levelDescriptionBM"] != DBNull.Value ? r["levelDescriptionBM"].ToString() : "") : (r["levelDescriptionEN"] != DBNull.Value ? r["levelDescriptionEN"].ToString() : "");
+                            pnlLevelHero.Controls.Clear();
+                            pnlLevelHero.Controls.Add(new LiteralControl(string.Format(
+                                @"<div class='pt-level-detail-illustration'><i class='bi bi-stars'></i></div>
+                                <div class='pt-level-detail-content'><h2>{0}</h2><p>{1}</p></div>", Server.HtmlEncode(name), Server.HtmlEncode(desc))));
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            // Unit count info
+            int unitCount = GetUnitCount(levelId);
+            litUnitCountInfo.Text = string.Format(T("This level contains {0} units.", "Tahap ini mengandungi {0} unit."), unitCount);
+
+            // Units grid
+            pnlUnitsGrid.Controls.Clear();
+            pnlNoUnits.Visible = false;
+            try
+            {
+                using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT unitId, unitNameEN, unitNameBM, unitDescriptionEN, unitDescriptionBM, orderNo FROM dbo.[Unit] WHERE levelId=@id ORDER BY orderNo", c))
+                {
+                    cmd.Parameters.AddWithValue("@id", levelId); c.Open();
+                    using (var r = cmd.ExecuteReader())
+                    {
+                        StringBuilder sb = new StringBuilder(); bool has = false;
+                        string[] cardColors = { "#FFF8E1", "#E8F5E9", "#E3F2FD", "#FCE4EC", "#F3E5F5", "#E0F2F1" };
+                        int ci = 0;
+                        while (r.Read())
+                        {
+                            has = true;
+                            string unitId = r["unitId"].ToString();
+                            string uName = CurrentLanguage == "BM" ? r["unitNameBM"].ToString() : r["unitNameEN"].ToString();
+                            string uDesc = CurrentLanguage == "BM" ? (r["unitDescriptionBM"] != DBNull.Value ? r["unitDescriptionBM"].ToString() : "") : (r["unitDescriptionEN"] != DBNull.Value ? r["unitDescriptionEN"].ToString() : "");
+                            int subtopicCount = GetSubtopicCount(unitId);
+                            int lessonCount = GetLessonCountForUnit(unitId);
+                            int completed = GetCompletedLessonsForUnit(unitId);
+                            int pct = lessonCount > 0 ? (int)Math.Round((double)completed / lessonCount * 100) : 0;
+                            string progressStatus = pct == 0 ? T("Not Started", "Belum Mula") : pct >= 100 ? T("Completed", "Selesai") : T("In Progress", "Sedang Berjalan");
+                            string cardBg = cardColors[ci % cardColors.Length]; ci++;
+
+                            sb.AppendFormat(@"<a href='EnrolledModules.aspx?levelId={0}&unitId={1}' class='pt-unit-card' style='--card-bg:{2};'>
+                                <div class='pt-unit-card-header'><span class='pt-unit-card-icon'><i class='bi bi-book-half'></i></span><span class='pt-unit-card-order'>#{3}</span></div>
+                                <div class='pt-unit-card-name'>{4}</div>
+                                <div class='pt-unit-card-desc'>{5}</div>
+                                <div class='pt-unit-stat-chips'>
+                                    <span class='pt-unit-stat-chip'><i class='bi bi-layers'></i> {6} {7}</span>
+                                    <span class='pt-unit-stat-chip'><i class='bi bi-file-text'></i> {8} {9}</span>
+                                </div>
+                                <div class='pt-unit-progress-bar'><div class='pt-unit-progress-fill' style='width:{10}%;'></div></div>
+                                <div class='pt-unit-progress-label'>{10}% &bull; {11}</div>
+                            </a>", levelId, unitId, cardBg, r["orderNo"], Server.HtmlEncode(uName),
+                                Server.HtmlEncode(uDesc.Length > 60 ? uDesc.Substring(0, 60) + "..." : uDesc),
+                                subtopicCount, T("subtopics", "subtopik"), lessonCount, T("lessons", "pelajaran"), pct, progressStatus);
+                        }
+                        if (has) pnlUnitsGrid.Controls.Add(new LiteralControl(sb.ToString()));
+                        else pnlNoUnits.Visible = true;
+                    }
+                }
+            }
+            catch { pnlNoUnits.Visible = true; }
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        //  UNIT DETAILS VIEW
+        // ══════════════════════════════════════════════════════════════
+        private void LoadUnitDetailView(string unitId, string levelId)
+        {
+            if (!IsLevelUnlocked(levelId)) { LoadLevelsView(); return; }
+            pnlUnitDetail.Visible = true;
+            lnkBackToUnits.HRef = "EnrolledModules.aspx?levelId=" + Server.UrlEncode(levelId);
+
+            // Unit hero
+            pnlUnitHero.Controls.Clear();
+            try
+            {
+                using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT unitNameEN, unitNameBM, unitDescriptionEN, unitDescriptionBM FROM dbo.[Unit] WHERE unitId=@id", c))
+                {
+                    cmd.Parameters.AddWithValue("@id", unitId); c.Open();
+                    using (var r = cmd.ExecuteReader())
+                    {
+                        if (r.Read())
+                        {
+                            string uName = CurrentLanguage == "BM" ? r["unitNameBM"].ToString() : r["unitNameEN"].ToString();
+                            string uDesc = CurrentLanguage == "BM" ? (r["unitDescriptionBM"] != DBNull.Value ? r["unitDescriptionBM"].ToString() : "") : (r["unitDescriptionEN"] != DBNull.Value ? r["unitDescriptionEN"].ToString() : "");
+                            int totalLessons = GetLessonCountForUnit(unitId);
+                            int completedLessons = GetCompletedLessonsForUnit(unitId);
+                            int pct = totalLessons > 0 ? (int)Math.Round((double)completedLessons / totalLessons * 100) : 0;
+                            string status = pct == 0 ? T("Not Started", "Belum Mula") : pct >= 100 ? T("Completed", "Selesai") : T("In Progress", "Sedang Berjalan");
+
+                            pnlUnitHero.Controls.Add(new LiteralControl(string.Format(
+                                @"<h2 class='pt-unit-hero-title'>{0}</h2>
+                                <div class='pt-unit-hero-stats'>
+                                    <span class='pt-unit-hero-stat'><i class='bi bi-journal-text'></i> {1} / {2} {3}</span>
+                                    <span class='pt-unit-hero-pct'>{4}%</span>
+                                    <span class='pt-learning-badge {5}'>{6}</span>
+                                </div>
+                                <div class='pt-unit-hero-progress'><div class='pt-unit-hero-progress-fill' style='width:{4}%;'></div></div>",
+                                Server.HtmlEncode(uName), completedLessons, totalLessons, T("Lessons", "Pelajaran"), pct,
+                                pct >= 100 ? "pt-badge-complete" : pct > 0 ? "pt-badge-progress" : "pt-badge-notstarted", status)));
+
+                            litUnitDescription.Text = Server.HtmlEncode(uDesc);
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            // Subtopics
+            pnlSubtopicsGrid.Controls.Clear();
+            pnlNoSubtopics.Visible = false;
+            try
+            {
+                int quizCountForUnit = 0;
+                using (var c2 = new SqlConnection(ConnStr)) using (var cmd2 = new SqlCommand("SELECT COUNT(*) FROM dbo.[Quiz] WHERE unitId=@uid", c2))
+                { cmd2.Parameters.AddWithValue("@uid", unitId); c2.Open(); quizCountForUnit = (int)cmd2.ExecuteScalar(); }
+
+                using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT subtopicId, subtopicTitleEN, subtopicTitleBM, subtopicDescriptionEN, subtopicDescriptionBM FROM dbo.[Subtopic] WHERE unitId=@id ORDER BY subtopicId", c))
+                {
+                    cmd.Parameters.AddWithValue("@id", unitId); c.Open();
+                    using (var r = cmd.ExecuteReader())
+                    {
+                        StringBuilder sb = new StringBuilder(); bool has = false;
+                        string[] stColors = { "#FFFDE7", "#E8F5E9", "#E3F2FD", "#FFF3E0", "#F3E5F5", "#E0F2F1" };
+                        int si = 0;
+                        while (r.Read())
+                        {
+                            has = true;
+                            string stId = r["subtopicId"].ToString();
+                            string stName = CurrentLanguage == "BM" ? r["subtopicTitleBM"].ToString() : r["subtopicTitleEN"].ToString();
+                            string stDesc = CurrentLanguage == "BM" ? (r["subtopicDescriptionBM"] != DBNull.Value ? r["subtopicDescriptionBM"].ToString() : "") : (r["subtopicDescriptionEN"] != DBNull.Value ? r["subtopicDescriptionEN"].ToString() : "");
+                            int lessonCnt = GetLessonCountForSubtopic(stId);
+                            int materialCnt = GetMaterialCountForSubtopic(stId);
+                            string cardBg = stColors[si % stColors.Length]; si++;
+
+                            sb.AppendFormat(@"<div class='pt-subtopic-card' style='--card-bg:{0};'>
+                                <div class='pt-subtopic-card-icon'><i class='bi bi-lightbulb-fill'></i></div>
+                                <div class='pt-subtopic-card-name'>{1}</div>
+                                <div class='pt-subtopic-card-desc'>{2}</div>
+                                <div class='pt-subtopic-stat-row'>
+                                    <span><i class='bi bi-file-text'></i> {3} {4}</span>
+                                    <span><i class='bi bi-paperclip'></i> {5} {6}</span>
+                                </div>
+                            </div>", cardBg, Server.HtmlEncode(stName),
+                                Server.HtmlEncode(stDesc.Length > 80 ? stDesc.Substring(0, 80) + "..." : stDesc),
+                                lessonCnt, T("Lessons", "Pelajaran"), materialCnt, T("Materials", "Bahan"));
+                        }
+                        // Show quiz count for the unit at the end
+                        if (has && quizCountForUnit > 0)
+                        {
+                            sb.AppendFormat(@"<div class='pt-subtopic-card' style='--card-bg:#FCE4EC;'>
+                                <div class='pt-subtopic-card-icon'><i class='bi bi-patch-question-fill'></i></div>
+                                <div class='pt-subtopic-card-name'>{0}</div>
+                                <div class='pt-subtopic-card-desc'>{1}</div>
+                                <div class='pt-subtopic-stat-row'><span><i class='bi bi-ui-checks'></i> {2} {0}</span></div>
+                            </div>", T("Quizzes", "Kuiz"), T("Quizzes available for this unit.", "Kuiz yang tersedia untuk unit ini."), quizCountForUnit);
+                        }
+                        if (has) pnlSubtopicsGrid.Controls.Add(new LiteralControl(sb.ToString()));
+                        else pnlNoSubtopics.Visible = true;
+                    }
+                }
+            }
+            catch { pnlNoSubtopics.Visible = true; }
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        //  HELPER METHODS
+        // ══════════════════════════════════════════════════════════════
+        private bool IsLevelUnlocked(string levelId)
+        {
+            try
+            {
+                using (var c = new SqlConnection(ConnStr))
+                {
+                    c.Open();
+                    // Check if level is at or below child's current level
+                    using (var cmd = new SqlCommand("SELECT currentLevelId FROM dbo.[Student] WHERE studentId=@sid", c))
+                    {
+                        cmd.Parameters.AddWithValue("@sid", _studentId);
+                        var result = cmd.ExecuteScalar();
+                        if (result != null && result != DBNull.Value)
+                        {
+                            string currentLevelId = result.ToString();
+                            if (string.Compare(levelId, currentLevelId, StringComparison.OrdinalIgnoreCase) <= 0)
+                                return true;
+                        }
+                    }
+                    // Also check Enrollment
+                    using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.[Enrollment] WHERE studentId=@sid AND levelId=@lid AND status='Active'", c))
+                    {
+                        cmd.Parameters.AddWithValue("@sid", _studentId);
+                        cmd.Parameters.AddWithValue("@lid", levelId);
+                        return (int)cmd.ExecuteScalar() > 0;
+                    }
+                }
+            }
+            catch { return false; }
+        }
+        private int GetUnitCount(string levelId)
+        {
+            try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.[Unit] WHERE levelId=@id", c)) { cmd.Parameters.AddWithValue("@id", levelId); c.Open(); return (int)cmd.ExecuteScalar(); } } catch { return 0; }
+        }
+        private int GetSubtopicCount(string unitId)
+        {
+            try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.[Subtopic] WHERE unitId=@id", c)) { cmd.Parameters.AddWithValue("@id", unitId); c.Open(); return (int)cmd.ExecuteScalar(); } } catch { return 0; }
+        }
+        private int GetLessonCountForUnit(string unitId)
+        {
+            try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.[Lesson] l INNER JOIN dbo.[Subtopic] s ON l.subtopicId=s.subtopicId WHERE s.unitId=@id", c)) { cmd.Parameters.AddWithValue("@id", unitId); c.Open(); return (int)cmd.ExecuteScalar(); } } catch { return 0; }
+        }
+        private int GetCompletedLessonsForUnit(string unitId)
+        {
+            try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.[LessonProgress] lp INNER JOIN dbo.[Lesson] l ON lp.lessonId=l.lessonId INNER JOIN dbo.[Subtopic] s ON l.subtopicId=s.subtopicId WHERE s.unitId=@uid AND lp.studentId=@sid AND lp.isCompleted=1", c)) { cmd.Parameters.AddWithValue("@uid", unitId); cmd.Parameters.AddWithValue("@sid", _studentId); c.Open(); return (int)cmd.ExecuteScalar(); } } catch { return 0; }
+        }
+        private int GetLessonCountForSubtopic(string subtopicId)
+        {
+            try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.[Lesson] WHERE subtopicId=@id", c)) { cmd.Parameters.AddWithValue("@id", subtopicId); c.Open(); return (int)cmd.ExecuteScalar(); } } catch { return 0; }
+        }
+        private int GetMaterialCountForSubtopic(string subtopicId)
+        {
+            try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.[Material] WHERE subtopicId=@id", c)) { cmd.Parameters.AddWithValue("@id", subtopicId); c.Open(); return (int)cmd.ExecuteScalar(); } } catch { return 0; }
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        //  SHARED INFRASTRUCTURE
+        // ══════════════════════════════════════════════════════════════
+        private void LoadLanguage() { string l = Session["preferredLanguage"] as string; if (!string.IsNullOrEmpty(l)) { CurrentLanguage = l; return; } try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT preferredLanguage FROM dbo.[User] WHERE userId=@u", c)) { cmd.Parameters.AddWithValue("@u", _userId); c.Open(); var r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) { CurrentLanguage = r.ToString(); Session["preferredLanguage"] = CurrentLanguage; } } } catch { } }
+        private void LoadParentId() { try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT parentId FROM dbo.[Parent] WHERE userId=@u", c)) { cmd.Parameters.AddWithValue("@u", _userId); c.Open(); var r = cmd.ExecuteScalar(); if (r != null) _parentId = r.ToString(); } } catch { } }
+        private void ResolveChild() { string saved = Session["selectedChildId"] as string; if (!string.IsNullOrEmpty(saved) && IsLinked(saved)) { _studentId = saved; return; } if (string.IsNullOrEmpty(_parentId)) return; try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT TOP 1 studentId FROM dbo.[StudentParent] WHERE parentId=@p", c)) { cmd.Parameters.AddWithValue("@p", _parentId); c.Open(); var r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) { _studentId = r.ToString(); Session["selectedChildId"] = _studentId; } } } catch { } }
+        private bool IsLinked(string studentId) { if (string.IsNullOrEmpty(_parentId)) return false; try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.[StudentParent] WHERE parentId=@p AND studentId=@s", c)) { cmd.Parameters.AddWithValue("@p", _parentId); cmd.Parameters.AddWithValue("@s", studentId); c.Open(); return (int)cmd.ExecuteScalar() > 0; } } catch { return false; } }
+        private void PopulateSidebarChild() { ddlSidebarChild.Items.Clear(); try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT s.studentId, ISNULL(s.nickname,s.name) AS n FROM dbo.StudentParent sp INNER JOIN dbo.Student s ON sp.studentId=s.studentId WHERE sp.parentId=@p ORDER BY s.name", c)) { cmd.Parameters.AddWithValue("@p", _parentId); c.Open(); using (var r = cmd.ExecuteReader()) { while (r.Read()) ddlSidebarChild.Items.Add(new ListItem(r["n"].ToString(), r["studentId"].ToString())); } } } catch { } if (ddlSidebarChild.Items.Count > 0) { if (!string.IsNullOrEmpty(_studentId) && ddlSidebarChild.Items.FindByValue(_studentId) != null) ddlSidebarChild.SelectedValue = _studentId; } }
+        private void LoadUnreadBadge() { try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.Notification WHERE toUserId=@uid AND isRead=0", c)) { cmd.Parameters.AddWithValue("@uid", _userId); c.Open(); int count = (int)cmd.ExecuteScalar(); litUnreadBadge.Text = count > 0 ? "<span class='pt-sidebar-badge'>" + count + "</span>" : ""; } } catch { } }
     }
 }

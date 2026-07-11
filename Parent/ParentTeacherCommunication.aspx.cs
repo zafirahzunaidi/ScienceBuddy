@@ -46,8 +46,8 @@ namespace ScienceBuddy.Parent
         private void LoadSidebarChildren() { ddlSidebarChild.Items.Clear(); try { string pid = ""; using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT parentId FROM dbo.[Parent] WHERE userId=@u", c)) { cmd.Parameters.AddWithValue("@u", _userId); c.Open(); var r = cmd.ExecuteScalar(); if (r != null) pid = r.ToString(); } using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT s.studentId, ISNULL(s.nickname,s.name) AS n FROM dbo.StudentParent sp INNER JOIN dbo.Student s ON sp.studentId=s.studentId WHERE sp.parentId=@p ORDER BY s.name", c)) { cmd.Parameters.AddWithValue("@p", pid); c.Open(); using (var r = cmd.ExecuteReader()) { while (r.Read()) ddlSidebarChild.Items.Add(new ListItem(r["n"].ToString(), r["studentId"].ToString())); } } } catch { } if (ddlSidebarChild.Items.Count > 0) { string saved = Session["selectedChildId"] as string; if (!string.IsNullOrEmpty(saved) && ddlSidebarChild.Items.FindByValue(saved) != null) ddlSidebarChild.SelectedValue = saved; } }
         private void LoadUnreadBadge() { try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.Notification WHERE toUserId=@uid AND isRead=0", c)) { cmd.Parameters.AddWithValue("@uid", _userId); c.Open(); int count = (int)cmd.ExecuteScalar(); litUnreadBadge.Text = count > 0 ? "<span class='pt-sidebar-badge'>" + count + "</span>" : ""; } } catch { } }
 
-        protected void TabMyChats_Click(object sender, EventArgs e) { ActiveTab = "Chats"; }
-        protected void TabTeachers_Click(object sender, EventArgs e) { ActiveTab = "Teachers"; }
+        protected void TabMyChats_Click(object sender, EventArgs e) { ActiveTab = "Chats"; LoadPage(); }
+        protected void TabTeachers_Click(object sender, EventArgs e) { ActiveTab = "Teachers"; LoadPage(); }
         protected void ChatSearch_Changed(object sender, EventArgs e) { }
         protected void BtnCloseMsg_Click(object sender, EventArgs e) { pnlMsg.Visible = false; }
 

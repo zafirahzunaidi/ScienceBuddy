@@ -70,8 +70,11 @@ namespace ScienceBuddy.Parent
             if (!string.IsNullOrEmpty(sel) && IsLinked(sel))
             {
                 Session["selectedChildId"] = sel;
-                Response.Redirect(Request.RawUrl, false);
-                Context.ApplicationInstance.CompleteRequest();
+                _studentId = sel;
+                if (!string.IsNullOrEmpty(_studentId))
+                { pnlProfile.Visible = true; pnlNoChild.Visible = false; LoadAll(); }
+                else
+                { pnlProfile.Visible = false; pnlNoChild.Visible = true; }
             }
         }
 
@@ -129,10 +132,6 @@ namespace ScienceBuddy.Parent
         {
             litNoChildMsg.Text = T("No linked child found.", "Tiada anak dipautkan.");
             litNoChildLink.Text = T("Link Child Account", "Paut Akaun Anak");
-            litPathTitle.Text = T("Learning Path", "Laluan Pembelajaran");
-            litNoUnits.Text = T("No enrolled modules yet.", "Tiada modul didaftarkan lagi.");
-            litRecentTitle.Text = T("Recent Learning Summary", "Ringkasan Pembelajaran Terkini");
-            litNoRecent.Text = T("No recent activity yet.", "Tiada aktiviti terkini lagi.");
             litAchieveTitle.Text = T("Achievement Snapshot", "Ringkasan Pencapaian");
             litXPLabel.Text = T("XP Points", "Mata XP");
             litBadgeCountLabel.Text = T("Badges Earned", "Lencana Diperoleh");
@@ -141,8 +140,8 @@ namespace ScienceBuddy.Parent
         private void LoadAll()
         {
             LoadIdentity();
-            LoadLearningPath();
-            LoadRecentSummary();
+            LoadPersonalityCard();
+            LoadLevelCard();
             LoadAchievements();
             LoadBadgeCollection();
         }
@@ -194,156 +193,99 @@ namespace ScienceBuddy.Parent
         }
 
         // ═══════════════════════════════════════════════════
-        //  LEARNING PATH
+        //  PERSONALITY CARD
         // ═══════════════════════════════════════════════════
-        private void LoadLearningPath()
+        private void LoadPersonalityCard()
         {
-            pnlUnits.Controls.Clear();
-            pnlNoUnits.Visible = false;
-            bool hasUnits = false;
-
+            pnlPersonality.Visible = false;
+            pnlNoPersonality.Visible = false;
             try
             {
-                const string sql = @"
-                    SELECT u.unitId, u.unitNameEN, u.unitNameBM, u.orderNo,
-                        (SELECT COUNT(*) FROM dbo.[Lesson] ls INNER JOIN dbo.[Subtopic] st ON st.subtopicId=ls.subtopicId WHERE st.unitId=u.unitId) AS totalLessons,
-                        (SELECT COUNT(*) FROM dbo.[LessonProgress] lp INNER JOIN dbo.[Lesson] ls ON ls.lessonId=lp.lessonId INNER JOIN dbo.[Subtopic] st ON st.subtopicId=ls.subtopicId WHERE st.unitId=u.unitId AND lp.studentId=@studentId AND lp.isCompleted=1) AS completedLessons
-                    FROM dbo.[Unit] u
-                    INNER JOIN dbo.[Enrollment] e ON e.levelId = u.levelId
-                    WHERE e.studentId = @studentId
-                    ORDER BY u.levelId, u.orderNo";
+                const string sql = @"SELECT s.name, s.nickname, s.personalityId, sp.relationship,
+                    p.personalityNameEN, p.personalityNameBM, p.descriptionEN, p.descriptionBM,
+                    p.avatar, p.learningStyleEN, p.learningStyleBM
+                    FROM dbo.[Student] s
+                    INNER JOIN dbo.[StudentParent] sp ON sp.studentId=s.studentId AND sp.parentId=@parentId
+                    LEFT JOIN dbo.[Personality] p ON p.personalityId=s.personalityId
+                    WHERE s.studentId=@studentId";
+                using (var conn = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@studentId", _studentId);
+                    cmd.Parameters.AddWithValue("@parentId", _parentId);
+                    conn.Open();
+                    using (var r = cmd.ExecuteReader())
+                    {
+                        if (r.Read())
+                        {
+                            string pName = CurrentLanguage == "BM" ? (r["personalityNameBM"]?.ToString() ?? "") : (r["personalityNameEN"]?.ToString() ?? "");
+                            string pDesc = CurrentLanguage == "BM" ? (r["descriptionBM"]?.ToString() ?? "") : (r["descriptionEN"]?.ToString() ?? "");
+                            string avatar = r["avatar"] != DBNull.Value ? r["avatar"].ToString() : "";
+                            string learnStyle = CurrentLanguage == "BM" ? (r["learningStyleBM"]?.ToString() ?? "") : (r["learningStyleEN"]?.ToString() ?? "");
+                            string fullName = r["name"]?.ToString() ?? "-";
+                            string nick = r["nickname"]?.ToString() ?? "-";
+                            string rel = r["relationship"]?.ToString() ?? T("Family", "Keluarga");
 
+                            if (!string.IsNullOrWhiteSpace(pName))
+                            {
+                                pnlPersonality.Visible = true;
+                                litPersonalityTitle.Text = string.Format(T("Your child is a {0}:", "Anak anda ialah {0}:"), Server.HtmlEncode(pName));
+                                litPersonalityDesc.Text = Server.HtmlEncode(pDesc);
+                                litInfoFullName.Text = Server.HtmlEncode(fullName);
+                                litInfoNickname.Text = Server.HtmlEncode(!string.IsNullOrWhiteSpace(nick) ? nick : "-");
+                                litInfoRelationship.Text = Server.HtmlEncode(rel);
+                                litInfoLearningStyle.Text = Server.HtmlEncode(!string.IsNullOrWhiteSpace(learnStyle) ? learnStyle : "-");
+                                if (!string.IsNullOrWhiteSpace(avatar))
+                                    imgPersonality.ImageUrl = ResolveUrl("~/" + avatar);
+                                else
+                                    imgPersonality.Visible = false;
+                            }
+                            else { pnlNoPersonality.Visible = true; }
+                        }
+                        else { pnlNoPersonality.Visible = true; }
+                    }
+                }
+            }
+            catch { pnlNoPersonality.Visible = true; }
+        }
+
+        // ═══════════════════════════════════════════════════
+        //  LEVEL CARD
+        // ═══════════════════════════════════════════════════
+        private void LoadLevelCard()
+        {
+            pnlLevelInfo.Visible = false;
+            pnlNoLevel.Visible = false;
+            try
+            {
+                const string sql = @"SELECT l.levelNameEN, l.levelNameBM, l.levelDescriptionEN, l.levelDescriptionBM,
+                    e.enrolledDate
+                    FROM dbo.[Student] s
+                    LEFT JOIN dbo.[Level] l ON l.levelId=s.currentLevelId
+                    LEFT JOIN dbo.[Enrollment] e ON e.studentId=s.studentId AND e.levelId=s.currentLevelId AND e.status='Active'
+                    WHERE s.studentId=@studentId";
                 using (var conn = new SqlConnection(ConnStr))
                 using (var cmd = new SqlCommand(sql, conn))
                 {
                     cmd.Parameters.AddWithValue("@studentId", _studentId);
                     conn.Open();
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            hasUnits = true;
-                            string unitId = reader["unitId"]?.ToString() ?? "";
-                            string unitName = CurrentLanguage == "BM" ? (reader["unitNameBM"]?.ToString() ?? reader["unitNameEN"]?.ToString() ?? "-") : (reader["unitNameEN"]?.ToString() ?? "-");
-                            int total = reader["totalLessons"] != DBNull.Value ? Convert.ToInt32(reader["totalLessons"]) : 0;
-                            int completed = reader["completedLessons"] != DBNull.Value ? Convert.ToInt32(reader["completedLessons"]) : 0;
-                            int pct = total > 0 ? (int)Math.Round((double)completed / total * 100) : 0;
-
-                            string html = "<div class='cp-unit'>"
-                                + "<div class='cp-unit-header'>"
-                                + "<span class='cp-unit-name'>" + Server.HtmlEncode(unitName) + "</span>"
-                                + "<span class='cp-unit-pct'>" + pct + "%</span>"
-                                + "</div>"
-                                + "<div class='cp-unit-bar'><div class='cp-unit-bar-fill' style='width:" + pct + "%'></div></div>"
-                                + "<div class='cp-unit-stats'>" + completed + " / " + total + " " + T("lessons completed", "pelajaran selesai") + "</div>"
-                                + "</div>";
-
-                            pnlUnits.Controls.Add(new LiteralControl(html));
-                        }
-                    }
-                }
-            }
-            catch (SqlException) { }
-
-            if (!hasUnits) pnlNoUnits.Visible = true;
-        }
-
-        // ═══════════════════════════════════════════════════
-        //  RECENT LEARNING SUMMARY
-        // ═══════════════════════════════════════════════════
-        private void LoadRecentSummary()
-        {
-            pnlRecent.Controls.Clear();
-            pnlNoRecent.Visible = false;
-            bool hasData = false;
-
-            // Latest lesson
-            try
-            {
-                const string sql = @"SELECT TOP 1 l.lessonTitleEN, l.lessonTitleBM, lp.completedDate
-                    FROM dbo.[LessonProgress] lp INNER JOIN dbo.[Lesson] l ON l.lessonId=lp.lessonId
-                    WHERE lp.studentId=@s AND lp.isCompleted=1 ORDER BY lp.completedDate DESC";
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@s", _studentId); conn.Open();
                     using (var r = cmd.ExecuteReader())
                     {
-                        if (r.Read())
+                        if (r.Read() && r["levelNameEN"] != DBNull.Value)
                         {
-                            hasData = true;
-                            string title = CurrentLanguage == "BM" ? (r["lessonTitleBM"]?.ToString() ?? r["lessonTitleEN"]?.ToString() ?? "-") : (r["lessonTitleEN"]?.ToString() ?? "-");
-                            string date = r["completedDate"] != DBNull.Value ? Convert.ToDateTime(r["completedDate"]).ToString("dd MMM yyyy") : "";
-                            pnlRecent.Controls.Add(new LiteralControl(
-                                "<div class='cp-activity-row'><div class='cp-activity-icon lesson'><i class='bi bi-book-half'></i></div>"
-                                + "<div class='cp-activity-body'><div class='cp-activity-label'>" + T("Latest Lesson", "Pelajaran Terkini") + "</div>"
-                                + "<div class='cp-activity-text'>" + Server.HtmlEncode(title) + "</div>"
-                                + "<div class='cp-activity-meta'>" + Server.HtmlEncode(date) + "</div></div></div>"));
+                            pnlLevelInfo.Visible = true;
+                            string lvlName = CurrentLanguage == "BM" ? (r["levelNameBM"]?.ToString() ?? "-") : (r["levelNameEN"]?.ToString() ?? "-");
+                            string lvlDesc = CurrentLanguage == "BM" ? (r["levelDescriptionBM"]?.ToString() ?? "") : (r["levelDescriptionEN"]?.ToString() ?? "");
+                            string enrolled = r["enrolledDate"] != DBNull.Value ? Convert.ToDateTime(r["enrolledDate"]).ToString("dd MMM yyyy") : T("Not available", "Tidak tersedia");
+                            litLevelName.Text = Server.HtmlEncode(lvlName);
+                            litLevelDesc.Text = Server.HtmlEncode(lvlDesc);
+                            litEnrolledSince.Text = T("Enrolled Since: ", "Didaftarkan Sejak: ") + Server.HtmlEncode(enrolled);
                         }
+                        else { pnlNoLevel.Visible = true; }
                     }
                 }
             }
-            catch (SqlException) { }
-
-            // Latest quiz
-            try
-            {
-                const string sql = @"SELECT TOP 1 q.quizTitleEN, q.quizTitleBM, qr.percentage, qr.resultStatus, qr.attemptedDate
-                    FROM dbo.[QuizResult] qr INNER JOIN dbo.[Quiz] q ON q.quizId=qr.quizId
-                    WHERE qr.studentId=@s ORDER BY qr.attemptedDate DESC";
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@s", _studentId); conn.Open();
-                    using (var r = cmd.ExecuteReader())
-                    {
-                        if (r.Read())
-                        {
-                            hasData = true;
-                            string title = CurrentLanguage == "BM" ? (r["quizTitleBM"]?.ToString() ?? r["quizTitleEN"]?.ToString() ?? "-") : (r["quizTitleEN"]?.ToString() ?? "-");
-                            string pct = r["percentage"] != DBNull.Value ? Convert.ToDecimal(r["percentage"]).ToString("F0") + "%" : "-";
-                            string status = r["resultStatus"]?.ToString() ?? "";
-                            string date = r["attemptedDate"] != DBNull.Value ? Convert.ToDateTime(r["attemptedDate"]).ToString("dd MMM yyyy") : "";
-                            pnlRecent.Controls.Add(new LiteralControl(
-                                "<div class='cp-activity-row quiz'><div class='cp-activity-icon quiz'><i class='bi bi-patch-question-fill'></i></div>"
-                                + "<div class='cp-activity-body'><div class='cp-activity-label'>" + T("Latest Quiz", "Kuiz Terkini") + "</div>"
-                                + "<div class='cp-activity-text'>" + Server.HtmlEncode(title) + "</div>"
-                                + "<div class='cp-activity-meta'>" + Server.HtmlEncode(pct + (!string.IsNullOrWhiteSpace(status) ? " · " + status : "") + (!string.IsNullOrWhiteSpace(date) ? " · " + date : "")) + "</div></div></div>"));
-                        }
-                    }
-                }
-            }
-            catch (SqlException) { }
-
-            // Latest badge
-            try
-            {
-                const string sql = @"SELECT TOP 1 b.badgeNameEN, b.badgeNameBM, sb.earnedAt
-                    FROM dbo.[StudentBadge] sb INNER JOIN dbo.[Badge] b ON b.badgeId=sb.badgeId
-                    WHERE sb.studentId=@s ORDER BY sb.earnedAt DESC";
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@s", _studentId); conn.Open();
-                    using (var r = cmd.ExecuteReader())
-                    {
-                        if (r.Read())
-                        {
-                            hasData = true;
-                            string bname = CurrentLanguage == "BM" ? (r["badgeNameBM"]?.ToString() ?? r["badgeNameEN"]?.ToString() ?? "-") : (r["badgeNameEN"]?.ToString() ?? "-");
-                            string date = r["earnedAt"] != DBNull.Value ? Convert.ToDateTime(r["earnedAt"]).ToString("dd MMM yyyy") : "";
-                            pnlRecent.Controls.Add(new LiteralControl(
-                                "<div class='cp-activity-row badgerow'><div class='cp-activity-icon badge-icon'><i class='bi bi-award-fill'></i></div>"
-                                + "<div class='cp-activity-body'><div class='cp-activity-label'>" + T("Latest Badge", "Lencana Terkini") + "</div>"
-                                + "<div class='cp-activity-text'>" + Server.HtmlEncode(bname) + "</div>"
-                                + "<div class='cp-activity-meta'>" + Server.HtmlEncode(date) + "</div></div></div>"));
-                        }
-                    }
-                }
-            }
-            catch (SqlException) { }
-
-            if (!hasData) pnlNoRecent.Visible = true;
+            catch { pnlNoLevel.Visible = true; }
         }
 
         // ═══════════════════════════════════════════════════
