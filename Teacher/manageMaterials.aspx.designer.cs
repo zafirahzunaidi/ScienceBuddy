@@ -15,21 +15,8 @@ namespace ScienceBuddy.Teacher
     {
 
         /// <summary>
-        /// pnlPending control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlPending;
-
-        /// <summary>
         /// pnlDenied control.
         /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlDenied;
 
         /// <summary>
@@ -279,6 +266,9 @@ namespace ScienceBuddy.Teacher
         protected global::System.Web.UI.WebControls.LinkButton btnTabMine;
         protected global::System.Web.UI.WebControls.LinkButton btnTabDiscover;
         protected global::System.Web.UI.WebControls.Panel pnlUploadBtn;
+        protected global::System.Web.UI.WebControls.Panel pnlUploadEnabled;
+        protected global::System.Web.UI.WebControls.Panel pnlUploadDisabled;
+        protected global::System.Web.UI.WebControls.Panel pnlFilterBar;
         protected global::System.Web.UI.WebControls.Panel pnlStatusChips;
         protected global::System.Web.UI.WebControls.LinkButton btnChipAll;
         protected global::System.Web.UI.WebControls.LinkButton btnChipApproved;
@@ -287,6 +277,7 @@ namespace ScienceBuddy.Teacher
         protected global::System.Web.UI.WebControls.Panel pnlDiscover;
         protected global::System.Web.UI.WebControls.Repeater rptDiscover;
         protected global::System.Web.UI.WebControls.Panel pnlDiscoverEmpty;
+        protected global::System.Web.UI.WebControls.Panel pnlMyMaterialsPending;
         protected global::System.Web.UI.WebControls.HiddenField hidActiveTab;
     }
 }
