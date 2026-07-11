@@ -91,57 +91,15 @@ namespace ScienceBuddy.Parent
 
         // (litHeroDdlLabel removed — child switching moved to sidebar)
 
-        // ── Child Snapshot card controls ──────────────────────────────
-        /// <summary>litSnapshotTitle — "Child Snapshot"</summary>
-        protected global::System.Web.UI.WebControls.Literal litSnapshotTitle;
-
-        /// <summary>litSnapshotSub — subtitle line.</summary>
-        protected global::System.Web.UI.WebControls.Literal litSnapshotSub;
-
+        // ── Selected Child Mini Card controls ──────────────────────────────
         /// <summary>litSnapInitials — child avatar initials.</summary>
         protected global::System.Web.UI.WebControls.Literal litSnapInitials;
 
-        /// <summary>litSnapName — child full name + nickname.</summary>
+        /// <summary>litSnapName — child full name.</summary>
         protected global::System.Web.UI.WebControls.Literal litSnapName;
 
-        /// <summary>litSnapRel — relationship label.</summary>
+        /// <summary>litSnapRel — relationship sentence.</summary>
         protected global::System.Web.UI.WebControls.Literal litSnapRel;
-
-        /// <summary>litSnapStatus — learning status badge text.</summary>
-        protected global::System.Web.UI.WebControls.Literal litSnapStatus;
-
-        /// <summary>pnlSnapActivity — container for activity rows.</summary>
-        protected global::System.Web.UI.WebControls.Panel pnlSnapActivity;
-
-        /// <summary>pnlSnapLesson — latest lesson row.</summary>
-        protected global::System.Web.UI.WebControls.Panel pnlSnapLesson;
-
-        /// <summary>litSnapLessonLabel — "Latest Lesson" label.</summary>
-        protected global::System.Web.UI.WebControls.Literal litSnapLessonLabel;
-
-        /// <summary>litSnapLessonTitle — lesson title text.</summary>
-        protected global::System.Web.UI.WebControls.Literal litSnapLessonTitle;
-
-        /// <summary>litSnapLessonDate — lesson completed date.</summary>
-        protected global::System.Web.UI.WebControls.Literal litSnapLessonDate;
-
-        /// <summary>pnlSnapQuiz — latest quiz row.</summary>
-        protected global::System.Web.UI.WebControls.Panel pnlSnapQuiz;
-
-        /// <summary>litSnapQuizLabel — "Latest Quiz" label.</summary>
-        protected global::System.Web.UI.WebControls.Literal litSnapQuizLabel;
-
-        /// <summary>litSnapQuizTitle — quiz title text.</summary>
-        protected global::System.Web.UI.WebControls.Literal litSnapQuizTitle;
-
-        /// <summary>litSnapQuizMeta — quiz percentage + status.</summary>
-        protected global::System.Web.UI.WebControls.Literal litSnapQuizMeta;
-
-        /// <summary>pnlSnapNoActivity — empty state when no activity.</summary>
-        protected global::System.Web.UI.WebControls.Panel pnlSnapNoActivity;
-
-        /// <summary>litSnapNoActivity — "No recent activity yet."</summary>
-        protected global::System.Web.UI.WebControls.Literal litSnapNoActivity;
 
         /// <summary>litSnapBtnProfile — "View Profile" button text.</summary>
         protected global::System.Web.UI.WebControls.Literal litSnapBtnProfile;
@@ -183,10 +141,10 @@ namespace ScienceBuddy.Parent
         /// <summary>litTabPublic — "Public" tab text.</summary>
         protected global::System.Web.UI.WebControls.Literal litTabPublic;
 
-        /// <summary>lnkTabPrivate — Student-Parent tab button.</summary>
+        /// <summary>lnkTabPrivate — Family tab button.</summary>
         protected global::System.Web.UI.WebControls.LinkButton lnkTabPrivate;
 
-        /// <summary>litTabPrivate — "Student-Parent" tab text.</summary>
+        /// <summary>litTabPrivate — "Family" tab text.</summary>
         protected global::System.Web.UI.WebControls.Literal litTabPrivate;
 
         /// <summary>ddlForumTag — tag filter dropdown.</summary>

@@ -156,8 +156,6 @@ namespace ScienceBuddy.Parent
         protected void SidebarChildChanged(object sender, EventArgs e)
         {
             Session["selectedChildId"] = ddlSidebarChild.SelectedValue;
-            Response.Redirect(Request.RawUrl, false);
-            Context.ApplicationInstance.CompleteRequest();
         }
 
         // ══════════════════════════════════════════════════════════════

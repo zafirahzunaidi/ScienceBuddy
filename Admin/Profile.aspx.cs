@@ -56,7 +56,7 @@ namespace ScienceBuddy.Admin
                             litEmail.Text    = HttpUtility.HtmlEncode(email);
                             litRole.Text     = T("Administrator", "Pentadbir");
                             litLanguage.Text = lang == "BM" ? "Bahasa Melayu" : "English";
-                            litStatus.Text   = "<span class='ap-status'><span class='ap-status-dot'></span>" + HttpUtility.HtmlEncode(status) + "</span>";
+                            litStatus.Text   = "<span class='ad-profile-status'><span class='ad-profile-status-dot'></span>" + HttpUtility.HtmlEncode(status) + "</span>";
                             litInitials.Text = username.Length >= 2
                                 ? username.Substring(0, 2).ToUpper()
                                 : username.ToUpper();

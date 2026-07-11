@@ -3,7 +3,7 @@
     Title="Child Profile" MaintainScrollPositionOnPostback="true" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
-<link href="<%: ResolveUrl("~/Content/Parent.css") %>" rel="stylesheet" />
+<link href="<%: ResolveUrl("~/Content/Parent.css") %>?v=4" rel="stylesheet" />
 <script type="text/javascript">
 function toggleChildPopover(e){e.stopPropagation();var pop=document.getElementById('divChildPopover');if(!pop)return;if(pop.classList.contains('pt-popover-open')){pop.classList.remove('pt-popover-open');return;}var ddl=document.querySelector('.sb-sidebar-child-ddl');if(!ddl)return;var html='<div class="pt-child-popover-title">Select Child</div>';for(var i=0;i<ddl.options.length;i++){var o=ddl.options[i];var init=o.text.charAt(0).toUpperCase();var ac=o.selected?' pt-popover-active':'';html+='<div class="pt-child-popover-item'+ac+'" onclick="selectChildFromPopover(\''+o.value+'\')"><span class="pt-popover-avatar">'+init+'</span>'+o.text+'</div>';}pop.innerHTML=html;pop.classList.add('pt-popover-open');}
 function selectChildFromPopover(v){var ddl=document.querySelector('.sb-sidebar-child-ddl');if(ddl&&ddl.value!==v){ddl.value=v;__doPostBack(ddl.id.replace(/_/g,'$'),'');}var pop=document.getElementById('divChildPopover');if(pop)pop.classList.remove('pt-popover-open');}
@@ -46,6 +46,14 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
 <asp:Content ID="cBody" ContentPlaceHolderID="MainContentSidebar" runat="server">
 <div class="cp-page">
 
+    <%-- Hero --%>
+    <div class="pt-page-hero">
+        <div class="pt-page-hero-content">
+            <h1 class="pt-page-hero-title"><i class="bi bi-person-badge-fill"></i> <%: T("Child Profile","Profil Anak") %></h1>
+            <p class="pt-page-hero-subtitle"><%: T("View your child's account details and learning information.","Lihat maklumat akaun dan pembelajaran anak anda.") %></p>
+        </div>
+    </div>
+
     <%-- No child --%>
     <asp:Panel ID="pnlNoChild" runat="server" Visible="false">
         <div class="cp-card"><div class="cp-empty">
@@ -72,22 +80,41 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
             </div>
         </div>
 
-        <%-- Learning Path --%>
-        <div class="cp-card">
-            <div class="cp-sec-title"><i class="bi bi-map-fill"></i> <asp:Literal ID="litPathTitle" runat="server" /></div>
-            <asp:Panel ID="pnlUnits" runat="server"></asp:Panel>
-            <asp:Panel ID="pnlNoUnits" runat="server" Visible="false">
-                <div class="cp-no-data"><asp:Literal ID="litNoUnits" runat="server" /></div>
-            </asp:Panel>
-        </div>
-
-        <%-- Recent Learning Summary --%>
-        <div class="cp-card">
-            <div class="cp-sec-title"><i class="bi bi-clock-history"></i> <asp:Literal ID="litRecentTitle" runat="server" /></div>
-            <asp:Panel ID="pnlRecent" runat="server"></asp:Panel>
-            <asp:Panel ID="pnlNoRecent" runat="server" Visible="false">
-                <div class="cp-no-data"><asp:Literal ID="litNoRecent" runat="server" /></div>
-            </asp:Panel>
+        <%-- Personality + Level Cards --%>
+        <div class="pt-child-profile-grid">
+            <%-- LEFT: Personality Card --%>
+            <div class="pt-personality-card">
+                <asp:Panel ID="pnlPersonality" runat="server">
+                    <div class="pt-personality-avatar-wrap">
+                        <asp:Image ID="imgPersonality" runat="server" CssClass="pt-personality-avatar" />
+                    </div>
+                    <div class="pt-personality-content">
+                        <h3 class="pt-personality-title"><asp:Literal ID="litPersonalityTitle" runat="server" /></h3>
+                        <p class="pt-personality-description"><asp:Literal ID="litPersonalityDesc" runat="server" /></p>
+                        <div class="pt-child-info-list">
+                            <div class="pt-child-info-row"><span class="pt-child-info-label"><%: T("Full Name","Nama Penuh") %></span><span class="pt-child-info-value"><asp:Literal ID="litInfoFullName" runat="server" /></span></div>
+                            <div class="pt-child-info-row"><span class="pt-child-info-label"><%: T("Nickname","Nama Panggilan") %></span><span class="pt-child-info-value"><asp:Literal ID="litInfoNickname" runat="server" /></span></div>
+                            <div class="pt-child-info-row"><span class="pt-child-info-label"><%: T("Relationship","Hubungan") %></span><span class="pt-child-info-value"><asp:Literal ID="litInfoRelationship" runat="server" /></span></div>
+                            <div class="pt-child-info-row"><span class="pt-child-info-label"><%: T("Learning Style","Gaya Pembelajaran") %></span><span class="pt-child-info-value"><asp:Literal ID="litInfoLearningStyle" runat="server" /></span></div>
+                        </div>
+                    </div>
+                </asp:Panel>
+                <asp:Panel ID="pnlNoPersonality" runat="server" Visible="false">
+                    <div class="cp-no-data"><%: T("No personality information available.","Tiada maklumat personaliti tersedia.") %></div>
+                </asp:Panel>
+            </div>
+            <%-- RIGHT: Level Card --%>
+            <div class="pt-level-card-profile">
+                <asp:Panel ID="pnlLevelInfo" runat="server">
+                    <h3 class="pt-level-card-title"><%: T("Their Level","Tahap Mereka") %></h3>
+                    <div class="pt-level-card-name"><asp:Literal ID="litLevelName" runat="server" /></div>
+                    <p class="pt-level-card-desc"><asp:Literal ID="litLevelDesc" runat="server" /></p>
+                    <div class="pt-level-card-enrolled"><i class="bi bi-calendar-check"></i> <asp:Literal ID="litEnrolledSince" runat="server" /></div>
+                </asp:Panel>
+                <asp:Panel ID="pnlNoLevel" runat="server" Visible="false">
+                    <div class="cp-no-data"><%: T("No level information available.","Tiada maklumat tahap tersedia.") %></div>
+                </asp:Panel>
+            </div>
         </div>
 
         <%-- Achievement Snapshot --%>

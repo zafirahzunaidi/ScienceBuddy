@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -139,7 +139,7 @@ namespace ScienceBuddy.Admin
                     string[] medals = { "&#x1F947;", "&#x1F948;", "&#x1F949;" }; // gold, silver, bronze
                     string[] labels = { T("1st Place", "Tempat Ke-1"), T("2nd Place", "Tempat Ke-2"), T("3rd Place", "Tempat Ke-3") };
                     string[] avatarColors = { "linear-gradient(135deg,#F59E0B,#D97706)", "linear-gradient(135deg,#94A3B8,#64748B)", "linear-gradient(135deg,#92400E,#B45309)" };
-                    string[] blockCss = { "gm-podium-1st", "gm-podium-2nd", "gm-podium-3rd" };
+                    string[] blockCss = { "ad-student-performance-podium-1st", "ad-student-performance-podium-2nd", "ad-student-performance-podium-3rd" };
 
                     // Build each podium item by rank (0=1st, 1=2nd, 2=3rd)
                     var podiumItems = new string[3];
@@ -150,14 +150,14 @@ namespace ScienceBuddy.Admin
                         string initials = name.Length >= 2 ? name.Substring(0, 2).ToUpper() : name.ToUpper();
 
                         podiumItems[i] = string.Format(
-                            "<div class=\"gm-podium-item {0}\">" +
-                            "<div class=\"gm-podium-block\">" +
-                            "<div class=\"gm-podium-medal\">{1}</div>" +
-                            "<div class=\"gm-podium-avatar\" style=\"background:{2};\">{3}</div>" +
-                            "<div class=\"gm-podium-name\">{4}</div>" +
-                            "<div class=\"gm-podium-xp\">{5} XP</div>" +
+                            "<div class=\"ad-student-performance-podium-item {0}\">" +
+                            "<div class=\"ad-student-performance-podium-block\">" +
+                            "<div class=\"ad-student-performance-podium-medal\">{1}</div>" +
+                            "<div class=\"ad-student-performance-podium-avatar\" style=\"background:{2};\">{3}</div>" +
+                            "<div class=\"ad-student-performance-podium-name\">{4}</div>" +
+                            "<div class=\"ad-student-performance-podium-xp\">{5} XP</div>" +
                             "</div>" +
-                            "<div class=\"gm-podium-label\">{6}</div>" +
+                            "<div class=\"ad-student-performance-podium-label\">{6}</div>" +
                             "</div>",
                             blockCss[i], medals[i], avatarColors[i], HttpUtility.HtmlEncode(initials),
                             HttpUtility.HtmlEncode(name), xp, labels[i]);

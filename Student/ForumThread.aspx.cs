@@ -12,15 +12,21 @@ namespace ScienceBuddy.Student
     public partial class ForumThread1 : Page
     {
         // ── Connection string ─────────────────────────────────────────
-        private string ConnStr =>
-            ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+        private string ConnStr
+        {
+            get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
+        }
 
         // ── Language helper ────────────────────────────────────────────
         public string CurrentLanguage = "EN";
 
         public string T(string en, string bm)
         {
-            return CurrentLanguage == "BM" ? bm : en;
+            if (CurrentLanguage == "BM")
+            {
+                return bm;
+            }
+            return en;
         }
 
         // ── Page Load ─────────────────────────────────────────────────
@@ -60,12 +66,12 @@ namespace ScienceBuddy.Student
                 try
                 {
                     const string sql = "SELECT preferredLanguage FROM [User] WHERE userId = @userId";
-                    using (var conn = new SqlConnection(ConnStr))
-                    using (var cmd = new SqlCommand(sql, conn))
+                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlCommand command = new SqlCommand(sql, connection))
                     {
-                        cmd.Parameters.AddWithValue("@userId", userId);
-                        conn.Open();
-                        object result = cmd.ExecuteScalar();
+                        command.Parameters.AddWithValue("@userId", userId);
+                        connection.Open();
+                        object result = command.ExecuteScalar();
                         if (result != null && result != DBNull.Value)
                         {
                             lang = result.ToString();
@@ -75,7 +81,10 @@ namespace ScienceBuddy.Student
                         }
                     }
                 }
-                catch (SqlException) { }
+                catch (SqlException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Database error: " + ex.Message);
+                }
             }
 
             CurrentLanguage = "EN";
@@ -85,26 +94,26 @@ namespace ScienceBuddy.Student
         // ── Bilingual labels ──────────────────────────────────────────
         private void SetLabels()
         {
-            litPageTitle.Text       = T("Forum Thread", "Perbincangan Forum");
-            litBack.Text            = T("Back to Forum", "Kembali ke Forum");
-            litErrorTitle.Text      = T("Discussion not found", "Perbincangan tidak dijumpai");
-            litErrorDesc.Text       = T("This discussion does not exist or you don't have access.",
-                                        "Perbincangan ini tidak wujud atau anda tiada akses.");
-            litErrorBtn.Text        = T("Back", "Kembali");
+            litPageTitle.Text = T("Forum Thread", "Perbincangan Forum");
+            litBack.Text = T("Back to Forum", "Kembali ke Forum");
+            litErrorTitle.Text = T("Discussion not found", "Perbincangan tidak dijumpai");
+            litErrorDesc.Text = T("This discussion does not exist or you don't have access.",
+                                    "Perbincangan ini tidak wujud atau anda tiada akses.");
+            litErrorBtn.Text = T("Back", "Kembali");
             litRestrictedTitle.Text = T("Private Discussion", "Perbincangan Peribadi");
-            litRestrictedDesc.Text  = T("This private discussion is not available for your account.",
+            litRestrictedDesc.Text = T("This private discussion is not available for your account.",
                                         "Perbincangan peribadi ini tidak tersedia untuk akaun anda.");
-            litRestrictedBtn.Text   = T("Back to Forum", "Kembali ke Forum");
-            litLikesLabel.Text      = T("likes", "suka");
-            litRepliesLabel.Text    = T("replies", "balasan");
-            litRepliesTitle.Text    = T("Replies", "Balasan");
-            litReplyFormTitle.Text  = T("Post Reply", "Hantar Balasan");
-            litReplySuccess.Text    = T("Reply posted successfully!", "Balasan berjaya dihantar!");
-            litReplyError.Text      = T("Please write something before posting.",
-                                        "Sila tulis sesuatu sebelum menghantar.");
-            litOrigMsgLabel.Text    = T("Original Message", "Mesej Asal");
-            litNoReplies.Text       = T("No replies yet. Be the first to respond!", "Belum ada balasan. Jadilah yang pertama!");
-            litPrivateNotice.Text   = T("This is a private Student-Parent discussion. Only you and your linked parent can view this.",
+            litRestrictedBtn.Text = T("Back to Forum", "Kembali ke Forum");
+            litLikesLabel.Text = T("likes", "suka");
+            litRepliesLabel.Text = T("replies", "balasan");
+            litRepliesTitle.Text = T("Replies", "Balasan");
+            litReplyFormTitle.Text = T("Post Reply", "Hantar Balasan");
+            litReplySuccess.Text = T("Reply posted successfully!", "Balasan berjaya dihantar!");
+            litReplyError.Text = T("Please write something before posting.",
+                                    "Sila tulis sesuatu sebelum menghantar.");
+            litOrigMsgLabel.Text = T("Original Message", "Mesej Asal");
+            litNoReplies.Text = T("No replies yet. Be the first to respond!", "Belum ada balasan. Jadilah yang pertama!");
+            litPrivateNotice.Text = T("This is a private Student-Parent discussion. Only you and your linked parent can view this.",
                                         "Ini adalah perbincangan peribadi Murid-Ibu Bapa. Hanya anda dan ibu bapa yang dipautkan boleh melihat ini.");
 
             txtReply.Attributes["placeholder"] = T("Write your reply...", "Tulis balasan anda...");
@@ -123,11 +132,11 @@ namespace ScienceBuddy.Student
                 return;
             }
 
-            using (var conn = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnStr))
             {
-                conn.Open();
+                connection.Open();
 
-                if (!Tbl(conn, "Forum"))
+                if (!Tbl(connection, "Forum"))
                 {
                     ShowError();
                     return;
@@ -140,31 +149,58 @@ namespace ScienceBuddy.Student
                     WHERE  f.forumId = @forumId";
 
                 DataRow forumRow = null;
-                using (var cmd = new SqlCommand(forumSql, conn))
+                using (SqlCommand command = new SqlCommand(forumSql, connection))
                 {
-                    cmd.Parameters.AddWithValue("@forumId", forumId);
-                    var da = new SqlDataAdapter(cmd);
-                    var dt = new DataTable();
-                    da.Fill(dt);
-                    if (dt.Rows.Count == 0)
+                    command.Parameters.AddWithValue("@forumId", forumId);
+                    SqlDataAdapter adapter = new SqlDataAdapter(command);
+                    DataTable dataTable = new DataTable();
+                    adapter.Fill(dataTable);
+                    if (dataTable.Rows.Count == 0)
                     {
                         ShowError();
                         return;
                     }
-                    forumRow = dt.Rows[0];
+                    forumRow = dataTable.Rows[0];
                 }
 
-                string title = forumRow["title"] != DBNull.Value ? forumRow["title"].ToString() : "";
-                string message = forumRow["message"] != DBNull.Value ? forumRow["message"].ToString() : "";
-                string discussionType = forumRow["discussionType"] != DBNull.Value ? forumRow["discussionType"].ToString() : "Public";
-                string createdBy = forumRow["createdBy"] != DBNull.Value ? forumRow["createdBy"].ToString() : "";
-                DateTime createdAt = forumRow["createdAt"] == DBNull.Value
-                    ? DateTime.Now : Convert.ToDateTime(forumRow["createdAt"]);
+                string title = "";
+                if (forumRow["title"] != DBNull.Value)
+                {
+                    title = forumRow["title"].ToString();
+                }
+
+                string message = "";
+                if (forumRow["message"] != DBNull.Value)
+                {
+                    message = forumRow["message"].ToString();
+                }
+
+                string discussionType = "Public";
+                if (forumRow["discussionType"] != DBNull.Value)
+                {
+                    discussionType = forumRow["discussionType"].ToString();
+                }
+
+                string createdBy = "";
+                if (forumRow["createdBy"] != DBNull.Value)
+                {
+                    createdBy = forumRow["createdBy"].ToString();
+                }
+
+                DateTime createdAt;
+                if (forumRow["createdAt"] == DBNull.Value)
+                {
+                    createdAt = DateTime.Now;
+                }
+                else
+                {
+                    createdAt = Convert.ToDateTime(forumRow["createdAt"]);
+                }
 
                 // ── Private access check ──
                 if (discussionType.Equals("Private", StringComparison.OrdinalIgnoreCase))
                 {
-                    bool hasAccess = CheckPrivateAccess(conn, userId, createdBy);
+                    bool hasAccess = CheckPrivateAccess(connection, userId, createdBy);
 
                     if (!hasAccess)
                     {
@@ -174,26 +210,26 @@ namespace ScienceBuddy.Student
                 }
 
                 // ── Get creator display name ──
-                string creatorName = GetDisplayName(conn, createdBy);
+                string creatorName = GetDisplayName(connection, createdBy);
 
                 // ── Load tags ──
                 string tagsHtml = "";
-                if (Tbl(conn, "ForumTag") && Tbl(conn, "Tag"))
+                if (Tbl(connection, "ForumTag") && Tbl(connection, "Tag"))
                 {
                     const string tagSql = @"
                         SELECT t.tagName
                         FROM   ForumTag ft
                         JOIN   Tag t ON t.tagId = ft.tagId
                         WHERE  ft.forumId = @forumId";
-                    using (var tagCmd = new SqlCommand(tagSql, conn))
+                    using (SqlCommand tagCmd = new SqlCommand(tagSql, connection))
                     {
                         tagCmd.Parameters.AddWithValue("@forumId", forumId);
-                        using (var rdr = tagCmd.ExecuteReader())
+                        using (SqlDataReader reader = tagCmd.ExecuteReader())
                         {
-                            while (rdr.Read())
+                            while (reader.Read())
                             {
                                 tagsHtml += "<span class='ft-tag'>" +
-                                    HttpUtility.HtmlEncode(rdr["tagName"].ToString()) + "</span>";
+                                    HttpUtility.HtmlEncode(reader["tagName"].ToString()) + "</span>";
                             }
                         }
                     }
@@ -202,10 +238,10 @@ namespace ScienceBuddy.Student
                 // ── Count likes ──
                 int likeCount = 0;
                 bool isLiked = false;
-                if (Tbl(conn, "ForumLike"))
+                if (Tbl(connection, "ForumLike"))
                 {
                     const string likeSql = "SELECT COUNT(*) FROM ForumLike WHERE forumId = @forumId";
-                    using (var likeCmd = new SqlCommand(likeSql, conn))
+                    using (SqlCommand likeCmd = new SqlCommand(likeSql, connection))
                     {
                         likeCmd.Parameters.AddWithValue("@forumId", forumId);
                         likeCount = (int)likeCmd.ExecuteScalar();
@@ -214,7 +250,7 @@ namespace ScienceBuddy.Student
                     const string isLikedSql = @"
                         SELECT COUNT(*) FROM ForumLike
                         WHERE  forumId = @forumId AND senderUserId = @userId";
-                    using (var isLikedCmd = new SqlCommand(isLikedSql, conn))
+                    using (SqlCommand isLikedCmd = new SqlCommand(isLikedSql, connection))
                     {
                         isLikedCmd.Parameters.AddWithValue("@forumId", forumId);
                         isLikedCmd.Parameters.AddWithValue("@userId", userId);
@@ -224,10 +260,10 @@ namespace ScienceBuddy.Student
 
                 // ── Count replies ──
                 int replyCount = 0;
-                if (Tbl(conn, "ForumChat"))
+                if (Tbl(connection, "ForumChat"))
                 {
                     const string replySql = "SELECT COUNT(*) FROM ForumChat WHERE forumId = @forumId";
-                    using (var replyCmd = new SqlCommand(replySql, conn))
+                    using (SqlCommand replyCmd = new SqlCommand(replySql, connection))
                     {
                         replyCmd.Parameters.AddWithValue("@forumId", forumId);
                         replyCount = (int)replyCmd.ExecuteScalar();
@@ -274,26 +310,21 @@ namespace ScienceBuddy.Student
                 }
 
                 // ── Load replies ──
-                LoadReplies(conn, forumId);
+                LoadReplies(connection, forumId);
             }
         }
 
         // ── Private access logic ──────────────────────────────────────
-        /// <summary>
-        /// Checks if the student has access to a Private discussion.
-        /// Access is granted if:
-        /// 1. Student's userId == Forum.createdBy (student created it)
-        /// 2. Forum.createdBy belongs to a parent linked to this student
-        ///    (Student → StudentParent → Parent → Parent.userId == createdBy)
-        /// </summary>
-        private bool CheckPrivateAccess(SqlConnection conn, string studentUserId, string createdBy)
+        private bool CheckPrivateAccess(SqlConnection connection, string studentUserId, string createdBy)
         {
             // Case 1: Student is the creator
             if (createdBy == studentUserId)
+            {
                 return true;
+            }
 
             // Case 2: Creator is linked parent
-            if (Tbl(conn, "Student") && Tbl(conn, "StudentParent") && Tbl(conn, "Parent"))
+            if (Tbl(connection, "Student") && Tbl(connection, "StudentParent") && Tbl(connection, "Parent"))
             {
                 const string sql = @"
                     SELECT COUNT(*)
@@ -303,11 +334,11 @@ namespace ScienceBuddy.Student
                     WHERE  s.userId = @studentUserId
                     AND    p.userId = @createdBy";
 
-                using (var cmd = new SqlCommand(sql, conn))
+                using (SqlCommand command = new SqlCommand(sql, connection))
                 {
-                    cmd.Parameters.AddWithValue("@studentUserId", studentUserId);
-                    cmd.Parameters.AddWithValue("@createdBy", createdBy);
-                    return (int)cmd.ExecuteScalar() > 0;
+                    command.Parameters.AddWithValue("@studentUserId", studentUserId);
+                    command.Parameters.AddWithValue("@createdBy", createdBy);
+                    return (int)command.ExecuteScalar() > 0;
                 }
             }
 
@@ -349,9 +380,9 @@ namespace ScienceBuddy.Student
         }
 
         // ── Load Replies ──────────────────────────────────────────────
-        private void LoadReplies(SqlConnection conn, string forumId)
+        private void LoadReplies(SqlConnection connection, string forumId)
         {
-            if (!Tbl(conn, "ForumChat"))
+            if (!Tbl(connection, "ForumChat"))
             {
                 pnlNoReplies.Visible = true;
                 return;
@@ -363,19 +394,32 @@ namespace ScienceBuddy.Student
                 WHERE  fc.forumId = @forumId
                 ORDER BY fc.createdAt ASC";
 
-            var replies = new List<object>();
+            List<object> replies = new List<object>();
 
-            using (var cmd = new SqlCommand(sql, conn))
+            using (SqlCommand command = new SqlCommand(sql, connection))
             {
-                cmd.Parameters.AddWithValue("@forumId", forumId);
-                using (var rdr = cmd.ExecuteReader())
+                command.Parameters.AddWithValue("@forumId", forumId);
+                using (SqlDataReader reader = command.ExecuteReader())
                 {
-                    while (rdr.Read())
+                    while (reader.Read())
                     {
-                        string senderUserId = rdr["senderUserId"].ToString();
-                        string msg = rdr["message"] != DBNull.Value ? rdr["message"].ToString() : "";
-                        DateTime date = rdr["createdAt"] == DBNull.Value
-                            ? DateTime.Now : Convert.ToDateTime(rdr["createdAt"]);
+                        string senderUserId = reader["senderUserId"].ToString();
+
+                        string msg = "";
+                        if (reader["message"] != DBNull.Value)
+                        {
+                            msg = reader["message"].ToString();
+                        }
+
+                        DateTime date;
+                        if (reader["createdAt"] == DBNull.Value)
+                        {
+                            date = DateTime.Now;
+                        }
+                        else
+                        {
+                            date = Convert.ToDateTime(reader["createdAt"]);
+                        }
 
                         replies.Add(new
                         {
@@ -394,21 +438,37 @@ namespace ScienceBuddy.Student
             }
 
             // Build display list with names
-            var displayList = new List<object>();
+            List<object> displayList = new List<object>();
             foreach (dynamic reply in replies)
             {
-                string senderName = GetDisplayName(conn, reply.SenderUserId);
-                string senderRole = GetUserRole(conn, reply.SenderUserId);
-                string senderInitial = !string.IsNullOrWhiteSpace(senderName)
-                    ? senderName[0].ToString().ToUpper() : "U";
+                string senderName = GetDisplayName(connection, reply.SenderUserId);
+                string senderRole = GetUserRole(connection, reply.SenderUserId);
+
+                string senderInitial;
+                if (!string.IsNullOrWhiteSpace(senderName))
+                {
+                    senderInitial = senderName[0].ToString().ToUpper();
+                }
+                else
+                {
+                    senderInitial = "U";
+                }
 
                 string roleLabel = "";
                 switch (senderRole)
                 {
-                    case "Student": roleLabel = T("Student", "Pelajar"); break;
-                    case "Teacher": roleLabel = T("Teacher", "Guru"); break;
-                    case "Parent": roleLabel = T("Parent", "Ibu Bapa"); break;
-                    default: roleLabel = senderRole; break;
+                    case "Student":
+                        roleLabel = T("Student", "Pelajar");
+                        break;
+                    case "Teacher":
+                        roleLabel = T("Teacher", "Guru");
+                        break;
+                    case "Parent":
+                        roleLabel = T("Parent", "Ibu Bapa");
+                        break;
+                    default:
+                        roleLabel = senderRole;
+                        break;
                 }
 
                 displayList.Add(new
@@ -432,20 +492,26 @@ namespace ScienceBuddy.Student
             string forumId = Request.QueryString["forumId"];
             string userId = Session["userId"].ToString();
 
-            if (string.IsNullOrEmpty(forumId)) return;
-
-            using (var conn = new SqlConnection(ConnStr))
+            if (string.IsNullOrEmpty(forumId))
             {
-                conn.Open();
+                return;
+            }
 
-                if (!Tbl(conn, "ForumLike")) return;
+            using (SqlConnection connection = new SqlConnection(ConnStr))
+            {
+                connection.Open();
+
+                if (!Tbl(connection, "ForumLike"))
+                {
+                    return;
+                }
 
                 // Check if already liked
                 const string checkSql = @"
                     SELECT COUNT(*) FROM ForumLike
                     WHERE  forumId = @forumId AND senderUserId = @userId";
                 bool exists;
-                using (var checkCmd = new SqlCommand(checkSql, conn))
+                using (SqlCommand checkCmd = new SqlCommand(checkSql, connection))
                 {
                     checkCmd.Parameters.AddWithValue("@forumId", forumId);
                     checkCmd.Parameters.AddWithValue("@userId", userId);
@@ -458,7 +524,7 @@ namespace ScienceBuddy.Student
                     const string delSql = @"
                         DELETE FROM ForumLike
                         WHERE  forumId = @forumId AND senderUserId = @userId";
-                    using (var delCmd = new SqlCommand(delSql, conn))
+                    using (SqlCommand delCmd = new SqlCommand(delSql, connection))
                     {
                         delCmd.Parameters.AddWithValue("@forumId", forumId);
                         delCmd.Parameters.AddWithValue("@userId", userId);
@@ -472,7 +538,7 @@ namespace ScienceBuddy.Student
                     const string seqSql = @"
                         SELECT ISNULL(MAX(CAST(SUBSTRING(likeId, 3, LEN(likeId) - 2) AS INT)), 0)
                         FROM ForumLike WHERE likeId LIKE 'FL[0-9]%'";
-                    using (var seqCmd = new SqlCommand(seqSql, conn))
+                    using (SqlCommand seqCmd = new SqlCommand(seqSql, connection))
                     {
                         object lastVal = seqCmd.ExecuteScalar();
                         if (lastVal != null && lastVal != DBNull.Value)
@@ -485,7 +551,7 @@ namespace ScienceBuddy.Student
                     const string insSql = @"
                         INSERT INTO ForumLike (likeId, forumId, senderUserId, createdAt)
                         VALUES (@likeId, @forumId, @userId, @now)";
-                    using (var insCmd = new SqlCommand(insSql, conn))
+                    using (SqlCommand insCmd = new SqlCommand(insSql, connection))
                     {
                         insCmd.Parameters.AddWithValue("@likeId", likeId);
                         insCmd.Parameters.AddWithValue("@forumId", forumId);
@@ -510,7 +576,10 @@ namespace ScienceBuddy.Student
             pnlReplySuccess.Visible = false;
             pnlReplyError.Visible = false;
 
-            if (string.IsNullOrEmpty(forumId)) return;
+            if (string.IsNullOrEmpty(forumId))
+            {
+                return;
+            }
 
             if (string.IsNullOrEmpty(replyMsg))
             {
@@ -519,32 +588,50 @@ namespace ScienceBuddy.Student
             }
 
             // Re-check access for Private threads before allowing reply
-            using (var conn = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnStr))
             {
-                conn.Open();
+                connection.Open();
 
-                if (!Tbl(conn, "Forum") || !Tbl(conn, "ForumChat")) return;
+                if (!Tbl(connection, "Forum") || !Tbl(connection, "ForumChat"))
+                {
+                    return;
+                }
 
                 // Verify private access
                 const string typeSql = "SELECT discussionType, createdBy FROM Forum WHERE forumId = @forumId";
                 string discType = "Public";
                 string createdBy = "";
-                using (var typeCmd = new SqlCommand(typeSql, conn))
+                using (SqlCommand typeCmd = new SqlCommand(typeSql, connection))
                 {
                     typeCmd.Parameters.AddWithValue("@forumId", forumId);
-                    using (var rdr = typeCmd.ExecuteReader())
+                    using (SqlDataReader reader = typeCmd.ExecuteReader())
                     {
-                        if (rdr.Read())
+                        if (reader.Read())
                         {
-                            discType = rdr["discussionType"] != DBNull.Value ? rdr["discussionType"].ToString() : "Public";
-                            createdBy = rdr["createdBy"] != DBNull.Value ? rdr["createdBy"].ToString() : "";
+                            if (reader["discussionType"] != DBNull.Value)
+                            {
+                                discType = reader["discussionType"].ToString();
+                            }
+                            else
+                            {
+                                discType = "Public";
+                            }
+
+                            if (reader["createdBy"] != DBNull.Value)
+                            {
+                                createdBy = reader["createdBy"].ToString();
+                            }
+                            else
+                            {
+                                createdBy = "";
+                            }
                         }
                     }
                 }
 
                 if (discType.Equals("Private", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (!CheckPrivateAccess(conn, userId, createdBy))
+                    if (!CheckPrivateAccess(connection, userId, createdBy))
                     {
                         pnlReplyError.Visible = true;
                         litReplyError.Text = T("You do not have access to reply to this private discussion.",
@@ -558,7 +645,7 @@ namespace ScienceBuddy.Student
                 const string seqSql = @"
                     SELECT ISNULL(MAX(CAST(SUBSTRING(forumChatId, 3, LEN(forumChatId) - 2) AS INT)), 0)
                     FROM ForumChat WHERE forumChatId LIKE 'FC[0-9]%'";
-                using (var seqCmd = new SqlCommand(seqSql, conn))
+                using (SqlCommand seqCmd = new SqlCommand(seqSql, connection))
                 {
                     object lastVal = seqCmd.ExecuteScalar();
                     if (lastVal != null && lastVal != DBNull.Value)
@@ -568,18 +655,18 @@ namespace ScienceBuddy.Student
                     }
                 }
 
-                const string sql = @"
+                const string insertSql = @"
                     INSERT INTO ForumChat (forumChatId, forumId, senderUserId, message, createdAt)
                     VALUES (@forumChatId, @forumId, @userId, @message, @now)";
 
-                using (var cmd = new SqlCommand(sql, conn))
+                using (SqlCommand command = new SqlCommand(insertSql, connection))
                 {
-                    cmd.Parameters.AddWithValue("@forumChatId", forumChatId);
-                    cmd.Parameters.AddWithValue("@forumId", forumId);
-                    cmd.Parameters.AddWithValue("@userId", userId);
-                    cmd.Parameters.AddWithValue("@message", replyMsg);
-                    cmd.Parameters.AddWithValue("@now", DateTime.Now);
-                    cmd.ExecuteNonQuery();
+                    command.Parameters.AddWithValue("@forumChatId", forumChatId);
+                    command.Parameters.AddWithValue("@forumId", forumId);
+                    command.Parameters.AddWithValue("@userId", userId);
+                    command.Parameters.AddWithValue("@message", replyMsg);
+                    command.Parameters.AddWithValue("@now", DateTime.Now);
+                    command.ExecuteNonQuery();
                 }
             }
 
@@ -610,101 +697,151 @@ namespace ScienceBuddy.Student
         /// <summary>
         /// Gets display name for a user: Student nickname/name > Teacher name > Parent name > username
         /// </summary>
-        private string GetDisplayName(SqlConnection conn, string userId)
+        private string GetDisplayName(SqlConnection connection, string userId)
         {
-            if (Tbl(conn, "Student"))
+            if (Tbl(connection, "Student"))
             {
                 const string sql = "SELECT nickname, name FROM Student WHERE userId = @userId";
-                using (var cmd = new SqlCommand(sql, conn))
+                using (SqlCommand command = new SqlCommand(sql, connection))
                 {
-                    cmd.Parameters.AddWithValue("@userId", userId);
-                    using (var rdr = cmd.ExecuteReader())
+                    command.Parameters.AddWithValue("@userId", userId);
+                    using (SqlDataReader reader = command.ExecuteReader())
                     {
-                        if (rdr.Read())
+                        if (reader.Read())
                         {
-                            string nickname = rdr["nickname"] == DBNull.Value ? "" : rdr["nickname"].ToString().Trim();
-                            string name = rdr["name"] == DBNull.Value ? "" : rdr["name"].ToString().Trim();
-                            if (!string.IsNullOrEmpty(nickname)) return nickname;
-                            if (!string.IsNullOrEmpty(name)) return name;
+                            string nickname = "";
+                            if (reader["nickname"] != DBNull.Value)
+                            {
+                                nickname = reader["nickname"].ToString().Trim();
+                            }
+
+                            string name = "";
+                            if (reader["name"] != DBNull.Value)
+                            {
+                                name = reader["name"].ToString().Trim();
+                            }
+
+                            if (!string.IsNullOrEmpty(nickname))
+                            {
+                                return nickname;
+                            }
+                            if (!string.IsNullOrEmpty(name))
+                            {
+                                return name;
+                            }
                         }
                     }
                 }
             }
 
-            if (Tbl(conn, "Teacher"))
+            if (Tbl(connection, "Teacher"))
             {
                 const string sql = "SELECT name FROM Teacher WHERE userId = @userId";
-                using (var cmd = new SqlCommand(sql, conn))
+                using (SqlCommand command = new SqlCommand(sql, connection))
                 {
-                    cmd.Parameters.AddWithValue("@userId", userId);
-                    using (var rdr = cmd.ExecuteReader())
+                    command.Parameters.AddWithValue("@userId", userId);
+                    using (SqlDataReader reader = command.ExecuteReader())
                     {
-                        if (rdr.Read())
+                        if (reader.Read())
                         {
-                            string name = rdr["name"] == DBNull.Value ? "" : rdr["name"].ToString().Trim();
-                            if (!string.IsNullOrEmpty(name)) return name;
+                            string name = "";
+                            if (reader["name"] != DBNull.Value)
+                            {
+                                name = reader["name"].ToString().Trim();
+                            }
+                            if (!string.IsNullOrEmpty(name))
+                            {
+                                return name;
+                            }
                         }
                     }
                 }
             }
 
-            if (Tbl(conn, "Parent"))
+            if (Tbl(connection, "Parent"))
             {
                 const string sql = "SELECT name FROM Parent WHERE userId = @userId";
-                using (var cmd = new SqlCommand(sql, conn))
+                using (SqlCommand command = new SqlCommand(sql, connection))
                 {
-                    cmd.Parameters.AddWithValue("@userId", userId);
-                    using (var rdr = cmd.ExecuteReader())
+                    command.Parameters.AddWithValue("@userId", userId);
+                    using (SqlDataReader reader = command.ExecuteReader())
                     {
-                        if (rdr.Read())
+                        if (reader.Read())
                         {
-                            string name = rdr["name"] == DBNull.Value ? "" : rdr["name"].ToString().Trim();
-                            if (!string.IsNullOrEmpty(name)) return name;
+                            string name = "";
+                            if (reader["name"] != DBNull.Value)
+                            {
+                                name = reader["name"].ToString().Trim();
+                            }
+                            if (!string.IsNullOrEmpty(name))
+                            {
+                                return name;
+                            }
                         }
                     }
                 }
             }
 
             const string userSql = "SELECT username FROM [User] WHERE userId = @userId";
-            using (var cmd = new SqlCommand(userSql, conn))
+            using (SqlCommand command = new SqlCommand(userSql, connection))
             {
-                cmd.Parameters.AddWithValue("@userId", userId);
-                object result = cmd.ExecuteScalar();
-                return result != null && result != DBNull.Value ? result.ToString() : "Unknown";
+                command.Parameters.AddWithValue("@userId", userId);
+                object result = command.ExecuteScalar();
+                if (result != null && result != DBNull.Value)
+                {
+                    return result.ToString();
+                }
+                return "Unknown";
             }
         }
 
-        private string GetUserRole(SqlConnection conn, string userId)
+        private string GetUserRole(SqlConnection connection, string userId)
         {
             const string sql = "SELECT role FROM [User] WHERE userId = @userId";
-            using (var cmd = new SqlCommand(sql, conn))
+            using (SqlCommand command = new SqlCommand(sql, connection))
             {
-                cmd.Parameters.AddWithValue("@userId", userId);
-                object result = cmd.ExecuteScalar();
-                return result != null && result != DBNull.Value ? result.ToString() : "Student";
+                command.Parameters.AddWithValue("@userId", userId);
+                object result = command.ExecuteScalar();
+                if (result != null && result != DBNull.Value)
+                {
+                    return result.ToString();
+                }
+                return "Student";
             }
         }
 
         private static string FormatDate(DateTime dt)
         {
-            var span = DateTime.Now - dt;
-            if (span.TotalMinutes < 1) return "Just now";
-            if (span.TotalHours < 1) return (int)span.TotalMinutes + " min ago";
-            if (span.TotalDays < 1) return (int)span.TotalHours + " hr ago";
-            if (span.TotalDays < 7) return (int)span.TotalDays + " day" + ((int)span.TotalDays == 1 ? "" : "s") + " ago";
+            TimeSpan span = DateTime.Now - dt;
+            if (span.TotalMinutes < 1)
+            {
+                return "Just now";
+            }
+            if (span.TotalHours < 1)
+            {
+                return (int)span.TotalMinutes + " min ago";
+            }
+            if (span.TotalDays < 1)
+            {
+                return (int)span.TotalHours + " hr ago";
+            }
+            if (span.TotalDays < 7)
+            {
+                return (int)span.TotalDays + " day" + ((int)span.TotalDays == 1 ? "" : "s") + " ago";
+            }
             return dt.ToString("d MMM yyyy");
         }
 
-        private static bool Tbl(SqlConnection conn, string tableName)
+        private static bool Tbl(SqlConnection connection, string tableName)
         {
             const string sql = @"
                 SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
                 WHERE  TABLE_NAME = @tableName
                 AND    TABLE_TYPE = 'BASE TABLE'";
-            using (var cmd = new SqlCommand(sql, conn))
+            using (SqlCommand command = new SqlCommand(sql, connection))
             {
-                cmd.Parameters.AddWithValue("@tableName", tableName);
-                return (int)cmd.ExecuteScalar() > 0;
+                command.Parameters.AddWithValue("@tableName", tableName);
+                return (int)command.ExecuteScalar() > 0;
             }
         }
     }

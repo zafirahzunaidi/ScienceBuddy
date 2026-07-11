@@ -3,36 +3,10 @@
     Title="Suspicious Logins" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
-<style>
-:root{--sl-accent:#DC2626;--sl-blue:#2563EB;--sl-purple:#7C3AED;--sl-green:#059669;}
-.sl-header{margin-bottom:var(--space-xl);background:linear-gradient(135deg,#1E3A5F 0%,#DC2626 60%,#EF4444 100%);border-radius:var(--border-radius-xl);padding:var(--space-xl) var(--space-2xl);color:#fff;position:relative;overflow:hidden;box-shadow:0 12px 40px rgba(220,38,38,.2);}
-.sl-header::before{content:'';position:absolute;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.04);top:-100px;right:-60px;}
-.sl-title{font-family:var(--font-primary);font-size:1.75rem;font-weight:800;color:#fff;display:flex;align-items:center;gap:var(--space-sm);margin-bottom:var(--space-xs);}
-.sl-sub{font-size:.9375rem;color:rgba(255,255,255,.85);max-width:520px;line-height:1.5;}
-.sl-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-md);margin-bottom:var(--space-xl);}
-.sl-stat{background:var(--color-white);border-radius:var(--border-radius-xl);border:1.5px solid var(--border-color);box-shadow:var(--shadow-sm);padding:var(--space-lg);display:flex;flex-direction:column;gap:var(--space-xs);transition:transform .25s,box-shadow .25s;position:relative;overflow:hidden;}
-.sl-stat:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);}
-.sl-stat::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
-.sl-stat.s1::before{background:linear-gradient(90deg,#DC2626,#F87171);}.sl-stat.s2::before{background:linear-gradient(90deg,#7C3AED,#A78BFA);}.sl-stat.s3::before{background:linear-gradient(90deg,#2563EB,#60A5FA);}.sl-stat.s4::before{background:linear-gradient(90deg,#059669,#34D399);}
-.sl-stat-ico{font-size:1.25rem;}.sl-stat-val{font-family:var(--font-primary);font-size:1.75rem;font-weight:800;color:var(--color-text);}.sl-stat-lbl{font-size:.75rem;color:var(--color-text-muted);font-weight:600;}
-.sl-search{background:var(--color-white);border-radius:var(--border-radius-xl);border:1.5px solid var(--border-color);box-shadow:var(--shadow-md);padding:var(--space-md) var(--space-xl);display:flex;align-items:center;gap:var(--space-md);flex-wrap:wrap;margin-bottom:var(--space-xl);}
-.sl-search .sb-input{flex:1;min-width:160px;max-width:260px;}.sl-search .sb-select{max-width:140px;}
-.sl-card{background:var(--color-white);border-radius:var(--border-radius-xl);border:1.5px solid var(--border-color);box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:var(--space-xl);}
-.sl-card-hdr{padding:var(--space-md) var(--space-lg);border-bottom:1px solid var(--border-color);font-family:var(--font-primary);font-weight:800;font-size:.9375rem;display:flex;align-items:center;gap:var(--space-sm);}
-.sl-card .sb-table-wrapper{overflow-x:auto;}
-.sl-card .sb-table{width:100%;table-layout:auto;}
-.sl-card .sb-table thead th:last-child,.sl-card .sb-table tbody td:last-child,.sl-card .col-actions{text-align:center;}
-.sl-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:var(--space-2xl);}
-.sl-empty-ico{font-size:3rem;margin-bottom:var(--space-md);opacity:.35;color:var(--sl-accent);}.sl-empty-msg{font-size:1rem;font-weight:700;color:var(--color-text-secondary);}
-.sl-modal-wrap .sb-modal-overlay{left:var(--sidebar-width);animation:sl-ov .2s ease both;}.sidebar-collapsed .sl-modal-wrap .sb-modal-overlay{left:var(--sidebar-collapsed);}
-.sl-modal-wrap .sb-modal{animation:sl-md .3s cubic-bezier(.34,1.56,.64,1) both;}
-@keyframes sl-ov{from{opacity:0;}to{opacity:1;}}@keyframes sl-md{from{opacity:0;transform:scale(.92) translateY(16px);}to{opacity:1;transform:scale(1) translateY(0);}}
-@media(max-width:1279px){.sl-stats{grid-template-columns:repeat(2,1fr);}}
-@media(max-width:767px){.sl-stats{grid-template-columns:1fr 1fr;}.sl-search{flex-direction:column;align-items:stretch;}.sl-search .sb-input,.sl-search .sb-select{max-width:100%;}.sl-modal-wrap .sb-modal-overlay{left:0;}}
-</style>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="<%: ResolveUrl("~/Scripts/admin-signout.js") %>"></script>
+    <link href="<%: ResolveUrl("~/Content/Admin.css") %>" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="<%: ResolveUrl("~/Scripts/admin-signout.js") %>"></script>
 </asp:Content>
 
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
@@ -77,19 +51,19 @@
 <asp:Content ID="cPageTitle" ContentPlaceHolderID="PageTitle" runat="server"><%= T("Suspicious Logins", "Log Masuk Mencurigakan") %></asp:Content>
 
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
-<div class="sl-header">
-    <h1 class="sl-title"><i class="bi bi-shield-exclamation" style="color:var(--sl-accent);"></i> <%= T("Suspicious Login Monitoring", "Pemantauan Log Masuk Mencurigakan") %></h1>
-    <p class="sl-sub"><%= T("Monitor unusual login behaviour and protect ScienceBuddy accounts from unauthorized access.", "Pantau aktiviti log masuk luar biasa dan lindungi akaun ScienceBuddy daripada akses tidak sah.") %></p>
+<div class="ad-suspicious-logins-header">
+    <h1 class="ad-suspicious-logins-title"><i class="bi bi-shield-exclamation" style="color:var(--ad-suspicious-logins-accent);"></i> <%= T("Suspicious Login Monitoring", "Pemantauan Log Masuk Mencurigakan") %></h1>
+    <p class="ad-suspicious-logins-sub"><%= T("Monitor unusual login behaviour and protect ScienceBuddy accounts from unauthorized access.", "Pantau aktiviti log masuk luar biasa dan lindungi akaun ScienceBuddy daripada akses tidak sah.") %></p>
 </div>
 
-<div class="sl-stats">
-    <div class="sl-stat s1"><div class="sl-stat-ico" style="color:#DC2626;"><i class="bi bi-shield-x"></i></div><div class="sl-stat-val"><asp:Literal ID="litSuspicious" runat="server" Text="0" /></div><div class="sl-stat-lbl"><%= T("Suspicious Attempts", "Percubaan Mencurigakan") %></div></div>
-    <div class="sl-stat s2"><div class="sl-stat-ico" style="color:#7C3AED;"><i class="bi bi-lock-fill"></i></div><div class="sl-stat-val"><asp:Literal ID="litBlocked" runat="server" Text="0" /></div><div class="sl-stat-lbl"><%= T("Blocked Accounts", "Akaun Disekat") %></div></div>
-    <div class="sl-stat s3"><div class="sl-stat-ico" style="color:#2563EB;"><i class="bi bi-x-circle-fill"></i></div><div class="sl-stat-val"><asp:Literal ID="litFailed" runat="server" Text="0" /></div><div class="sl-stat-lbl"><%= T("Failed Logins", "Log Masuk Gagal") %></div></div>
-    <div class="sl-stat s4"><div class="sl-stat-ico" style="color:#059669;"><i class="bi bi-check-circle-fill"></i></div><div class="sl-stat-val"><asp:Literal ID="litResolved" runat="server" Text="0" /></div><div class="sl-stat-lbl"><%= T("Resolved", "Diselesaikan") %></div></div>
+<div class="ad-suspicious-logins-stats">
+    <div class="ad-suspicious-logins-stat s1"><div class="ad-suspicious-logins-stat-ico" style="color:#DC2626;"><i class="bi bi-shield-x"></i></div><div class="ad-suspicious-logins-stat-val"><asp:Literal ID="litSuspicious" runat="server" Text="0" /></div><div class="ad-suspicious-logins-stat-lbl"><%= T("Suspicious Attempts", "Percubaan Mencurigakan") %></div></div>
+    <div class="ad-suspicious-logins-stat s2"><div class="ad-suspicious-logins-stat-ico" style="color:#7C3AED;"><i class="bi bi-lock-fill"></i></div><div class="ad-suspicious-logins-stat-val"><asp:Literal ID="litBlocked" runat="server" Text="0" /></div><div class="ad-suspicious-logins-stat-lbl"><%= T("Blocked Accounts", "Akaun Disekat") %></div></div>
+    <div class="ad-suspicious-logins-stat s3"><div class="ad-suspicious-logins-stat-ico" style="color:#2563EB;"><i class="bi bi-x-circle-fill"></i></div><div class="ad-suspicious-logins-stat-val"><asp:Literal ID="litFailed" runat="server" Text="0" /></div><div class="ad-suspicious-logins-stat-lbl"><%= T("Failed Logins", "Log Masuk Gagal") %></div></div>
+    <div class="ad-suspicious-logins-stat s4"><div class="ad-suspicious-logins-stat-ico" style="color:#059669;"><i class="bi bi-check-circle-fill"></i></div><div class="ad-suspicious-logins-stat-val"><asp:Literal ID="litResolved" runat="server" Text="0" /></div><div class="ad-suspicious-logins-stat-lbl"><%= T("Resolved", "Diselesaikan") %></div></div>
 </div>
 
-<div class="sl-search">
+<div class="ad-suspicious-logins-search">
     <i class="bi bi-search text-muted"></i>
     <asp:TextBox ID="txtSearch" runat="server" CssClass="sb-input sb-input-sm" AutoPostBack="false" />
     <asp:DropDownList ID="ddlStatus" runat="server" CssClass="sb-select sb-input-sm" AutoPostBack="false">
@@ -102,8 +76,8 @@
     <asp:Button ID="btnReset" runat="server" CssClass="sb-btn sb-btn-ghost sb-btn-sm" OnClick="btnReset_Click" />
 </div>
 
-<div class="sl-card">
-    <div class="sl-card-hdr"><i class="bi bi-exclamation-triangle-fill" style="color:var(--sl-accent);"></i> <%= T("Security Events", "Peristiwa Keselamatan") %></div>
+<div class="ad-suspicious-logins-card">
+    <div class="ad-suspicious-logins-card-hdr"><i class="bi bi-exclamation-triangle-fill" style="color:var(--ad-suspicious-logins-accent);"></i> <%= T("Security Events", "Peristiwa Keselamatan") %></div>
     <asp:Panel ID="pnlLogs" runat="server" Visible="false">
         <div class="sb-table-wrapper" style="border:none;border-radius:0;box-shadow:none;overflow-x:auto;">
             <table class="sb-table" style="width:100%;"><thead><tr>
@@ -132,13 +106,13 @@
         </div>
     </asp:Panel>
     <asp:Panel ID="pnlEmpty" runat="server">
-        <div class="sl-empty"><div class="sl-empty-ico"><i class="bi bi-shield-check"></i></div><div class="sl-empty-msg"><%= T("No suspicious activity detected.", "Tiada aktiviti mencurigakan dikesan.") %></div></div>
+        <div class="ad-suspicious-logins-empty"><div class="ad-suspicious-logins-empty-ico"><i class="bi bi-shield-check"></i></div><div class="ad-suspicious-logins-empty-msg"><%= T("No suspicious activity detected.", "Tiada aktiviti mencurigakan dikesan.") %></div></div>
     </asp:Panel>
 </div>
 
 <%-- ══ ADMINISTRATOR SECURITY ACTIONS ══ --%>
-<div class="sl-card" style="margin-top:var(--space-xl);">
-    <div class="sl-card-hdr"><i class="bi bi-shield-fill-check" style="color:var(--sl-purple);"></i> <%= T("Administrator Security Actions", "Tindakan Keselamatan Pentadbir") %></div>
+<div class="ad-suspicious-logins-card" style="margin-top:var(--space-xl);">
+    <div class="ad-suspicious-logins-card-hdr"><i class="bi bi-shield-fill-check" style="color:var(--ad-suspicious-logins-purple);"></i> <%= T("Administrator Security Actions", "Tindakan Keselamatan Pentadbir") %></div>
     <asp:Panel ID="pnlActions" runat="server" Visible="false">
         <div class="sb-table-wrapper" style="border:none;border-radius:0;box-shadow:none;overflow-x:auto;">
             <table class="sb-table" style="width:100%;"><thead><tr>
@@ -167,7 +141,7 @@
         </div>
     </asp:Panel>
     <asp:Panel ID="pnlNoActions" runat="server">
-        <div class="sl-empty"><div class="sl-empty-ico"><i class="bi bi-shield-fill-check"></i></div><div class="sl-empty-msg"><%= T("No security actions recorded.", "Tiada tindakan keselamatan direkodkan.") %></div></div>
+        <div class="ad-suspicious-logins-empty"><div class="ad-suspicious-logins-empty-ico"><i class="bi bi-shield-fill-check"></i></div><div class="ad-suspicious-logins-empty-msg"><%= T("No security actions recorded.", "Tiada tindakan keselamatan direkodkan.") %></div></div>
     </asp:Panel>
 </div>
 </asp:Content>

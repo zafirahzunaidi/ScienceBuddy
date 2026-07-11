@@ -11,54 +11,93 @@ namespace ScienceBuddy.Student
 {
     public partial class QuizReview : Page
     {
-        private string ConnStr => ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+        private string ConnStr
+        {
+            get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
+        }
+
         public string CurrentLanguage = "EN";
-        public string T(string en, string bm) { return CurrentLanguage == "BM" ? bm : en; }
+
+        public string T(string en, string bm)
+        {
+            if (CurrentLanguage == "BM")
+            {
+                return bm;
+            }
+            return en;
+        }
 
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["userId"] == null || Session["role"] == null || Session["role"].ToString() != "Student")
-            { Response.Redirect("~/Login.aspx", false); return; }
+            {
+                Response.Redirect("~/Login.aspx", false);
+                return;
+            }
 
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
             InitLang();
 
-            if (!IsPostBack) LoadReview();
+            if (!IsPostBack)
+            {
+                LoadReview();
+            }
         }
 
         private void InitLang()
         {
             string lang = Session["preferredLanguage"] as string;
-            if (!string.IsNullOrEmpty(lang)) { CurrentLanguage = lang; return; }
+            if (!string.IsNullOrEmpty(lang))
+            {
+                CurrentLanguage = lang;
+                return;
+            }
+
             string userId = Session["userId"] as string;
             if (!string.IsNullOrEmpty(userId))
             {
                 try
                 {
-                    using (var conn = new SqlConnection(ConnStr))
-                    using (var cmd = new SqlCommand("SELECT preferredLanguage FROM [User] WHERE userId=@uid", conn))
+                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlCommand command = new SqlCommand("SELECT preferredLanguage FROM [User] WHERE userId=@uid", connection))
                     {
-                        cmd.Parameters.AddWithValue("@uid", userId); conn.Open();
-                        object r = cmd.ExecuteScalar();
-                        if (r != null && r != DBNull.Value) { lang = r.ToString(); Session["preferredLanguage"] = lang; CurrentLanguage = lang; return; }
+                        command.Parameters.AddWithValue("@uid", userId);
+                        connection.Open();
+                        object result = command.ExecuteScalar();
+                        if (result != null && result != DBNull.Value)
+                        {
+                            lang = result.ToString();
+                            Session["preferredLanguage"] = lang;
+                            CurrentLanguage = lang;
+                            return;
+                        }
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Error: " + ex.Message);
+                }
             }
-            CurrentLanguage = "EN"; Session["preferredLanguage"] = "EN";
+
+            CurrentLanguage = "EN";
+            Session["preferredLanguage"] = "EN";
         }
 
         private void LoadReview()
         {
             string resultId = Request.QueryString["resultId"];
-            if (string.IsNullOrEmpty(resultId)) { ShowError(T("Result not found.", "Keputusan tidak dijumpai.")); return; }
+            if (string.IsNullOrEmpty(resultId))
+            {
+                ShowError(T("Result not found.", "Keputusan tidak dijumpai."));
+                return;
+            }
 
             string userId = Session["userId"].ToString();
             bool isBM = CurrentLanguage == "BM";
 
-            using (var conn = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnStr))
             {
-                conn.Open();
+                connection.Open();
 
                 // Verify ownership and get quiz info
                 const string verifySql = @"
@@ -73,18 +112,50 @@ namespace ScienceBuddy.Student
                 string quizId = "";
                 string quizType = "";
                 decimal pct = 0;
-                using (var cmd = new SqlCommand(verifySql, conn))
+                using (SqlCommand command = new SqlCommand(verifySql, connection))
                 {
-                    cmd.Parameters.AddWithValue("@rid", resultId);
-                    cmd.Parameters.AddWithValue("@uid", userId);
-                    using (var rdr = cmd.ExecuteReader())
+                    command.Parameters.AddWithValue("@rid", resultId);
+                    command.Parameters.AddWithValue("@uid", userId);
+                    using (SqlDataReader reader = command.ExecuteReader())
                     {
-                        if (!rdr.Read()) { ShowError(T("Result not found or access denied.", "Keputusan tidak dijumpai atau akses ditolak.")); return; }
-                        quizTitle = isBM ? rdr["quizTitleBM"].ToString() : rdr["quizTitleEN"].ToString();
-                        if (string.IsNullOrWhiteSpace(quizTitle)) quizTitle = rdr["quizTitleEN"].ToString();
-                        pct = rdr["percentage"] != DBNull.Value ? Convert.ToDecimal(rdr["percentage"]) : 0;
-                        quizId = rdr["quizId"].ToString();
-                        quizType = rdr["quizType"] != DBNull.Value ? rdr["quizType"].ToString() : "Practice";
+                        if (!reader.Read())
+                        {
+                            ShowError(T("Result not found or access denied.", "Keputusan tidak dijumpai atau akses ditolak."));
+                            return;
+                        }
+
+                        if (isBM)
+                        {
+                            quizTitle = reader["quizTitleBM"].ToString();
+                        }
+                        else
+                        {
+                            quizTitle = reader["quizTitleEN"].ToString();
+                        }
+                        if (string.IsNullOrWhiteSpace(quizTitle))
+                        {
+                            quizTitle = reader["quizTitleEN"].ToString();
+                        }
+
+                        if (reader["percentage"] != DBNull.Value)
+                        {
+                            pct = Convert.ToDecimal(reader["percentage"]);
+                        }
+                        else
+                        {
+                            pct = 0;
+                        }
+
+                        quizId = reader["quizId"].ToString();
+
+                        if (reader["quizType"] != DBNull.Value)
+                        {
+                            quizType = reader["quizType"].ToString();
+                        }
+                        else
+                        {
+                            quizType = "Practice";
+                        }
                     }
                 }
 
@@ -108,48 +179,100 @@ namespace ScienceBuddy.Student
                 int qNum = 0;
                 int correctCount = 0;
 
-                using (var cmd = new SqlCommand(sql, conn))
+                using (SqlCommand command = new SqlCommand(sql, connection))
                 {
-                    cmd.Parameters.AddWithValue("@rid", resultId);
-                    using (var rdr = cmd.ExecuteReader())
+                    command.Parameters.AddWithValue("@rid", resultId);
+                    using (SqlDataReader reader = command.ExecuteReader())
                     {
-                        while (rdr.Read())
+                        while (reader.Read())
                         {
                             qNum++;
-                            bool isCorrect = rdr["isCorrect"] != DBNull.Value && Convert.ToBoolean(rdr["isCorrect"]);
-                            if (isCorrect) correctCount++;
+                            bool isCorrect = reader["isCorrect"] != DBNull.Value && Convert.ToBoolean(reader["isCorrect"]);
+                            if (isCorrect)
+                            {
+                                correctCount++;
+                            }
 
-                            string qText = isBM ? Sv(rdr, "questionTextBM") : Sv(rdr, "questionTextEN");
-                            if (string.IsNullOrWhiteSpace(qText)) qText = Sv(rdr, "questionTextEN");
+                            string qText;
+                            if (isBM)
+                            {
+                                qText = Sv(reader, "questionTextBM");
+                            }
+                            else
+                            {
+                                qText = Sv(reader, "questionTextEN");
+                            }
+                            if (string.IsNullOrWhiteSpace(qText))
+                            {
+                                qText = Sv(reader, "questionTextEN");
+                            }
 
-                            string selectedAnswer = Sv(rdr, "selectedAnswer");
-                            string correctAnswer = Sv(rdr, "correctAnswer");
-                            string questionType = Sv(rdr, "questionType");
+                            string selectedAnswer = Sv(reader, "selectedAnswer");
+                            string correctAnswer = Sv(reader, "correctAnswer");
+                            string questionType = Sv(reader, "questionType");
 
                             // Get option texts for display
-                            string selectedDisplay = TranslateAnswer(rdr, selectedAnswer, questionType, isBM);
-                            string correctDisplay = TranslateAnswer(rdr, correctAnswer, questionType, isBM);
+                            string selectedDisplay = TranslateAnswer(reader, selectedAnswer, questionType, isBM);
+                            string correctDisplay = TranslateAnswer(reader, correctAnswer, questionType, isBM);
 
                             // Explanation
                             string explanation;
                             if (isCorrect)
                             {
-                                explanation = isBM ? Sv(rdr, "correctExplanationBM") : Sv(rdr, "correctExplanationEN");
-                                if (string.IsNullOrWhiteSpace(explanation)) explanation = Sv(rdr, "correctExplanationEN");
+                                if (isBM)
+                                {
+                                    explanation = Sv(reader, "correctExplanationBM");
+                                }
+                                else
+                                {
+                                    explanation = Sv(reader, "correctExplanationEN");
+                                }
                                 if (string.IsNullOrWhiteSpace(explanation))
+                                {
+                                    explanation = Sv(reader, "correctExplanationEN");
+                                }
+                                if (string.IsNullOrWhiteSpace(explanation))
+                                {
                                     explanation = T("Great job! You selected the correct answer.", "Bagus! Anda memilih jawapan yang betul.");
+                                }
                             }
                             else
                             {
-                                explanation = isBM ? Sv(rdr, "wrongExplanationBM") : Sv(rdr, "wrongExplanationEN");
-                                if (string.IsNullOrWhiteSpace(explanation)) explanation = Sv(rdr, "wrongExplanationEN");
+                                if (isBM)
+                                {
+                                    explanation = Sv(reader, "wrongExplanationBM");
+                                }
+                                else
+                                {
+                                    explanation = Sv(reader, "wrongExplanationEN");
+                                }
                                 if (string.IsNullOrWhiteSpace(explanation))
+                                {
+                                    explanation = Sv(reader, "wrongExplanationEN");
+                                }
+                                if (string.IsNullOrWhiteSpace(explanation))
+                                {
                                     explanation = T("Review this topic and try again to improve your understanding.", "Ulang kaji topik ini dan cuba lagi untuk meningkatkan kefahaman anda.");
+                                }
 
                                 // Collect weak topic
-                                string subtopic = isBM ? Sv(rdr, "subtopicTitleBM") : Sv(rdr, "subtopicTitleEN");
-                                if (string.IsNullOrWhiteSpace(subtopic)) subtopic = Sv(rdr, "subtopicTitleEN");
-                                if (!string.IsNullOrWhiteSpace(subtopic)) weakTopics.Add(subtopic);
+                                string subtopic;
+                                if (isBM)
+                                {
+                                    subtopic = Sv(reader, "subtopicTitleBM");
+                                }
+                                else
+                                {
+                                    subtopic = Sv(reader, "subtopicTitleEN");
+                                }
+                                if (string.IsNullOrWhiteSpace(subtopic))
+                                {
+                                    subtopic = Sv(reader, "subtopicTitleEN");
+                                }
+                                if (!string.IsNullOrWhiteSpace(subtopic))
+                                {
+                                    weakTopics.Add(subtopic);
+                                }
                             }
 
                             items.Add(new
@@ -167,7 +290,11 @@ namespace ScienceBuddy.Student
                     }
                 }
 
-                if (items.Count == 0) { ShowError(T("No answers found for this result.", "Tiada jawapan dijumpai untuk keputusan ini.")); return; }
+                if (items.Count == 0)
+                {
+                    ShowError(T("No answers found for this result.", "Tiada jawapan dijumpai untuk keputusan ini."));
+                    return;
+                }
 
                 // ══ DISPLAY ══
                 pnlReview.Visible = true;
@@ -179,7 +306,19 @@ namespace ScienceBuddy.Student
                 // Header chips
                 litHeaderPct.Text = Math.Round(pct, 0) + "%";
                 litHeaderCorrect.Text = correctCount + "/" + items.Count + " " + T("correct", "betul");
-                string typeLabel = quizType == "Practice" ? T("Practice", "Latihan") : quizType == "Unit" ? T("Unit", "Unit") : T("Level", "Tahap");
+                string typeLabel;
+                if (quizType == "Practice")
+                {
+                    typeLabel = T("Practice", "Latihan");
+                }
+                else if (quizType == "Unit")
+                {
+                    typeLabel = T("Unit", "Unit");
+                }
+                else
+                {
+                    typeLabel = T("Level", "Tahap");
+                }
                 litHeaderType.Text = typeLabel;
 
                 // Back link
@@ -219,7 +358,10 @@ namespace ScienceBuddy.Student
         /// </summary>
         private string TranslateAnswer(SqlDataReader rdr, string answer, string questionType, bool isBM)
         {
-            if (string.IsNullOrWhiteSpace(answer)) return T("(No answer)", "(Tiada jawapan)");
+            if (string.IsNullOrWhiteSpace(answer))
+            {
+                return T("(No answer)", "(Tiada jawapan)");
+            }
 
             string qt = (questionType ?? "").ToLower().Replace(" ", "").Replace("/", "");
 
@@ -227,9 +369,21 @@ namespace ScienceBuddy.Student
             if (qt.Contains("true") || qt == "tf")
             {
                 if (answer.Equals("True", StringComparison.OrdinalIgnoreCase))
-                    return isBM ? "Betul" : "True";
+                {
+                    if (isBM)
+                    {
+                        return "Betul";
+                    }
+                    return "True";
+                }
                 if (answer.Equals("False", StringComparison.OrdinalIgnoreCase))
-                    return isBM ? "Salah" : "False";
+                {
+                    if (isBM)
+                    {
+                        return "Salah";
+                    }
+                    return "False";
+                }
                 return answer;
             }
 
@@ -241,7 +395,14 @@ namespace ScienceBuddy.Student
                 foreach (string part in parts)
                 {
                     string optText = GetOptionText(rdr, part, isBM);
-                    texts.Add(!string.IsNullOrWhiteSpace(optText) ? part + ". " + optText : part);
+                    if (!string.IsNullOrWhiteSpace(optText))
+                    {
+                        texts.Add(part + ". " + optText);
+                    }
+                    else
+                    {
+                        texts.Add(part);
+                    }
                 }
                 return string.Join(" | ", texts);
             }
@@ -249,7 +410,9 @@ namespace ScienceBuddy.Student
             // MCQ - single letter
             string optionText = GetOptionText(rdr, answer, isBM);
             if (!string.IsNullOrWhiteSpace(optionText))
+            {
                 return answer + ". " + optionText;
+            }
             return answer;
         }
 
@@ -258,26 +421,59 @@ namespace ScienceBuddy.Student
             string upper = letter.Trim().ToUpper();
             switch (upper)
             {
-                case "A": return isBM ? Sv(rdr, "optionA_BM") : Sv(rdr, "optionA_EN");
-                case "B": return isBM ? Sv(rdr, "optionB_BM") : Sv(rdr, "optionB_EN");
-                case "C": return isBM ? Sv(rdr, "optionC_BM") : Sv(rdr, "optionC_EN");
-                case "D": return isBM ? Sv(rdr, "optionD_BM") : Sv(rdr, "optionD_EN");
-                default: return "";
+                case "A":
+                    if (isBM)
+                    {
+                        return Sv(rdr, "optionA_BM");
+                    }
+                    return Sv(rdr, "optionA_EN");
+                case "B":
+                    if (isBM)
+                    {
+                        return Sv(rdr, "optionB_BM");
+                    }
+                    return Sv(rdr, "optionB_EN");
+                case "C":
+                    if (isBM)
+                    {
+                        return Sv(rdr, "optionC_BM");
+                    }
+                    return Sv(rdr, "optionC_EN");
+                case "D":
+                    if (isBM)
+                    {
+                        return Sv(rdr, "optionD_BM");
+                    }
+                    return Sv(rdr, "optionD_EN");
+                default:
+                    return "";
             }
         }
 
         private void ShowError(string msg)
         {
-            pnlError.Visible = true; pnlReview.Visible = false;
+            pnlError.Visible = true;
+            pnlReview.Visible = false;
             litError.Text = HttpUtility.HtmlEncode(msg);
             litErrBtn.Text = T("Back", "Kembali");
         }
 
         private static string Sv(SqlDataReader rdr, string col)
         {
-            try { object v = rdr[col]; return v != null && v != DBNull.Value ? v.ToString() : ""; }
-            catch { return ""; }
+            try
+            {
+                object v = rdr[col];
+                if (v != null && v != DBNull.Value)
+                {
+                    return v.ToString();
+                }
+                return "";
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Error: " + ex.Message);
+                return "";
+            }
         }
     }
 }
-

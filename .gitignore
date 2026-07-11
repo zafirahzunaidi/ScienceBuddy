@@ -364,3 +364,6 @@ FodyWeavers.xsd
 
 # Personal database connection string
 connectionStrings.config
+
+# AI key
+AppSettingsSecrets.config
