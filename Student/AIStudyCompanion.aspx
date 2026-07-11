@@ -106,6 +106,39 @@
     </div>
 </div>
 
+<%-- ── ASK SCIENCEBUDDY AI CHAT ── --%>
+<asp:Panel ID="pnlAIChat" runat="server" CssClass="st-ai-chat" style="background:#fff;border-radius:16px;border:1.5px solid #E5E7EB;box-shadow:0 4px 20px rgba(124,58,237,.08);padding:24px;margin-bottom:24px;position:relative;overflow:hidden;border-top:4px solid #7C3AED;">
+    <div class="st-ai-chat-header">
+        <div>
+            <div class="st-ai-chat-title">
+                <i class="bi bi-robot"></i>
+                <asp:Literal ID="litChatTitle" runat="server" Text="Ask ScienceBuddy AI" />
+            </div>
+            <div class="st-ai-chat-sub">
+                <asp:Literal ID="litChatSub" runat="server" Text="Ask me anything about your Science lessons." />
+            </div>
+        </div>
+    </div>
+
+    <div id="chatBox" runat="server" clientidmode="Static" class="st-ai-chat-box" style="background:linear-gradient(180deg,#FAFBFF,#F5F3FF);border:1.5px solid #E5E7EB;border-radius:16px;padding:16px;min-height:260px;max-height:360px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;margin-bottom:12px;"></div>
+
+    <div class="st-ai-chat-input-row" style="display:flex;gap:8px;align-items:stretch;">
+        <asp:TextBox ID="txtAIMessage" runat="server"
+            CssClass="st-ai-chat-input"
+            TextMode="MultiLine"
+            Rows="2"
+            style="flex:1;resize:none;min-height:48px;border:2px solid #E5E7EB;border-radius:24px;padding:12px 18px;font-size:.9rem;font-family:inherit;"
+            placeholder="Ask your AI study question..." />
+
+        <asp:Button ID="btnAISend" runat="server"
+            CssClass="st-ai-chat-send"
+            style="border:none;border-radius:24px;padding:12px 28px;font-weight:700;background:linear-gradient(135deg,#7C3AED,#2563EB);color:#fff;cursor:pointer;"
+            Text="Send"
+            OnClick="btnAISend_Click" />
+    </div>
+    <div class="st-ai-chat-note" style="font-size:.75rem;color:#9CA3AF;margin-top:8px;display:flex;align-items:center;gap:4px;font-style:italic;"><i class="bi bi-info-circle"></i> <asp:Literal ID="litChatNote" runat="server" Text="AI can make mistakes, so always check with your teacher or lesson notes." /></div>
+</asp:Panel>
+
 <%-- ── LEARNING HEALTH SUMMARY ── --%>
 <div class="st-ai-health">
     <div class="st-ai-health-title"><asp:Literal ID="litHealthTitle" runat="server" Text="Learning Health" /></div>
@@ -221,35 +254,6 @@
         <div class="st-ai-empty-icon"><i class="bi bi-rocket-takeoff-fill" style="font-size:4rem;color:var(--ai-purple);"></i></div>
         <div class="st-ai-empty-title"><asp:Literal ID="litEmptyTitle" runat="server" Text="Start your learning journey!" /></div>
         <div class="st-ai-empty-desc"><asp:Literal ID="litEmptyDesc" runat="server" Text="Start your learning journey first to unlock your AI companion's insights." /></div>
-    </div>
-</asp:Panel>
-
-    <asp:Panel ID="pnlAIChat" runat="server" CssClass="st-ai-chat">
-    <div class="st-ai-chat-header">
-        <div>
-            <div class="st-ai-chat-title">
-                <i class="bi bi-robot"></i>
-                <asp:Literal ID="litChatTitle" runat="server" Text="Ask ScienceBuddy AI" />
-            </div>
-            <div class="st-ai-chat-sub">
-                <asp:Literal ID="litChatSub" runat="server" Text="Ask me anything about your Science lessons." />
-            </div>
-        </div>
-    </div>
-
-    <div id="chatBox" runat="server" clientidmode="Static" class="st-ai-chat-box"></div>
-
-    <div class="st-ai-chat-input-row">
-        <asp:TextBox ID="txtAIMessage" runat="server"
-            CssClass="st-ai-chat-input"
-            TextMode="MultiLine"
-            Rows="2"
-            placeholder="Ask your AI study question..." />
-
-        <asp:Button ID="btnAISend" runat="server"
-            CssClass="st-ai-chat-send"
-            Text="Send"
-            OnClick="btnAISend_Click" />
     </div>
 </asp:Panel>
 

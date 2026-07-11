@@ -440,5 +440,10 @@ namespace ScienceBuddy.Student
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnAISend;
+
+        /// <summary>
+        /// litChatNote control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litChatNote;
     }
 }
