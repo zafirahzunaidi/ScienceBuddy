@@ -294,8 +294,23 @@
 <asp:HiddenField ID="hidToast" runat="server" Value="" />
 <asp:HiddenField ID="hidShowModal" runat="server" Value="" />
 <div class="ls-toast-wrap" id="lsToast"></div>
+
+<%-- Embedded Live Call --%>
+<asp:Panel ID="pnlLiveRoom" runat="server" Visible="false">
+    <div class="ls-page-header">
+        <div><h1><asp:Literal ID="litLiveRoomTitle" runat="server" /></h1></div>
+        <asp:Button ID="btnEndLive" runat="server" CssClass="ls-btn-primary" style="background:#EF4444;"
+            Text="End Live Session" OnClick="btnEndLive_Click" CausesValidation="false" />
+    </div>
+    <div id="jitsi-container-teacher" style="width:100%; height:600px; border-radius:16px; overflow:hidden;"></div>
+    <asp:HiddenField ID="hidLiveRoomName" runat="server" />
+    <asp:HiddenField ID="hidLiveDisplayName" runat="server" />
+</asp:Panel>
+
 </asp:Content>
+
 <asp:Content ID="cScripts" ContentPlaceHolderID="ScriptsContent" runat="server">
+<script src="https://meet.jit.si/external_api.js"></script>
 <script>
 window.addEventListener('load',function(){
     var h=document.getElementById('<%=hidToast.ClientID%>');
@@ -307,7 +322,21 @@ window.addEventListener('load',function(){
     var cm=document.getElementById('<%=hidShowCancelModal.ClientID%>');
     if(cm&&cm.value==='1'){document.getElementById('cancelModal').style.display='flex';cm.value='';}
     var im=document.getElementById('<%=hidShowInstantModal.ClientID%>');
-    if(im&&im.value==='1'){document.getElementById('instantModal').style.display='flex';im.value='';}
+    if (im && im.value === '1') { document.getElementById('instantModal').style.display = 'flex'; im.value = ''; }
+
+    var jc = document.getElementById('jitsi-container-teacher');  <%-- for live session --%>
+    if (jc) {
+        var roomName = document.getElementById('<%= hidLiveRoomName.ClientID %>').value;
+        var displayName = document.getElementById('<%= hidLiveDisplayName.ClientID %>').value;
+        var api = new JitsiMeetExternalAPI("meet.jit.si", {
+            roomName: roomName,
+            width: "100%",
+            height: 600,
+            parentNode: jc,
+            userInfo: { displayName: displayName }
+        });
+    }
 });
+
 </script>
 </asp:Content>
