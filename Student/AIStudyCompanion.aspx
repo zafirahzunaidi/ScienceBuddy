@@ -79,7 +79,7 @@
 </asp:Content>
 
 <asp:Content ID="AIStudyCompanionPageTitle" ContentPlaceHolderID="PageTitle" runat="server">
-        <asp:Literal ID="Literal1" runat="server" Text="AI Study Companion" />
+    <asp:Literal ID="litPageTitle" runat="server" Text="AI Study Companion" />
 </asp:Content>
 
 <asp:Content ID="StudentUserDropdownMenu" ContentPlaceHolderID="UserDropdownMenu" runat="server">
@@ -215,7 +215,7 @@
     </div>
 </div>
 
-<%-- ── EMPTY STATE (no data at all) ── --%>
+<%-- Chat section --%>
 <asp:Panel ID="pnlEmpty" runat="server" Visible="false">
     <div class="st-ai-empty">
         <div class="st-ai-empty-icon"><i class="bi bi-rocket-takeoff-fill" style="font-size:4rem;color:var(--ai-purple);"></i></div>
@@ -224,7 +224,46 @@
     </div>
 </asp:Panel>
 
+    <asp:Panel ID="pnlAIChat" runat="server" CssClass="st-ai-chat">
+    <div class="st-ai-chat-header">
+        <div>
+            <div class="st-ai-chat-title">
+                <i class="bi bi-robot"></i>
+                <asp:Literal ID="litChatTitle" runat="server" Text="Ask ScienceBuddy AI" />
+            </div>
+            <div class="st-ai-chat-sub">
+                <asp:Literal ID="litChatSub" runat="server" Text="Ask me anything about your Science lessons." />
+            </div>
+        </div>
+    </div>
+
+    <div id="chatBox" runat="server" clientidmode="Static" class="st-ai-chat-box"></div>
+
+    <div class="st-ai-chat-input-row">
+        <asp:TextBox ID="txtAIMessage" runat="server"
+            CssClass="st-ai-chat-input"
+            TextMode="MultiLine"
+            Rows="2"
+            placeholder="Ask your AI study question..." />
+
+        <asp:Button ID="btnAISend" runat="server"
+            CssClass="st-ai-chat-send"
+            Text="Send"
+            OnClick="btnAISend_Click" />
+    </div>
+</asp:Panel>
+
+
 </asp:Content>
 
 <asp:Content ID="AIStudyCompanionScripts" ContentPlaceHolderID="ScriptsContent" runat="server">
+    <script type="text/javascript">
+        window.onload = function () {
+        var box = document.getElementById('chatBox');
+        if (box) {
+            box.scrollTop = box.scrollHeight;
+        }
+    };
+</script>
+
 </asp:Content>

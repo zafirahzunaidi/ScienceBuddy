@@ -6,6 +6,10 @@ using System.Data.SqlClient;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.IO;
+using System.Net;
+using System.Text;
+using System.Web.Script.Serialization;
 
 namespace ScienceBuddy.Student
 {
@@ -46,7 +50,14 @@ namespace ScienceBuddy.Student
                 InitLang();
                 SetLabels();
                 LoadPage();
+
+                Session["AIChatHistory"] = new List<Dictionary<string, string>>();
+                AppendAIMessage("assistant", T(
+                    "Hi! I am your AI Study Companion. Ask me anything about your Science lessons.",
+                    "Hai! Saya Rakan Pembelajaran AI anda. Tanya saya apa-apa tentang pelajaran Sains anda."));
             }
+
+
         }
 
         // ── Language initialisation ───────────────────────────────────
@@ -844,5 +855,183 @@ namespace ScienceBuddy.Student
                 return (int)command.ExecuteScalar() > 0;
             }
         }
+
+        protected void btnAISend_Click(object sender, EventArgs e)
+        {
+            string userMessage = (txtAIMessage.Text ?? "").Trim();
+
+            if (string.IsNullOrEmpty(userMessage))
+            {
+                return;
+            }
+
+            AppendAIMessage("user", userMessage);
+            txtAIMessage.Text = "";
+
+            try
+            {
+                string reply = GetNvidiaAIReply();
+                AppendAIMessage("assistant", reply);
+            }
+            catch (Exception ex)
+            {
+                AppendAIMessage("assistant", "Sorry, I could not contact the AI service. " + ex.Message);
+            }
+        }
+
+        private void AppendAIMessage(string role, string text)
+        {
+            var history = Session["AIChatHistory"] as List<Dictionary<string, string>>;
+
+            if (history == null)
+            {
+                history = new List<Dictionary<string, string>>();
+            }
+
+            history.Add(new Dictionary<string, string>
+    {
+        { "role", role },
+        { "content", text }
+    });
+
+            Session["AIChatHistory"] = history;
+
+            string cssClass = role == "user" ? "st-ai-msg-user" : "st-ai-msg-bot";
+
+            string safeText = Server.HtmlEncode(text).Replace("\n", "<br/>");
+
+            chatBox.InnerHtml += "<div class='st-ai-msg " + cssClass + "'>" + safeText + "</div>";
+        }
+
+        private string GetNvidiaAIReply()
+        {
+            string apiKey = ConfigurationManager.AppSettings["NvidiaApiKey"];
+            string model = ConfigurationManager.AppSettings["NvidiaModel"];
+            string endpoint = ConfigurationManager.AppSettings["NvidiaApiEndpoint"];
+            string systemPrompt = ConfigurationManager.AppSettings["AIStudyCompanionPrompt"];
+
+            if (string.IsNullOrEmpty(model))
+            {
+                model = "meta/llama-3.1-8b-instruct";
+            }
+
+            if (string.IsNullOrEmpty(endpoint))
+            {
+                endpoint = "https://integrate.api.nvidia.com/v1/chat/completions";
+            }
+
+            if (string.IsNullOrEmpty(apiKey) || apiKey == "YOUR_NVIDIA_API_KEY_HERE")
+            {
+                return "Please set the NVIDIA API key in Web.config first.";
+            }
+
+            var history = Session["AIChatHistory"] as List<Dictionary<string, string>>;
+
+            if (history == null)
+            {
+                history = new List<Dictionary<string, string>>();
+            }
+
+            var messagesList = new List<Dictionary<string, string>>();
+
+            if (!string.IsNullOrEmpty(systemPrompt))
+            {
+                messagesList.Add(new Dictionary<string, string>
+        {
+            { "role", "system" },
+            { "content", systemPrompt }
+        });
+            }
+
+            foreach (var message in history)
+            {
+                messagesList.Add(new Dictionary<string, string>
+        {
+            { "role", message["role"] },
+            { "content", message["content"] }
+        });
+            }
+
+            var payload = new Dictionary<string, object>
+    {
+        { "model", model },
+        { "messages", messagesList },
+        { "temperature", 0.7 },
+        { "top_p", 0.9 },
+        { "max_tokens", 700 },
+        { "stream", false }
+    };
+
+            var serializer = new JavaScriptSerializer();
+            serializer.MaxJsonLength = int.MaxValue;
+
+            string jsonPayload = serializer.Serialize(payload);
+            byte[] requestBytes = Encoding.UTF8.GetBytes(jsonPayload);
+
+            var request = (HttpWebRequest)WebRequest.Create(endpoint);
+            request.Method = "POST";
+            request.ContentType = "application/json";
+            request.Accept = "application/json";
+            request.Headers["Authorization"] = "Bearer " + apiKey;
+            request.Timeout = 60000;
+            request.ContentLength = requestBytes.Length;
+
+            using (var requestStream = request.GetRequestStream())
+            {
+                requestStream.Write(requestBytes, 0, requestBytes.Length);
+            }
+
+            string responseBody;
+
+            try
+            {
+                using (var response = (HttpWebResponse)request.GetResponse())
+                using (var reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8))
+                {
+                    responseBody = reader.ReadToEnd();
+                }
+            }
+            catch (WebException wex)
+            {
+                if (wex.Response != null)
+                {
+                    using (var errorStream = wex.Response.GetResponseStream())
+                    using (var reader = new StreamReader(errorStream, Encoding.UTF8))
+                    {
+                        string errorBody = reader.ReadToEnd();
+                        throw new Exception("NVIDIA API returned an error: " + errorBody);
+                    }
+                }
+
+                throw new Exception("Network error calling NVIDIA API: " + wex.Message);
+            }
+
+            var result = serializer.DeserializeObject(responseBody) as Dictionary<string, object>;
+
+            if (result == null || !result.ContainsKey("choices"))
+            {
+                return "Sorry, I received an unexpected response from the AI.";
+            }
+
+            var choices = result["choices"] as object[];
+
+            if (choices == null || choices.Length == 0)
+            {
+                return "Sorry, the AI did not return an answer.";
+            }
+
+            var firstChoice = choices[0] as Dictionary<string, object>;
+            var replyMessage = firstChoice != null && firstChoice.ContainsKey("message")
+                ? firstChoice["message"] as Dictionary<string, object>
+                : null;
+
+            string reply = replyMessage != null && replyMessage.ContainsKey("content")
+                ? replyMessage["content"] as string
+                : null;
+
+            return string.IsNullOrEmpty(reply) ? "Sorry, I received an empty reply." : reply.Trim();
+        }
+
+
     }
 }
