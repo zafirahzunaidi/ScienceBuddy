@@ -10,6 +10,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Web.Script.Serialization;
+using ScienceBuddy.Services;
 
 namespace ScienceBuddy.Student
 {
@@ -20,6 +21,15 @@ namespace ScienceBuddy.Student
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
+
+        // ── Personality visual properties ─────────────────────────────
+        public string PersonalityAvatar = "";
+        public string PersonalityColour = "#7C3AED";
+
+        // ── Quiz metadata properties ──────────────────────────────────
+        public string GeneratedQuizTitle = "";
+        public string GeneratedQuizDate = "";
+        public string GeneratedQuizScore = "";
 
         // ── Language helper ────────────────────────────────────────────
         public string CurrentLanguage = "EN";
@@ -45,9 +55,11 @@ namespace ScienceBuddy.Student
 
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
 
+            // Initialise language on every request, including the chat postback.
+            InitLang();
+
             if (!IsPostBack)
             {
-                InitLang();
                 SetLabels();
                 LoadPage();
 
@@ -108,23 +120,28 @@ namespace ScienceBuddy.Student
             litHeroTitle.Text = T("AI Study Companion", "Rakan Pembelajaran AI");
             litHeroSub.Text = T("Your smart learning buddy is here to guide your next step.",
                                 "Rakan pembelajaran pintar anda sedia membantu langkah seterusnya.");
-            litHealthTitle.Text = T("Learning Health", "Kesihatan Pembelajaran");
-            litAvgScoreLbl.Text = T("Average Quiz Score", "Purata Skor Kuiz");
-            litTotalAttemptsLbl.Text = T("Total Quiz Attempts", "Jumlah Percubaan Kuiz");
-            litStrongTopicsLbl.Text = T("Strong Topics", "Topik Kuat");
-            litWeakTopicsLbl.Text = T("Weak Topics", "Topik Lemah");
+            litHealthTitle.Text = T("My Learning Snapshot", "Ringkasan Pembelajaran Saya");
+            litAvgScoreLbl.Text = T("Average Score", "Purata Skor");
+            litTotalAttemptsLbl.Text = T("Quizzes Tried", "Kuiz Dicuba");
+            litStrongTopicsLbl.Text = T("Current Trend", "Trend Semasa");
+            litWeakTopicsLbl.Text = T("Learning Picture", "Gambaran Pembelajaran");
             litHealthEmpty.Text = T("Complete more quizzes to unlock your personalised learning analysis.",
                                     "Selesaikan lebih banyak kuiz untuk membuka analisis pembelajaran peribadi anda.");
-            litStrongTitle.Text = T("Strong Topics", "Topik Kuat");
-            litStrongEmptyTitle.Text = T("Strong Topics", "Topik Kuat");
+            litStrongTitle.Text = T("I'm Great At", "Saya Hebat Dalam");
+            litStrongEmptyTitle.Text = T("I'm Great At", "Saya Hebat Dalam");
             litStrongEmpty.Text = T("Your strong topics will appear here after you attempt more quizzes.",
                                     "Topik kuat anda akan dipaparkan di sini selepas anda menjawab lebih banyak kuiz.");
-            litWeakTitle.Text = T("Weak Topics", "Topik Lemah");
-            litWeakEmptyTitle.Text = T("Weak Topics", "Topik Lemah");
+            litWeakTitle.Text = T("Let's Practise", "Jom Berlatih");
+            litWeakEmptyTitle.Text = T("Let's Practise", "Jom Berlatih");
             litWeakEmpty.Text = T("No weak topics detected yet. Keep learning!",
                                   "Tiada topik lemah dikesan buat masa ini. Teruskan belajar!");
-            litRecommendTitle.Text = T("Recommended Next Steps", "Langkah Seterusnya Dicadangkan");
-            litTipsTitle.Text = T("Study Tips", "Tip Belajar");
+            litTopicZoneTitle.Text = T("My Topic Zone", "Zon Topik Saya");
+            litRecommendTitle.Text = T("Your Next Adventure", "Pengembaraan Seterusnya");
+            litTipsTitle.Text = T("Your 3-Step Mission", "Misi 3 Langkah Anda");
+            litChatTitle.Text = T("Ask ScienceBuddy AI", "Tanya ScienceBuddy AI");
+            litChatSub.Text = T("I know your latest results. Ask what to learn next!", "Saya tahu keputusan terkini anda. Tanya apa yang perlu dipelajari seterusnya!");
+            litChatNote.Text = T("AI can make mistakes, so always check with your teacher or lesson notes.",
+                                 "AI boleh membuat kesilapan, jadi sentiasa semak dengan guru atau nota pelajaran anda.");
             litEmptyTitle.Text = T("Start your learning journey!",
                                    "Mulakan perjalanan pembelajaran anda!");
             litEmptyDesc.Text = T("Start your learning journey first to unlock your AI companion's insights.",
@@ -214,7 +231,8 @@ namespace ScienceBuddy.Student
                 if (Tbl(connection, "Personality") && !string.IsNullOrEmpty(personalityId))
                 {
                     const string sqlP = @"SELECT personalityNameEN, personalityNameBM, 
-                                          learningStyleEN, learningStyleBM FROM Personality WHERE personalityId = @pid";
+                                          learningStyleEN, learningStyleBM, avatar, colour 
+                                          FROM Personality WHERE personalityId = @pid";
                     using (SqlCommand command = new SqlCommand(sqlP, connection))
                     {
                         command.Parameters.AddWithValue("@pid", personalityId);
@@ -249,6 +267,37 @@ namespace ScienceBuddy.Student
                                 }
 
                                 learningStyle = T(styleEN, styleBM);
+
+                                // Load avatar and colour for visual theming
+                                if (reader["avatar"] != null && reader["avatar"] != DBNull.Value)
+                                {
+                                    string avatar = reader["avatar"].ToString().Trim();
+                                    if (!string.IsNullOrEmpty(avatar))
+                                    {
+                                        string avatarPath = "";
+                                        if (avatar.StartsWith("~/"))
+                                            avatarPath = avatar;
+                                        else if (avatar.StartsWith("Images/"))
+                                            avatarPath = "~/" + avatar;
+                                        else
+                                            avatarPath = "~/Images/Personality/" + System.IO.Path.GetFileName(avatar);
+
+                                        string physicalPath = Server.MapPath(avatarPath);
+                                        if (System.IO.File.Exists(physicalPath))
+                                            PersonalityAvatar = ResolveUrl(avatarPath);
+                                        else
+                                            PersonalityAvatar = ""; // fallback will show icon
+                                    }
+                                }
+
+                                if (reader["colour"] != null && reader["colour"] != DBNull.Value)
+                                {
+                                    string colour = reader["colour"].ToString().Trim();
+                                    if (System.Text.RegularExpressions.Regex.IsMatch(colour, "^#[0-9A-Fa-f]{6}$"))
+                                    {
+                                        PersonalityColour = colour;
+                                    }
+                                }
                             }
                         }
                     }
@@ -305,14 +354,21 @@ namespace ScienceBuddy.Student
                 string strongTopics = "";
                 string weakTopics = "";
                 string overallSummary = "";
+                LearningAnalysisData generatedAnalysis = null;
                 bool hasAnalysis = false;
 
                 if (Tbl(connection, "AILearningAnalysis"))
                 {
-                    const string sqlAI = @"SELECT TOP 1 avgQuizScore, totalQuizAttempts, 
-                                           strongTopics, weakTopics, overallSummary
-                                           FROM AILearningAnalysis 
-                                           WHERE studentId = @s AND isLatest = 1";
+                    const string sqlAI = @"SELECT TOP 1
+                                           avgQuizScore,
+                                           totalQuizAttempts,
+                                           strongTopics,
+                                           weakTopics,
+                                           overallSummary,
+                                           analysisJson
+                                           FROM AILearningAnalysis
+                                           WHERE studentId = @s
+                                           AND isLatest = 1";
                     using (SqlCommand command = new SqlCommand(sqlAI, connection))
                     {
                         command.Parameters.AddWithValue("@s", studentId);
@@ -366,8 +422,138 @@ namespace ScienceBuddy.Student
                                 {
                                     overallSummary = "";
                                 }
+
+                                if (reader["analysisJson"] != null &&
+                                    reader["analysisJson"] != DBNull.Value)
+                                {
+                                    generatedAnalysis =
+                                        ParseLearningAnalysisJson(
+                                            reader["analysisJson"].ToString());
+                                }
+
+
                             }
                         }
+                    }
+                }
+
+                // Display the personalised AI message.
+                if (generatedAnalysis != null)
+                {
+                    // Load quiz metadata if ResultId is available
+                    if (!string.IsNullOrWhiteSpace(generatedAnalysis.ResultId) && Tbl(connection, "QuizResult"))
+                    {
+                        const string sqlQM = @"SELECT q.quizTitleEN, q.quizTitleBM, qr.attemptedDate, qr.percentage 
+                                               FROM QuizResult qr INNER JOIN Quiz q ON q.quizId = qr.quizId 
+                                               WHERE qr.resultId = @rid AND qr.studentId = @sid";
+                        using (SqlCommand cmdQM = new SqlCommand(sqlQM, connection))
+                        {
+                            cmdQM.Parameters.AddWithValue("@rid", generatedAnalysis.ResultId);
+                            cmdQM.Parameters.AddWithValue("@sid", studentId);
+                            using (SqlDataReader rdrQM = cmdQM.ExecuteReader())
+                            {
+                                if (rdrQM.Read())
+                                {
+                                    string titleEN = rdrQM["quizTitleEN"] != DBNull.Value ? rdrQM["quizTitleEN"].ToString() : "";
+                                    string titleBM = rdrQM["quizTitleBM"] != DBNull.Value ? rdrQM["quizTitleBM"].ToString() : "";
+                                    GeneratedQuizTitle = T(titleEN, titleBM);
+
+                                    if (rdrQM["attemptedDate"] != DBNull.Value)
+                                    {
+                                        DateTime attemptDate = Convert.ToDateTime(rdrQM["attemptedDate"]);
+                                        GeneratedQuizDate = attemptDate.ToString("dd MMM yyyy");
+                                    }
+
+                                    if (rdrQM["percentage"] != DBNull.Value)
+                                    {
+                                        GeneratedQuizScore = Convert.ToDecimal(rdrQM["percentage"]).ToString("0") + "%";
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    string heroMessage = "";
+
+                    if (!string.IsNullOrWhiteSpace(
+                        generatedAnalysis.ProgressHeadline))
+                    {
+                        heroMessage =
+                            generatedAnalysis.ProgressHeadline;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(
+                        generatedAnalysis.CelebrationMessage))
+                    {
+                        if (!string.IsNullOrWhiteSpace(heroMessage))
+                        {
+                            heroMessage += " ";
+                        }
+
+                        heroMessage +=
+                            generatedAnalysis.CelebrationMessage;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(heroMessage))
+                    {
+                        litAIMessage.Text =
+                            HttpUtility.HtmlEncode(heroMessage);
+                    }
+
+                    // Show personality insight in separate card
+                    if (!string.IsNullOrWhiteSpace(generatedAnalysis.PersonalityInsight))
+                    {
+                        pnlPersonalityInsight.Visible = true;
+                        litPersonalityInsightLabel.Text = T("Why this fits you", "Mengapa ini sesuai untuk anda");
+                        litPersonalityInsightText.Text = HttpUtility.HtmlEncode(generatedAnalysis.PersonalityInsight);
+                    }
+
+                    // Show status badges row
+                    if (!string.IsNullOrWhiteSpace(generatedAnalysis.PerformanceTrend) ||
+                        !string.IsNullOrWhiteSpace(generatedAnalysis.Confidence))
+                    {
+                        pnlStatusRow.Visible = true;
+
+                        // Child-friendly trend labels
+                        string trendLabel = "";
+                        switch (generatedAnalysis.PerformanceTrend)
+                        {
+                            case "Improving":
+                                trendLabel = T("Going Up!", "Meningkat!");
+                                break;
+                            case "Stable":
+                                trendLabel = T("Steady!", "Stabil!");
+                                break;
+                            case "Needs Support":
+                                trendLabel = T("Let's Practise More!", "Jom Berlatih Lagi!");
+                                break;
+                            case "First Attempt":
+                                trendLabel = T("Just Starting!", "Baru Bermula!");
+                                break;
+                            default:
+                                trendLabel = T("Steady!", "Stabil!");
+                                break;
+                        }
+                        litTrendBadge.Text = HttpUtility.HtmlEncode(trendLabel);
+
+                        // Child-friendly confidence labels
+                        string confidenceLabel = "";
+                        switch (generatedAnalysis.Confidence)
+                        {
+                            case "Established":
+                                confidenceLabel = T("Strong Picture", "Gambaran Kukuh");
+                                break;
+                            case "Developing":
+                                confidenceLabel = T("Learning Your Pattern", "Mengenali Corak Anda");
+                                break;
+                            case "Early":
+                                confidenceLabel = T("Getting to Know You", "Mula Mengenali Anda");
+                                break;
+                            default:
+                                confidenceLabel = T("Learning Your Pattern", "Mengenali Corak Anda");
+                                break;
+                        }
+                        litConfidenceBadge.Text = HttpUtility.HtmlEncode(confidenceLabel);
                     }
                 }
 
@@ -471,32 +657,69 @@ namespace ScienceBuddy.Student
                     litAvgScore.Text = avgScore.ToString("0.0") + "%";
                     litTotalAttempts.Text = totalAttempts.ToString();
 
-                    // Strong topics
+                    // Current Trend card (replaces strong topics in pulse grid)
+                    string trendCardLabel = T("Steady!", "Stabil!");
+                    if (generatedAnalysis != null && !string.IsNullOrWhiteSpace(generatedAnalysis.PerformanceTrend))
+                    {
+                        switch (generatedAnalysis.PerformanceTrend)
+                        {
+                            case "Improving":
+                                trendCardLabel = T("Going Up!", "Meningkat!");
+                                break;
+                            case "Stable":
+                                trendCardLabel = T("Steady!", "Stabil!");
+                                break;
+                            case "Needs Support":
+                                trendCardLabel = T("Let's Practise More!", "Jom Berlatih Lagi!");
+                                break;
+                            case "First Attempt":
+                                trendCardLabel = T("Just Starting!", "Baru Bermula!");
+                                break;
+                        }
+                    }
+                    litStrongTopics.Text = HttpUtility.HtmlEncode(trendCardLabel);
+
+                    // Learning Picture card (replaces weak topics in pulse grid)
+                    string confidenceCardLabel = T("Learning Your Pattern", "Mengenali Corak Anda");
+                    if (generatedAnalysis != null && !string.IsNullOrWhiteSpace(generatedAnalysis.Confidence))
+                    {
+                        switch (generatedAnalysis.Confidence)
+                        {
+                            case "Established":
+                                confidenceCardLabel = T("Strong Picture", "Gambaran Kukuh");
+                                break;
+                            case "Developing":
+                                confidenceCardLabel = T("Learning Your Pattern", "Mengenali Corak Anda");
+                                break;
+                            case "Early":
+                                confidenceCardLabel = T("Getting to Know You", "Mula Mengenali Anda");
+                                break;
+                        }
+                    }
+                    litWeakTopics.Text = HttpUtility.HtmlEncode(confidenceCardLabel);
+
+                    // Strong topics detail section
                     if (!string.IsNullOrWhiteSpace(strongTopics))
                     {
-                        litStrongTopics.Text = FormatChips(strongTopics, "green");
                         pnlStrong.Visible = true;
                         pnlStrongEmpty.Visible = false;
                         litStrongList.Text = FormatTopicList(strongTopics, "green");
                     }
                     else
                     {
-                        litStrongTopics.Text = "<span class='st-ai-chip st-ai-chip--green'>—</span>";
                         pnlStrong.Visible = false;
                         pnlStrongEmpty.Visible = true;
                     }
 
-                    // Weak topics
+                    // Weak topics detail section
                     if (!string.IsNullOrWhiteSpace(weakTopics))
                     {
-                        litWeakTopics.Text = FormatChips(weakTopics, "orange");
                         pnlWeak.Visible = true;
                         pnlWeakEmpty.Visible = false;
                         litWeakList.Text = FormatTopicList(weakTopics, "orange");
                     }
                     else
                     {
-                        litWeakTopics.Text = "<span class='st-ai-chip st-ai-chip--orange'>—</span>";
                         pnlWeak.Visible = false;
                         pnlWeakEmpty.Visible = true;
                     }
@@ -511,17 +734,39 @@ namespace ScienceBuddy.Student
                     pnlWeakEmpty.Visible = true;
                 }
 
-                // 7. Build recommendations
-                List<object> recommendations = BuildRecommendations(personalityId, weakTopics, avgScore, lessonsDone, quizAttempts);
+                // 7. Build recommendations from the saved AI analysis.
+                List<object> recommendations = BuildRecommendations(
+                    generatedAnalysis,
+                    personalityId,
+                    weakTopics,
+                    avgScore,
+                    lessonsDone,
+                    quizAttempts);
+
                 if (recommendations.Count > 0)
                 {
                     pnlRecommend.Visible = true;
                     rptRecommendations.DataSource = recommendations;
                     rptRecommendations.DataBind();
 
-                    if (!string.IsNullOrWhiteSpace(overallSummary))
+                    string explanation = overallSummary;
+
+                    if (generatedAnalysis != null &&
+                        !string.IsNullOrWhiteSpace(
+                            generatedAnalysis.StudentAdvice))
                     {
-                        litExplanation.Text = HttpUtility.HtmlEncode(overallSummary);
+                        if (!string.IsNullOrWhiteSpace(explanation))
+                        {
+                            explanation += " ";
+                        }
+
+                        explanation += generatedAnalysis.StudentAdvice;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(explanation))
+                    {
+                        litExplanation.Text =
+                            HttpUtility.HtmlEncode(explanation);
                     }
                     else
                     {
@@ -535,11 +780,51 @@ namespace ScienceBuddy.Student
                     pnlRecommend.Visible = false;
                 }
 
-                // 8. Study tips based on personality
-                List<string> tips = GetStudyTips(personalityId);
-                litTip1.Text = tips.Count > 0 ? tips[0] : "";
-                litTip2.Text = tips.Count > 1 ? tips[1] : "";
-                litTip3.Text = tips.Count > 2 ? tips[2] : "";
+                // 8. Use the personalised AI mission when available.
+                List<string> tips;
+
+                if (generatedAnalysis != null &&
+                    generatedAnalysis.NextMissionSteps != null &&
+                    generatedAnalysis.NextMissionSteps.Count == 3)
+                {
+                    tips = generatedAnalysis.NextMissionSteps;
+
+                    if (!string.IsNullOrWhiteSpace(
+                        generatedAnalysis.NextMissionTitle))
+                    {
+                        litTipsTitle.Text =
+                            HttpUtility.HtmlEncode(
+                                generatedAnalysis.NextMissionTitle);
+                    }
+                    else
+                    {
+                        litTipsTitle.Text = T(
+                            "Your 3-Step Mission",
+                            "Misi 3 Langkah Anda");
+                    }
+                }
+                else if (generatedAnalysis != null &&
+                         generatedAnalysis.StudyTips != null &&
+                         generatedAnalysis.StudyTips.Count == 3)
+                {
+                    tips = generatedAnalysis.StudyTips;
+                }
+                else
+                {
+                    tips = GetStudyTips(personalityId);
+                }
+
+                litTip1.Text = tips.Count > 0
+                    ? HttpUtility.HtmlEncode(tips[0])
+                    : "";
+
+                litTip2.Text = tips.Count > 1
+                    ? HttpUtility.HtmlEncode(tips[1])
+                    : "";
+
+                litTip3.Text = tips.Count > 2
+                    ? HttpUtility.HtmlEncode(tips[2])
+                    : "";
             }
         }
 
@@ -648,7 +933,151 @@ namespace ScienceBuddy.Student
         }
 
         // ── Build recommendations ─────────────────────────────────────
-        private List<object> BuildRecommendations(string personalityId, string weakTopics,
+        private List<object> BuildRecommendations(
+            LearningAnalysisData analysis,
+            string personalityId,
+            string weakTopics,
+            decimal avgScore,
+            int lessonsDone,
+            int quizAttempts)
+        {
+            List<object> recommendations = new List<object>();
+            string buttonText = T("Open", "Buka");
+
+            if (analysis != null)
+            {
+                if (!string.IsNullOrWhiteSpace(
+                    analysis.RecommendedLessonId))
+                {
+                    string lessonTitle =
+                        analysis.RecommendedLessonTitle;
+
+                    if (string.IsNullOrWhiteSpace(lessonTitle))
+                    {
+                        lessonTitle = T(
+                            "Recommended Lesson",
+                            "Pelajaran Dicadangkan");
+                    }
+
+                    recommendations.Add(new
+                    {
+                        Icon =
+                            "<i class=\"bi bi-book\"></i>",
+                        Title = T(
+                            "Review: ",
+                            "Ulang Kaji: ") +
+                            lessonTitle,
+                        Reason =
+                            !string.IsNullOrWhiteSpace(
+                                analysis.LessonReason)
+                            ? analysis.LessonReason
+                            : T(
+                                "Review this lesson before your next quiz.",
+                                "Ulang kaji pelajaran ini sebelum kuiz seterusnya."),
+                        Url =
+                            ResolveUrl(
+                                "~/Student/Lesson.aspx") +
+                            "?lessonId=" +
+                            HttpUtility.UrlEncode(
+                                analysis.RecommendedLessonId),
+                        BtnText = buttonText
+                    });
+                }
+
+                if (!string.IsNullOrWhiteSpace(
+                    analysis.RecommendedQuizDifficulty))
+                {
+                    string difficultyLabel =
+                        analysis.RecommendedQuizDifficulty;
+
+                    if (CurrentLanguage == "BM")
+                    {
+                        if (difficultyLabel == "Easy")
+                        {
+                            difficultyLabel = "Mudah";
+                        }
+                        else if (difficultyLabel == "Medium")
+                        {
+                            difficultyLabel = "Sederhana";
+                        }
+                        else if (difficultyLabel == "Hard")
+                        {
+                            difficultyLabel = "Sukar";
+                        }
+                    }
+
+                    recommendations.Add(new
+                    {
+                        Icon =
+                            "<i class=\"bi bi-clipboard-check\"></i>",
+                        Title = T(
+                            "Recommended Quiz: ",
+                            "Kuiz Dicadangkan: ") +
+                            difficultyLabel,
+                        Reason =
+                            !string.IsNullOrWhiteSpace(
+                                analysis.QuizReason)
+                            ? analysis.QuizReason
+                            : T(
+                                "This difficulty matches your recent quiz performance.",
+                                "Tahap ini sepadan dengan prestasi kuiz terkini anda."),
+                        Url =
+                            ResolveUrl(
+                                "~/Student/PracticeLibrary.aspx"),
+                        BtnText = buttonText
+                    });
+                }
+
+                if (!string.IsNullOrWhiteSpace(
+                    analysis.RecommendedLabId))
+                {
+                    string labTitle =
+                        analysis.RecommendedLabTitle;
+
+                    if (string.IsNullOrWhiteSpace(labTitle))
+                    {
+                        labTitle = T(
+                            "Recommended Virtual Lab",
+                            "Makmal Maya Dicadangkan");
+                    }
+
+                    recommendations.Add(new
+                    {
+                        Icon =
+                            "<i class=\"bi bi-eyedropper\"></i>",
+                        Title = labTitle,
+                        Reason =
+                            !string.IsNullOrWhiteSpace(
+                                analysis.LabReason)
+                            ? analysis.LabReason
+                            : T(
+                                "Try this lab to strengthen the related Science concept.",
+                                "Cuba makmal ini untuk mengukuhkan konsep Sains berkaitan."),
+                        Url =
+                            ResolveUrl(
+                                "~/Student/VirtualLab.aspx") +
+                            "?labId=" +
+                            HttpUtility.UrlEncode(
+                                analysis.RecommendedLabId),
+                        BtnText = buttonText
+                    });
+                }
+
+                if (recommendations.Count > 0)
+                {
+                    return recommendations;
+                }
+            }
+
+            return BuildFallbackRecommendations(
+                personalityId,
+                weakTopics,
+                avgScore,
+                lessonsDone,
+                quizAttempts);
+        }
+
+        private List<object> BuildFallbackRecommendations(string personalityId, string weakTopics,
             decimal avgScore, int lessonsDone, int quizAttempts)
         {
             List<object> list = new List<object>();
@@ -706,7 +1135,7 @@ namespace ScienceBuddy.Student
                         Title = T("Check Your Progress", "Semak Kemajuan Anda"),
                         Reason = T("See how close you are to your next achievement!",
                                    "Lihat sejauh mana anda daripada pencapaian seterusnya!"),
-                        Url = ResolveUrl("~/Student/Progress.aspx"),
+                        Url = ResolveUrl("~/Student/ProgressRewards.aspx"),
                         BtnText = goText
                     });
                     break;
@@ -838,6 +1267,76 @@ namespace ScienceBuddy.Student
             return tips;
         }
 
+        private LearningAnalysisData ParseLearningAnalysisJson(
+            string analysisJson)
+        {
+            if (string.IsNullOrWhiteSpace(analysisJson))
+            {
+                return null;
+            }
+
+            try
+            {
+                JavaScriptSerializer serializer =
+                    new JavaScriptSerializer();
+
+                return serializer.Deserialize<LearningAnalysisData>(
+                    analysisJson);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    "Could not read analysis JSON: " +
+                    ex.Message);
+
+                return null;
+            }
+        }
+
+        private string GetLatestLearningContext()
+        {
+            string userId = Session["userId"] as string;
+
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return "";
+            }
+
+            const string sql = @"
+                SELECT TOP 1
+                    ai.analysisJson
+                FROM AILearningAnalysis ai
+                INNER JOIN Student s
+                    ON s.studentId = ai.studentId
+                WHERE s.userId = @userId
+                AND ai.isLatest = 1";
+
+            using (SqlConnection connection =
+                new SqlConnection(ConnStr))
+            using (SqlCommand command =
+                new SqlCommand(sql, connection))
+            {
+                command.Parameters.AddWithValue(
+                    "@userId",
+                    userId);
+
+                connection.Open();
+
+                object result =
+                    command.ExecuteScalar();
+
+                if (result == null ||
+                    result == DBNull.Value)
+                {
+                    return "";
+                }
+
+                return result.ToString();
+            }
+        }
+
+
+
         // ── Table exists helper ───────────────────────────────────────
         /// <summary>
         /// Returns true if the given table exists in the current database.
@@ -932,24 +1431,53 @@ namespace ScienceBuddy.Student
                 history = new List<Dictionary<string, string>>();
             }
 
-            var messagesList = new List<Dictionary<string, string>>();
+            var messagesList =
+    new List<Dictionary<string, string>>();
 
             if (!string.IsNullOrEmpty(systemPrompt))
             {
-                messagesList.Add(new Dictionary<string, string>
-        {
+                messagesList.Add(
+                    new Dictionary<string, string>
+                    {
             { "role", "system" },
             { "content", systemPrompt }
-        });
+                    });
+            }
+
+            string learningContext =
+                GetLatestLearningContext();
+
+            if (!string.IsNullOrWhiteSpace(
+                learningContext))
+            {
+                messagesList.Add(
+                    new Dictionary<string, string>
+                    {
+            {
+                "role",
+                "system"
+            },
+            {
+                "content",
+                "This is the student's latest verified " +
+                "learning analysis. Use it when the " +
+                "student asks about progress, weak topics, " +
+                "recommended lessons, quiz difficulty, " +
+                "virtual labs or study advice. Do not " +
+                "change or invent the factual values:\n" +
+                learningContext
+            }
+                    });
             }
 
             foreach (var message in history)
             {
-                messagesList.Add(new Dictionary<string, string>
-        {
+                messagesList.Add(
+                    new Dictionary<string, string>
+                    {
             { "role", message["role"] },
             { "content", message["content"] }
-        });
+                    });
             }
 
             var payload = new Dictionary<string, object>

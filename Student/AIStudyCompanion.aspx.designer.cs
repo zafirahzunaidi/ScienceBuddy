@@ -21,429 +21,276 @@ namespace ScienceBuddy.Student
         /// <summary>
         /// litHeroTitle control.
         /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litHeroTitle;
 
         /// <summary>
         /// litHeroSub control.
         /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litHeroSub;
 
         /// <summary>
         /// litStudentName control.
         /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litStudentName;
 
         /// <summary>
         /// litCurrentLevel control.
         /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litCurrentLevel;
 
         /// <summary>
         /// litPersonality control.
         /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litPersonality;
 
         /// <summary>
         /// litAIMessage control.
         /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litAIMessage;
 
         /// <summary>
-        /// litHealthTitle control.
+        /// pnlPersonalityInsight control.
         /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litHealthTitle;
+        protected global::System.Web.UI.WebControls.Panel pnlPersonalityInsight;
 
         /// <summary>
-        /// pnlHealth control.
+        /// litPersonalityInsightLabel control.
         /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlHealth;
+        protected global::System.Web.UI.WebControls.Literal litPersonalityInsightLabel;
 
         /// <summary>
-        /// litAvgScore control.
+        /// litPersonalityInsightText control.
         /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litAvgScore;
+        protected global::System.Web.UI.WebControls.Literal litPersonalityInsightText;
 
         /// <summary>
-        /// litAvgScoreLbl control.
+        /// pnlStatusRow control.
         /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litAvgScoreLbl;
+        protected global::System.Web.UI.WebControls.Panel pnlStatusRow;
 
         /// <summary>
-        /// litTotalAttempts control.
+        /// litTrendBadge control.
         /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litTotalAttempts;
+        protected global::System.Web.UI.WebControls.Literal litTrendBadge;
 
         /// <summary>
-        /// litTotalAttemptsLbl control.
+        /// litConfidenceBadge control.
         /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litTotalAttemptsLbl;
-
-        /// <summary>
-        /// litStrongTopics control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litStrongTopics;
-
-        /// <summary>
-        /// litStrongTopicsLbl control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litStrongTopicsLbl;
-
-        /// <summary>
-        /// litWeakTopics control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litWeakTopics;
-
-        /// <summary>
-        /// litWeakTopicsLbl control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litWeakTopicsLbl;
-
-        /// <summary>
-        /// pnlHealthEmpty control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlHealthEmpty;
-
-        /// <summary>
-        /// litHealthEmpty control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litHealthEmpty;
-
-        /// <summary>
-        /// pnlStrong control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlStrong;
-
-        /// <summary>
-        /// litStrongTitle control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litStrongTitle;
-
-        /// <summary>
-        /// litStrongList control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litStrongList;
-
-        /// <summary>
-        /// pnlStrongEmpty control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlStrongEmpty;
-
-        /// <summary>
-        /// litStrongEmptyTitle control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litStrongEmptyTitle;
-
-        /// <summary>
-        /// litStrongEmpty control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litStrongEmpty;
-
-        /// <summary>
-        /// pnlWeak control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlWeak;
-
-        /// <summary>
-        /// litWeakTitle control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litWeakTitle;
-
-        /// <summary>
-        /// litWeakList control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litWeakList;
-
-        /// <summary>
-        /// pnlWeakEmpty control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlWeakEmpty;
-
-        /// <summary>
-        /// litWeakEmptyTitle control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litWeakEmptyTitle;
-
-        /// <summary>
-        /// litWeakEmpty control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litWeakEmpty;
-
-        /// <summary>
-        /// pnlRecommend control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlRecommend;
-
-        /// <summary>
-        /// litRecommendTitle control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litRecommendTitle;
-
-        /// <summary>
-        /// rptRecommendations control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptRecommendations;
-
-        /// <summary>
-        /// litExplanation control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litExplanation;
-
-        /// <summary>
-        /// litTipsTitle control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litTipsTitle;
-
-        /// <summary>
-        /// litTip1 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litTip1;
-
-        /// <summary>
-        /// litTip2 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litTip2;
-
-        /// <summary>
-        /// litTip3 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litTip3;
-
-        /// <summary>
-        /// pnlEmpty control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlEmpty;
-
-        /// <summary>
-        /// litEmptyTitle control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litEmptyTitle;
-
-        /// <summary>
-        /// litEmptyDesc control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litEmptyDesc;
+        protected global::System.Web.UI.WebControls.Literal litConfidenceBadge;
 
         /// <summary>
         /// pnlAIChat control.
         /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlAIChat;
 
         /// <summary>
         /// litChatTitle control.
         /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litChatTitle;
 
         /// <summary>
         /// litChatSub control.
         /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litChatSub;
 
         /// <summary>
         /// chatBox control.
         /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl chatBox;
 
         /// <summary>
         /// txtAIMessage control.
         /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtAIMessage;
 
         /// <summary>
         /// btnAISend control.
         /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnAISend;
 
         /// <summary>
         /// litChatNote control.
         /// </summary>
         protected global::System.Web.UI.WebControls.Literal litChatNote;
+
+        /// <summary>
+        /// litHealthTitle control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litHealthTitle;
+
+        /// <summary>
+        /// pnlHealth control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlHealth;
+
+        /// <summary>
+        /// litAvgScore control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litAvgScore;
+
+        /// <summary>
+        /// litAvgScoreLbl control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litAvgScoreLbl;
+
+        /// <summary>
+        /// litTotalAttempts control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litTotalAttempts;
+
+        /// <summary>
+        /// litTotalAttemptsLbl control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litTotalAttemptsLbl;
+
+        /// <summary>
+        /// litStrongTopics control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litStrongTopics;
+
+        /// <summary>
+        /// litStrongTopicsLbl control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litStrongTopicsLbl;
+
+        /// <summary>
+        /// litWeakTopics control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litWeakTopics;
+
+        /// <summary>
+        /// litWeakTopicsLbl control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litWeakTopicsLbl;
+
+        /// <summary>
+        /// pnlHealthEmpty control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlHealthEmpty;
+
+        /// <summary>
+        /// litHealthEmpty control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litHealthEmpty;
+
+        /// <summary>
+        /// pnlStrong control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlStrong;
+
+        /// <summary>
+        /// litStrongTitle control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litStrongTitle;
+
+        /// <summary>
+        /// litStrongList control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litStrongList;
+
+        /// <summary>
+        /// pnlStrongEmpty control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlStrongEmpty;
+
+        /// <summary>
+        /// litStrongEmptyTitle control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litStrongEmptyTitle;
+
+        /// <summary>
+        /// litStrongEmpty control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litStrongEmpty;
+
+        /// <summary>
+        /// pnlWeak control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlWeak;
+
+        /// <summary>
+        /// litWeakTitle control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litWeakTitle;
+
+        /// <summary>
+        /// litWeakList control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litWeakList;
+
+        /// <summary>
+        /// pnlWeakEmpty control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlWeakEmpty;
+
+        /// <summary>
+        /// litWeakEmptyTitle control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litWeakEmptyTitle;
+
+        /// <summary>
+        /// litWeakEmpty control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litWeakEmpty;
+
+        /// <summary>
+        /// litTopicZoneTitle control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litTopicZoneTitle;
+
+        /// <summary>
+        /// pnlRecommend control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlRecommend;
+
+        /// <summary>
+        /// litRecommendTitle control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litRecommendTitle;
+
+        /// <summary>
+        /// rptRecommendations control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Repeater rptRecommendations;
+
+        /// <summary>
+        /// litExplanation control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litExplanation;
+
+        /// <summary>
+        /// litTipsTitle control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litTipsTitle;
+
+        /// <summary>
+        /// litTip1 control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litTip1;
+
+        /// <summary>
+        /// litTip2 control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litTip2;
+
+        /// <summary>
+        /// litTip3 control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litTip3;
+
+        /// <summary>
+        /// pnlEmpty control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlEmpty;
+
+        /// <summary>
+        /// litEmptyTitle control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litEmptyTitle;
+
+        /// <summary>
+        /// litEmptyDesc control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litEmptyDesc;
     }
 }
