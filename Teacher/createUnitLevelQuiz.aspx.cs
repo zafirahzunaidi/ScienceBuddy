@@ -34,6 +34,12 @@ namespace ScienceBuddy.Teacher
 
     public partial class createUnitLevelQuiz : Page
     {
+        protected global::System.Web.UI.WebControls.Panel pnlSubtopicSelect;
+        protected global::System.Web.UI.WebControls.DropDownList ddlSubtopic;
+        protected global::System.Web.UI.WebControls.Panel pnlQuizTitles;
+        protected global::System.Web.UI.WebControls.Literal litQuizTitleEN;
+        protected global::System.Web.UI.WebControls.Literal litQuizTitleBM;
+
         protected string CurrentLanguage
         { get { string l = Session["preferredLanguage"] as string; return string.IsNullOrEmpty(l) ? "EN" : l; } }
         protected string T(string en, string bm) { return CurrentLanguage == "BM" ? bm : en; }
@@ -87,6 +93,15 @@ namespace ScienceBuddy.Teacher
 
         private bool InitContext()
         {
+            string quizIdParam = Request.QueryString["quizId"];
+
+            // NEW FLOW: quizId passed directly from Manage Quizzes
+            if (!string.IsNullOrEmpty(quizIdParam))
+            {
+                return InitFromQuizId(quizIdParam);
+            }
+
+            // LEGACY FLOW: mode + subtopicId + unitId/level
             string mode = Request.QueryString["mode"];
             string subtopicId = Request.QueryString["subtopicId"];
             if (string.IsNullOrEmpty(mode) || string.IsNullOrEmpty(subtopicId))
@@ -95,12 +110,12 @@ namespace ScienceBuddy.Teacher
             using (var conn = new SqlConnection(ConnStr))
             {
                 conn.Open();
-                // Get subtopic name
                 string subName = "";
                 using (var cmd = new SqlCommand("SELECT [subtopicTitleEN] FROM dbo.[Subtopic] WHERE [subtopicId]=@s", conn))
                 { cmd.Parameters.AddWithValue("@s", subtopicId); var v = cmd.ExecuteScalar(); subName = v?.ToString() ?? ""; }
                 litSubtopic.Text = HttpUtility.HtmlEncode(subName);
                 litPropSubtopic.Text = HttpUtility.HtmlEncode(subName);
+                pnlSubtopicSelect.Visible = false;
 
                 if (mode == "unit")
                 {
@@ -124,10 +139,92 @@ namespace ScienceBuddy.Teacher
                 }
                 else { ShowError(T("Invalid mode.", "Mod tidak sah.")); return false; }
 
-                // Verify quiz exists
                 string quizId = GetQuizId(conn, mode);
                 if (string.IsNullOrEmpty(quizId))
                 { ShowError(T("No matching quiz found for the selected criteria.", "Tiada kuiz yang sepadan ditemui untuk kriteria yang dipilih.")); return false; }
+
+                ViewState["QuizId"] = quizId;
+                ViewState["SubtopicId"] = subtopicId;
+            }
+
+            pnlBuilder.Visible = true;
+            btnAddQuestion.Text = T("+ Add Question", "+ Tambah Soalan");
+            return true;
+        }
+
+        private bool InitFromQuizId(string quizId)
+        {
+            string subtopicId = (Request.QueryString["subtopicId"] ?? "").Trim();
+
+            using (var conn = new SqlConnection(ConnStr))
+            {
+                conn.Open();
+
+                string quizType = "", unitId = "", levelId = "", titleEN = "", titleBM = "";
+                using (var cmd = new SqlCommand("SELECT [quizType],[unitId],[levelId],[quizTitleEN],[quizTitleBM] FROM dbo.[Quiz] WHERE [quizId]=@qid", conn))
+                {
+                    cmd.Parameters.AddWithValue("@qid", quizId);
+                    using (var r = cmd.ExecuteReader())
+                    {
+                        if (!r.Read()) { ShowError(T("Quiz not found.", "Kuiz tidak ditemui.")); return false; }
+                        quizType = r["quizType"]?.ToString() ?? "";
+                        unitId = r["unitId"]?.ToString() ?? "";
+                        levelId = r["levelId"]?.ToString() ?? "";
+                        titleEN = r["quizTitleEN"]?.ToString() ?? "";
+                        titleBM = r["quizTitleBM"]?.ToString() ?? "";
+                    }
+                }
+
+                if (quizType != "Unit" && quizType != "Level")
+                { ShowError(T("Invalid quiz type. Only Unit or Level quizzes are supported.", "Jenis kuiz tidak sah. Hanya kuiz Unit atau Tahap disokong.")); return false; }
+
+                // Validate subtopicId
+                if (string.IsNullOrEmpty(subtopicId))
+                { ShowError(T("Subtopic not specified. Please select a subtopic from Manage Quizzes.", "Subtopik tidak dinyatakan. Sila pilih subtopik dari Urus Kuiz.")); return false; }
+
+                // Verify subtopic exists and belongs to the correct unit
+                string subName = "";
+                using (var cmd = new SqlCommand("SELECT [subtopicTitleEN],[unitId] FROM dbo.[Subtopic] WHERE [subtopicId]=@s", conn))
+                {
+                    cmd.Parameters.AddWithValue("@s", subtopicId);
+                    using (var r = cmd.ExecuteReader())
+                    {
+                        if (!r.Read()) { ShowError(T("Subtopic not found.", "Subtopik tidak ditemui.")); return false; }
+                        subName = r["subtopicTitleEN"]?.ToString() ?? "";
+                        string subUnitId = r["unitId"]?.ToString() ?? "";
+                        // For Unit quizzes, verify subtopic belongs to the quiz's unit
+                        if (quizType == "Unit" && !string.IsNullOrEmpty(unitId) && subUnitId != unitId)
+                        { ShowError(T("Selected subtopic does not belong to this quiz's unit.", "Subtopik yang dipilih bukan milik unit kuiz ini.")); return false; }
+                    }
+                }
+
+                // Set display info
+                if (quizType == "Unit")
+                {
+                    litMode.Text = T("Unit Quiz", "Kuiz Unit");
+                    string unitName = "";
+                    using (var cmd = new SqlCommand("SELECT [unitNameEN] FROM dbo.[Unit] WHERE [unitId]=@u", conn))
+                    { cmd.Parameters.AddWithValue("@u", unitId); var v = cmd.ExecuteScalar(); unitName = v?.ToString() ?? "-"; }
+                    litScope.Text = HttpUtility.HtmlEncode(unitName);
+                }
+                else
+                {
+                    litMode.Text = T("Level Quiz", "Kuiz Tahap");
+                    string levelName = "";
+                    using (var cmd = new SqlCommand("SELECT [levelNameEN] FROM dbo.[Level] WHERE [levelId]=@l", conn))
+                    { cmd.Parameters.AddWithValue("@l", levelId); var v = cmd.ExecuteScalar(); levelName = v?.ToString() ?? "-"; }
+                    litScope.Text = HttpUtility.HtmlEncode(levelName);
+                }
+
+                // Display subtopic as read-only
+                litSubtopic.Text = HttpUtility.HtmlEncode(subName);
+                litPropSubtopic.Text = HttpUtility.HtmlEncode(subName);
+                pnlSubtopicSelect.Visible = false;
+
+                // Display quiz titles
+                litQuizTitleEN.Text = HttpUtility.HtmlEncode(titleEN);
+                litQuizTitleBM.Text = HttpUtility.HtmlEncode(titleBM);
+                pnlQuizTitles.Visible = true;
 
                 ViewState["QuizId"] = quizId;
                 ViewState["SubtopicId"] = subtopicId;
@@ -275,6 +372,7 @@ namespace ScienceBuddy.Teacher
             string userId = Session["userId"].ToString();
 
             if (string.IsNullOrEmpty(quizId)) { ShowError(T("Quiz not found.", "Kuiz tidak ditemui.")); return; }
+            if (string.IsNullOrEmpty(subtopicId)) { ShowError(T("Subtopic not specified.", "Subtopik tidak dinyatakan.")); return; }
 
             // Validate all questions
             foreach (var q in qs)

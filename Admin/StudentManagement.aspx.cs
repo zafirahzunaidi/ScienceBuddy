@@ -11,6 +11,8 @@ namespace ScienceBuddy.Admin
 {
     public partial class StudentManagement : Page
     {
+        private bool _isAjax = false;
+
         private string ConnStr =>
             ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
@@ -22,11 +24,17 @@ namespace ScienceBuddy.Admin
             return CurrentLanguage == "BM" ? bm : en;
         }
 
+        protected override void Render(HtmlTextWriter writer)
+        {
+            if (!_isAjax)
+                base.Render(writer);
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
             // AJAX CRUD handler
             if (Request.QueryString["handler"] == "StudentCRUD" && Request.HttpMethod == "POST")
-            { HandleAjax(); return; }
+            { _isAjax = true; HandleAjax(); return; }
 
             if (Session["userId"] == null)
             { Response.Redirect("~/Login.aspx", false); return; }
@@ -237,6 +245,7 @@ namespace ScienceBuddy.Admin
 
         protected void btnSearch_Click(object sender, EventArgs e)
         {
+            LoadInsights();
             LoadStudents(txtSearch.Text.Trim(), ddlLevel.SelectedValue, ddlStatus.SelectedValue, ddlLang.SelectedValue, ddlSort.SelectedValue);
         }
 
@@ -247,6 +256,7 @@ namespace ScienceBuddy.Admin
             ddlStatus.SelectedIndex = 0;
             ddlLang.SelectedIndex   = 0;
             ddlSort.SelectedIndex   = 0;
+            LoadInsights();
             LoadStudents("", "", "", "", "name");
         }
 
@@ -356,11 +366,13 @@ namespace ScienceBuddy.Admin
         // ══════════════════════════════════════════════════════════════
         private void HandleAjax()
         {
+            Response.Clear();
             Response.ContentType = "application/json";
             try
             {
                 if (Session["userId"] == null || Session["role"]?.ToString() != "Admin")
-                { Response.Write("{\"success\":false,\"msg\":\"Unauthorized\"}"); Response.End(); return; }
+                { Response.Write("{\"success\":false,\"msg\":\"Unauthorized\"}"); return; }
+
                 string action = Request.QueryString["action"] ?? "";
                 string adminId = Session["userId"].ToString();
                 switch (action)
@@ -373,8 +385,13 @@ namespace ScienceBuddy.Admin
                     default: Response.Write("{\"success\":false,\"msg\":\"Unknown action\"}"); break;
                 }
             }
-            catch (Exception ex) { Response.Write("{\"success\":false,\"msg\":\"" + EscJson(ex.Message) + "\"}"); }
-            Response.End();
+            catch (Exception ex)
+            {
+                Response.Clear();
+                Response.Write("{\"success\":false,\"msg\":\"" + EscJson(ex.Message) + "\"}");
+            }
+            Response.Flush();
+            HttpContext.Current.ApplicationInstance.CompleteRequest();
         }
 
         private void HandleGetStudent()
@@ -410,21 +427,44 @@ namespace ScienceBuddy.Admin
             string password = Request.Form["password"] ?? "";
             string email = Request.Form["email"] ?? "";
             string phone = Request.Form["phone"] ?? "";
-            string levelId = Request.Form["levelId"] ?? "";
             string lang = Request.Form["lang"] ?? "EN";
+            string nickname = Request.Form["nickname"] ?? "";
+
             if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(email))
             { Response.Write("{\"success\":false,\"msg\":\"Name, username and email are required.\"}"); return; }
+            if (string.IsNullOrWhiteSpace(phone))
+            { Response.Write("{\"success\":false,\"msg\":\"Phone number is required.\"}"); return; }
             if (string.IsNullOrWhiteSpace(password) || password.Length < 8)
             { Response.Write("{\"success\":false,\"msg\":\"Password must be at least 8 characters.\"}"); return; }
+
+            // Auto-generate nickname from name if not provided
+            if (string.IsNullOrWhiteSpace(nickname))
+                nickname = GenerateNickname(name);
+
+            // Generate parentCode from nickname
+            string parentCode = "";
 
             using (var conn = new SqlConnection(ConnStr))
             {
                 conn.Open();
 
-                // Check uniqueness before starting transaction
-                using (var chk = new SqlCommand("SELECT COUNT(*) FROM dbo.[User] WHERE [email]=@e OR [username]=@u", conn))
-                { chk.Parameters.AddWithValue("@e", email); chk.Parameters.AddWithValue("@u", username);
-                  if (Convert.ToInt32(chk.ExecuteScalar()) > 0) { Response.Write("{\"success\":false,\"msg\":\"Username or email already exists.\"}"); return; } }
+                // Check username uniqueness
+                using (var chk = new SqlCommand("SELECT COUNT(*) FROM dbo.[User] WHERE [username]=@u", conn))
+                { chk.Parameters.AddWithValue("@u", username);
+                  if (Convert.ToInt32(chk.ExecuteScalar()) > 0) { Response.Write("{\"success\":false,\"msg\":\"Username already exists.\"}"); return; } }
+
+                // Check email uniqueness
+                using (var chk = new SqlCommand("SELECT COUNT(*) FROM dbo.[User] WHERE [email]=@e", conn))
+                { chk.Parameters.AddWithValue("@e", email);
+                  if (Convert.ToInt32(chk.ExecuteScalar()) > 0) { Response.Write("{\"success\":false,\"msg\":\"Email already exists.\"}"); return; } }
+
+                // Check phone uniqueness
+                using (var chk = new SqlCommand("SELECT COUNT(*) FROM dbo.[Student] WHERE [phoneNumber]=@p", conn))
+                { chk.Parameters.AddWithValue("@p", phone);
+                  if (Convert.ToInt32(chk.ExecuteScalar()) > 0) { Response.Write("{\"success\":false,\"msg\":\"Phone number already exists.\"}"); return; } }
+
+                // Generate unique parentCode
+                parentCode = GenerateUniqueParentCode(conn, nickname);
 
                 // BEGIN TRANSACTION — all inserts succeed or none persist
                 using (var txn = conn.BeginTransaction())
@@ -434,29 +474,27 @@ namespace ScienceBuddy.Admin
                         string userId = GenId(conn, "User", "userId", "U", txn);
                         string studentId = GenId(conn, "Student", "studentId", "S", txn);
 
-                        // 1. Insert User
+                        // 1. Insert User (role=Student, status=Active)
                         using (var cmd = new SqlCommand("INSERT INTO dbo.[User]([userId],[username],[password],[email],[role],[preferredLanguage],[status]) VALUES(@uid,@un,@pw,@em,'Student',@lg,'Active')", conn, txn))
                         { cmd.Parameters.AddWithValue("@uid", userId); cmd.Parameters.AddWithValue("@un", username); cmd.Parameters.AddWithValue("@pw", password); cmd.Parameters.AddWithValue("@em", email); cmd.Parameters.AddWithValue("@lg", lang); cmd.ExecuteNonQuery(); }
 
-                        // 2. Insert Student (foreign key to User)
-                        using (var cmd = new SqlCommand("INSERT INTO dbo.[Student]([studentId],[userId],[name],[phoneNumber],[currentLevelId],[XP],[parentCode]) VALUES(@sid,@uid,@name,@ph,@lv,0,@pc)", conn, txn))
+                        // 2. Insert Student (currentLevelId=LV001, XP=0, personalityId=P001)
+                        using (var cmd = new SqlCommand("INSERT INTO dbo.[Student]([studentId],[userId],[name],[phoneNumber],[nickname],[currentLevelId],[XP],[personalityId],[parentCode]) VALUES(@sid,@uid,@name,@ph,@nick,'LV001',0,'P001',@pc)", conn, txn))
                         { cmd.Parameters.AddWithValue("@sid", studentId); cmd.Parameters.AddWithValue("@uid", userId); cmd.Parameters.AddWithValue("@name", name);
-                          cmd.Parameters.AddWithValue("@ph", string.IsNullOrEmpty(phone) ? (object)DBNull.Value : phone);
-                          cmd.Parameters.AddWithValue("@lv", string.IsNullOrEmpty(levelId) ? "LV001" : levelId);
-                          cmd.Parameters.AddWithValue("@pc", "PC" + DateTime.Now.ToString("yyMMddHHmmss")); cmd.ExecuteNonQuery(); }
+                          cmd.Parameters.AddWithValue("@ph", phone);
+                          cmd.Parameters.AddWithValue("@nick", nickname);
+                          cmd.Parameters.AddWithValue("@pc", parentCode); cmd.ExecuteNonQuery(); }
 
-                        // 3. Insert Notification
-                        string notifId = GenId(conn, "Notification", "notificationId", "N", txn);
-                        using (var cmd = new SqlCommand("INSERT INTO dbo.[Notification]([notificationId],[toUserId],[titleEN],[titleBM],[messageEN],[messageBM],[isRead],[createdAt]) VALUES(@a,@b,'Welcome to ScienceBuddy!','Selamat Datang ke ScienceBuddy!','Your student account has been created. Start learning today!','Akaun pelajar anda telah dicipta. Mula belajar hari ini!',0,@c)", conn, txn))
-                        { cmd.Parameters.AddWithValue("@a", notifId); cmd.Parameters.AddWithValue("@b", userId); cmd.Parameters.AddWithValue("@c", DateTime.Now); cmd.ExecuteNonQuery(); }
-
-                        // 4. Insert Log
+                        // 3. Insert Log
                         string logId = GenId(conn, "Log", "logId", "LOG", txn);
                         using (var cmd = new SqlCommand("INSERT INTO dbo.[Log]([logId],[userId],[action],[description],[logDateTime],[status]) VALUES(@a,@b,@c,@d,@e,'Success')", conn, txn))
-                        { cmd.Parameters.AddWithValue("@a", logId); cmd.Parameters.AddWithValue("@b", adminId); cmd.Parameters.AddWithValue("@c", "Added Student"); cmd.Parameters.AddWithValue("@d", "Created student: " + name + " (" + studentId + ")."); cmd.Parameters.AddWithValue("@e", DateTime.Now); cmd.ExecuteNonQuery(); }
+                        { cmd.Parameters.AddWithValue("@a", logId); cmd.Parameters.AddWithValue("@b", adminId); cmd.Parameters.AddWithValue("@c", "Student Created"); cmd.Parameters.AddWithValue("@d", "Administrator created student account " + studentId + " (" + name + ")."); cmd.Parameters.AddWithValue("@e", DateTime.Now); cmd.ExecuteNonQuery(); }
 
                         // COMMIT — all steps succeeded
                         txn.Commit();
+
+                        // Return success with details
+                        Response.Write("{\"success\":true,\"studentId\":\"" + EscJson(studentId) + "\",\"userId\":\"" + EscJson(userId) + "\",\"username\":\"" + EscJson(username) + "\",\"name\":\"" + EscJson(name) + "\",\"parentCode\":\"" + EscJson(parentCode) + "\"}");
                     }
                     catch (Exception ex)
                     {
@@ -467,7 +505,42 @@ namespace ScienceBuddy.Admin
                     }
                 }
             }
-            Response.Write("{\"success\":true}");
+        }
+
+        private static string GenerateNickname(string fullName)
+        {
+            if (string.IsNullOrWhiteSpace(fullName)) return "Student";
+            string[] prefixes = { "muhammad", "mohd", "mohamad", "muhd" };
+            string[] connectors = { "bin", "binti", "bte", "bt" };
+            var parts = fullName.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var part in parts)
+            {
+                string lower = part.ToLower();
+                if (Array.Exists(prefixes, p => p == lower)) continue;
+                if (Array.Exists(connectors, c => c == lower)) break;
+                return part;
+            }
+            return parts[0]; // fallback to first word
+        }
+
+        private string GenerateUniqueParentCode(SqlConnection conn, string nickname)
+        {
+            string prefix = nickname.Length >= 3
+                ? nickname.Substring(0, 3).ToUpper()
+                : nickname.ToUpper().PadRight(3, 'X');
+            var rng = new Random();
+            string code;
+            int attempts = 0;
+            do
+            {
+                code = prefix + rng.Next(100, 999).ToString();
+                attempts++;
+                if (attempts > 50) { code = prefix + rng.Next(1000, 9999).ToString(); break; }
+                using (var chk = new SqlCommand("SELECT COUNT(*) FROM dbo.[Student] WHERE [parentCode]=@pc", conn))
+                { chk.Parameters.AddWithValue("@pc", code);
+                  if (Convert.ToInt32(chk.ExecuteScalar()) == 0) return code; }
+            } while (true);
+            return code;
         }
 
         private void HandleEdit(string adminId)

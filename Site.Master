@@ -25,6 +25,11 @@
     <link href="<%: ResolveUrl("~/Content/Site.css") %>" rel="stylesheet" />
     <link href="<%: ResolveUrl("~/Content/responsive.css") %>" rel="stylesheet" />
 
+    <%-- SweetAlert2 + Sign Out Modal (global) --%>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="<%: ResolveUrl("~/Scripts/admin-signout.js") %>"></script>
+
     <%-- Page-level head content --%>
     <asp:ContentPlaceHolder ID="HeadContent" runat="server" />
 </head>
@@ -258,8 +263,8 @@
                                     <i class="bi bi-gear"></i> Settings
                                 </a>
                                 <div class="sb-dropdown-divider"></div>
-                                <a runat="server" href="~/Logout.aspx" class="sb-dropdown-item danger" role="menuitem"
-                                    onclick="return confirm('Are you sure you want to sign out?');">
+                                <a href="javascript:;" class="sb-dropdown-item danger" role="menuitem"
+                                    onclick="showSignOutModal();">
                                     <i class="bi bi-box-arrow-right"></i> Sign Out
                                 </a>
                             </asp:ContentPlaceHolder>

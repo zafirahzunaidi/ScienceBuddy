@@ -124,9 +124,9 @@ namespace ScienceBuddy.Admin
                     {
                         hasRows = true;
                         string dt = rd["logDateTime"] != DBNull.Value ? Convert.ToDateTime(rd["logDateTime"]).ToString("dd MMM yyyy HH:mm") : "-";
-                        html += "<div class='sd-log-item'><div class='sd-log-ico'><i class='bi bi-activity'></i></div><div class='sd-log-body'><div class='sd-log-action'>" +
-                            HttpUtility.HtmlEncode(NS(rd["action"])) + "</div><div class='sd-log-desc'>" +
-                            HttpUtility.HtmlEncode(NS(rd["description"])) + "</div><div class='sd-log-time'>" + dt + "</div></div></div>";
+                        html += "<div class='ad-student-details-log-item'><div class='ad-student-details-log-ico'><i class='bi bi-activity'></i></div><div class='ad-student-details-log-body'><div class='ad-student-details-log-action'>" +
+                            HttpUtility.HtmlEncode(NS(rd["action"])) + "</div><div class='ad-student-details-log-desc'>" +
+                            HttpUtility.HtmlEncode(NS(rd["description"])) + "</div><div class='ad-student-details-log-time'>" + dt + "</div></div></div>";
                     }
                     litActivityLog.Text = hasRows ? html : "<div class='qb-empty' style='padding:2rem;'><i class='bi bi-clock-history' style='font-size:2rem;opacity:.4;'></i><div style='margin-top:8px;font-size:.9rem;color:var(--color-text-muted);'>" + T("No activity records.", "Tiada rekod aktiviti.") + "</div></div>";
                 }
@@ -150,9 +150,9 @@ namespace ScienceBuddy.Admin
                         hasRows = true;
                         string dt = rd["actionDate"] != DBNull.Value ? Convert.ToDateTime(rd["actionDate"]).ToString("dd MMM yyyy") : "-";
                         string icon = NS(rd["actionType"]).Contains("Block") ? "bi-slash-circle" : NS(rd["actionType"]).Contains("Delete") ? "bi-trash" : "bi-shield-check";
-                        html += "<div class='sd-log-item'><div class='sd-log-ico' style='background:#FEE2E2;color:#DC2626;'><i class='bi " + icon + "'></i></div><div class='sd-log-body'><div class='sd-log-action'>" +
-                            HttpUtility.HtmlEncode(NS(rd["actionType"])) + "</div><div class='sd-log-desc'>" +
-                            HttpUtility.HtmlEncode(NS(rd["reason"])) + "</div><div class='sd-log-time'>" + dt + " | " + T("By: ", "Oleh: ") + HttpUtility.HtmlEncode(NS(rd["performedBy"])) + "</div></div></div>";
+                        html += "<div class='ad-student-details-log-item'><div class='ad-student-details-log-ico' style='background:#FEE2E2;color:#DC2626;'><i class='bi " + icon + "'></i></div><div class='ad-student-details-log-body'><div class='ad-student-details-log-action'>" +
+                            HttpUtility.HtmlEncode(NS(rd["actionType"])) + "</div><div class='ad-student-details-log-desc'>" +
+                            HttpUtility.HtmlEncode(NS(rd["reason"])) + "</div><div class='ad-student-details-log-time'>" + dt + " | " + T("By: ", "Oleh: ") + HttpUtility.HtmlEncode(NS(rd["performedBy"])) + "</div></div></div>";
                     }
                     litSecurityLog.Text = hasRows ? html : "<div class='qb-empty' style='padding:2rem;'><i class='bi bi-shield-check' style='font-size:2rem;opacity:.4;color:#059669;'></i><div style='margin-top:8px;font-size:.9rem;color:var(--color-text-muted);'>" + T("No security actions recorded.", "Tiada tindakan keselamatan direkodkan.") + "</div></div>";
                 }
@@ -161,7 +161,7 @@ namespace ScienceBuddy.Admin
 
         private string Field(string label, string value)
         {
-            return "<div class='sd-field'><div class='sd-field-label'>" + HttpUtility.HtmlEncode(label) + "</div><div class='sd-field-value'>" + HttpUtility.HtmlEncode(value ?? "-") + "</div></div>";
+            return "<div class='ad-student-details-field'><div class='ad-student-details-field-label'>" + HttpUtility.HtmlEncode(label) + "</div><div class='ad-student-details-field-value'>" + HttpUtility.HtmlEncode(value ?? "-") + "</div></div>";
         }
 
         // ── AJAX (same handlers as StudentManagement) ──

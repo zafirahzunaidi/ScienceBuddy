@@ -3,89 +3,7 @@
     Title="Parent Management" ValidateRequest="false" EnableEventValidation="false" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
-<style>
-:root { --pm-accent:#0891B2; --pm-accent-light:#ECFEFF; --pm-teal:#14B8A6; --pm-orange:#F97316; --pm-blue:#3B82F6; --pm-mint:#34D399; }
-
-.pm-header { display:flex; align-items:center; justify-content:space-between; gap:var(--space-lg); margin-bottom:var(--space-xl); flex-wrap:wrap; }
-.pm-header-title { font-family:var(--font-primary); font-size:1.75rem; font-weight:800; color:var(--color-text); display:flex; align-items:center; gap:var(--space-sm); margin-bottom:var(--space-xs); }
-.pm-header-sub { font-size:.9375rem; color:var(--color-text-secondary); max-width:500px; line-height:1.5; }
-.pm-header-badge { display:inline-flex; align-items:center; gap:4px; background:var(--pm-accent-light); color:var(--pm-accent); font-size:.75rem; font-weight:700; padding:4px 12px; border-radius:var(--border-radius-full); margin-top:var(--space-sm); }
-.pm-header-icon { width:72px; height:72px; border-radius:var(--border-radius-xl); background:linear-gradient(135deg,var(--pm-accent),var(--pm-teal)); display:flex; align-items:center; justify-content:center; font-size:1.75rem; color:#fff; box-shadow:0 8px 24px rgba(8,145,178,.25); flex-shrink:0; }
-
-.pm-insights { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--space-md); margin-bottom:var(--space-xl); }
-.pm-insight { border-radius:var(--border-radius-xl); padding:var(--space-lg); color:#fff; display:flex; flex-direction:column; gap:var(--space-sm); transition:transform .25s,box-shadow .25s; position:relative; overflow:hidden; }
-.pm-insight:hover { transform:translateY(-4px); box-shadow:var(--shadow-lg); }
-.pm-insight::after { content:''; position:absolute; width:100px; height:100px; border-radius:50%; background:rgba(255,255,255,.08); top:-25px; right:-25px; pointer-events:none; }
-.pm-insight.gi-total { background:linear-gradient(135deg,#0891B2,#22D3EE); }
-.pm-insight.gi-linked { background:linear-gradient(135deg,#14B8A6,#5EEAD4); }
-.pm-insight.gi-discuss { background:linear-gradient(135deg,#F97316,#FB923C); }
-.pm-insight.gi-active { background:linear-gradient(135deg,#3B82F6,#60A5FA); }
-.pm-insight-ico { font-size:1.5rem; opacity:.9; }
-.pm-insight-val { font-family:var(--font-primary); font-size:2rem; font-weight:800; line-height:1; }
-.pm-insight-lbl { font-size:.8125rem; opacity:.85; font-weight:600; }
-
-.pm-search { background:var(--color-white); border-radius:var(--border-radius-xl); border:1.5px solid var(--border-color); box-shadow:var(--shadow-md); padding:var(--space-lg) var(--space-xl); display:flex; align-items:center; gap:var(--space-md); flex-wrap:wrap; margin-bottom:var(--space-xl); transition:box-shadow .2s; }
-.pm-search:focus-within { box-shadow:0 8px 32px rgba(8,145,178,.1); }
-.pm-search .sb-input { flex:1; min-width:180px; max-width:300px; }
-.pm-search .sb-select { max-width:160px; }
-
-.pm-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--space-lg); margin-bottom:var(--space-xl); }
-.pm-card { background:var(--color-white); border-radius:var(--border-radius-xl); border:1.5px solid var(--border-color); box-shadow:var(--shadow-sm); padding:var(--space-xl) var(--space-lg); display:flex; flex-direction:column; align-items:center; text-align:center; transition:transform .25s ease,box-shadow .25s ease; animation:pm-fadeIn .4s ease both; }
-.pm-card:nth-child(2){animation-delay:.05s;}.pm-card:nth-child(3){animation-delay:.1s;}.pm-card:nth-child(4){animation-delay:.15s;}.pm-card:nth-child(5){animation-delay:.2s;}.pm-card:nth-child(6){animation-delay:.25s;}
-.pm-card:hover { transform:translateY(-5px); box-shadow:0 12px 32px rgba(8,145,178,.12); }
-.pm-card:hover .pm-avatar { transform:scale(1.08); }
-@keyframes pm-fadeIn { from{opacity:0;transform:translateY(12px);} to{opacity:1;transform:translateY(0);} }
-.pm-avatar { width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.25rem; font-weight:800; margin-bottom:var(--space-md); position:relative; transition:transform .25s ease; }
-.pm-avatar-dot { position:absolute; bottom:2px; right:2px; width:13px; height:13px; border-radius:50%; border:2.5px solid #fff; }
-.pm-avatar-dot.active { background:#10B981; box-shadow:0 0 6px rgba(16,185,129,.5); }
-.pm-avatar-dot.inactive { background:#94A3B8; }
-.pm-name { font-family:var(--font-primary); font-size:1rem; font-weight:700; color:var(--color-text); margin-bottom:2px; }
-.pm-username { font-size:.8125rem; color:var(--color-text-muted); margin-bottom:var(--space-sm); }
-.pm-pills { display:flex; flex-wrap:wrap; gap:4px; justify-content:center; margin-bottom:var(--space-md); }
-.pm-pill { font-size:.6875rem; font-weight:700; padding:3px 9px; border-radius:var(--border-radius-full); transition:transform .15s; }
-.pm-pill:hover { transform:scale(1.06); }
-.pm-pill-status { background:#ECFDF5; color:#059669; }
-.pm-pill-status.blocked { background:#FEE2E2; color:#DC2626; }
-.pm-pill-lang { background:#EFF6FF; color:#2563EB; }
-.pm-pill-children { background:#FEF3C7; color:#B45309; }
-.pm-meta { font-size:.75rem; color:var(--color-text-muted); display:flex; gap:var(--space-md); justify-content:center; margin-bottom:var(--space-md); }
-.pm-meta span { display:flex; align-items:center; gap:3px; }
-.pm-card-actions { display:flex; gap:var(--space-sm); }
-.pm-card-actions .sb-btn { transition:all .2s; }
-.pm-card-actions .sb-btn:hover { transform:translateY(-1px); box-shadow:var(--shadow-sm); }
-
-.pm-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:var(--space-3xl); }
-.pm-empty-ico { font-size:3.5rem; margin-bottom:var(--space-lg); opacity:.4; color:var(--pm-accent); }
-.pm-empty-msg { font-size:1.0625rem; font-weight:700; color:var(--color-text-secondary); }
-.pm-empty-sub { font-size:.875rem; color:var(--color-text-muted); margin-top:4px; }
-
-/* Modal styles */
-.pm-modal-hdr { background:linear-gradient(135deg,var(--pm-accent),var(--pm-teal)); padding:var(--space-xl); color:#fff; text-align:center; border-radius:var(--border-radius-xl) var(--border-radius-xl) 0 0; }
-.pm-modal-avatar { width:80px; height:80px; border-radius:50%; margin:0 auto var(--space-md); display:flex; align-items:center; justify-content:center; font-size:1.75rem; font-weight:800; color:#fff; background:rgba(255,255,255,.2); border:3px solid rgba(255,255,255,.4); }
-.pm-modal-name { font-family:var(--font-primary); font-size:1.25rem; font-weight:800; }
-.pm-modal-user { font-size:.875rem; opacity:.8; }
-.pm-modal-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--space-sm); padding:var(--space-lg); background:var(--color-surface-alt); }
-.pm-modal-stat { text-align:center; }
-.pm-modal-stat-val { font-family:var(--font-primary); font-size:1.25rem; font-weight:800; color:var(--color-text); }
-.pm-modal-stat-lbl { font-size:.6875rem; font-weight:600; color:var(--color-text-muted); text-transform:uppercase; letter-spacing:.5px; }
-.pm-modal-body { padding:var(--space-lg); }
-.pm-modal-field { margin-bottom:var(--space-md); }
-.pm-modal-label { font-size:.6875rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--color-text-muted); margin-bottom:2px; }
-.pm-modal-value { font-size:.9375rem; font-weight:600; color:var(--color-text); }
-/* Children modal */
-.pm-child-card { display:flex; align-items:center; gap:var(--space-md); padding:var(--space-md); border-radius:var(--border-radius-lg); border:1.5px solid var(--border-color); margin-bottom:var(--space-sm); transition:background .15s; }
-.pm-child-card:hover { background:var(--color-surface-alt); }
-.pm-child-avatar { width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:.875rem; font-weight:700; flex-shrink:0; }
-.pm-child-info { flex:1; min-width:0; }
-.pm-child-name { font-weight:700; font-size:.875rem; color:var(--color-text); }
-.pm-child-meta { font-size:.75rem; color:var(--color-text-muted); display:flex; gap:var(--space-md); margin-top:2px; }
-.pm-child-xp-bar { height:5px; background:#F1F5F9; border-radius:99px; overflow:hidden; margin-top:4px; max-width:120px; }
-.pm-child-xp-fill { height:100%; border-radius:99px; background:linear-gradient(90deg,var(--pm-accent),var(--pm-teal)); }
-
-@media(max-width:1279px) { .pm-grid { grid-template-columns:repeat(2,1fr); } .pm-insights { grid-template-columns:repeat(2,1fr); } }
-@media(max-width:767px) { .pm-header { flex-direction:column; align-items:flex-start; } .pm-header-icon { display:none; } .pm-grid { grid-template-columns:1fr; } .pm-insights { grid-template-columns:1fr 1fr; } .pm-search { flex-direction:column; align-items:stretch; } .pm-search .sb-input,.pm-search .sb-select { max-width:100%; } .pm-header-title { font-size:1.375rem; } .pm-modal-stats { grid-template-columns:1fr; } }
-@media(max-width:479px) { .pm-insights { grid-template-columns:1fr; } }
-</style>
+<link href="<%: ResolveUrl("~/Content/Admin.css") %>" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="<%: ResolveUrl("~/Scripts/admin-signout.js") %>"></script>
@@ -134,28 +52,28 @@
 
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 
-<div class="pm-header">
+<div class="ad-parent-management-header">
     <div>
-        <h1 class="pm-header-title"><i class="bi bi-person-heart" style="color:var(--pm-accent);"></i> <%= T("Parent Management", "Pengurusan Ibu Bapa") %></h1>
-        <p class="pm-header-sub"><%= T("Manage parent accounts, monitor engagement and parent-child communication.", "Urus akaun ibu bapa, pantau penglibatan dan komunikasi ibu bapa-anak.") %></p>
-        <span class="pm-header-badge"><i class="bi bi-house-heart-fill"></i> <%= T("Family Directory", "Direktori Keluarga") %></span>
+        <h1 class="ad-parent-management-header-title"><i class="bi bi-person-heart" style="color:var(--ad-parent-management-accent);"></i> <%= T("Parent Management", "Pengurusan Ibu Bapa") %></h1>
+        <p class="ad-parent-management-header-sub"><%= T("Manage parent accounts, monitor engagement and parent-child communication.", "Urus akaun ibu bapa, pantau penglibatan dan komunikasi ibu bapa-anak.") %></p>
+        <span class="ad-parent-management-header-badge"><i class="bi bi-house-heart-fill"></i> <%= T("Family Directory", "Direktori Keluarga") %></span>
     </div>
     <div style="display:flex;align-items:center;gap:var(--space-md);">
-        <div class="pm-header-icon"><i class="bi bi-people-fill"></i></div>
+        <div class="ad-parent-management-header-icon"><i class="bi bi-people-fill"></i></div>
         <a href="javascript:;" onclick="openAddParent()" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:linear-gradient(135deg,#0E7490,#0891B2,#22D3EE);color:#fff;border-radius:12px;font-weight:700;font-size:.9rem;text-decoration:none;box-shadow:0 6px 20px rgba(8,145,178,.35);transition:all .25s;">
             <i class="bi bi-person-plus-fill"></i> <%= T("+ Add Parent", "+ Tambah Ibu Bapa") %>
         </a>
     </div>
 </div>
 
-<div class="pm-insights">
-    <div class="pm-insight gi-total"><div class="pm-insight-ico"><i class="bi bi-person-heart"></i></div><div class="pm-insight-val"><asp:Literal ID="litTotal" runat="server" Text="0" /></div><div class="pm-insight-lbl"><%= T("Total Parents", "Jumlah Ibu Bapa") %></div></div>
-    <div class="pm-insight gi-linked"><div class="pm-insight-ico"><i class="bi bi-link-45deg"></i></div><div class="pm-insight-val"><asp:Literal ID="litLinked" runat="server" Text="0" /></div><div class="pm-insight-lbl"><%= T("Linked Children", "Anak yang Dihubungkan") %></div></div>
-    <div class="pm-insight gi-discuss"><div class="pm-insight-ico"><i class="bi bi-chat-dots-fill"></i></div><div class="pm-insight-val"><asp:Literal ID="litDiscuss" runat="server" Text="0" /></div><div class="pm-insight-lbl"><%= T("Forum Discussions", "Perbincangan Forum") %></div></div>
-    <div class="pm-insight gi-active"><div class="pm-insight-ico"><i class="bi bi-lightning-fill"></i></div><div class="pm-insight-val"><asp:Literal ID="litActive" runat="server" Text="0" /></div><div class="pm-insight-lbl"><%= T("Active Parents", "Ibu Bapa Aktif") %></div></div>
+<div class="ad-parent-management-insights">
+    <div class="ad-parent-management-insight ad-parent-management-gi-total"><div class="ad-parent-management-insight-ico"><i class="bi bi-person-heart"></i></div><div class="ad-parent-management-insight-val"><asp:Literal ID="litTotal" runat="server" Text="0" /></div><div class="ad-parent-management-insight-lbl"><%= T("Total Parents", "Jumlah Ibu Bapa") %></div></div>
+    <div class="ad-parent-management-insight ad-parent-management-gi-linked"><div class="ad-parent-management-insight-ico"><i class="bi bi-link-45deg"></i></div><div class="ad-parent-management-insight-val"><asp:Literal ID="litLinked" runat="server" Text="0" /></div><div class="ad-parent-management-insight-lbl"><%= T("Linked Children", "Anak yang Dihubungkan") %></div></div>
+    <div class="ad-parent-management-insight ad-parent-management-gi-discuss"><div class="ad-parent-management-insight-ico"><i class="bi bi-chat-dots-fill"></i></div><div class="ad-parent-management-insight-val"><asp:Literal ID="litDiscuss" runat="server" Text="0" /></div><div class="ad-parent-management-insight-lbl"><%= T("Forum Discussions", "Perbincangan Forum") %></div></div>
+    <div class="ad-parent-management-insight ad-parent-management-gi-active"><div class="ad-parent-management-insight-ico"><i class="bi bi-lightning-fill"></i></div><div class="ad-parent-management-insight-val"><asp:Literal ID="litActive" runat="server" Text="0" /></div><div class="ad-parent-management-insight-lbl"><%= T("Active Parents", "Ibu Bapa Aktif") %></div></div>
 </div>
 
-<div class="pm-search">
+<div class="ad-parent-management-search">
     <i class="bi bi-search text-muted"></i>
     <asp:TextBox ID="txtSearch" runat="server" CssClass="sb-input sb-input-sm" AutoPostBack="false" />
     <asp:DropDownList ID="ddlStatus" runat="server" CssClass="sb-select sb-input-sm" AutoPostBack="false">
@@ -178,22 +96,22 @@
 </div>
 
 <asp:Panel ID="pnlParents" runat="server" Visible="false">
-    <div class="pm-grid">
+    <div class="ad-parent-management-grid">
         <asp:Repeater ID="rptParents" runat="server" OnItemCommand="rptParents_ItemCommand">
             <ItemTemplate>
-                <div class="pm-card">
-                    <div class="pm-avatar" style='<%# Eval("gradient") %>'><%# HttpUtility.HtmlEncode(Eval("initials")) %><span class='pm-avatar-dot <%# Eval("dotClass") %>'></span></div>
-                    <div class="pm-name"><%# HttpUtility.HtmlEncode(Eval("displayName")) %></div>
-                    <div class="pm-username">@<%# HttpUtility.HtmlEncode(Eval("username")) %></div>
-                    <div class="pm-pills">
-                        <span class='pm-pill pm-pill-status <%# Eval("statusPillClass") %>'><%# HttpUtility.HtmlEncode(Eval("statusLabel")) %></span>
-                        <span class="pm-pill pm-pill-lang"><%# HttpUtility.HtmlEncode(Eval("language")) %></span>
-                        <span class="pm-pill pm-pill-children"><i class="bi bi-people-fill"></i> <%# Eval("childCount") %></span>
+                <div class="ad-parent-management-card">
+                    <div class="ad-parent-management-avatar" style='<%# Eval("gradient") %>'><%# HttpUtility.HtmlEncode(Eval("initials")) %><span class='ad-parent-management-avatar-dot <%# Eval("dotClass") %>'></span></div>
+                    <div class="ad-parent-management-name"><%# HttpUtility.HtmlEncode(Eval("displayName")) %></div>
+                    <div class="ad-parent-management-username">@<%# HttpUtility.HtmlEncode(Eval("username")) %></div>
+                    <div class="ad-parent-management-pills">
+                        <span class='ad-parent-management-pill ad-parent-management-pill-status <%# Eval("statusPillClass") %>'><%# HttpUtility.HtmlEncode(Eval("statusLabel")) %></span>
+                        <span class="ad-parent-management-pill ad-parent-management-pill-lang"><%# HttpUtility.HtmlEncode(Eval("language")) %></span>
+                        <span class="ad-parent-management-pill ad-parent-management-pill-children"><i class="bi bi-people-fill"></i> <%# Eval("childCount") %></span>
                     </div>
-                    <div class="pm-meta">
+                    <div class="ad-parent-management-meta">
                         <span><i class="bi bi-telephone"></i> <%# HttpUtility.HtmlEncode(Eval("phone")) %></span>
                     </div>
-                    <div class="pm-card-actions">
+                    <div class="ad-parent-management-card-actions">
                         <asp:LinkButton ID="lnkProfile" runat="server" CssClass="sb-btn sb-btn-light sb-btn-xs"
                             CommandName="ViewProfile" CommandArgument='<%# Eval("parentId") %>'
                             data-tooltip="View parent profile">
@@ -215,10 +133,10 @@
 </asp:Panel>
 
 <asp:Panel ID="pnlEmpty" runat="server">
-    <div class="pm-empty">
-        <div class="pm-empty-ico"><i class="bi bi-person-heart"></i></div>
-        <div class="pm-empty-msg"><%= T("No parents found.", "Tiada ibu bapa ditemui.") %></div>
-        <div class="pm-empty-sub"><%= T("Try adjusting your search or filters.", "Cuba laraskan carian atau penapis anda.") %></div>
+    <div class="ad-parent-management-empty">
+        <div class="ad-parent-management-empty-ico"><i class="bi bi-person-heart"></i></div>
+        <div class="ad-parent-management-empty-msg"><%= T("No parents found.", "Tiada ibu bapa ditemui.") %></div>
+        <div class="ad-parent-management-empty-sub"><%= T("Try adjusting your search or filters.", "Cuba laraskan carian atau penapis anda.") %></div>
     </div>
 </asp:Panel>
 
@@ -226,20 +144,20 @@
 <asp:Panel ID="pnlProfileModal" runat="server" Visible="false">
     <div class="sb-modal-overlay active" style="display:flex;">
         <div class="sb-modal" style="max-width:520px;">
-            <div class="pm-modal-hdr">
-                <div class="pm-modal-avatar"><asp:Literal ID="litModalInitials" runat="server" /></div>
-                <div class="pm-modal-name"><asp:Literal ID="litModalName" runat="server" /></div>
-                <div class="pm-modal-user">@<asp:Literal ID="litModalUsername" runat="server" /></div>
+            <div class="ad-parent-management-modal-hdr">
+                <div class="ad-parent-management-modal-avatar"><asp:Literal ID="litModalInitials" runat="server" /></div>
+                <div class="ad-parent-management-modal-name"><asp:Literal ID="litModalName" runat="server" /></div>
+                <div class="ad-parent-management-modal-user">@<asp:Literal ID="litModalUsername" runat="server" /></div>
             </div>
-            <div class="pm-modal-stats">
-                <div class="pm-modal-stat"><div class="pm-modal-stat-val"><asp:Literal ID="litModalChildren" runat="server" Text="0" /></div><div class="pm-modal-stat-lbl"><%= T("Children", "Anak") %></div></div>
-                <div class="pm-modal-stat"><div class="pm-modal-stat-val"><asp:Literal ID="litModalForums" runat="server" Text="0" /></div><div class="pm-modal-stat-lbl"><%= T("Discussions", "Perbincangan") %></div></div>
-                <div class="pm-modal-stat"><div class="pm-modal-stat-val"><asp:Literal ID="litModalLang" runat="server" Text="-" /></div><div class="pm-modal-stat-lbl"><%= T("Language", "Bahasa") %></div></div>
+            <div class="ad-parent-management-modal-stats">
+                <div class="ad-parent-management-modal-stat"><div class="ad-parent-management-modal-stat-val"><asp:Literal ID="litModalChildren" runat="server" Text="0" /></div><div class="ad-parent-management-modal-stat-lbl"><%= T("Children", "Anak") %></div></div>
+                <div class="ad-parent-management-modal-stat"><div class="ad-parent-management-modal-stat-val"><asp:Literal ID="litModalForums" runat="server" Text="0" /></div><div class="ad-parent-management-modal-stat-lbl"><%= T("Discussions", "Perbincangan") %></div></div>
+                <div class="ad-parent-management-modal-stat"><div class="ad-parent-management-modal-stat-val"><asp:Literal ID="litModalLang" runat="server" Text="-" /></div><div class="ad-parent-management-modal-stat-lbl"><%= T("Language", "Bahasa") %></div></div>
             </div>
-            <div class="pm-modal-body">
-                <div class="pm-modal-field"><div class="pm-modal-label"><%= T("Email", "E-mel") %></div><div class="pm-modal-value"><asp:Literal ID="litModalEmail" runat="server" Text="-" /></div></div>
-                <div class="pm-modal-field"><div class="pm-modal-label"><%= T("Phone", "Telefon") %></div><div class="pm-modal-value"><asp:Literal ID="litModalPhone" runat="server" Text="-" /></div></div>
-                <div class="pm-modal-field"><div class="pm-modal-label"><%= T("Status", "Status") %></div><div class="pm-modal-value"><asp:Literal ID="litModalStatus" runat="server" Text="-" /></div></div>
+            <div class="ad-parent-management-modal-body">
+                <div class="ad-parent-management-modal-field"><div class="ad-parent-management-modal-label"><%= T("Email", "E-mel") %></div><div class="ad-parent-management-modal-value"><asp:Literal ID="litModalEmail" runat="server" Text="-" /></div></div>
+                <div class="ad-parent-management-modal-field"><div class="ad-parent-management-modal-label"><%= T("Phone", "Telefon") %></div><div class="ad-parent-management-modal-value"><asp:Literal ID="litModalPhone" runat="server" Text="-" /></div></div>
+                <div class="ad-parent-management-modal-field"><div class="ad-parent-management-modal-label"><%= T("Status", "Status") %></div><div class="ad-parent-management-modal-value"><asp:Literal ID="litModalStatus" runat="server" Text="-" /></div></div>
             </div>
             <div class="sb-modal-footer">
                 <asp:Button ID="btnCloseProfile" runat="server" CssClass="sb-btn sb-btn-ghost sb-btn-sm" OnClick="btnCloseModal_Click" />
@@ -260,24 +178,24 @@
                 <asp:Panel ID="pnlChildrenList" runat="server" Visible="false">
                     <asp:Repeater ID="rptChildren" runat="server">
                         <ItemTemplate>
-                            <div class="pm-child-card">
-                                <div class="pm-child-avatar" style='<%# Eval("gradient") %>'><%# HttpUtility.HtmlEncode(Eval("initials")) %></div>
-                                <div class="pm-child-info">
-                                    <div class="pm-child-name"><%# HttpUtility.HtmlEncode(Eval("name")) %></div>
-                                    <div class="pm-child-meta">
+                            <div class="ad-parent-management-child-card">
+                                <div class="ad-parent-management-child-avatar" style='<%# Eval("gradient") %>'><%# HttpUtility.HtmlEncode(Eval("initials")) %></div>
+                                <div class="ad-parent-management-child-info">
+                                    <div class="ad-parent-management-child-name"><%# HttpUtility.HtmlEncode(Eval("name")) %></div>
+                                    <div class="ad-parent-management-child-meta">
                                         <span><i class="bi bi-bar-chart"></i> <%# HttpUtility.HtmlEncode(Eval("level")) %></span>
                                         <span><i class="bi bi-lightning"></i> <%# Eval("xp") %> XP</span>
                                     </div>
-                                    <div class="pm-child-xp-bar"><div class="pm-child-xp-fill" style='width:<%# Eval("xpPct") %>%'></div></div>
+                                    <div class="ad-parent-management-child-xp-bar"><div class="ad-parent-management-child-xp-fill" style='width:<%# Eval("xpPct") %>%'></div></div>
                                 </div>
                             </div>
                         </ItemTemplate>
                     </asp:Repeater>
                 </asp:Panel>
                 <asp:Panel ID="pnlNoChildren" runat="server">
-                    <div class="pm-empty" style="padding:var(--space-xl);">
-                        <div class="pm-empty-ico" style="font-size:2rem;"><i class="bi bi-person-x"></i></div>
-                        <div class="pm-empty-msg"><%= T("No linked children.", "Tiada anak dipautkan.") %></div>
+                    <div class="ad-parent-management-empty" style="padding:var(--space-xl);">
+                        <div class="ad-parent-management-empty-ico" style="font-size:2rem;"><i class="bi bi-person-x"></i></div>
+                        <div class="ad-parent-management-empty-msg"><%= T("No linked children.", "Tiada anak dipautkan.") %></div>
                     </div>
                 </asp:Panel>
             </div>
@@ -287,25 +205,20 @@
 
 <%-- ADD PARENT MODAL --%>
 <div id="addParentOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:2000;align-items:center;justify-content:center;padding:20px;">
-<div style="background:#fff;border-radius:20px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.2);animation:pmIn .3s ease;">
-<style>@keyframes pmIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
-.pm-add-field{margin-bottom:16px;}.pm-add-label{font-size:.75rem;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;display:block;}
-.pm-add-input{width:100%;padding:10px 14px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:.9rem;transition:border-color .2s;}.pm-add-input:focus{outline:none;border-color:#0891B2;box-shadow:0 0 0 3px rgba(8,145,178,.1);}
-.pm-add-err{font-size:.75rem;color:#DC2626;margin-top:3px;display:none;}.pm-add-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-</style>
+<div style="background:#fff;border-radius:20px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.2);animation:ad-parent-management-modalIn .3s ease;">
 <div style="padding:24px 28px;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;">
     <div><div style="font-family:var(--font-primary);font-size:1.1rem;font-weight:800;display:flex;align-items:center;gap:8px;"><i class="bi bi-person-plus-fill" style="color:#0891B2;"></i> <%= T("Add New Parent","Tambah Ibu Bapa Baharu") %></div><div style="font-size:.8rem;color:#64748B;margin-top:2px;"><%= T("Create a new parent account.","Cipta akaun ibu bapa baharu.") %></div></div>
     <button onclick="closeAddParent()" style="width:36px;height:36px;border:none;background:#F1F5F9;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;"><i class="bi bi-x-lg"></i></button>
 </div>
 <div style="padding:24px 28px;">
-<div class="pm-add-grid">
-<div class="pm-add-field"><label class="pm-add-label"><%= T("Full Name *","Nama Penuh *") %></label><input id="p_name" class="pm-add-input" type="text" /><div class="pm-add-err" id="pe_name"><%= T("Required","Diperlukan") %></div></div>
-<div class="pm-add-field"><label class="pm-add-label"><%= T("Username *","Nama Pengguna *") %></label><input id="p_username" class="pm-add-input" type="text" /><div class="pm-add-err" id="pe_username"><%= T("Required","Diperlukan") %></div></div>
-<div class="pm-add-field"><label class="pm-add-label"><%= T("Email *","E-mel *") %></label><input id="p_email" class="pm-add-input" type="email" /><div class="pm-add-err" id="pe_email"><%= T("Required","Diperlukan") %></div></div>
-<div class="pm-add-field"><label class="pm-add-label"><%= T("Phone Number","Nombor Telefon") %></label><input id="p_phone" class="pm-add-input" type="text" /></div>
-<div class="pm-add-field"><label class="pm-add-label"><%= T("Password *","Kata Laluan *") %></label><input id="p_pw" class="pm-add-input" type="password" /><div class="pm-add-err" id="pe_pw"><%= T("Min 8 characters","Min 8 aksara") %></div></div>
-<div class="pm-add-field"><label class="pm-add-label"><%= T("Confirm Password *","Sahkan Kata Laluan *") %></label><input id="p_pw2" class="pm-add-input" type="password" /><div class="pm-add-err" id="pe_pw2"><%= T("Passwords do not match","Kata laluan tidak sama") %></div></div>
-<div class="pm-add-field"><label class="pm-add-label"><%= T("Preferred Language","Bahasa Pilihan") %></label><select id="p_lang" class="pm-add-input"><option value="EN">English</option><option value="BM">Bahasa Melayu</option></select></div>
+<div class="ad-parent-management-add-grid">
+<div class="ad-parent-management-add-field"><label class="ad-parent-management-add-label"><%= T("Full Name *","Nama Penuh *") %></label><input id="p_name" class="ad-parent-management-add-input" type="text" /><div class="ad-parent-management-add-err" id="pe_name"><%= T("Required","Diperlukan") %></div></div>
+<div class="ad-parent-management-add-field"><label class="ad-parent-management-add-label"><%= T("Username *","Nama Pengguna *") %></label><input id="p_username" class="ad-parent-management-add-input" type="text" /><div class="ad-parent-management-add-err" id="pe_username"><%= T("Required","Diperlukan") %></div></div>
+<div class="ad-parent-management-add-field"><label class="ad-parent-management-add-label"><%= T("Email *","E-mel *") %></label><input id="p_email" class="ad-parent-management-add-input" type="email" /><div class="ad-parent-management-add-err" id="pe_email"><%= T("Required","Diperlukan") %></div></div>
+<div class="ad-parent-management-add-field"><label class="ad-parent-management-add-label"><%= T("Phone Number","Nombor Telefon") %></label><input id="p_phone" class="ad-parent-management-add-input" type="text" /></div>
+<div class="ad-parent-management-add-field"><label class="ad-parent-management-add-label"><%= T("Password *","Kata Laluan *") %></label><input id="p_pw" class="ad-parent-management-add-input" type="password" /><div class="ad-parent-management-add-err" id="pe_pw"><%= T("Min 8 characters","Min 8 aksara") %></div></div>
+<div class="ad-parent-management-add-field"><label class="ad-parent-management-add-label"><%= T("Confirm Password *","Sahkan Kata Laluan *") %></label><input id="p_pw2" class="ad-parent-management-add-input" type="password" /><div class="ad-parent-management-add-err" id="pe_pw2"><%= T("Passwords do not match","Kata laluan tidak sama") %></div></div>
+<div class="ad-parent-management-add-field"><label class="ad-parent-management-add-label"><%= T("Preferred Language","Bahasa Pilihan") %></label><select id="p_lang" class="ad-parent-management-add-input"><option value="EN">English</option><option value="BM">Bahasa Melayu</option></select></div>
 </div>
 <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid #F1F5F9;">
 <button onclick="closeAddParent()" style="padding:10px 22px;border-radius:10px;border:1.5px solid #E2E8F0;background:#fff;font-weight:600;cursor:pointer;"><%= T("Cancel","Batal") %></button>
@@ -337,7 +250,7 @@ function submitAddParent(){
     }).then(function(r){
         if(!r.isConfirmed){openAddParent();return;}
         var fd=new FormData();fd.append('name',n);fd.append('username',u);fd.append('email',e);fd.append('password',pw);fd.append('phone',ph);fd.append('lang',lang);
-        fetch(window.location.pathname+'?handler=ParentCRUD&action=addParent',{method:'POST',body:fd})
+        fetch(window.location.pathname + (window.location.pathname.indexOf('.aspx') === -1 ? '.aspx' : '') + '?handler=ParentCRUD&action=addParent',{method:'POST',body:fd})
         .then(function(r){return r.json();}).then(function(d){
             if(d.success){Swal.fire({icon:'success',title:'<%= T("Parent Created!","Ibu Bapa Dicipta!") %>',text:'<%= T("The parent account has been created successfully.","Akaun ibu bapa telah berjaya dicipta.") %>',confirmButtonColor:'#0891B2',timer:3000,timerProgressBar:true}).then(function(){__doPostBack('<%= btnSearch.UniqueID %>','');});}
             else{openAddParent();Swal.fire({icon:'error',title:'<%= T("Error","Ralat") %>',text:d.msg});}

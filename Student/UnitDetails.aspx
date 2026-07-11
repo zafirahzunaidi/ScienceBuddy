@@ -68,7 +68,7 @@
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 
 <asp:Panel ID="pnlLocked" runat="server" Visible="false">
-    <div class="st-unitdetails-locked"><div class="st-unitdetails-locked-icon">??</div>
+    <div class="st-unitdetails-locked"><div class="st-unitdetails-locked-icon"><i class="bi bi-lock-fill"></i></div>
         <div class="st-unitdetails-locked-title"><asp:Literal ID="litLockedTitle" runat="server" /></div>
         <div class="st-unitdetails-locked-desc"><asp:Literal ID="litLockedDesc" runat="server" /></div>
         <a href="<%: ResolveUrl("~/Student/MyLearning.aspx") %>" class="sb-btn sb-btn-primary sb-btn-sm"><i class="bi bi-arrow-left"></i> <asp:Literal ID="litLockedBtn" runat="server" /></a>
@@ -89,10 +89,10 @@
 </div>
 
 <div class="st-unitdetails-path">
-    <div class="st-unitdetails-path-card"><div class="st-unitdetails-path-icon">??</div><div class="st-unitdetails-path-label"><asp:Literal ID="litPathLessons" runat="server" /></div><div class="st-unitdetails-path-count"><asp:Literal ID="litPathLessonsCt" runat="server" /></div></div>
-    <div class="st-unitdetails-path-card"><div class="st-unitdetails-path-icon">??</div><div class="st-unitdetails-path-label"><asp:Literal ID="litPathMats" runat="server" /></div><div class="st-unitdetails-path-count"><asp:Literal ID="litPathMatsCt" runat="server" /></div></div>
-    <div class="st-unitdetails-path-card"><div class="st-unitdetails-path-icon">??</div><div class="st-unitdetails-path-label"><asp:Literal ID="litPathLab" runat="server" /></div><div class="st-unitdetails-path-count"><asp:Literal ID="litPathLabCt" runat="server" /></div></div>
-    <div class="st-unitdetails-path-card"><div class="st-unitdetails-path-icon">??</div><div class="st-unitdetails-path-label"><asp:Literal ID="litPathQuiz" runat="server" /></div><div class="st-unitdetails-path-count"><asp:Literal ID="litPathQuizCt" runat="server" /></div></div>
+    <div class="st-unitdetails-path-card"><div class="st-unitdetails-path-icon"><i class="bi bi-book-fill"></i></div><div class="st-unitdetails-path-label"><asp:Literal ID="litPathLessons" runat="server" /></div><div class="st-unitdetails-path-count"><asp:Literal ID="litPathLessonsCt" runat="server" /></div></div>
+    <div class="st-unitdetails-path-card"><div class="st-unitdetails-path-icon"><i class="bi bi-folder-fill"></i></div><div class="st-unitdetails-path-label"><asp:Literal ID="litPathMats" runat="server" /></div><div class="st-unitdetails-path-count"><asp:Literal ID="litPathMatsCt" runat="server" /></div></div>
+    <div class="st-unitdetails-path-card"><div class="st-unitdetails-path-icon"><i class="bi bi-eyedropper"></i></div><div class="st-unitdetails-path-label"><asp:Literal ID="litPathLab" runat="server" /></div><div class="st-unitdetails-path-count"><asp:Literal ID="litPathLabCt" runat="server" /></div></div>
+    <div class="st-unitdetails-path-card"><div class="st-unitdetails-path-icon"><i class="bi bi-patch-question-fill"></i></div><div class="st-unitdetails-path-label"><asp:Literal ID="litPathQuiz" runat="server" /></div><div class="st-unitdetails-path-count"><asp:Literal ID="litPathQuizCt" runat="server" /></div></div>
 </div>
 
 <%-- Subtopics & Lessons --%>

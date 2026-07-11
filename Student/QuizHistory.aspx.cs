@@ -11,31 +11,73 @@ namespace ScienceBuddy.Student
 {
     public partial class QuizHistory1 : Page
     {
-        private string ConnStr => ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+        private string ConnStr
+        {
+            get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
+        }
+
         public string CurrentLanguage = "EN";
-        public string T(string en, string bm) { return CurrentLanguage == "BM" ? bm : en; }
+
+        public string T(string en, string bm)
+        {
+            if (CurrentLanguage == "BM")
+            {
+                return bm;
+            }
+            return en;
+        }
 
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["userId"] == null || Session["role"] == null || Session["role"].ToString() != "Student")
-            { Response.Redirect("~/Login.aspx", false); return; }
+            {
+                Response.Redirect("~/Login.aspx", false);
+                return;
+            }
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
             InitLang();
-            if (!IsPostBack) { BuildFilters(); LoadData(); }
+            if (!IsPostBack)
+            {
+                BuildFilters();
+                LoadData();
+            }
         }
 
         private void InitLang()
         {
             string lang = Session["preferredLanguage"] as string;
-            if (!string.IsNullOrEmpty(lang)) { CurrentLanguage = lang; return; }
+            if (!string.IsNullOrEmpty(lang))
+            {
+                CurrentLanguage = lang;
+                return;
+            }
             string uid = Session["userId"] as string;
             if (!string.IsNullOrEmpty(uid))
             {
-                try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT preferredLanguage FROM [User] WHERE userId=@u", c))
-                { cmd.Parameters.AddWithValue("@u", uid); c.Open(); object r = cmd.ExecuteScalar();
-                  if (r != null && r != DBNull.Value) { lang = r.ToString(); Session["preferredLanguage"] = lang; CurrentLanguage = lang; return; } } } catch { }
+                try
+                {
+                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlCommand command = new SqlCommand("SELECT preferredLanguage FROM [User] WHERE userId=@u", connection))
+                    {
+                        command.Parameters.AddWithValue("@u", uid);
+                        connection.Open();
+                        object result = command.ExecuteScalar();
+                        if (result != null && result != DBNull.Value)
+                        {
+                            lang = result.ToString();
+                            Session["preferredLanguage"] = lang;
+                            CurrentLanguage = lang;
+                            return;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Error: " + ex.Message);
+                }
             }
-            CurrentLanguage = "EN"; Session["preferredLanguage"] = "EN";
+            CurrentLanguage = "EN";
+            Session["preferredLanguage"] = "EN";
         }
 
         private void SetLabels()
@@ -43,8 +85,10 @@ namespace ScienceBuddy.Student
             litPageTitle.Text = T("Quiz History", "Sejarah Kuiz");
             litTitle.Text = T("Quiz History", "Sejarah Kuiz");
             litSubtitle.Text = T("View your past quiz attempts, scores, and reviews.", "Lihat percubaan kuiz, skor, dan semakan jawapan anda.");
-            litFType.Text = T("Type", "Jenis"); litFStatus.Text = T("Status", "Status");
-            litFSort.Text = T("Sort", "Susun"); litFSearch.Text = T("Search", "Cari");
+            litFType.Text = T("Type", "Jenis");
+            litFStatus.Text = T("Status", "Status");
+            litFSort.Text = T("Sort", "Susun");
+            litFSearch.Text = T("Search", "Cari");
             btnFilter.Text = T("Filter", "Tapis");
             litEmptyTitle.Text = T("No Quiz Attempts Yet", "Belum Ada Percubaan Kuiz");
             litEmptyDesc.Text = T("You have not attempted any quizzes yet. Try a practice quiz to begin!", "Anda belum menjawab sebarang kuiz. Cuba kuiz latihan untuk bermula!");
@@ -72,123 +116,211 @@ namespace ScienceBuddy.Student
             ddlSort.Items.Add(new ListItem(T("Lowest Score", "Skor Terendah"), "lowest"));
         }
 
-        protected void ddlFilter_Changed(object sender, EventArgs e) { LoadData(); }
-        protected void btnFilter_Click(object sender, EventArgs e) { LoadData(); }
+        protected void ddlFilter_Changed(object sender, EventArgs e)
+        {
+            LoadData();
+        }
+
+        protected void btnFilter_Click(object sender, EventArgs e)
+        {
+            LoadData();
+        }
 
         private void LoadData()
         {
             SetLabels();
             string userId = Session["userId"].ToString();
-            bool isBM = CurrentLanguage == "BM";
 
-            using (var conn = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnStr))
             {
-                conn.Open();
+                connection.Open();
+
                 // Get studentId
                 string studentId = null;
-                using (var cmd = new SqlCommand("SELECT studentId FROM Student WHERE userId=@u", conn))
-                { cmd.Parameters.AddWithValue("@u", userId); object r = cmd.ExecuteScalar();
-                  if (r != null && r != DBNull.Value) studentId = r.ToString(); }
-                if (string.IsNullOrEmpty(studentId)) { ShowEmpty(); return; }
+                using (SqlCommand command = new SqlCommand("SELECT studentId FROM Student WHERE userId=@u", connection))
+                {
+                    command.Parameters.AddWithValue("@u", userId);
+                    object result = command.ExecuteScalar();
+                    if (result != null && result != DBNull.Value)
+                    {
+                        studentId = result.ToString();
+                    }
+                }
 
-                // Build query
-                string sql = @"SELECT qr.resultId, qr.quizId, qr.score, qr.totalMarks, qr.percentage,
-                    qr.resultStatus, qr.attemptNo, qr.attemptedDate,
-                    q.quizTitleEN, q.quizTitleBM, q.quizType,
-                    lv.levelNameEN, lv.levelNameBM, u.unitNameEN, u.unitNameBM
+                if (string.IsNullOrEmpty(studentId))
+                {
+                    pnlList.Visible = false;
+                    pnlEmpty.Visible = true;
+                    return;
+                }
+
+                // Build query with filters
+                string sql = @"
+                    SELECT qr.resultId, qr.quizId, qr.score, qr.totalMarks, qr.percentage,
+                           qr.resultStatus, qr.attemptNo, qr.attemptedDate,
+                           q.quizTitleEN, q.quizTitleBM, q.quizType
                     FROM QuizResult qr
-                    JOIN Quiz q ON q.quizId = qr.quizId
-                    LEFT JOIN Level lv ON lv.levelId = q.levelId
-                    LEFT JOIN Unit u ON u.unitId = q.unitId
+                    INNER JOIN Quiz q ON q.quizId = qr.quizId
                     WHERE qr.studentId = @sid";
 
+                // Apply type filter
                 string filterType = ddlType.SelectedValue;
+                if (!string.IsNullOrEmpty(filterType))
+                {
+                    sql += " AND q.quizType = @ftype";
+                }
+
+                // Apply status filter
                 string filterStatus = ddlStatus.SelectedValue;
-                string search = txtSearch.Text.Trim();
+                if (!string.IsNullOrEmpty(filterStatus))
+                {
+                    sql += " AND qr.resultStatus = @fstatus";
+                }
 
-                if (!string.IsNullOrEmpty(filterType)) sql += " AND q.quizType = @qtype";
-                if (!string.IsNullOrEmpty(filterStatus)) sql += " AND qr.resultStatus = @rstatus";
-                if (!string.IsNullOrEmpty(search)) sql += " AND (q.quizTitleEN LIKE @search OR q.quizTitleBM LIKE @search)";
+                // Apply search filter
+                string searchText = txtSearch.Text.Trim();
+                if (!string.IsNullOrEmpty(searchText))
+                {
+                    sql += " AND (q.quizTitleEN LIKE @search OR q.quizTitleBM LIKE @search)";
+                }
 
+                // Apply sort
                 string sort = ddlSort.SelectedValue;
-                switch (sort)
+                if (sort == "highest")
                 {
-                    case "highest": sql += " ORDER BY qr.percentage DESC"; break;
-                    case "lowest": sql += " ORDER BY qr.percentage ASC"; break;
-                    default: sql += " ORDER BY qr.attemptedDate DESC"; break;
+                    sql += " ORDER BY qr.percentage DESC";
+                }
+                else if (sort == "lowest")
+                {
+                    sql += " ORDER BY qr.percentage ASC";
+                }
+                else
+                {
+                    sql += " ORDER BY qr.attemptedDate DESC";
                 }
 
-                var dt = new DataTable();
-                using (var cmd = new SqlCommand(sql, conn))
+                DataTable resultTable = new DataTable();
+                using (SqlCommand command = new SqlCommand(sql, connection))
                 {
-                    cmd.Parameters.AddWithValue("@sid", studentId);
-                    if (!string.IsNullOrEmpty(filterType)) cmd.Parameters.AddWithValue("@qtype", filterType);
-                    if (!string.IsNullOrEmpty(filterStatus)) cmd.Parameters.AddWithValue("@rstatus", filterStatus);
-                    if (!string.IsNullOrEmpty(search)) cmd.Parameters.AddWithValue("@search", "%" + search + "%");
-                    new SqlDataAdapter(cmd).Fill(dt);
+                    command.Parameters.AddWithValue("@sid", studentId);
+                    if (!string.IsNullOrEmpty(filterType))
+                    {
+                        command.Parameters.AddWithValue("@ftype", filterType);
+                    }
+                    if (!string.IsNullOrEmpty(filterStatus))
+                    {
+                        command.Parameters.AddWithValue("@fstatus", filterStatus);
+                    }
+                    if (!string.IsNullOrEmpty(searchText))
+                    {
+                        command.Parameters.AddWithValue("@search", "%" + searchText + "%");
+                    }
+
+                    SqlDataAdapter adapter = new SqlDataAdapter(command);
+                    adapter.Fill(resultTable);
                 }
 
-                if (dt.Rows.Count == 0) { ShowEmpty(); return; }
-
-                // Stats
-                int totalAttempts = dt.Rows.Count;
-                int passedCount = 0; decimal bestPct = 0; DateTime latestDate = DateTime.MinValue;
-                foreach (DataRow row in dt.Rows)
+                if (resultTable.Rows.Count == 0)
                 {
-                    if (row["resultStatus"] != DBNull.Value && row["resultStatus"].ToString() == "Passed") passedCount++;
-                    decimal pct = row["percentage"] != DBNull.Value ? Convert.ToDecimal(row["percentage"]) : 0;
-                    if (pct > bestPct) bestPct = pct;
-                    DateTime d = row["attemptedDate"] != DBNull.Value ? Convert.ToDateTime(row["attemptedDate"]) : DateTime.MinValue;
-                    if (d > latestDate) latestDate = d;
+                    pnlList.Visible = false;
+                    pnlEmpty.Visible = true;
+                    return;
                 }
-                // Stats computed but not displayed (controls removed)
 
-                // Build list
-                var items = new List<object>();
-                foreach (DataRow row in dt.Rows)
+                pnlList.Visible = true;
+                pnlEmpty.Visible = false;
+
+                bool isBM = CurrentLanguage == "BM";
+                string viewLabel = T("View", "Lihat");
+                string reviewLabel = T("Review", "Semak");
+                string retryLabel = T("Retry", "Cuba Lagi");
+                string passedLabel = T("Passed", "Lulus");
+                string failedLabel = T("Failed", "Gagal");
+
+                List<object> historyList = new List<object>();
+                foreach (DataRow row in resultTable.Rows)
                 {
+                    string quizTitle = isBM ? row["quizTitleBM"].ToString() : row["quizTitleEN"].ToString();
+                    if (string.IsNullOrWhiteSpace(quizTitle))
+                    {
+                        quizTitle = row["quizTitleEN"].ToString();
+                    }
+                    if (string.IsNullOrWhiteSpace(quizTitle))
+                    {
+                        quizTitle = row["quizTitleBM"].ToString();
+                    }
+
+                    string quizType = row["quizType"] != DBNull.Value ? row["quizType"].ToString() : "Practice";
+                    string status = row["resultStatus"] != DBNull.Value ? row["resultStatus"].ToString() : "";
+                    int percentage = row["percentage"] != DBNull.Value ? (int)Convert.ToDecimal(row["percentage"]) : 0;
+                    int score = row["score"] != DBNull.Value ? Convert.ToInt32(row["score"]) : 0;
+                    int totalMarks = row["totalMarks"] != DBNull.Value ? Convert.ToInt32(row["totalMarks"]) : 0;
+                    int attemptNo = row["attemptNo"] != DBNull.Value ? Convert.ToInt32(row["attemptNo"]) : 1;
                     string resultId = row["resultId"].ToString();
                     string quizId = row["quizId"].ToString();
-                    string title = isBM ? Sv(row, "quizTitleBM") : Sv(row, "quizTitleEN");
-                    if (string.IsNullOrWhiteSpace(title)) title = Sv(row, "quizTitleEN");
-                    string quizType = Sv(row, "quizType");
-                    string status = Sv(row, "resultStatus");
-                    decimal pct = row["percentage"] != DBNull.Value ? Convert.ToDecimal(row["percentage"]) : 0;
-                    decimal score = row["score"] != DBNull.Value ? Convert.ToDecimal(row["score"]) : 0;
-                    decimal total = row["totalMarks"] != DBNull.Value ? Convert.ToDecimal(row["totalMarks"]) : 0;
-                    int att = row["attemptNo"] != DBNull.Value ? Convert.ToInt32(row["attemptNo"]) : 1;
-                    DateTime date = row["attemptedDate"] != DBNull.Value ? Convert.ToDateTime(row["attemptedDate"]) : DateTime.Now;
 
-                    bool passed = status == "Passed";
-                    string typeBadge = quizType == "Practice" ? "st-quizhistory-badge-practice" : quizType == "Unit" ? "st-quizhistory-badge-unit" : "st-quizhistory-badge-level";
-                    string typeLabel = quizType == "Practice" ? T("Practice", "Latihan") : quizType == "Unit" ? T("Unit", "Unit") : T("Level", "Tahap");
+                    string dateDisplay = "";
+                    if (row["attemptedDate"] != DBNull.Value)
+                    {
+                        dateDisplay = Convert.ToDateTime(row["attemptedDate"]).ToString("dd MMM yyyy");
+                    }
 
-                    items.Add(new {
-                        QuizTitle = HttpUtility.HtmlEncode(title),
-                        PctDisplay = Math.Round(pct, 0) + "%",
-                        ScoreDisplay = score + "/" + total,
-                        StatusClass = passed ? "passed" : "failed",
-                        TypeBadgeClass = typeBadge,
+                    string statusClass = status == "Passed" ? "passed" : "failed";
+                    string typeBadgeClass = "st-quizhistory-badge-" + quizType.ToLower();
+                    string statusBadgeClass = status == "Passed" ? "st-quizhistory-badge-passed" : "st-quizhistory-badge-failed";
+                    string statusLabel = status == "Passed" ? passedLabel : failedLabel;
+                    string typeLabel = GetTypeLabel(quizType);
+
+                    historyList.Add(new
+                    {
+                        QuizTitle = HttpUtility.HtmlEncode(quizTitle),
+                        PctDisplay = percentage + "%",
+                        StatusClass = statusClass,
+                        TypeBadgeClass = typeBadgeClass,
                         TypeLabel = typeLabel,
-                        StatusBadgeClass = passed ? "st-quizhistory-badge-passed" : "st-quizhistory-badge-failed",
-                        StatusLabel = passed ? T("Passed", "Lulus") : T("Failed", "Gagal"),
-                        AttemptNo = att,
-                        DateDisplay = date.ToString("d MMM yyyy"),
-                        ResultUrl = ResolveUrl("~/Student/QuizResult.aspx?resultId=" + resultId),
-                        ReviewUrl = ResolveUrl("~/Student/QuizReview.aspx?resultId=" + resultId),
-                        RetryUrl = ResolveUrl("~/Student/Quiz.aspx?quizId=" + quizId),
-                        ViewLbl = T("Result", "Keputusan"),
-                        ReviewLbl = T("Review", "Semakan"),
-                        RetryLbl = T("Retry", "Cuba Lagi")
+                        StatusBadgeClass = statusBadgeClass,
+                        StatusLabel = statusLabel,
+                        AttemptNo = attemptNo,
+                        DateDisplay = dateDisplay,
+                        ScoreDisplay = score + "/" + totalMarks,
+                        ResultUrl = ResolveUrl("~/Student/QuizResult.aspx?resultId=" + HttpUtility.UrlEncode(resultId)),
+                        ReviewUrl = ResolveUrl("~/Student/QuizReview.aspx?resultId=" + HttpUtility.UrlEncode(resultId)),
+                        RetryUrl = ResolveUrl("~/Student/Quiz.aspx?quizId=" + HttpUtility.UrlEncode(quizId)),
+                        ViewLbl = viewLabel,
+                        ReviewLbl = reviewLabel,
+                        RetryLbl = retryLabel
                     });
                 }
 
-                pnlList.Visible = true; pnlEmpty.Visible = false;
-                rptHistory.DataSource = items; rptHistory.DataBind();
+                rptHistory.DataSource = historyList;
+                rptHistory.DataBind();
             }
         }
 
-        private void ShowEmpty() { pnlList.Visible = false; pnlEmpty.Visible = true; }
-        private static string Sv(DataRow r, string c) { return r[c] != null && r[c] != DBNull.Value ? r[c].ToString() : ""; }
+        private string GetTypeLabel(string quizType)
+        {
+            if (quizType == "Practice")
+            {
+                return T("Practice", "Latihan");
+            }
+            else if (quizType == "Unit")
+            {
+                return T("Unit", "Unit");
+            }
+            else if (quizType == "Level")
+            {
+                return T("Level", "Tahap");
+            }
+            return T("Quiz", "Kuiz");
+        }
+
+        private static bool Tbl(SqlConnection conn, string tableName)
+        {
+            using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME=@t AND TABLE_TYPE='BASE TABLE'", conn))
+            {
+                command.Parameters.AddWithValue("@t", tableName);
+                return (int)command.ExecuteScalar() > 0;
+            }
+        }
     }
 }

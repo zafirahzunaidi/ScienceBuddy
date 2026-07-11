@@ -1,12 +1,21 @@
 <%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AIStudyCompanion.aspx.cs"
     Inherits="ScienceBuddy.Student.AIStudyCompanion1" MasterPageFile="~/Site.Master"
     Title="AI Study Companion" %>
-<asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
-<link href="<%: ResolveUrl("~/Content/Student.css") %>" rel="stylesheet" />
+<asp:Content ID="HeadStyle" ContentPlaceHolderID="HeadContent" runat="server">
+    <link href="<%: ResolveUrl("~/Content/Student.css") %>" rel="stylesheet" />
 </asp:Content>
 
-<%-- ════ SIDEBAR ════ --%>
-<asp:Content ID="cSidebarMenu" ContentPlaceHolderID="SidebarMenu" runat="server">
+<asp:Content ID="TopNavigationLinks" ContentPlaceHolderID="TopNavLinks" runat="server">
+</asp:Content>
+
+<asp:Content ID="TopNavActions" ContentPlaceHolderID="TopNavActions" runat="server">
+</asp:Content>
+
+<asp:Content ID="TopNavigationMainContent" ContentPlaceHolderID="MainContent" runat="server">
+</asp:Content>
+
+<%-- Student Sidebar --%>
+<asp:Content ID="StudentSidebarMenu" ContentPlaceHolderID="SidebarMenu" runat="server">
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Main</div>
         <a href="<%: ResolveUrl("~/Student/Dashboard.aspx") %>" class="sb-sidebar-item">
@@ -66,12 +75,21 @@
     </div>
 </asp:Content>
 
-<asp:Content ID="cPageTitle" ContentPlaceHolderID="PageTitle" runat="server">
+<asp:Content ID="StudentSidebarFooter" ContentPlaceHolderID="SidebarFooter" runat="server">
+</asp:Content>
+
+<asp:Content ID="AIStudyCompanionPageTitle" ContentPlaceHolderID="PageTitle" runat="server">
     <asp:Literal ID="litPageTitle" runat="server" Text="AI Study Companion" />
 </asp:Content>
 
-<%-- ════ MAIN CONTENT ════ --%>
-<asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
+<asp:Content ID="StudentUserDropdownMenu" ContentPlaceHolderID="UserDropdownMenu" runat="server">
+</asp:Content>
+
+<asp:Content ID="AIStudyCompanionBreadcrumb" ContentPlaceHolderID="BreadcrumbContent" runat="server">
+</asp:Content>
+
+<%-- AIStudyCompanion Main Content --%>
+<asp:Content ID="AIStudyCompanionMainContent" ContentPlaceHolderID="MainContentSidebar" runat="server">
 
 <%-- ── AI HERO CARD ── --%>
 <div class="st-ai-hero">
@@ -87,6 +105,39 @@
         <asp:Literal ID="litAIMessage" runat="server" />
     </div>
 </div>
+
+<%-- ── ASK SCIENCEBUDDY AI CHAT ── --%>
+<asp:Panel ID="pnlAIChat" runat="server" CssClass="st-ai-chat" style="background:#fff;border-radius:16px;border:1.5px solid #E5E7EB;box-shadow:0 4px 20px rgba(124,58,237,.08);padding:24px;margin-bottom:24px;position:relative;overflow:hidden;border-top:4px solid #7C3AED;">
+    <div class="st-ai-chat-header">
+        <div>
+            <div class="st-ai-chat-title">
+                <i class="bi bi-robot"></i>
+                <asp:Literal ID="litChatTitle" runat="server" Text="Ask ScienceBuddy AI" />
+            </div>
+            <div class="st-ai-chat-sub">
+                <asp:Literal ID="litChatSub" runat="server" Text="Ask me anything about your Science lessons." />
+            </div>
+        </div>
+    </div>
+
+    <div id="chatBox" runat="server" clientidmode="Static" class="st-ai-chat-box" style="background:linear-gradient(180deg,#FAFBFF,#F5F3FF);border:1.5px solid #E5E7EB;border-radius:16px;padding:16px;min-height:260px;max-height:360px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;margin-bottom:12px;"></div>
+
+    <div class="st-ai-chat-input-row" style="display:flex;gap:8px;align-items:stretch;">
+        <asp:TextBox ID="txtAIMessage" runat="server"
+            CssClass="st-ai-chat-input"
+            TextMode="MultiLine"
+            Rows="2"
+            style="flex:1;resize:none;min-height:48px;border:2px solid #E5E7EB;border-radius:24px;padding:12px 18px;font-size:.9rem;font-family:inherit;"
+            placeholder="Ask your AI study question..." />
+
+        <asp:Button ID="btnAISend" runat="server"
+            CssClass="st-ai-chat-send"
+            style="border:none;border-radius:24px;padding:12px 28px;font-weight:700;background:linear-gradient(135deg,#7C3AED,#2563EB);color:#fff;cursor:pointer;"
+            Text="Send"
+            OnClick="btnAISend_Click" />
+    </div>
+    <div class="st-ai-chat-note" style="font-size:.75rem;color:#9CA3AF;margin-top:8px;display:flex;align-items:center;gap:4px;font-style:italic;"><i class="bi bi-info-circle"></i> <asp:Literal ID="litChatNote" runat="server" Text="AI can make mistakes, so always check with your teacher or lesson notes." /></div>
+</asp:Panel>
 
 <%-- ── LEARNING HEALTH SUMMARY ── --%>
 <div class="st-ai-health">
@@ -197,7 +248,7 @@
     </div>
 </div>
 
-<%-- ── EMPTY STATE (no data at all) ── --%>
+<%-- Chat section --%>
 <asp:Panel ID="pnlEmpty" runat="server" Visible="false">
     <div class="st-ai-empty">
         <div class="st-ai-empty-icon"><i class="bi bi-rocket-takeoff-fill" style="font-size:4rem;color:var(--ai-purple);"></i></div>
@@ -205,5 +256,18 @@
         <div class="st-ai-empty-desc"><asp:Literal ID="litEmptyDesc" runat="server" Text="Start your learning journey first to unlock your AI companion's insights." /></div>
     </div>
 </asp:Panel>
+
+
+</asp:Content>
+
+<asp:Content ID="AIStudyCompanionScripts" ContentPlaceHolderID="ScriptsContent" runat="server">
+    <script type="text/javascript">
+        window.onload = function () {
+        var box = document.getElementById('chatBox');
+        if (box) {
+            box.scrollTop = box.scrollHeight;
+        }
+    };
+</script>
 
 </asp:Content>

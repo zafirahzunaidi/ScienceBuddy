@@ -9,53 +9,92 @@ namespace ScienceBuddy.Student
 {
     public partial class QuizResult : Page
     {
-        private string ConnStr => ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+        private string ConnStr
+        {
+            get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
+        }
+
         public string CurrentLanguage = "EN";
-        public string T(string en, string bm) { return CurrentLanguage == "BM" ? bm : en; }
+
+        public string T(string en, string bm)
+        {
+            if (CurrentLanguage == "BM")
+            {
+                return bm;
+            }
+            return en;
+        }
 
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["userId"] == null || Session["role"] == null || Session["role"].ToString() != "Student")
-            { Response.Redirect("~/Login.aspx", false); return; }
+            {
+                Response.Redirect("~/Login.aspx", false);
+                return;
+            }
 
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
             InitLang();
 
-            if (!IsPostBack) LoadResult();
+            if (!IsPostBack)
+            {
+                LoadResult();
+            }
         }
 
         private void InitLang()
         {
             string lang = Session["preferredLanguage"] as string;
-            if (!string.IsNullOrEmpty(lang)) { CurrentLanguage = lang; return; }
+            if (!string.IsNullOrEmpty(lang))
+            {
+                CurrentLanguage = lang;
+                return;
+            }
+
             string userId = Session["userId"] as string;
             if (!string.IsNullOrEmpty(userId))
             {
                 try
                 {
-                    using (var conn = new SqlConnection(ConnStr))
-                    using (var cmd = new SqlCommand("SELECT preferredLanguage FROM [User] WHERE userId=@uid", conn))
+                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlCommand command = new SqlCommand("SELECT preferredLanguage FROM [User] WHERE userId=@uid", connection))
                     {
-                        cmd.Parameters.AddWithValue("@uid", userId); conn.Open();
-                        object r = cmd.ExecuteScalar();
-                        if (r != null && r != DBNull.Value) { lang = r.ToString(); Session["preferredLanguage"] = lang; CurrentLanguage = lang; return; }
+                        command.Parameters.AddWithValue("@uid", userId);
+                        connection.Open();
+                        object result = command.ExecuteScalar();
+                        if (result != null && result != DBNull.Value)
+                        {
+                            lang = result.ToString();
+                            Session["preferredLanguage"] = lang;
+                            CurrentLanguage = lang;
+                            return;
+                        }
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Error: " + ex.Message);
+                }
             }
-            CurrentLanguage = "EN"; Session["preferredLanguage"] = "EN";
+
+            CurrentLanguage = "EN";
+            Session["preferredLanguage"] = "EN";
         }
 
         private void LoadResult()
         {
             string resultId = Request.QueryString["resultId"];
-            if (string.IsNullOrEmpty(resultId)) { ShowError(T("Result not found.", "Keputusan tidak dijumpai.")); return; }
+            if (string.IsNullOrEmpty(resultId))
+            {
+                ShowError(T("Result not found.", "Keputusan tidak dijumpai."));
+                return;
+            }
 
             string userId = Session["userId"].ToString();
 
-            using (var conn = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnStr))
             {
-                conn.Open();
+                connection.Open();
 
                 // Load result + quiz info, verify student owns this result
                 const string sql = @"
@@ -73,40 +112,109 @@ namespace ScienceBuddy.Student
                     WHERE qr.resultId = @rid AND s.userId = @uid";
 
                 DataRow row = null;
-                using (var cmd = new SqlCommand(sql, conn))
+                using (SqlCommand command = new SqlCommand(sql, connection))
                 {
-                    cmd.Parameters.AddWithValue("@rid", resultId);
-                    cmd.Parameters.AddWithValue("@uid", userId);
-                    var dt = new DataTable(); new SqlDataAdapter(cmd).Fill(dt);
-                    if (dt.Rows.Count == 0) { ShowError(T("Result not found or access denied.", "Keputusan tidak dijumpai atau akses ditolak.")); return; }
-                    row = dt.Rows[0];
+                    command.Parameters.AddWithValue("@rid", resultId);
+                    command.Parameters.AddWithValue("@uid", userId);
+                    DataTable dataTable = new DataTable();
+                    SqlDataAdapter adapter = new SqlDataAdapter(command);
+                    adapter.Fill(dataTable);
+                    if (dataTable.Rows.Count == 0)
+                    {
+                        ShowError(T("Result not found or access denied.", "Keputusan tidak dijumpai atau akses ditolak."));
+                        return;
+                    }
+                    row = dataTable.Rows[0];
                 }
 
-                decimal score = row["score"] != DBNull.Value ? Convert.ToDecimal(row["score"]) : 0;
-                decimal totalMarks = row["totalMarks"] != DBNull.Value ? Convert.ToDecimal(row["totalMarks"]) : 0;
-                decimal percentage = row["percentage"] != DBNull.Value ? Convert.ToDecimal(row["percentage"]) : 0;
-                string resultStatus = row["resultStatus"] != DBNull.Value ? row["resultStatus"].ToString() : "Failed";
-                int attemptNo = row["attemptNo"] != DBNull.Value ? Convert.ToInt32(row["attemptNo"]) : 1;
-                string quizType = row["quizType"] != DBNull.Value ? row["quizType"].ToString() : "Practice";
+                decimal score = 0;
+                if (row["score"] != DBNull.Value)
+                {
+                    score = Convert.ToDecimal(row["score"]);
+                }
+
+                decimal totalMarks = 0;
+                if (row["totalMarks"] != DBNull.Value)
+                {
+                    totalMarks = Convert.ToDecimal(row["totalMarks"]);
+                }
+
+                decimal percentage = 0;
+                if (row["percentage"] != DBNull.Value)
+                {
+                    percentage = Convert.ToDecimal(row["percentage"]);
+                }
+
+                string resultStatus = "Failed";
+                if (row["resultStatus"] != DBNull.Value)
+                {
+                    resultStatus = row["resultStatus"].ToString();
+                }
+
+                int attemptNo = 1;
+                if (row["attemptNo"] != DBNull.Value)
+                {
+                    attemptNo = Convert.ToInt32(row["attemptNo"]);
+                }
+
+                string quizType = "Practice";
+                if (row["quizType"] != DBNull.Value)
+                {
+                    quizType = row["quizType"].ToString();
+                }
+
                 string quizId = row["quizId"].ToString();
-                string levelId = row["levelId"] != DBNull.Value ? row["levelId"].ToString() : null;
-                string unitId = row["unitId"] != DBNull.Value ? row["unitId"].ToString() : null;
+
+                string levelId = null;
+                if (row["levelId"] != DBNull.Value)
+                {
+                    levelId = row["levelId"].ToString();
+                }
+
+                string unitId = null;
+                if (row["unitId"] != DBNull.Value)
+                {
+                    unitId = row["unitId"].ToString();
+                }
 
                 bool isBM = CurrentLanguage == "BM";
-                string quizTitle = isBM ? S(row, "quizTitleBM") : S(row, "quizTitleEN");
-                if (string.IsNullOrWhiteSpace(quizTitle)) quizTitle = S(row, "quizTitleEN");
+                string quizTitle;
+                if (isBM)
+                {
+                    quizTitle = S(row, "quizTitleBM");
+                }
+                else
+                {
+                    quizTitle = S(row, "quizTitleEN");
+                }
+                if (string.IsNullOrWhiteSpace(quizTitle))
+                {
+                    quizTitle = S(row, "quizTitleEN");
+                }
 
                 bool passed = resultStatus == "Passed";
 
                 // Count correct/wrong answers
-                int correctCount = 0, totalQ = 0;
+                int correctCount = 0;
+                int totalQ = 0;
                 const string ansSql = "SELECT COUNT(*) AS total, SUM(CASE WHEN isCorrect=1 THEN 1 ELSE 0 END) AS corr FROM QuizAnswer WHERE resultId=@rid";
-                using (var cmd = new SqlCommand(ansSql, conn))
+                using (SqlCommand command = new SqlCommand(ansSql, connection))
                 {
-                    cmd.Parameters.AddWithValue("@rid", resultId);
-                    using (var rdr = cmd.ExecuteReader())
+                    command.Parameters.AddWithValue("@rid", resultId);
+                    using (SqlDataReader reader = command.ExecuteReader())
                     {
-                        if (rdr.Read()) { totalQ = Convert.ToInt32(rdr["total"]); correctCount = rdr["corr"] != DBNull.Value ? Convert.ToInt32(rdr["corr"]) : 0; }
+                        if (reader.Read())
+                        {
+                            totalQ = Convert.ToInt32(reader["total"]);
+                            if (reader["corr"] != DBNull.Value)
+                            {
+                                correctCount = Convert.ToInt32(reader["corr"]);
+                            }
+                            else
+                            {
+                                correctCount = 0;
+                            }
+                        }
                     }
                 }
                 int wrongCount = totalQ - correctCount;
@@ -117,8 +225,23 @@ namespace ScienceBuddy.Student
                 litPageTitle.Text = T("Quiz Result", "Keputusan Kuiz");
 
                 // Hero
-                divHero.Attributes["class"] = "st-quizresult-hero " + (passed ? "passed" : "failed");
-                litHeroIcon.Text = passed ? "<i class=\"bi bi-trophy-fill\"></i>" : "<i class=\"bi bi-emoji-neutral-fill\"></i>";
+                if (passed)
+                {
+                    divHero.Attributes["class"] = "st-quizresult-hero passed";
+                }
+                else
+                {
+                    divHero.Attributes["class"] = "st-quizresult-hero failed";
+                }
+
+                if (passed)
+                {
+                    litHeroIcon.Text = "<i class=\"bi bi-trophy-fill\"></i>";
+                }
+                else
+                {
+                    litHeroIcon.Text = "<i class=\"bi bi-emoji-neutral-fill\"></i>";
+                }
 
                 // Hero message based on percentage
                 if (percentage >= 90)
@@ -142,14 +265,31 @@ namespace ScienceBuddy.Student
 
                 // Stars
                 int starCount = 0;
-                if (percentage >= 90) starCount = 3;
-                else if (percentage >= 70) starCount = 2;
-                else if (percentage >= 50) starCount = 1;
+                if (percentage >= 90)
+                {
+                    starCount = 3;
+                }
+                else if (percentage >= 70)
+                {
+                    starCount = 2;
+                }
+                else if (percentage >= 50)
+                {
+                    starCount = 1;
+                }
+
                 string starsHtml = "";
                 for (int i = 0; i < 3; i++)
-                    starsHtml += i < starCount
-                        ? "<i class=\"bi bi-star-fill st-quizresult-star-on\"></i>"
-                        : "<i class=\"bi bi-star st-quizresult-star-off\"></i>";
+                {
+                    if (i < starCount)
+                    {
+                        starsHtml += "<i class=\"bi bi-star-fill st-quizresult-star-on\"></i>";
+                    }
+                    else
+                    {
+                        starsHtml += "<i class=\"bi bi-star st-quizresult-star-off\"></i>";
+                    }
+                }
                 litStars.Text = starsHtml;
 
                 // Stats
@@ -175,19 +315,29 @@ namespace ScienceBuddy.Student
                         break;
                     case "Unit":
                         litMsgTitle.Text = T("Unit Quiz", "Kuiz Unit");
-                        litMessage.Text = passed
-                            ? T("You passed the unit quiz. Keep going to the next learning activity.",
-                                "Anda lulus kuiz unit. Teruskan ke aktiviti pembelajaran seterusnya.")
-                            : T("Review this unit and try the quiz again.",
+                        if (passed)
+                        {
+                            litMessage.Text = T("You passed the unit quiz. Keep going to the next learning activity.",
+                                "Anda lulus kuiz unit. Teruskan ke aktiviti pembelajaran seterusnya.");
+                        }
+                        else
+                        {
+                            litMessage.Text = T("Review this unit and try the quiz again.",
                                 "Ulang kaji unit ini dan cuba kuiz sekali lagi.");
+                        }
                         break;
                     case "Level":
                         litMsgTitle.Text = T("Level Assessment", "Penilaian Tahap");
-                        litMessage.Text = passed
-                            ? T("You passed the level assessment. Your certificate may now be unlocked.",
-                                "Anda lulus penilaian tahap. Sijil anda mungkin boleh dibuka sekarang.")
-                            : T("Review the level topics and try again when you are ready.",
+                        if (passed)
+                        {
+                            litMessage.Text = T("You passed the level assessment. Your certificate may now be unlocked.",
+                                "Anda lulus penilaian tahap. Sijil anda mungkin boleh dibuka sekarang.");
+                        }
+                        else
+                        {
+                            litMessage.Text = T("Review the level topics and try again when you are ready.",
                                 "Ulang kaji topik tahap ini dan cuba lagi apabila anda bersedia.");
+                        }
                         break;
                     default:
                         pnlMessage.Visible = false;
@@ -211,15 +361,25 @@ namespace ScienceBuddy.Student
                         break;
                     case "Unit":
                         litBackBtn.Text = T("Back to Unit", "Kembali ke Unit");
-                        lnkBack.HRef = !string.IsNullOrEmpty(unitId)
-                            ? ResolveUrl("~/Student/UnitDetails.aspx?unitId=" + unitId)
-                            : ResolveUrl("~/Student/MyLearning.aspx");
+                        if (!string.IsNullOrEmpty(unitId))
+                        {
+                            lnkBack.HRef = ResolveUrl("~/Student/UnitDetails.aspx?unitId=" + unitId);
+                        }
+                        else
+                        {
+                            lnkBack.HRef = ResolveUrl("~/Student/MyLearning.aspx");
+                        }
                         break;
                     case "Level":
                         litBackBtn.Text = T("Back to Level", "Kembali ke Tahap");
-                        lnkBack.HRef = !string.IsNullOrEmpty(levelId)
-                            ? ResolveUrl("~/Student/LevelDetails.aspx?levelId=" + levelId)
-                            : ResolveUrl("~/Student/MyLearning.aspx");
+                        if (!string.IsNullOrEmpty(levelId))
+                        {
+                            lnkBack.HRef = ResolveUrl("~/Student/LevelDetails.aspx?levelId=" + levelId);
+                        }
+                        else
+                        {
+                            lnkBack.HRef = ResolveUrl("~/Student/MyLearning.aspx");
+                        }
                         break;
                     default:
                         litBackBtn.Text = T("My Learning", "Pembelajaran Saya");
@@ -234,7 +394,8 @@ namespace ScienceBuddy.Student
 
         private void ShowError(string msg)
         {
-            pnlError.Visible = true; pnlResult.Visible = false;
+            pnlError.Visible = true;
+            pnlResult.Visible = false;
             litErrorTitle.Text = T("Error", "Ralat");
             litError.Text = HttpUtility.HtmlEncode(msg);
             litErrBtn.Text = T("Back", "Kembali");
@@ -242,8 +403,11 @@ namespace ScienceBuddy.Student
 
         private static string S(DataRow row, string col)
         {
-            return row[col] != null && row[col] != DBNull.Value ? row[col].ToString() : "";
+            if (row[col] != null && row[col] != DBNull.Value)
+            {
+                return row[col].ToString();
+            }
+            return "";
         }
     }
 }
-

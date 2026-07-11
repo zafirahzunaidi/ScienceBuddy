@@ -11,15 +11,21 @@ namespace ScienceBuddy.Student
     public partial class CreateForumPost1 : Page
     {
         // ── Connection string ─────────────────────────────────────────
-        private string ConnStr =>
-            ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+        private string ConnStr
+        {
+            get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
+        }
 
         // ── Language helper ────────────────────────────────────────────
         public string CurrentLanguage = "EN";
 
         public string T(string en, string bm)
         {
-            return CurrentLanguage == "BM" ? bm : en;
+            if (CurrentLanguage == "BM")
+            {
+                return bm;
+            }
+            return en;
         }
 
         // ── Mode: "Public" or "Private" from URL param ────────────────
@@ -29,7 +35,9 @@ namespace ScienceBuddy.Student
             {
                 string mode = Request.QueryString["type"];
                 if (!string.IsNullOrEmpty(mode) && mode.Equals("Private", StringComparison.OrdinalIgnoreCase))
+                {
                     return "Private";
+                }
                 return "Public";
             }
         }
@@ -44,7 +52,7 @@ namespace ScienceBuddy.Student
                 return;
             }
 
-            var master = (ScienceBuddy.SiteMaster)Master;
+            ScienceBuddy.SiteMaster master = (ScienceBuddy.SiteMaster)Master;
             master.LayoutMode = "Sidebar";
 
             InitLang();
@@ -72,12 +80,12 @@ namespace ScienceBuddy.Student
                 try
                 {
                     const string sql = "SELECT preferredLanguage FROM [User] WHERE userId = @userId";
-                    using (var conn = new SqlConnection(ConnStr))
-                    using (var cmd = new SqlCommand(sql, conn))
+                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlCommand command = new SqlCommand(sql, connection))
                     {
-                        cmd.Parameters.AddWithValue("@userId", userId);
-                        conn.Open();
-                        object result = cmd.ExecuteScalar();
+                        command.Parameters.AddWithValue("@userId", userId);
+                        connection.Open();
+                        object result = command.ExecuteScalar();
                         if (result != null && result != DBNull.Value)
                         {
                             lang = result.ToString();
@@ -87,7 +95,10 @@ namespace ScienceBuddy.Student
                         }
                     }
                 }
-                catch (SqlException) { }
+                catch (SqlException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Database error: " + ex.Message);
+                }
             }
 
             CurrentLanguage = "EN";
@@ -160,11 +171,11 @@ namespace ScienceBuddy.Student
         {
             string userId = Session["userId"].ToString();
 
-            using (var conn = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnStr))
             {
-                conn.Open();
+                connection.Open();
 
-                if (!Tbl(conn, "Student") || !Tbl(conn, "StudentParent") || !Tbl(conn, "Parent"))
+                if (!Tbl(connection, "Student") || !Tbl(connection, "StudentParent") || !Tbl(connection, "Parent"))
                 {
                     ShowNoParentWarning();
                     return;
@@ -177,10 +188,10 @@ namespace ScienceBuddy.Student
                     JOIN   Parent p ON p.parentId = sp.parentId
                     WHERE  s.userId = @userId";
 
-                using (var cmd = new SqlCommand(sql, conn))
+                using (SqlCommand command = new SqlCommand(sql, connection))
                 {
-                    cmd.Parameters.AddWithValue("@userId", userId);
-                    int count = (int)cmd.ExecuteScalar();
+                    command.Parameters.AddWithValue("@userId", userId);
+                    int count = (int)command.ExecuteScalar();
                     if (count == 0)
                     {
                         ShowNoParentWarning();
@@ -214,15 +225,18 @@ namespace ScienceBuddy.Student
             ddlTag.Items.Clear();
             ddlTag.Items.Add(new ListItem(T("No tag", "Tiada tag"), ""));
 
-            using (var conn = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnStr))
             {
-                conn.Open();
+                connection.Open();
 
-                if (!Tbl(conn, "Tag")) return;
+                if (!Tbl(connection, "Tag"))
+                {
+                    return;
+                }
 
                 const string sql = "SELECT tagId, tagName FROM Tag ORDER BY tagName";
-                using (var cmd = new SqlCommand(sql, conn))
-                using (var reader = cmd.ExecuteReader())
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                using (SqlDataReader reader = command.ExecuteReader())
                 {
                     while (reader.Read())
                     {
@@ -254,7 +268,9 @@ namespace ScienceBuddy.Student
             {
                 discussionType = ddlType.SelectedValue;
                 if (string.IsNullOrEmpty(discussionType))
+                {
                     discussionType = "Public";
+                }
             }
 
             string tagId = ddlTag.SelectedValue;
@@ -271,12 +287,12 @@ namespace ScienceBuddy.Student
                 return;
             }
 
-            using (var conn = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnStr))
             {
-                conn.Open();
+                connection.Open();
 
                 // Use a transaction for data integrity
-                using (var transaction = conn.BeginTransaction())
+                using (SqlTransaction transaction = connection.BeginTransaction())
                 {
                     try
                     {
@@ -285,7 +301,7 @@ namespace ScienceBuddy.Student
                         const string seqForumSql = @"
                             SELECT ISNULL(MAX(CAST(SUBSTRING(forumId, 2, LEN(forumId) - 1) AS INT)), 0)
                             FROM Forum WHERE forumId LIKE 'F[0-9]%'";
-                        using (var seqCmd = new SqlCommand(seqForumSql, conn, transaction))
+                        using (SqlCommand seqCmd = new SqlCommand(seqForumSql, connection, transaction))
                         {
                             object lastVal = seqCmd.ExecuteScalar();
                             if (lastVal != null && lastVal != DBNull.Value)
@@ -301,15 +317,15 @@ namespace ScienceBuddy.Student
                         const string sqlForum = @"
                             INSERT INTO Forum (forumId, createdBy, title, message, discussionType, createdAt)
                             VALUES (@fid, @uid, @title, @msg, @type, @now)";
-                        using (var cmd = new SqlCommand(sqlForum, conn, transaction))
+                        using (SqlCommand command = new SqlCommand(sqlForum, connection, transaction))
                         {
-                            cmd.Parameters.AddWithValue("@fid", forumId);
-                            cmd.Parameters.AddWithValue("@uid", userId);
-                            cmd.Parameters.AddWithValue("@title", title);
-                            cmd.Parameters.AddWithValue("@msg", message);
-                            cmd.Parameters.AddWithValue("@type", discussionType);
-                            cmd.Parameters.AddWithValue("@now", now);
-                            cmd.ExecuteNonQuery();
+                            command.Parameters.AddWithValue("@fid", forumId);
+                            command.Parameters.AddWithValue("@uid", userId);
+                            command.Parameters.AddWithValue("@title", title);
+                            command.Parameters.AddWithValue("@msg", message);
+                            command.Parameters.AddWithValue("@type", discussionType);
+                            command.Parameters.AddWithValue("@now", now);
+                            command.ExecuteNonQuery();
                         }
 
                         // Insert first ForumChat entry (same message as the post)
@@ -317,7 +333,7 @@ namespace ScienceBuddy.Student
                         const string seqChatSql = @"
                             SELECT ISNULL(MAX(CAST(SUBSTRING(forumChatId, 3, LEN(forumChatId) - 2) AS INT)), 0)
                             FROM ForumChat WHERE forumChatId LIKE 'FC[0-9]%'";
-                        using (var seqCmd = new SqlCommand(seqChatSql, conn, transaction))
+                        using (SqlCommand seqCmd = new SqlCommand(seqChatSql, connection, transaction))
                         {
                             object lastVal = seqCmd.ExecuteScalar();
                             if (lastVal != null && lastVal != DBNull.Value)
@@ -330,14 +346,14 @@ namespace ScienceBuddy.Student
                         const string sqlChat = @"
                             INSERT INTO ForumChat (forumChatId, forumId, senderUserId, message, createdAt)
                             VALUES (@fcid, @fid, @uid, @msg, @now)";
-                        using (var cmd = new SqlCommand(sqlChat, conn, transaction))
+                        using (SqlCommand command = new SqlCommand(sqlChat, connection, transaction))
                         {
-                            cmd.Parameters.AddWithValue("@fcid", forumChatId);
-                            cmd.Parameters.AddWithValue("@fid", forumId);
-                            cmd.Parameters.AddWithValue("@uid", userId);
-                            cmd.Parameters.AddWithValue("@msg", message);
-                            cmd.Parameters.AddWithValue("@now", now);
-                            cmd.ExecuteNonQuery();
+                            command.Parameters.AddWithValue("@fcid", forumChatId);
+                            command.Parameters.AddWithValue("@fid", forumId);
+                            command.Parameters.AddWithValue("@uid", userId);
+                            command.Parameters.AddWithValue("@msg", message);
+                            command.Parameters.AddWithValue("@now", now);
+                            command.ExecuteNonQuery();
                         }
 
                         // Insert ForumTag if a tag was selected
@@ -347,7 +363,7 @@ namespace ScienceBuddy.Student
                             const string seqTagSql = @"
                                 SELECT ISNULL(MAX(CAST(SUBSTRING(forumTagId, 3, LEN(forumTagId) - 2) AS INT)), 0)
                                 FROM ForumTag WHERE forumTagId LIKE 'FT[0-9]%'";
-                            using (var seqCmd = new SqlCommand(seqTagSql, conn, transaction))
+                            using (SqlCommand seqCmd = new SqlCommand(seqTagSql, connection, transaction))
                             {
                                 object lastVal = seqCmd.ExecuteScalar();
                                 if (lastVal != null && lastVal != DBNull.Value)
@@ -360,12 +376,12 @@ namespace ScienceBuddy.Student
                             const string sqlTag = @"
                                 INSERT INTO ForumTag (forumTagId, forumId, tagId)
                                 VALUES (@ftid, @fid, @tagId)";
-                            using (var cmd = new SqlCommand(sqlTag, conn, transaction))
+                            using (SqlCommand command = new SqlCommand(sqlTag, connection, transaction))
                             {
-                                cmd.Parameters.AddWithValue("@ftid", forumTagId);
-                                cmd.Parameters.AddWithValue("@fid", forumId);
-                                cmd.Parameters.AddWithValue("@tagId", tagId);
-                                cmd.ExecuteNonQuery();
+                                command.Parameters.AddWithValue("@ftid", forumTagId);
+                                command.Parameters.AddWithValue("@fid", forumId);
+                                command.Parameters.AddWithValue("@tagId", tagId);
+                                command.ExecuteNonQuery();
                             }
                         }
 
@@ -377,6 +393,7 @@ namespace ScienceBuddy.Student
                     catch (Exception ex)
                     {
                         transaction.Rollback();
+                        System.Diagnostics.Debug.WriteLine("Error: " + ex.Message);
                         ShowError(T("An error occurred while creating the discussion. Please try again.",
                                     "Ralat berlaku semasa mencipta perbincangan. Sila cuba lagi."));
                     }
@@ -392,16 +409,16 @@ namespace ScienceBuddy.Student
         }
 
         // ── Table existence check ─────────────────────────────────────
-        private static bool Tbl(SqlConnection conn, string tableName)
+        private static bool Tbl(SqlConnection connection, string tableName)
         {
             const string sql = @"
                 SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
                 WHERE  TABLE_NAME = @tableName
                 AND    TABLE_TYPE = 'BASE TABLE'";
-            using (var cmd = new SqlCommand(sql, conn))
+            using (SqlCommand command = new SqlCommand(sql, connection))
             {
-                cmd.Parameters.AddWithValue("@tableName", tableName);
-                return (int)cmd.ExecuteScalar() > 0;
+                command.Parameters.AddWithValue("@tableName", tableName);
+                return (int)command.ExecuteScalar() > 0;
             }
         }
     }

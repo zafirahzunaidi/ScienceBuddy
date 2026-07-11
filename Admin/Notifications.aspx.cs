@@ -412,7 +412,7 @@ namespace ScienceBuddy.Admin
             string cls = success ? "sb-alert-success" : "sb-alert-error";
             string icon = success ? "bi-check-circle-fill" : "bi-x-circle-fill";
             litToast.Text = string.Format(
-                "<div class=\"sb-alert {0} an-toast\"><span class=\"alert-icon\"><i class=\"bi {1}\"></i></span><div class=\"alert-content\">{2}</div></div>",
+                "<div class=\"sb-alert {0} ad-notification-toast\"><span class=\"alert-icon\"><i class=\"bi {1}\"></i></span><div class=\"alert-content\">{2}</div></div>",
                 cls, icon, HttpUtility.HtmlEncode(msg));
         }
 

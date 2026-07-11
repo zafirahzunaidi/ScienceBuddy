@@ -123,7 +123,7 @@
 <%-- -- EMPTY STATE -- --%>
 <asp:Panel ID="pnlEmpty" runat="server" Visible="false">
     <div class="st-practice-empty">
-        <div class="st-practice-empty-icon">??</div>
+        <div class="st-practice-empty-icon"><i class="bi bi-patch-question"></i></div>
         <div class="st-practice-empty-title"><asp:Literal ID="litEmptyTitle" runat="server" Text="No practice quizzes available" /></div>
         <div class="st-practice-empty-desc"><asp:Literal ID="litEmptyDesc" runat="server" Text="No practice quizzes are available yet." /></div>
         <a href="<%: ResolveUrl("~/Student/Dashboard.aspx") %>" class="st-practice-card-btn" style="display:inline-flex;width:auto;">

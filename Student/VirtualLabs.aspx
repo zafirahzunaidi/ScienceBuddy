@@ -106,7 +106,7 @@
 </asp:Panel>
 <asp:Panel ID="pnlEmpty" runat="server" Visible="false">
     <div class="sb-empty-state" style="padding:var(--space-3xl) 0;">
-        <div class="empty-icon" style="font-size:3.5rem;">??</div>
+        <div class="empty-icon" style="font-size:3.5rem;"><i class="bi bi-eyedropper"></i></div>
         <div class="empty-title"><asp:Literal ID="litEmptyTitle" runat="server" /></div>
         <div class="empty-desc"><asp:Literal ID="litEmptyDesc" runat="server" /></div>
         <a href="<%: ResolveUrl("~/Student/MyLearning.aspx") %>" class="sb-btn sb-btn-primary sb-btn-sm mt-lg">

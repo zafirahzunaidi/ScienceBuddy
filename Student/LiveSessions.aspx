@@ -100,7 +100,7 @@
 <%-- Empty State --%>
 <asp:Panel ID="pnlEmpty" runat="server" Visible="false">
     <div class="st-livesessions-empty">
-        <div class="st-livesessions-empty-icon">??</div>
+        <div class="st-livesessions-empty-icon"><i class="bi bi-camera-video"></i></div>
         <div class="st-livesessions-empty-title"><asp:Literal ID="litEmptyTitle" runat="server" Text="No live sessions available" /></div>
         <div class="st-livesessions-empty-desc"><asp:Literal ID="litEmptyDesc" runat="server" Text="No live sessions are available yet." /></div>
         <a href="<%: ResolveUrl("~/Student/Dashboard.aspx") %>" class="st-livesessions-card-btn" style="display:inline-flex;width:auto;">

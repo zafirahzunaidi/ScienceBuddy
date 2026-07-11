@@ -201,6 +201,7 @@
     <Content Include="ProjectRules.md" />
     <Content Include="connectionStrings.config" />
     <Content Include="Database\DatabaseSchema.md" />
+    <Content Include="AppSettingsSecrets.config" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />
