@@ -310,7 +310,7 @@
 </asp:Content>
 
 <asp:Content ID="cScripts" ContentPlaceHolderID="ScriptsContent" runat="server">
-<script src="https://meet.jit.si/external_api.js"></script>
+<script src="https://meet.jit.si/external_api.js"></script>  <%-- embedded live session --%>
 <script>
 window.addEventListener('load',function(){
     var h=document.getElementById('<%=hidToast.ClientID%>');
@@ -324,7 +324,7 @@ window.addEventListener('load',function(){
     var im=document.getElementById('<%=hidShowInstantModal.ClientID%>');
     if (im && im.value === '1') { document.getElementById('instantModal').style.display = 'flex'; im.value = ''; }
 
-    var jc = document.getElementById('jitsi-container-teacher');  <%-- for live session --%>
+    var jc = document.getElementById('jitsi-container-teacher');  <%-- embedded live session --%>
     if (jc) {
         var roomName = document.getElementById('<%= hidLiveRoomName.ClientID %>').value;
         var displayName = document.getElementById('<%= hidLiveDisplayName.ClientID %>').value;
