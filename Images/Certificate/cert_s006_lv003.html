@@ -10,8 +10,8 @@ body{display:flex;align-items:center;justify-content:center;padding:8px;}
 .page{width:calc(100% - 16px);height:calc(100% - 16px);position:relative;background:linear-gradient(170deg,#FFFDF9 0%,#FBF8F2 40%,#F9F5ED 100%);box-shadow:0 8px 40px rgba(0,0,0,.12);}
 @media print{html,body{width:297mm;height:210mm;}.page{width:285mm;height:198mm;}}
 /* Borders */
-.bdr-out{position:absolute;inset:5mm;border:2.5px solid #B8860B;}
-.bdr-in{position:absolute;inset:8mm;border:1px solid #B8860B;opacity:.5;}
+.bdr-out{position:absolute;inset:5mm;border:2.5px solid #2563EB;}
+.bdr-in{position:absolute;inset:8mm;border:1px solid #2563EB;opacity:.5;}
 /* Corner ornaments */
 .corner{position:absolute;width:28px;height:28px;z-index:2;}
 .corner svg{width:100%;height:100%;}
@@ -25,15 +25,15 @@ body{display:flex;align-items:center;justify-content:center;padding:8px;}
 .brand{font-family:'Poppins',sans-serif;font-size:20px;font-weight:700;letter-spacing:1.5px;color:#333;margin-bottom:14px;}
 .brand-s{color:#2563EB;}.brand-b{color:#FF6B2C;}
 /* Title */
-.title{font-family:'Cinzel',serif;font-size:36px;font-weight:800;color:#1E3A5F;letter-spacing:5px;text-transform:uppercase;margin-bottom:8px;}
+.title{font-family:'Cinzel',serif;font-size:36px;font-weight:800;color:#1D4ED8;letter-spacing:5px;text-transform:uppercase;margin-bottom:8px;}
 .ornament{width:240px;height:12px;margin:0 auto 14px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='12'%3E%3Cpath d='M0 6 Q60 0 120 6 Q180 12 240 6' stroke='%23C9A84C' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='120' cy='6' r='3' fill='%23C9A84C'/%3E%3C/svg%3E") no-repeat center;}
 /* Body */
 .presented{font-family:'Cormorant Garamond',serif;font-size:17px;color:#6B7280;font-style:italic;margin-bottom:16px;}
 .student-name{font-family:'Playfair Display',serif;font-size:42px;font-weight:800;color:#111827;margin-bottom:6px;}
-.gold-line{width:180px;height:2px;background:linear-gradient(90deg,transparent,#B8860B 20%,#B8860B 80%,transparent);margin:6px auto 14px;}
+.gold-line{width:180px;height:2px;background:linear-gradient(90deg,transparent,#2563EB 20%,#2563EB 80%,transparent);margin:6px auto 14px;}
 .for-text{font-family:'Cormorant Garamond',serif;font-size:16px;color:#6B7280;margin-bottom:8px;}
 /* Ribbon */
-.ribbon{display:inline-block;padding:9px 36px;border-radius:5px;font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;letter-spacing:4px;text-transform:uppercase;background:linear-gradient(135deg,#B8860B,#D4A843);color:#fff;box-shadow:0 3px 10px rgba(0,0,0,.1);margin-bottom:16px;}
+.ribbon{display:inline-block;padding:9px 36px;border-radius:5px;font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;letter-spacing:4px;text-transform:uppercase;background:linear-gradient(135deg,#2563EB,#60A5FA);color:#fff;box-shadow:0 3px 10px rgba(0,0,0,.1);margin-bottom:16px;}
 .desc{font-family:'Cormorant Garamond',serif;font-size:15px;color:#4B5563;max-width:480px;line-height:1.7;margin-bottom:0;}
 /* Footer */
 .footer{width:100%;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;align-items:end;padding-top:16px;border-top:1.5px solid #E5DDD0;margin-top:auto;}
@@ -41,7 +41,7 @@ body{display:flex;align-items:center;justify-content:center;padding:8px;}
 .fval{font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:#1F2937;margin-bottom:3px;}
 .flbl{font-family:'Poppins',sans-serif;font-size:8px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.8px;}
 /* Seal */
-.seal{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#1E3A5F,#2C5282);border:3px solid #B8860B;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;margin:0 auto 4px;box-shadow:0 0 0 2.5px #FFFDF9,0 0 0 5px #B8860B,0 4px 14px rgba(0,0,0,.12);}
+.seal{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#1D4ED8,#3B82F6);border:3px solid #2563EB;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;margin:0 auto 4px;box-shadow:0 0 0 2.5px #FFFDF9,0 0 0 5px #2563EB,0 4px 14px rgba(0,0,0,.12);}
 .seal-top{font-size:4.5px;text-transform:uppercase;letter-spacing:1.2px;opacity:.8;}
 .seal-mid{font-size:14px;font-weight:900;line-height:1;}
 .seal-bot{font-size:4.5px;text-transform:uppercase;letter-spacing:1.2px;opacity:.8;}
@@ -52,22 +52,22 @@ body{display:flex;align-items:center;justify-content:center;padding:8px;}
 </style></head><body>
 <div class='page'>
 <div class='bdr-out'></div><div class='bdr-in'></div>
-<div class='corner c-tl'><svg viewBox='0 0 28 28'><path d='M0 0 L0 20 Q0 0 20 0 Z' fill='#B8860B' opacity='0.6'/></svg></div>
-<div class='corner c-tr'><svg viewBox='0 0 28 28'><path d='M0 0 L0 20 Q0 0 20 0 Z' fill='#B8860B' opacity='0.6'/></svg></div>
-<div class='corner c-bl'><svg viewBox='0 0 28 28'><path d='M0 0 L0 20 Q0 0 20 0 Z' fill='#B8860B' opacity='0.6'/></svg></div>
-<div class='corner c-br'><svg viewBox='0 0 28 28'><path d='M0 0 L0 20 Q0 0 20 0 Z' fill='#B8860B' opacity='0.6'/></svg></div>
+<div class='corner c-tl'><svg viewBox='0 0 28 28'><path d='M0 0 L0 20 Q0 0 20 0 Z' fill='#2563EB' opacity='0.6'/></svg></div>
+<div class='corner c-tr'><svg viewBox='0 0 28 28'><path d='M0 0 L0 20 Q0 0 20 0 Z' fill='#2563EB' opacity='0.6'/></svg></div>
+<div class='corner c-bl'><svg viewBox='0 0 28 28'><path d='M0 0 L0 20 Q0 0 20 0 Z' fill='#2563EB' opacity='0.6'/></svg></div>
+<div class='corner c-br'><svg viewBox='0 0 28 28'><path d='M0 0 L0 20 Q0 0 20 0 Z' fill='#2563EB' opacity='0.6'/></svg></div>
 <div class='wm'>SCIENCEBUDDY</div>
 <div class='content'>
 <img src='/Images/Logo/sciencebuddy-logo.png' alt='ScienceBuddy' class='logo' onerror="this.style.display='none'"/>
 <div class='brand'><span class='brand-s'>Science</span><span class='brand-b'>Buddy</span></div>
-<div class='title'>Advanced Science Completion Certificate</div>
+<div class='title'>Sijil Tamat Sains Lanjutan</div>
 <div class='ornament'></div>
 <div class='presented'>This certificate is proudly presented to</div>
 <div class='student-name'>Faris Iman Bin Fauzi</div>
 <div class='gold-line'></div>
 <div class='for-text'>For successfully completing</div>
-<div class='ribbon'>ADVANCED</div>
-<div class='desc'>Awarded for successfully completing all Advanced Science learning units and demonstrating mastery of advanced science concepts.</div>
+<div class='ribbon'>LANJUTAN</div>
+<div class='desc'>Dianugerahkan kerana berjaya menamatkan semua unit pembelajaran Sains Lanjutan dan menunjukkan penguasaan konsep sains lanjutan.</div>
 <div class='footer'>
 <div class='fcol'><div class='fval'>SCI-ADV-S006</div><div class='flbl'>Certificate No.</div></div>
 <div class='fcol'><div class='fval'>30 June 2026</div><div class='flbl'>Issue Date</div></div>

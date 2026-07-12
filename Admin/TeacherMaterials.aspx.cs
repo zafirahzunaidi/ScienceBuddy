@@ -10,6 +10,8 @@ namespace ScienceBuddy.Admin
 {
     public partial class TeacherMaterials : Page
     {
+        private bool _isAjax = false;
+
         private string ConnStr =>
             ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
@@ -21,11 +23,18 @@ namespace ScienceBuddy.Admin
             return CurrentLanguage == "BM" ? bm : en;
         }
 
+        protected override void Render(HtmlTextWriter writer)
+        {
+            if (!_isAjax)
+                base.Render(writer);
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
             // AJAX handler
             if (Request.QueryString["handler"] == "MaterialAction" && Request.HttpMethod == "POST")
             {
+                _isAjax = true;
                 HandleAction();
                 return;
             }
@@ -156,89 +165,94 @@ namespace ScienceBuddy.Admin
         // ── AJAX Action Handler ──
         private void HandleAction()
         {
+            Response.Clear();
             Response.ContentType = "application/json";
             try
             {
                 if (Session["userId"] == null || Session["role"]?.ToString() != "Admin")
                 {
-                    Response.Write("{\"success\":false}"); Response.End(); return;
+                    Response.Write("{\"success\":false,\"error\":\"Unauthorized\"}");
                 }
-
-                string action = Request.QueryString["action"];
-                string matId = Request.QueryString["matId"];
-                string reason = Request.QueryString["reason"] ?? "";
-                string userId = Session["userId"].ToString();
-
-                using (var conn = new SqlConnection(ConnStr))
+                else
                 {
-                    conn.Open();
+                    string action = Request.QueryString["action"] ?? "";
+                    string matId  = Request.QueryString["matId"]  ?? "";
+                    string reason = Request.QueryString["reason"] ?? "";
+                    string userId = Session["userId"].ToString();
 
-                    // Get material info for logging/notification
-                    string matTitle = "";
-                    string teacherUserId = "";
-                    using (var cmd = new SqlCommand("SELECT [materialTitle],[createdByUserId] FROM dbo.[Material] WHERE [materialId]=@id", conn))
+                    using (var conn = new SqlConnection(ConnStr))
                     {
-                        cmd.Parameters.AddWithValue("@id", matId);
-                        using (var r = cmd.ExecuteReader())
+                        conn.Open();
+
+                        // Get material info for logging/notification
+                        string matTitle       = "";
+                        string teacherUserId  = "";
+                        using (var cmd = new SqlCommand("SELECT [materialTitle],[createdByUserId] FROM dbo.[Material] WHERE [materialId]=@id", conn))
                         {
-                            if (r.Read())
+                            cmd.Parameters.AddWithValue("@id", matId);
+                            using (var r = cmd.ExecuteReader())
                             {
-                                matTitle = r["materialTitle"]?.ToString() ?? "";
-                                teacherUserId = r["createdByUserId"]?.ToString() ?? "";
+                                if (r.Read())
+                                {
+                                    matTitle      = r["materialTitle"]?.ToString()      ?? "";
+                                    teacherUserId = r["createdByUserId"]?.ToString()    ?? "";
+                                }
                             }
+                        }
+
+                        switch (action)
+                        {
+                            case "approve":
+                                using (var cmd = new SqlCommand("UPDATE dbo.[Material] SET [status]='Approved',[reviewedDate]=@dt WHERE [materialId]=@id", conn))
+                                {
+                                    cmd.Parameters.AddWithValue("@dt", DateTime.Now);
+                                    cmd.Parameters.AddWithValue("@id", matId);
+                                    cmd.ExecuteNonQuery();
+                                }
+                                InsertLog(conn, userId, "Teacher Material Approved", "Approved material " + matId + " (" + matTitle + ") uploaded by " + teacherUserId + ".", "Success");
+                                InsertNotification(conn, teacherUserId, "Material Approved", "Bahan Diluluskan",
+                                    "Your material \"" + matTitle + "\" has been approved by the administrator.",
+                                    "Bahan anda \"" + matTitle + "\" telah diluluskan oleh pentadbir.");
+                                break;
+
+                            case "reject":
+                                using (var cmd = new SqlCommand("UPDATE dbo.[Material] SET [status]='Rejected',[reviewedDate]=@dt WHERE [materialId]=@id", conn))
+                                {
+                                    cmd.Parameters.AddWithValue("@dt", DateTime.Now);
+                                    cmd.Parameters.AddWithValue("@id", matId);
+                                    cmd.ExecuteNonQuery();
+                                }
+                                InsertLog(conn, userId, "Teacher Material Rejected", "Rejected material " + matId + " (" + matTitle + "). Reason: " + reason, "Success");
+                                InsertNotification(conn, teacherUserId, "Material Rejected", "Bahan Ditolak",
+                                    "Your material \"" + matTitle + "\" has been rejected. Reason: " + reason,
+                                    "Bahan anda \"" + matTitle + "\" telah ditolak. Alasan: " + reason);
+                                break;
+
+                            case "reconsider":
+                                using (var cmd = new SqlCommand("UPDATE dbo.[Material] SET [status]='Pending',[reviewedDate]=NULL WHERE [materialId]=@id", conn))
+                                {
+                                    cmd.Parameters.AddWithValue("@id", matId);
+                                    cmd.ExecuteNonQuery();
+                                }
+                                InsertLog(conn, userId, "Teacher Material Reconsidered", "Reconsidered material " + matId + " (" + matTitle + ") - set back to Pending.", "Success");
+                                break;
+
+                            case "view":
+                                InsertLog(conn, userId, "Viewed Material", "Viewed material " + matId + ".", "Success");
+                                break;
                         }
                     }
 
-                    switch (action)
-                    {
-                        case "approve":
-                            using (var cmd = new SqlCommand("UPDATE dbo.[Material] SET [status]='Approved',[reviewedDate]=@dt WHERE [materialId]=@id", conn))
-                            {
-                                cmd.Parameters.AddWithValue("@dt", DateTime.Now);
-                                cmd.Parameters.AddWithValue("@id", matId);
-                                cmd.ExecuteNonQuery();
-                            }
-                            InsertLog(conn, userId, "Teacher Material Approved", "Approved material " + matId + " (" + matTitle + ") uploaded by " + teacherUserId + ".", "Success");
-                            InsertNotification(conn, teacherUserId, "Material Approved", "Bahan Diluluskan",
-                                "Your material \"" + matTitle + "\" has been approved by the administrator.",
-                                "Bahan anda \"" + matTitle + "\" telah diluluskan oleh pentadbir.");
-                            break;
-
-                        case "reject":
-                            using (var cmd = new SqlCommand("UPDATE dbo.[Material] SET [status]='Rejected',[reviewedDate]=@dt WHERE [materialId]=@id", conn))
-                            {
-                                cmd.Parameters.AddWithValue("@dt", DateTime.Now);
-                                cmd.Parameters.AddWithValue("@id", matId);
-                                cmd.ExecuteNonQuery();
-                            }
-                            InsertLog(conn, userId, "Teacher Material Rejected", "Rejected material " + matId + " (" + matTitle + "). Reason: " + reason, "Success");
-                            InsertNotification(conn, teacherUserId, "Material Rejected", "Bahan Ditolak",
-                                "Your material \"" + matTitle + "\" has been rejected. Reason: " + reason,
-                                "Bahan anda \"" + matTitle + "\" telah ditolak. Alasan: " + reason);
-                            break;
-
-                        case "reconsider":
-                            using (var cmd = new SqlCommand("UPDATE dbo.[Material] SET [status]='Pending',[reviewedDate]=NULL WHERE [materialId]=@id", conn))
-                            {
-                                cmd.Parameters.AddWithValue("@id", matId);
-                                cmd.ExecuteNonQuery();
-                            }
-                            InsertLog(conn, userId, "Teacher Material Reconsidered", "Reconsidered material " + matId + " (" + matTitle + ") - set back to Pending.", "Success");
-                            break;
-
-                        case "view":
-                            InsertLog(conn, userId, "Viewed Material", "Viewed material " + matId + ".", "Success");
-                            break;
-                    }
+                    Response.Write("{\"success\":true}");
                 }
-
-                Response.Write("{\"success\":true}");
             }
             catch (Exception ex)
             {
+                Response.Clear();
                 Response.Write("{\"success\":false,\"error\":\"" + EscapeJson(ex.Message) + "\"}");
             }
-            Response.End();
+            Response.Flush();
+            HttpContext.Current.ApplicationInstance.CompleteRequest();
         }
 
         // ── Helpers called from ASPX ──
@@ -265,29 +279,26 @@ namespace ScienceBuddy.Admin
         protected string GetBadgeClass(object status)
         {
             string s = (status?.ToString() ?? "").ToLower();
-            if (s == "pending") return "tm-badge-pending";
-            if (s == "approved") return "tm-badge-approved";
-            if (s == "rejected") return "tm-badge-rejected";
-            return "tm-badge-pending";
+            if (s == "pending")  return "ad-material-request-badge-pending";
+            if (s == "approved") return "ad-material-request-badge-approved";
+            if (s == "rejected") return "ad-material-request-badge-rejected";
+            return "ad-material-request-badge-pending";
         }
 
         protected string GetActionButtons(object status, object materialId)
         {
-            string s = (status?.ToString() ?? "");
+            string s  = (status?.ToString() ?? "");
             string id = materialId?.ToString() ?? "";
             string html = "";
 
             if (s == "Pending")
             {
-                html += "<a class='tm-abtn tm-abtn-approve' href='javascript:;' onclick='approveMaterial(\"" + id + "\")'><i class='bi bi-check-lg'></i> " + T("Approve", "Luluskan") + "</a>";
-                html += "<a class='tm-abtn tm-abtn-reject' href='javascript:;' onclick='openRejectModal(\"" + id + "\")'><i class='bi bi-x-lg'></i> " + T("Reject", "Tolak") + "</a>";
-            }
-            else if (s == "Approved")
-            {
+                html += "<a class='ad-material-request-abtn ad-material-request-abtn-approve' href='javascript:;' onclick='approveMaterial(\"" + id + "\")'><i class='bi bi-check-lg'></i> " + T("Approve", "Luluskan") + "</a>";
+                html += "<a class='ad-material-request-abtn ad-material-request-abtn-reject' href='javascript:;' onclick='openRejectModal(\"" + id + "\")'><i class='bi bi-x-lg'></i> " + T("Reject", "Tolak") + "</a>";
             }
             else if (s == "Rejected")
             {
-                html += "<a class='tm-abtn tm-abtn-reconsider' href='javascript:;' onclick='reconsiderMaterial(\"" + id + "\")'><i class='bi bi-arrow-repeat'></i> " + T("Reconsider", "Pertimbang Semula") + "</a>";
+                html += "<a class='ad-material-request-abtn ad-material-request-abtn-reconsider' href='javascript:;' onclick='reconsiderMaterial(\"" + id + "\")'><i class='bi bi-arrow-repeat'></i> " + T("Reconsider", "Pertimbang Semula") + "</a>";
             }
 
             return html;

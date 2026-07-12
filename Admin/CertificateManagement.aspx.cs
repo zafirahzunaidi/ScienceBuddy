@@ -22,6 +22,7 @@ namespace ScienceBuddy.Admin
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
             if (!IsPostBack) { SetMasterUser(); LoadAll(); }
             btnCloseModal.Text = T("Close", "Tutup");
+            btnModalSend.OnClientClick = "return swalConfirmSend(this, '" + T("Send this certificate?", "Hantar sijil ini?") + "', '" + T("Send", "Hantar") + "');";
         }
 
         private void SetMasterUser()

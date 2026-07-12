@@ -2764,6 +2764,10 @@
     .ad-material-request-stat.s-rejected::before { background: linear-gradient(90deg, #DC2626, #F87171); }
     .ad-material-request-stat.s-total::before { background: linear-gradient(90deg, #0EA5E9, #38BDF8); }
     .ad-material-request-stat-ico { width: 48px; height: 48px; border-radius: var(--border-radius-lg); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0; }
+    .ad-material-request-stat-ico-pending  { background: #FEF3C7; color: #D97706; }
+    .ad-material-request-stat-ico-approved { background: #D1FAE5; color: #059669; }
+    .ad-material-request-stat-ico-rejected { background: #FEE2E2; color: #DC2626; }
+    .ad-material-request-stat-ico-total    { background: #E0F2FE; color: #0EA5E9; }
     .ad-material-request-stat-val { font-family: var(--font-primary); font-size: 1.75rem; font-weight: 800; color: var(--color-text); }
     .ad-material-request-stat-lbl { font-size: .8rem; color: var(--color-text-secondary); font-weight: 600; }
 
@@ -2792,9 +2796,9 @@
     .ad-material-request-card-preview.image i { color: #059669; }
     .ad-material-request-card-preview.pptx i { color: #D97706; }
     .ad-material-request-card-badge { position: absolute; top: 10px; right: 10px; padding: 4px 10px; border-radius: var(--border-radius-full); font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; }
-    .ad-material-request-badge-pending { background: #FEF3C7; color: #92400E; }
-    .ad-material-request-badge-approved { background: #D1FAE5; color: #065F46; }
-    .ad-material-request-badge-rejected { background: #FEE2E2; color: #991B1B; }
+    .ad-material-request-badge-pending {background: #FFF7CC;color: #D97706; }
+    .ad-material-request-badge-approved { background: #DCFCE7; color: #15803D; }
+    .ad-material-request-badge-rejected { background: #FEE2E2;color: #DC2626; }
     .ad-material-request-card-type { position: absolute; top: 10px; left: 10px; padding: 3px 8px; border-radius: var(--border-radius-full); font-size: .65rem; font-weight: 700; background: rgba(255, 255, 255, .9); color: var(--color-text); }
     .ad-material-request-card-body { padding: var(--space-md) var(--space-lg) var(--space-lg); }
     .ad-material-request-card-title { font-family: var(--font-primary); font-size: .9375rem; font-weight: 700; color: var(--color-text); line-height: 1.3; margin-bottom: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -2838,6 +2842,7 @@
     .ad-material-request-reject-modal.active { display: flex; }
     .ad-material-request-reject-box { background: var(--color-white); border-radius: var(--border-radius-xl); width: 100%; max-width: 480px; padding: var(--space-xl); box-shadow: 0 25px 60px rgba(0, 0, 0, .2); animation: ad-material-request-modalIn .3s ease; }
     .ad-material-request-reject-box h3 { font-family: var(--font-primary); font-size: 1.125rem; font-weight: 700; margin-bottom: var(--space-md); display: flex; align-items: center; gap: 8px; }
+    .ad-material-request-reject-icon { color: #DC2626; }
     .ad-material-request-reject-box textarea { width: 100%; min-height: 100px; padding: 12px; border: 1.5px solid var(--border-color); border-radius: var(--border-radius); font-size: .875rem; resize: vertical; transition: border-color .2s; }
     .ad-material-request-reject-box textarea:focus { outline: none; border-color: #DC2626; box-shadow: 0 0 0 3px rgba(220, 38, 38, .1); }
     .ad-material-request-reject-btns { display: flex; gap: var(--space-sm); justify-content: flex-end; margin-top: var(--space-md); }
@@ -3862,3 +3867,110 @@
     .ad-teacher-details-log-desc { font-size: .78rem; color: var(--color-text-muted); margin-top: 2px; }
     .ad-teacher-details-log-time { font-size: .7rem; color: var(--color-text-muted); margin-top: 3px; }
     @media (max-width: 767px) { .ad-teacher-details-profile { flex-direction: column; align-items: flex-start; } .ad-teacher-details-tabs { overflow-x: auto; } .ad-teacher-details-field { flex-direction: column; align-items: flex-start; gap: 4px; } .ad-teacher-details-field-label { width: auto; } }
+
+
+    /* ══════════════════════════════════════════════════════════════════
+       PAGE: TEACHER CERTIFICATE APPROVAL — ad-teacher-cert-
+       ══════════════════════════════════════════════════════════════════ */
+
+    :root {
+        --ad-teacher-cert-accent: #2563EB;
+        --ad-teacher-cert-accent-light: #EFF6FF;
+        --ad-teacher-cert-green: #059669;
+        --ad-teacher-cert-orange: #D97706;
+        --ad-teacher-cert-red: #DC2626;
+    }
+
+    /* Header */
+    .ad-teacher-cert-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-xl); padding-bottom: var(--space-md); border-bottom: 1.5px solid var(--border-color); }
+    .ad-teacher-cert-header-left { flex: 1; }
+    .ad-teacher-cert-header-title { font-family: var(--font-primary); font-size: 1.75rem; font-weight: 800; color: var(--color-text); margin-bottom: var(--space-xs); display: flex; align-items: center; gap: var(--space-sm); }
+    .ad-teacher-cert-header-sub { font-size: .9375rem; color: var(--color-text-secondary); max-width: 520px; line-height: 1.5; }
+    .ad-teacher-cert-header-icon { width: 56px; height: 56px; border-radius: 16px; background: var(--ad-teacher-cert-accent-light); color: var(--ad-teacher-cert-accent); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
+
+    /* Summary Cards */
+    .ad-teacher-cert-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-xl); }
+    .ad-teacher-cert-summary-card { background: var(--color-white); border-radius: var(--border-radius-xl); border: 1.5px solid var(--border-color); box-shadow: var(--shadow-sm); padding: var(--space-lg); display: flex; flex-direction: column; gap: var(--space-xs); transition: transform .25s, box-shadow .25s; position: relative; overflow: hidden; }
+    .ad-teacher-cert-summary-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+    .ad-teacher-cert-summary-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+    .ad-teacher-cert-summary-card.s1::before { background: linear-gradient(90deg, #D97706, #FBBF24); }
+    .ad-teacher-cert-summary-card.s2::before { background: linear-gradient(90deg, #059669, #34D399); }
+    .ad-teacher-cert-summary-card.s3::before { background: linear-gradient(90deg, #DC2626, #F87171); }
+    .ad-teacher-cert-summary-card.s4::before { background: linear-gradient(90deg, #2563EB, #60A5FA); }
+    .ad-teacher-cert-summary-ico { font-size: 1.25rem; }
+    .ad-teacher-cert-summary-card.s1 .ad-teacher-cert-summary-ico { color: #D97706; }
+    .ad-teacher-cert-summary-card.s2 .ad-teacher-cert-summary-ico { color: #059669; }
+    .ad-teacher-cert-summary-card.s3 .ad-teacher-cert-summary-ico { color: #DC2626; }
+    .ad-teacher-cert-summary-card.s4 .ad-teacher-cert-summary-ico { color: #2563EB; }
+    .ad-teacher-cert-summary-val { font-family: var(--font-primary); font-size: 1.75rem; font-weight: 800; color: var(--color-text); }
+    .ad-teacher-cert-summary-lbl { font-size: .75rem; color: var(--color-text-muted); font-weight: 600; }
+
+    /* Search Panel */
+    .ad-teacher-cert-search { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; background: var(--color-white); border-radius: var(--border-radius-xl); border: 1.5px solid var(--border-color); box-shadow: var(--shadow-sm); padding: var(--space-md) var(--space-lg); margin-bottom: var(--space-xl); }
+
+    /* Card Grid */
+    .ad-teacher-cert-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: var(--space-lg); margin-bottom: var(--space-xl); }
+
+    /* Teacher Card */
+    .ad-teacher-cert-card { background: var(--color-white); border-radius: var(--border-radius-xl); border: 1.5px solid var(--border-color); box-shadow: var(--shadow-sm); padding: var(--space-lg); transition: transform .25s, box-shadow .25s; display: flex; flex-direction: column; gap: var(--space-md); }
+    .ad-teacher-cert-card:hover { transform: translateY(-3px); box-shadow: 0 12px 36px rgba(0, 0, 0, .08); }
+    .ad-teacher-cert-card-top { display: flex; align-items: center; gap: var(--space-md); }
+    .ad-teacher-cert-avatar { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 800; color: #fff; flex-shrink: 0; }
+    .ad-teacher-cert-card-info { flex: 1; min-width: 0; }
+    .ad-teacher-cert-card-name { font-family: var(--font-primary); font-size: .95rem; font-weight: 800; color: var(--color-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ad-teacher-cert-card-id { font-size: .75rem; color: var(--color-text-muted); font-weight: 600; display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+
+    /* Badges */
+    .ad-teacher-cert-badge { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 50px; font-size: .7rem; font-weight: 700; white-space: nowrap; flex-shrink: 0; }
+    .ad-teacher-cert-badge-pending { background: #FEF3C7; color: #92400E; }
+    .ad-teacher-cert-badge-certified { background: #D1FAE5; color: #065F46; }
+    .ad-teacher-cert-badge-rejected { background: #FEE2E2; color: #991B1B; }
+
+    /* Card Body */
+    .ad-teacher-cert-card-body { display: flex; flex-direction: column; gap: var(--space-sm); padding: var(--space-sm) 0; border-top: 1px solid rgba(0,0,0,.04); border-bottom: 1px solid rgba(0,0,0,.04); }
+    .ad-teacher-cert-card-field { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); }
+    .ad-teacher-cert-card-field-lbl { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--color-text-muted); }
+    .ad-teacher-cert-card-field-val { font-size: .82rem; font-weight: 600; color: var(--color-text); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+
+    /* Card Actions */
+    .ad-teacher-cert-actions { display: flex; gap: var(--space-xs); flex-wrap: wrap; }
+    .ad-teacher-cert-btn-view { border: 1px solid var(--border-color); }
+    .ad-teacher-cert-btn-approve { background: #D1FAE5; color: #059669; border: 1px solid #A7F3D0; }
+    .ad-teacher-cert-btn-approve:hover:not(:disabled) { background: #059669; color: #fff; }
+    .ad-teacher-cert-btn-reject { background: #FEE2E2; color: #DC2626; border: 1px solid #FECACA; }
+    .ad-teacher-cert-btn-reject:hover:not(:disabled) { background: #DC2626; color: #fff; }
+    .ad-teacher-cert-btn-approve:disabled, .ad-teacher-cert-btn-reject:disabled { opacity: .5; cursor: not-allowed; pointer-events: none; }
+
+    /* Empty State */
+    .ad-teacher-cert-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: var(--space-2xl); }
+    .ad-teacher-cert-empty-ico { font-size: 3rem; margin-bottom: var(--space-md); opacity: .35; color: var(--ad-teacher-cert-accent); }
+    .ad-teacher-cert-empty-msg { font-size: 1rem; font-weight: 700; color: var(--color-text-secondary); }
+    .ad-teacher-cert-empty-sub { font-size: .85rem; color: var(--color-text-muted); margin-top: var(--space-xs); }
+
+    /* Modal */
+    .ad-teacher-cert-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.5); z-index: 2000; align-items: center; justify-content: center; padding: 20px; animation: ad-teacher-cert-overlayIn .2s ease both; }
+    .ad-teacher-cert-modal { background: #fff; border-radius: 20px; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 60px rgba(0,0,0,.2); animation: ad-teacher-cert-modalIn .3s cubic-bezier(.34,1.56,.64,1) both; }
+    .ad-teacher-cert-modal-hdr { background: linear-gradient(135deg, #2563EB, #3B82F6); padding: var(--space-lg) var(--space-xl); color: #fff; border-radius: 20px 20px 0 0; display: flex; align-items: center; justify-content: space-between; }
+    .ad-teacher-cert-modal-hdr-title { font-family: var(--font-primary); font-size: 1.125rem; font-weight: 800; display: flex; align-items: center; gap: var(--space-sm); }
+    .ad-teacher-cert-modal-close { width: 36px; height: 36px; border: none; background: rgba(255,255,255,.15); border-radius: 10px; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .2s; }
+    .ad-teacher-cert-modal-close:hover { background: rgba(255,255,255,.3); }
+    .ad-teacher-cert-modal-body { padding: var(--space-xl); }
+    .ad-teacher-cert-modal-field { margin-bottom: var(--space-md); }
+    .ad-teacher-cert-modal-lbl { font-size: .6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--color-text-muted); margin-bottom: 2px; display: block; }
+    .ad-teacher-cert-modal-val { font-size: .9375rem; font-weight: 600; color: var(--color-text); display: block; }
+    .ad-teacher-cert-modal-footer { display: flex; gap: var(--space-sm); justify-content: flex-end; margin-top: var(--space-lg); padding-top: var(--space-md); border-top: 1px solid var(--border-color); }
+
+    /* Certificate Preview */
+    .ad-teacher-cert-preview { background: #F8FAFC; border: 1.5px dashed var(--border-color); border-radius: 12px; min-height: 200px; display: flex; align-items: center; justify-content: center; margin-top: var(--space-md); overflow: hidden; }
+    .ad-teacher-cert-preview-ph { display: flex; flex-direction: column; align-items: center; gap: var(--space-sm); color: var(--color-text-muted); font-size: .85rem; padding: var(--space-xl); }
+    .ad-teacher-cert-preview-ph i { font-size: 2.5rem; opacity: .4; }
+    .ad-teacher-cert-preview img { max-width: 100%; border-radius: 12px; }
+
+    /* Animations */
+    @keyframes ad-teacher-cert-overlayIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes ad-teacher-cert-modalIn { from { opacity: 0; transform: scale(.92) translateY(16px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    @keyframes ad-teacher-cert-toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+    /* Responsive */
+    @media (max-width: 1279px) { .ad-teacher-cert-summary { grid-template-columns: repeat(2, 1fr); } .ad-teacher-cert-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); } }
+    @media (max-width: 767px) { .ad-teacher-cert-summary { grid-template-columns: 1fr 1fr; } .ad-teacher-cert-grid { grid-template-columns: 1fr; } .ad-teacher-cert-header { flex-direction: column; align-items: flex-start; gap: var(--space-md); } .ad-teacher-cert-search { flex-direction: column; } .ad-teacher-cert-actions { flex-direction: column; } }
