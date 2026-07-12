@@ -185,12 +185,6 @@ namespace ScienceBuddy.Parent
                 "Tiada akaun anak dipautkan. Paut akaun anak untuk mula memantau kemajuan.");
 
             // ── Child Snapshot labels ─────────────────────────────────
-            litSnapshotTitle.Text   = T("Child Snapshot", "Ringkasan Anak");
-            litSnapshotSub.Text     = T("A quick look at your child's learning journey.",
-                                        "Ringkasan ringkas perjalanan pembelajaran anak anda.");
-            litSnapLessonLabel.Text = T("Latest Lesson", "Pelajaran Terkini");
-            litSnapQuizLabel.Text   = T("Latest Quiz", "Kuiz Terkini");
-            litSnapNoActivity.Text  = T("No recent activity yet.", "Tiada aktiviti terkini lagi.");
             litSnapBtnProfile.Text  = T("View Profile", "Lihat Profil");
             litSnapBtnProgress.Text = T("View Progress", "Lihat Kemajuan");
             litHeroNoChild.Text   = T(
@@ -225,7 +219,7 @@ namespace ScienceBuddy.Parent
             litForumSub.Text     = T("Ask questions, share ideas, and support your child's Science learning.",
                                      "Tanya soalan, kongsi idea, dan sokong pembelajaran Sains anak anda.");
             litTabPublic.Text    = T("Public", "Awam");
-            litTabPrivate.Text   = T("Student-Parent", "Pelajar-Ibu Bapa");
+            litTabPrivate.Text   = T("Family", "Keluarga");
             litNoForumMsg.Text   = T("No discussions yet.", "Tiada perbincangan lagi.");
             litGoToForum.Text    = T("Go to Forum", "Pergi ke Forum");
         }
@@ -300,8 +294,13 @@ namespace ScienceBuddy.Parent
             }
 
             Session["selectedChildId"] = selectedStudentId;
-            Response.Redirect(Request.RawUrl, false);
-            Context.ApplicationInstance.CompleteRequest();
+
+            // Reload dashboard data for the newly selected child
+            pnlDashboard.Visible   = true;
+            pnlNoChild.Visible     = false;
+            pnlHeroNoChild.Visible = false;
+            pnlHeroViewing.Visible = true;
+            LoadDashboardForChild(selectedStudentId);
         }
 
         // ══════════════════════════════════════════════════════════════
@@ -344,7 +343,6 @@ namespace ScienceBuddy.Parent
             if (string.IsNullOrEmpty(studentId)) return;
 
             LoadChildOverview(studentId);
-            LoadChildSnapshot(studentId);
             LoadSummaryCounts(studentId);
             LoadStudyPlanCard(studentId);
             LoadRecentActivities(studentId);
@@ -411,10 +409,8 @@ namespace ScienceBuddy.Parent
                             }
                             litSnapInitials.Text = Server.HtmlEncode(initials);
                             litSnapName.Text     = Server.HtmlEncode(displayName);
-                            litSnapRel.Text      = !string.IsNullOrWhiteSpace(relationship)
-                                ? Server.HtmlEncode(relationship)
-                                : T("Family", "Keluarga");
-                            litSnapStatus.Text   = T("Currently Learning", "Sedang Belajar");
+                            string relText = !string.IsNullOrWhiteSpace(relationship) ? relationship : T("Family", "Keluarga");
+                            litSnapRel.Text      = string.Format(T("You are {0}'s {1}.", "Anda ialah {1} kepada {0}."), Server.HtmlEncode(sidebarName), Server.HtmlEncode(relText));
                         }
                     }
                 }
@@ -423,97 +419,6 @@ namespace ScienceBuddy.Parent
 
             // Badge count for hero pill
             LoadHeroBadgeCount(studentId);
-        }
-
-        // ══════════════════════════════════════════════════════════════
-        //  CHILD SNAPSHOT — RECENT LESSON + LATEST QUIZ
-        // ══════════════════════════════════════════════════════════════
-
-        private void LoadChildSnapshot(string studentId)
-        {
-            bool hasActivity = false;
-
-            // ── Latest completed lesson ───────────────────────────────
-            pnlSnapLesson.Visible = false;
-            try
-            {
-                const string sql = @"
-                    SELECT TOP 1 l.lessonTitleEN, l.lessonTitleBM, lp.completedDate
-                    FROM dbo.[LessonProgress] lp
-                    INNER JOIN dbo.[Lesson] l ON l.lessonId = lp.lessonId
-                    WHERE lp.studentId = @studentId AND lp.isCompleted = 1
-                    ORDER BY lp.completedDate DESC";
-
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@studentId", studentId);
-                    conn.Open();
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            string title = CurrentLanguage == "BM"
-                                ? (reader["lessonTitleBM"]?.ToString() ?? reader["lessonTitleEN"]?.ToString() ?? "-")
-                                : (reader["lessonTitleEN"]?.ToString() ?? "-");
-                            string date = reader["completedDate"] != DBNull.Value
-                                ? Convert.ToDateTime(reader["completedDate"]).ToString("dd MMM yyyy")
-                                : "";
-
-                            litSnapLessonTitle.Text = Server.HtmlEncode(title);
-                            litSnapLessonDate.Text  = Server.HtmlEncode(date);
-                            pnlSnapLesson.Visible   = true;
-                            hasActivity             = true;
-                        }
-                    }
-                }
-            }
-            catch (SqlException) { }
-
-            // ── Latest quiz result ────────────────────────────────────
-            pnlSnapQuiz.Visible = false;
-            try
-            {
-                const string sql = @"
-                    SELECT TOP 1 q.quizTitleEN, q.quizTitleBM,
-                                 qr.percentage, qr.resultStatus, qr.attemptedDate
-                    FROM dbo.[QuizResult] qr
-                    INNER JOIN dbo.[Quiz] q ON q.quizId = qr.quizId
-                    WHERE qr.studentId = @studentId
-                    ORDER BY qr.attemptedDate DESC";
-
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@studentId", studentId);
-                    conn.Open();
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            string title = CurrentLanguage == "BM"
-                                ? (reader["quizTitleBM"]?.ToString() ?? reader["quizTitleEN"]?.ToString() ?? "-")
-                                : (reader["quizTitleEN"]?.ToString() ?? "-");
-                            string pct    = reader["percentage"] != DBNull.Value
-                                ? Convert.ToDecimal(reader["percentage"]).ToString("F0") + "%" : "-";
-                            string status = reader["resultStatus"]?.ToString() ?? "";
-                            string date   = reader["attemptedDate"] != DBNull.Value
-                                ? Convert.ToDateTime(reader["attemptedDate"]).ToString("dd MMM yyyy") : "";
-
-                            litSnapQuizTitle.Text = Server.HtmlEncode(title);
-                            litSnapQuizMeta.Text  = Server.HtmlEncode(pct
-                                + (!string.IsNullOrWhiteSpace(status) ? " · " + status : "")
-                                + (!string.IsNullOrWhiteSpace(date)   ? " · " + date   : ""));
-                            pnlSnapQuiz.Visible   = true;
-                            hasActivity           = true;
-                        }
-                    }
-                }
-            }
-            catch (SqlException) { }
-
-            pnlSnapActivity.Visible   = hasActivity;
-            pnlSnapNoActivity.Visible = !hasActivity;
         }
 
         private void LoadHeroBadgeCount(string studentId)
@@ -822,7 +727,6 @@ namespace ScienceBuddy.Parent
 
             try
             {
-                // UNION of recent child activities — top 12 ordered by date desc
                 const string sql = @"
                     SELECT TOP 12 actType, actTitle, actDate FROM (
                         SELECT 'lesson' AS actType,
@@ -858,44 +762,31 @@ namespace ScienceBuddy.Parent
 
                     using (var reader = cmd.ExecuteReader())
                     {
-                        bool hasRows      = false;
-                        string lastDateStr = "";
+                        bool hasRows = false;
+                        var sb = new System.Text.StringBuilder();
+                        sb.Append("<div class='pt-recent-activities-list'>");
 
                         while (reader.Read())
                         {
                             hasRows = true;
-                            string actType  = reader["actType"]?.ToString() ?? "lesson";
+                            string actType = reader["actType"]?.ToString() ?? "lesson";
                             string actTitle = reader["actTitle"]?.ToString() ?? "-";
                             DateTime actDate = reader["actDate"] != DBNull.Value
                                 ? Convert.ToDateTime(reader["actDate"]) : DateTime.MinValue;
 
-                            // Date heading
-                            string dateLabel = FormatDateLabel(actDate);
-                            if (dateLabel != lastDateStr)
-                            {
-                                if (!string.IsNullOrEmpty(lastDateStr))
-                                    pnlRecentActivities.Controls.Add(new LiteralControl("</div>")); // close prev group
-                                pnlRecentActivities.Controls.Add(new LiteralControl(
-                                    "<div class='pd-timeline-group'><div class='pd-timeline-date'>" + Server.HtmlEncode(dateLabel) + "</div>"));
-                                lastDateStr = dateLabel;
-                            }
+                            string dateStr = actDate != DateTime.MinValue ? actDate.ToString("dd MMM yyyy") : "";
+                            string summary = GetActivitySummary(actType);
 
-                            string dotClass = "pd-timeline-dot " + actType;
-                            string time = actDate != DateTime.MinValue ? actDate.ToString("HH:mm") : "";
-
-                            string html = "<div class='pd-timeline-item'>"
-                                + "<div class='" + dotClass + "'></div>"
-                                + "<div class='pd-timeline-content'>"
-                                + "<div class='pd-timeline-text'>" + Server.HtmlEncode(actTitle) + "</div>"
-                                + "</div>"
-                                + (!string.IsNullOrEmpty(time) ? "<span class='pd-timeline-time'>" + time + "</span>" : "")
-                                + "</div>";
-
-                            pnlRecentActivities.Controls.Add(new LiteralControl(html));
+                            sb.AppendFormat(@"<div class='pt-recent-activity-bubble'>
+                                <div class='pt-recent-activity-title'>{0}, {1}</div>
+                                <div class='pt-recent-activity-summary'>{2}</div>
+                            </div>", Server.HtmlEncode(actTitle), Server.HtmlEncode(dateStr), Server.HtmlEncode(summary));
                         }
 
+                        sb.Append("</div>");
+
                         if (hasRows)
-                            pnlRecentActivities.Controls.Add(new LiteralControl("</div>")); // close last group
+                            pnlRecentActivities.Controls.Add(new LiteralControl(sb.ToString()));
                         else
                             pnlNoActivities.Visible = true;
                     }
@@ -904,6 +795,16 @@ namespace ScienceBuddy.Parent
             catch (SqlException)
             {
                 pnlNoActivities.Visible = true;
+            }
+        }
+
+        private string GetActivitySummary(string actType)
+        {
+            switch (actType)
+            {
+                case "quiz": return T("Completed the quiz and submitted answers.", "Menyelesaikan kuiz dan menghantar jawapan.");
+                case "badge": return T("Earned a new badge for their achievement.", "Memperoleh lencana baharu atas pencapaian mereka.");
+                default: return T("Finished the lesson and reviewed key concepts.", "Menyelesaikan pelajaran dan mengulang kaji konsep utama.");
             }
         }
 
@@ -979,14 +880,16 @@ namespace ScienceBuddy.Parent
             // Populate sort dropdown if empty
             if (ddlForumSort.Items.Count == 0)
             {
-                ddlForumSort.Items.Add(new System.Web.UI.WebControls.ListItem(T("Latest", "Terkini"), "DESC"));
-                ddlForumSort.Items.Add(new System.Web.UI.WebControls.ListItem(T("Oldest", "Terlama"), "ASC"));
+                ddlForumSort.Items.Add(new System.Web.UI.WebControls.ListItem(T("Latest", "Terkini"), "latest"));
+                ddlForumSort.Items.Add(new System.Web.UI.WebControls.ListItem(T("Oldest", "Terdahulu"), "oldest"));
+                ddlForumSort.Items.Add(new System.Web.UI.WebControls.ListItem(T("Most Likes", "Paling Disukai"), "likes"));
+                ddlForumSort.Items.Add(new System.Web.UI.WebControls.ListItem(T("My Discussions", "Perbincangan Saya"), "mine"));
             }
 
             // Build query
             string tab      = ForumActiveTab;
             string tagId    = ddlForumTag.SelectedValue;
-            string sortDir  = ddlForumSort.SelectedValue == "ASC" ? "ASC" : "DESC";
+            string sortVal  = ddlForumSort.SelectedValue;
             string keyword  = txtForumSearch.Text.Trim();
 
             try
@@ -1020,6 +923,16 @@ namespace ScienceBuddy.Parent
                     parameters.Add(new SqlParameter("@kw", "%" + keyword + "%"));
                 }
 
+                // My Discussions filter
+                if (sortVal == "mine")
+                {
+                    whereClause += " AND f.createdBy = @mineUid";
+                    parameters.Add(new SqlParameter("@mineUid", _parentUserId));
+                }
+
+                // Order by
+                string orderBy = sortVal == "oldest" ? "f.createdAt ASC" : sortVal == "likes" ? "likeCount DESC, f.createdAt DESC" : "f.createdAt DESC";
+
                 string sql = @"
                     SELECT TOP 10 f.forumId, f.title, f.message, f.discussionType, f.createdAt, f.createdBy,
                            u.username,
@@ -1028,7 +941,7 @@ namespace ScienceBuddy.Parent
                     FROM dbo.[Forum] f
                     INNER JOIN dbo.[User] u ON u.userId = f.createdBy
                     WHERE " + whereClause + @"
-                    ORDER BY f.createdAt " + sortDir;
+                    ORDER BY " + orderBy;
 
                 using (var conn = new SqlConnection(ConnStr))
                 using (var cmd = new SqlCommand(sql, conn))

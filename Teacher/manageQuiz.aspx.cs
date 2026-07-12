@@ -43,6 +43,13 @@ namespace ScienceBuddy.Teacher
             // Handle AJAX request for subtopics
             if (Request.QueryString["handler"] == "subtopics")
             { HandleSubtopicRequest(); return; }
+            // Handle AJAX requests for Practice Quiz selection popup
+            if (Request.QueryString["handler"] == "pqlevels")
+            { HandlePQLevelsRequest(); return; }
+            if (Request.QueryString["handler"] == "pqunits")
+            { HandlePQUnitsRequest(); return; }
+            if (Request.QueryString["handler"] == "pqsubtopics")
+            { HandlePQSubtopicsRequest(); return; }
 
             var master = (ScienceBuddy.SiteMaster)Master;
             master.LayoutMode = "Sidebar";
@@ -330,6 +337,112 @@ namespace ScienceBuddy.Teacher
                 }
                 sb.Append("</div>");
             }
+        }
+
+        private void HandlePQLevelsRequest()
+        {
+            Response.Clear();
+            Response.ContentType = "application/json";
+            try
+            {
+                var sb = new System.Text.StringBuilder();
+                sb.Append("[");
+                bool first = true;
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand("SELECT [levelId],[levelNameEN] FROM dbo.[Level] ORDER BY [levelId]", conn))
+                    using (var r = cmd.ExecuteReader())
+                    {
+                        while (r.Read())
+                        {
+                            if (!first) sb.Append(",");
+                            first = false;
+                            sb.AppendFormat("{{\"id\":\"{0}\",\"name\":\"{1}\"}}",
+                                HttpUtility.JavaScriptStringEncode(r["levelId"].ToString()),
+                                HttpUtility.JavaScriptStringEncode(r["levelNameEN"].ToString()));
+                        }
+                    }
+                }
+                sb.Append("]");
+                Response.Write(sb.ToString());
+            }
+            catch { Response.Write("[]"); }
+            Response.End();
+        }
+
+        private void HandlePQUnitsRequest()
+        {
+            Response.Clear();
+            Response.ContentType = "application/json";
+            string levelId = (Request.QueryString["levelId"] ?? "").Trim();
+            if (string.IsNullOrEmpty(levelId)) { Response.Write("[]"); Response.End(); return; }
+            try
+            {
+                var sb = new System.Text.StringBuilder();
+                sb.Append("[");
+                bool first = true;
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand("SELECT [unitId],[unitNameEN] FROM dbo.[Unit] WHERE [levelId]=@lid ORDER BY [orderNo]", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@lid", levelId);
+                        using (var r = cmd.ExecuteReader())
+                        {
+                            while (r.Read())
+                            {
+                                if (!first) sb.Append(",");
+                                first = false;
+                                sb.AppendFormat("{{\"id\":\"{0}\",\"name\":\"{1}\"}}",
+                                    HttpUtility.JavaScriptStringEncode(r["unitId"].ToString()),
+                                    HttpUtility.JavaScriptStringEncode(r["unitNameEN"].ToString()));
+                            }
+                        }
+                    }
+                }
+                sb.Append("]");
+                Response.Write(sb.ToString());
+            }
+            catch { Response.Write("[]"); }
+            Response.End();
+        }
+
+        private void HandlePQSubtopicsRequest()
+        {
+            Response.Clear();
+            Response.ContentType = "application/json";
+            string unitId = (Request.QueryString["unitId"] ?? "").Trim();
+            if (string.IsNullOrEmpty(unitId)) { Response.Write("[]"); Response.End(); return; }
+            try
+            {
+                var sb = new System.Text.StringBuilder();
+                sb.Append("[");
+                bool first = true;
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand("SELECT [subtopicId],[subtopicTitleEN] FROM dbo.[Subtopic] WHERE [unitId]=@uid ORDER BY [orderNo]", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@uid", unitId);
+                        using (var r = cmd.ExecuteReader())
+                        {
+                            while (r.Read())
+                            {
+                                if (!first) sb.Append(",");
+                                first = false;
+                                sb.AppendFormat("{{\"id\":\"{0}\",\"name\":\"{1}\"}}",
+                                    HttpUtility.JavaScriptStringEncode(r["subtopicId"].ToString()),
+                                    HttpUtility.JavaScriptStringEncode(r["subtopicTitleEN"].ToString()));
+                            }
+                        }
+                    }
+                }
+                sb.Append("]");
+                Response.Write(sb.ToString());
+            }
+            catch { Response.Write("[]"); }
+            Response.End();
         }
 
         private bool Authorize()

@@ -141,14 +141,14 @@ namespace ScienceBuddy.Parent
             pnlTaskList.Controls.Add(new LiteralControl(sb.ToString()));
         }
 
-        protected void BtnShowAddTask_Click(object sender, EventArgs e) { litTaskFormTitle.Text = T("Add Task", "Tambah Tugasan"); hidEditTaskId.Value = ""; txtTaskTitle.Text = ""; ddlSuggestedAction.SelectedIndex = 0; pnlTaskForm.Visible = true; LoadTaskList(); LoadRewardList(); BuildPreviewMarkers(); }
+        protected void BtnShowAddTask_Click(object sender, EventArgs e) { litTaskFormTitle.Text = T("Add Task", "Tambah Tugasan"); hidEditTaskId.Value = ""; txtTaskTitle.Text = ""; ddlSuggestedAction.SelectedIndex = 0; pnlTaskForm.Visible = true; LoadTaskList(); LoadRewardList(); BuildPreviewMarkers(); MaintainScrollPositionOnPostBack = false; ScriptManager.RegisterStartupScript(this, GetType(), "ScrollToAddTask", "setTimeout(function(){ var el=document.getElementById('" + pnlTaskForm.ClientID + "'); if(el){el.scrollIntoView({behavior:'smooth',block:'start'});} },120);", true); }
         protected void BtnCancelTask_Click(object sender, EventArgs e) { pnlTaskForm.Visible = false; LoadTaskList(); LoadRewardList(); BuildPreviewMarkers(); }
 
         protected void BtnEditTaskTrigger_Click(object sender, EventArgs e)
         {
             string taskId = hidEditTaskIdTrigger.Value;
             try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT taskTitle, suggestedAction FROM dbo.SPTask WHERE spTaskId=@id AND studyPlanId=@pid", c)) { cmd.Parameters.AddWithValue("@id", taskId); cmd.Parameters.AddWithValue("@pid", _planId); c.Open(); using (var r = cmd.ExecuteReader()) { if (r.Read()) { txtTaskTitle.Text = r["taskTitle"].ToString(); var li = ddlSuggestedAction.Items.FindByValue(r["suggestedAction"] != DBNull.Value ? r["suggestedAction"].ToString() : ""); if (li != null) li.Selected = true; } } } } catch { }
-            hidEditTaskId.Value = taskId; litTaskFormTitle.Text = T("Edit Task", "Edit Tugasan"); pnlTaskForm.Visible = true; LoadTaskList(); LoadRewardList(); BuildPreviewMarkers();
+            hidEditTaskId.Value = taskId; litTaskFormTitle.Text = T("Edit Task", "Edit Tugasan"); pnlTaskForm.Visible = true; LoadTaskList(); LoadRewardList(); BuildPreviewMarkers(); MaintainScrollPositionOnPostBack = false; ScriptManager.RegisterStartupScript(this, GetType(), "ScrollToEditTask", "setTimeout(function(){ var el=document.getElementById('" + pnlTaskForm.ClientID + "'); if(el){el.scrollIntoView({behavior:'smooth',block:'start'});} },120);", true);
         }
 
         protected void BtnSaveTask_Click(object sender, EventArgs e)
@@ -281,14 +281,14 @@ namespace ScienceBuddy.Parent
                 pnlPreviewMarkers.Controls.Add(new LiteralControl(sb.ToString())); } } catch { }
         }
 
-        protected void BtnShowAddReward_Click(object sender, EventArgs e) { litRewardFormTitle.Text = T("Add Reward", "Tambah Ganjaran"); hidEditRewardId.Value = ""; txtRewardName.Text = ""; txtUnlockPct.Text = ""; hidSelectedImage.Value = ""; pnlRewardForm.Visible = true; LoadTaskList(); LoadRewardList(); BuildImageGrid(); BuildPreviewMarkers(); }
+        protected void BtnShowAddReward_Click(object sender, EventArgs e) { litRewardFormTitle.Text = T("Add Reward", "Tambah Ganjaran"); hidEditRewardId.Value = ""; txtRewardName.Text = ""; txtUnlockPct.Text = ""; hidSelectedImage.Value = ""; pnlRewardForm.Visible = true; LoadTaskList(); LoadRewardList(); BuildImageGrid(); BuildPreviewMarkers(); MaintainScrollPositionOnPostBack = false; ScriptManager.RegisterStartupScript(this, GetType(), "ScrollToAddReward", "setTimeout(function(){ var el=document.getElementById('" + pnlRewardForm.ClientID + "'); if(el){el.scrollIntoView({behavior:'smooth',block:'start'});} },120);", true); }
         protected void BtnCancelReward_Click(object sender, EventArgs e) { pnlRewardForm.Visible = false; LoadTaskList(); LoadRewardList(); BuildImageGrid(); BuildPreviewMarkers(); }
 
         protected void BtnEditRewardTrigger_Click(object sender, EventArgs e)
         {
             string rid = hidEditRewardIdTrigger.Value;
             try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT rewardName, requiredProgress, rewardImage FROM dbo.SPReward WHERE rewardId=@id AND studyPlanId=@pid", c)) { cmd.Parameters.AddWithValue("@id", rid); cmd.Parameters.AddWithValue("@pid", _planId); c.Open(); using (var r = cmd.ExecuteReader()) { if (r.Read()) { txtRewardName.Text = r["rewardName"] != DBNull.Value ? r["rewardName"].ToString() : ""; hidSelectedImage.Value = r["rewardImage"] != DBNull.Value ? r["rewardImage"].ToString() : ""; txtUnlockPct.Text = r["requiredProgress"] != DBNull.Value ? r["requiredProgress"].ToString() : ""; } } } } catch { }
-            hidEditRewardId.Value = rid; litRewardFormTitle.Text = T("Edit Reward", "Edit Ganjaran"); pnlRewardForm.Visible = true; LoadTaskList(); LoadRewardList(); BuildImageGrid(); BuildPreviewMarkers();
+            hidEditRewardId.Value = rid; litRewardFormTitle.Text = T("Edit Reward", "Edit Ganjaran"); pnlRewardForm.Visible = true; LoadTaskList(); LoadRewardList(); BuildImageGrid(); BuildPreviewMarkers(); MaintainScrollPositionOnPostBack = false; ScriptManager.RegisterStartupScript(this, GetType(), "ScrollToEditReward", "setTimeout(function(){ var el=document.getElementById('" + pnlRewardForm.ClientID + "'); if(el){el.scrollIntoView({behavior:'smooth',block:'start'});} },120);", true);
         }
 
         protected void BtnSaveReward_Click(object sender, EventArgs e)

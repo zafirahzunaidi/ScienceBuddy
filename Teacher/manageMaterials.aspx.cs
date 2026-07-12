@@ -48,6 +48,22 @@ namespace ScienceBuddy.Teacher
             string eventArg = Request["__EVENTARGUMENT"];
             if (eventTarget == "LoadEdit" && !string.IsNullOrEmpty(eventArg))
             {
+                // Re-read certification status for this code path
+                try
+                {
+                    using (var conn = new SqlConnection(ConnStr))
+                    {
+                        conn.Open();
+                        using (var cmd = new SqlCommand("SELECT [status] FROM dbo.[Teacher] WHERE [userId]=@u", conn))
+                        {
+                            cmd.Parameters.AddWithValue("@u", Session["userId"].ToString());
+                            var val = cmd.ExecuteScalar();
+                            _isCertified = val != null && val != DBNull.Value &&
+                                val.ToString().Equals("Certified", StringComparison.OrdinalIgnoreCase);
+                        }
+                    }
+                }
+                catch { _isCertified = false; }
                 LoadEditForm(eventArg, Session["userId"].ToString());
                 if (!IsPostBack) { LoadFilterDropdowns(); LoadMaterials(); }
                 return;
@@ -61,6 +77,8 @@ namespace ScienceBuddy.Teacher
                 LoadMaterials();
             }
         }
+
+        private bool _isCertified = false;
 
         private bool AuthorizeTeacher()
         {
@@ -76,8 +94,18 @@ namespace ScienceBuddy.Teacher
                         var val = cmd.ExecuteScalar();
                         if (val == null || val == DBNull.Value) { pnlDenied.Visible = true; return false; }
                         string s = val.ToString();
-                        if (s.Equals("Certified", StringComparison.OrdinalIgnoreCase)) { pnlMain.Visible = true; return true; }
-                        if (s.Equals("Pending", StringComparison.OrdinalIgnoreCase)) { pnlPending.Visible = true; return false; }
+                        if (s.Equals("Certified", StringComparison.OrdinalIgnoreCase))
+                        {
+                            _isCertified = true;
+                            pnlMain.Visible = true;
+                            return true;
+                        }
+                        if (s.Equals("Pending", StringComparison.OrdinalIgnoreCase))
+                        {
+                            _isCertified = false;
+                            pnlMain.Visible = true;
+                            return true;
+                        }
                         pnlDenied.Visible = true; return false;
                     }
                 }
@@ -119,6 +147,16 @@ namespace ScienceBuddy.Teacher
 
         private void LoadMaterials()
         {
+            // If not certified, hide all My Materials content — pending panel is shown via SetTabUI
+            if (!_isCertified)
+            {
+                pnlMaterials.Visible = false;
+                pnlEmpty.Visible = false;
+                pnlDiscover.Visible = false;
+                pnlDiscoverEmpty.Visible = false;
+                return;
+            }
+
             string userId = Session["userId"].ToString();
             string search = txtSearch.Text.Trim();
             string lvl = ddlFilterLevel.SelectedValue, unit = ddlFilterUnit.SelectedValue;
@@ -207,8 +245,21 @@ namespace ScienceBuddy.Teacher
             bool isMine = hidActiveTab.Value != "discover";
             btnTabMine.CssClass = "mm-tab" + (isMine ? " active" : "");
             btnTabDiscover.CssClass = "mm-tab" + (!isMine ? " active" : "");
+
+            // Upload button: visible on Mine tab, enabled only when certified
             pnlUploadBtn.Visible = isMine;
-            pnlStatusChips.Visible = isMine;
+            if (isMine)
+            {
+                pnlUploadEnabled.Visible = _isCertified;
+                pnlUploadDisabled.Visible = !_isCertified;
+            }
+
+            // Filter bar and status chips: visible only when certified AND on Mine tab
+            pnlFilterBar.Visible = isMine && _isCertified;
+            pnlStatusChips.Visible = isMine && _isCertified;
+
+            // Pending state panel: visible when on Mine tab and not certified
+            pnlMyMaterialsPending.Visible = isMine && !_isCertified;
         }
 
         private void LoadForActiveTab()

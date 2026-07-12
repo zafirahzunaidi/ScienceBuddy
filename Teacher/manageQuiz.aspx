@@ -259,7 +259,7 @@
         <p class="mq-page-sub"><%: T("Create, manage, and discover quizzes.","Cipta, urus, dan terokai kuiz.") %></p>
     </div>
     <asp:Panel ID="pnlCreateBtn" runat="server">
-        <button type="button" class="mq-btn-create" onclick="document.getElementById('createModal').style.display='flex'"><i class="bi bi-plus-lg"></i> <%: T("Create Quiz","Cipta Kuiz") %></button>
+        <button type="button" class="mq-btn-create" onclick="openPracticeModal()"><i class="bi bi-plus-lg"></i> <%: T("Create Quiz","Cipta Kuiz") %></button>
     </asp:Panel>
     <asp:Panel ID="pnlCreateULBtn" runat="server" Visible="false"></asp:Panel>
 </div>
@@ -335,7 +335,7 @@
     <div class="mq-empty">
         <div style="font-size:3.5rem;opacity:.5;margin-bottom:1rem;">📝</div>
         <div class="mq-empty-title"><%: T("No quizzes created yet.","Tiada kuiz dicipta lagi.") %></div>
-        <button type="button" class="mq-btn-create" style="margin-top:1rem;" onclick="document.getElementById('createModal').style.display='flex'">
+        <button type="button" class="mq-btn-create" style="margin-top:1rem;" onclick="openPracticeModal()">
             <i class="bi bi-plus-lg"></i> <%: T("Create Your First Quiz","Cipta Kuiz Pertama Anda") %></button>
     </div>
 </asp:Panel>
@@ -474,6 +474,51 @@
 
 <asp:HiddenField ID="hidActiveTab" runat="server" Value="mine" />
 
+<%-- Practice Quiz Selection Modal --%>
+<div id="practiceModal" class="mq-modal-overlay" style="display:none;" onclick="if(event.target===this)closePracticeModal()">
+    <div class="mq-modal" style="max-width:460px;">
+        <div class="mq-modal-header">
+            <div>
+                <h3><%: T("Create Practice Quiz","Cipta Kuiz Latihan") %></h3>
+                <p style="font-size:.78rem;color:var(--tc-muted);margin:3px 0 0;"><%: T("Select the learning area for this practice quiz.","Pilih kawasan pembelajaran untuk kuiz latihan ini.") %></p>
+            </div>
+            <button type="button" class="mq-modal-close" onclick="closePracticeModal()">×</button>
+        </div>
+        <div class="mq-modal-body" style="text-align:left;padding:1.25rem 1.5rem;">
+            <div style="margin-bottom:1rem;">
+                <label style="font-size:.8rem;font-weight:700;color:var(--tc-text);display:block;margin-bottom:5px;"><%: T("Level","Tahap") %> *</label>
+                <select id="pqLevel" class="mq-select" style="width:100%;height:42px;" onchange="pqOnLevelChange(this.value)">
+                    <option value=""><%: T("— Select Level —","— Pilih Tahap —") %></option>
+                </select>
+            </div>
+            <div style="margin-bottom:1rem;">
+                <label style="font-size:.8rem;font-weight:700;color:var(--tc-text);display:block;margin-bottom:5px;"><%: T("Unit","Unit") %> *</label>
+                <select id="pqUnit" class="mq-select" style="width:100%;height:42px;" onchange="pqOnUnitChange(this.value)" disabled>
+                    <option value=""><%: T("— Select Unit —","— Pilih Unit —") %></option>
+                </select>
+            </div>
+            <div style="margin-bottom:1rem;">
+                <label style="font-size:.8rem;font-weight:700;color:var(--tc-text);display:block;margin-bottom:5px;"><%: T("Subtopic","Subtopik") %> *</label>
+                <select id="pqSubtopic" class="mq-select" style="width:100%;height:42px;" onchange="pqOnSubtopicChange(this.value)" disabled>
+                    <option value=""><%: T("— Select Subtopic —","— Pilih Subtopik —") %></option>
+                </select>
+            </div>
+            <div style="margin-bottom:.25rem;">
+                <label style="font-size:.8rem;font-weight:700;color:var(--tc-text);display:block;margin-bottom:5px;"><%: T("Language","Bahasa") %> *</label>
+                <select id="pqLanguage" class="mq-select" style="width:100%;height:42px;" onchange="pqUpdateContinue()">
+                    <option value=""><%: T("— Select Language —","— Pilih Bahasa —") %></option>
+                    <option value="EN">English</option>
+                    <option value="BM">Bahasa Melayu</option>
+                </select>
+            </div>
+        </div>
+        <div class="mq-modal-footer">
+            <button type="button" class="mq-btn-cancel" onclick="closePracticeModal()"><%: T("Cancel","Batal") %></button>
+            <button type="button" id="pqContinueBtn" class="mq-btn-create" style="box-shadow:none;opacity:.5;pointer-events:none;" onclick="pqContinue()"><%: T("Continue","Teruskan") %></button>
+        </div>
+    </div>
+</div>
+
 <%-- Create Quiz Setup Modal --%>
 <div id="createModal" class="mq-modal-overlay" style="display:none;">
     <div class="mq-modal" style="max-width:520px;">
@@ -552,6 +597,116 @@ function scrollCarousel(dir){var c=document.getElementById('quizCarousel');if(c)
 function scrollDiscover(dir){var c=document.getElementById('discoverCarousel');if(c)c.scrollBy({left:dir*320,behavior:'smooth'});}
 function openDeleteModal(id){document.getElementById('<%=hidDeleteId.ClientID%>').value=id;document.getElementById('deleteModal').style.display='flex';}
 function closeDeleteModal(){document.getElementById('deleteModal').style.display='none';}
+/* ── Practice Quiz Selection Modal ── */
+function openPracticeModal(){
+    var modal=document.getElementById('practiceModal');
+    var lvDd=document.getElementById('pqLevel');
+    // Load levels if not already loaded
+    if(lvDd.options.length<=1){
+        lvDd.innerHTML='<option value="">Loading...</option>';
+        var xhr=new XMLHttpRequest();
+        xhr.open('GET','manageQuiz.aspx?handler=pqlevels',true);
+        xhr.onreadystatechange=function(){
+            if(xhr.readyState===4&&xhr.status===200){
+                try{
+                    var data=JSON.parse(xhr.responseText);
+                    lvDd.innerHTML='<option value="">— <%: T("Select Level","Pilih Tahap") %> —</option>';
+                    for(var i=0;i<data.length;i++){
+                        var o=document.createElement('option');o.value=data[i].id;o.textContent=data[i].name;lvDd.appendChild(o);
+                    }
+                }catch(e){lvDd.innerHTML='<option value="">Error</option>';}
+            }
+        };
+        xhr.send();
+    }
+    // Reset Unit, Subtopic, and Language
+    var unDd=document.getElementById('pqUnit');
+    var stDd=document.getElementById('pqSubtopic');
+    unDd.innerHTML='<option value="">— <%: T("Select Unit","Pilih Unit") %> —</option>';
+    unDd.disabled=true;
+    stDd.innerHTML='<option value="">— <%: T("Select Subtopic","Pilih Subtopik") %> —</option>';
+    stDd.disabled=true;
+    document.getElementById('pqLanguage').value='';
+    pqUpdateContinue();
+    modal.style.display='flex';}
+function closePracticeModal(){
+    document.getElementById('practiceModal').style.display='none';
+    document.getElementById('pqLevel').value='';
+    document.getElementById('pqUnit').innerHTML='<option value="">— <%: T("Select Unit","Pilih Unit") %> —</option>';
+    document.getElementById('pqUnit').disabled=true;
+    document.getElementById('pqSubtopic').innerHTML='<option value="">— <%: T("Select Subtopic","Pilih Subtopik") %> —</option>';
+    document.getElementById('pqSubtopic').disabled=true;
+    document.getElementById('pqLanguage').value='';
+    pqUpdateContinue();
+}
+function pqOnLevelChange(levelId){
+    var unDd=document.getElementById('pqUnit');
+    var stDd=document.getElementById('pqSubtopic');
+    stDd.innerHTML='<option value="">— <%: T("Select Subtopic","Pilih Subtopik") %> —</option>';
+    stDd.disabled=true;
+    unDd.innerHTML='<option value="">— <%: T("Select Unit","Pilih Unit") %> —</option>';
+    pqUpdateContinue();
+    if(!levelId){unDd.disabled=true;return;}
+    unDd.innerHTML='<option value="">Loading...</option>';
+    unDd.disabled=true;
+    var xhr=new XMLHttpRequest();
+    xhr.open('GET','manageQuiz.aspx?handler=pqunits&levelId='+encodeURIComponent(levelId),true);
+    xhr.onreadystatechange=function(){
+        if(xhr.readyState===4&&xhr.status===200){
+            try{
+                var data=JSON.parse(xhr.responseText);
+                unDd.innerHTML='<option value="">— <%: T("Select Unit","Pilih Unit") %> —</option>';
+                for(var i=0;i<data.length;i++){
+                    var o=document.createElement('option');o.value=data[i].id;o.textContent=data[i].name;unDd.appendChild(o);
+                }
+                unDd.disabled=false;
+            }catch(e){unDd.innerHTML='<option value="">Error</option>';unDd.disabled=false;}
+        }
+    };
+    xhr.send();
+}
+function pqOnUnitChange(unitId){
+    var stDd=document.getElementById('pqSubtopic');
+    stDd.innerHTML='<option value="">— <%: T("Select Subtopic","Pilih Subtopik") %> —</option>';
+    stDd.disabled=true;
+    pqUpdateContinue();
+    if(!unitId)return;
+    stDd.innerHTML='<option value="">Loading...</option>';
+    var xhr=new XMLHttpRequest();
+    xhr.open('GET','manageQuiz.aspx?handler=pqsubtopics&unitId='+encodeURIComponent(unitId),true);
+    xhr.onreadystatechange=function(){
+        if(xhr.readyState===4&&xhr.status===200){
+            try{
+                var data=JSON.parse(xhr.responseText);
+                stDd.innerHTML='<option value="">— <%: T("Select Subtopic","Pilih Subtopik") %> —</option>';
+                for(var i=0;i<data.length;i++){
+                    var o=document.createElement('option');o.value=data[i].id;o.textContent=data[i].name;stDd.appendChild(o);
+                }
+                stDd.disabled=false;
+            }catch(e){stDd.innerHTML='<option value="">Error</option>';stDd.disabled=false;}
+        }
+    };
+    xhr.send();
+}
+function pqOnSubtopicChange(val){pqUpdateContinue();}
+function pqUpdateContinue(){
+    var btn=document.getElementById('pqContinueBtn');
+    var lv=document.getElementById('pqLevel').value;
+    var un=document.getElementById('pqUnit').value;
+    var st=document.getElementById('pqSubtopic').value;
+    var lg=document.getElementById('pqLanguage').value;
+    var ok=(lv&&un&&st&&lg);
+    btn.style.opacity=ok?'1':'.5';
+    btn.style.pointerEvents=ok?'auto':'none';
+}
+function pqContinue(){
+    var lv=document.getElementById('pqLevel').value;
+    var un=document.getElementById('pqUnit').value;
+    var st=document.getElementById('pqSubtopic').value;
+    var lg=document.getElementById('pqLanguage').value;
+    if(!lv||!un||!st||!lg)return;
+    window.location.href='createPracticeQuiz.aspx?levelId='+encodeURIComponent(lv)+'&unitId='+encodeURIComponent(un)+'&subtopicId='+encodeURIComponent(st)+'&language='+encodeURIComponent(lg);
+}
 function openULModal(quizId){
     var modal=document.getElementById('ulModal');var body=document.getElementById('ulModalBody');
     body.innerHTML='<div class="mq-empty">Loading...</div>';modal.style.display='flex';

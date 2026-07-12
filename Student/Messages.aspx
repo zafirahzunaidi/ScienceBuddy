@@ -115,7 +115,7 @@
     </asp:Panel>
     <asp:Panel ID="pnlChatsEmpty" runat="server" Visible="false">
         <div class="st-messages-empty">
-            <div class="st-messages-empty-icon">💬</div>
+            <div class="st-messages-empty-icon"><i class="bi bi-chat-dots" style="font-size:3.5rem;color:#2563EB;"></i></div>
             <div class="st-messages-empty-title"><asp:Literal ID="litChatsEmptyTitle" runat="server" Text="You have not started any teacher chats yet." /></div>
             <div class="st-messages-empty-desc"><asp:Literal ID="litChatsEmptyDesc" runat="server" Text="Chat privately with teachers for learning support." /></div>
         </div>
@@ -153,7 +153,7 @@
     </asp:Panel>
     <asp:Panel ID="pnlTeachersEmpty" runat="server" Visible="false">
         <div class="st-messages-empty">
-            <div class="st-messages-empty-icon">👩‍🏫</div>
+            <div class="st-messages-empty-icon"><i class="bi bi-person-workspace" style="font-size:3.5rem;color:#2563EB;"></i></div>
             <div class="st-messages-empty-title"><asp:Literal ID="litTeachersEmptyTitle" runat="server" Text="No teachers available." /></div>
             <div class="st-messages-empty-desc"><asp:Literal ID="litTeachersEmptyDesc" runat="server" Text="Teachers will appear here once they are certified." /></div>
         </div>

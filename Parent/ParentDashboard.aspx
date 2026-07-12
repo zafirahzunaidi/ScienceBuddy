@@ -3,7 +3,7 @@
     Title="Parent Dashboard" MaintainScrollPositionOnPostback="true" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
-<link href="<%: ResolveUrl("~/Content/Parent.css") %>" rel="stylesheet" />
+<link href="<%: ResolveUrl("~/Content/Parent.css") %>?v=4" rel="stylesheet" />
 </asp:Content>
 
 <%-- ════ SIDEBAR MENU ════ --%>
@@ -205,108 +205,16 @@
 
     <asp:Panel ID="pnlDashboard" runat="server" Visible="false">
 
-        <%-- ── Child Snapshot Card ── --%>
-        <div class="pd-snapshot">
-            <div class="pd-snapshot-header">
-                <div>
-                    <div class="pd-snapshot-title">
-                        <i class="bi bi-person-heart"></i>
-                        <asp:Literal ID="litSnapshotTitle" runat="server" />
-                    </div>
-                    <div class="pd-snapshot-sub"><asp:Literal ID="litSnapshotSub" runat="server" /></div>
-                </div>
+        <%-- ── Selected Child Card ── --%>
+        <div class="pt-child-mini-card">
+            <div class="pt-child-mini-avatar"><asp:Literal ID="litSnapInitials" runat="server" /></div>
+            <div class="pt-child-mini-content">
+                <div class="pt-child-mini-name"><asp:Literal ID="litSnapName" runat="server" /></div>
+                <div class="pt-child-mini-relationship"><asp:Literal ID="litSnapRel" runat="server" /></div>
             </div>
-            <div class="pd-snapshot-body">
-
-                <%-- identity row --%>
-                <div class="pd-snap-identity">
-                    <div class="pt-avatar-ring-wrap">
-                        <div class="pt-avatar-spin-ring"></div>
-                        <div class="pd-snap-avatar">
-                            <asp:Literal ID="litSnapInitials" runat="server" />
-                        </div>
-                    </div>
-                    <div class="pd-snap-name">
-                        <h3><asp:Literal ID="litSnapName" runat="server" /></h3>
-                        <div class="pd-snap-rel">
-                            <i class="bi bi-heart-fill"></i>
-                            <asp:Literal ID="litSnapRel" runat="server" />
-                        </div>
-                    </div>
-                    <span class="pd-snap-status">
-                        <i class="bi bi-book-fill"></i>
-                        <asp:Literal ID="litSnapStatus" runat="server" />
-                    </span>
-                </div>
-
-                <div class="pd-snap-divider"></div>
-
-                <%-- recent activity --%>
-                <asp:Panel ID="pnlSnapActivity" runat="server">
-                    <div class="pd-snap-activity">
-                        <%-- latest lesson row --%>
-                        <asp:Panel ID="pnlSnapLesson" runat="server" Visible="false">
-                            <div class="pd-snap-activity-row">
-                                <div class="pd-snap-activity-icon lesson">
-                                    <i class="bi bi-book-half"></i>
-                                </div>
-                                <div class="pd-snap-activity-body">
-                                    <div class="pd-snap-activity-label">
-                                        <asp:Literal ID="litSnapLessonLabel" runat="server" />
-                                    </div>
-                                    <div class="pd-snap-activity-text">
-                                        <asp:Literal ID="litSnapLessonTitle" runat="server" />
-                                    </div>
-                                    <div class="pd-snap-activity-meta">
-                                        <asp:Literal ID="litSnapLessonDate" runat="server" />
-                                    </div>
-                                </div>
-                            </div>
-                        </asp:Panel>
-                        <%-- latest quiz row --%>
-                        <asp:Panel ID="pnlSnapQuiz" runat="server" Visible="false">
-                            <div class="pd-snap-activity-row quiz">
-                                <div class="pd-snap-activity-icon quiz">
-                                    <i class="bi bi-patch-question-fill"></i>
-                                </div>
-                                <div class="pd-snap-activity-body">
-                                    <div class="pd-snap-activity-label">
-                                        <asp:Literal ID="litSnapQuizLabel" runat="server" />
-                                    </div>
-                                    <div class="pd-snap-activity-text">
-                                        <asp:Literal ID="litSnapQuizTitle" runat="server" />
-                                    </div>
-                                    <div class="pd-snap-activity-meta">
-                                        <asp:Literal ID="litSnapQuizMeta" runat="server" />
-                                    </div>
-                                </div>
-                            </div>
-                        </asp:Panel>
-                    </div>
-                </asp:Panel>
-
-                <%-- no activity empty state --%>
-                <asp:Panel ID="pnlSnapNoActivity" runat="server" Visible="false">
-                    <div class="pd-snap-no-activity">
-                        <i class="bi bi-hourglass-split"></i>
-                        <span><asp:Literal ID="litSnapNoActivity" runat="server" /></span>
-                    </div>
-                </asp:Panel>
-
-                <div class="pd-snap-divider"></div>
-
-                <%-- quick action buttons --%>
-                <div class="pd-snap-actions">
-                    <a href="<%: ResolveUrl("~/Parent/ChildProfile.aspx") %>" class="pd-snap-btn primary">
-                        <i class="bi bi-person-badge"></i>
-                        <asp:Literal ID="litSnapBtnProfile" runat="server" />
-                    </a>
-                    <a href="<%: ResolveUrl("~/Parent/ChildProgress.aspx") %>" class="pd-snap-btn soft">
-                        <i class="bi bi-bar-chart-line"></i>
-                        <asp:Literal ID="litSnapBtnProgress" runat="server" />
-                    </a>
-                </div>
-
+            <div class="pt-child-mini-actions">
+                <a href="<%: ResolveUrl("~/Parent/ChildProfile.aspx") %>" class="pt-child-mini-button"><i class="bi bi-person-badge"></i> <asp:Literal ID="litSnapBtnProfile" runat="server" /></a>
+                <a href="<%: ResolveUrl("~/Parent/ChildProgress.aspx") %>" class="pt-child-mini-button"><i class="bi bi-bar-chart-line"></i> <asp:Literal ID="litSnapBtnProgress" runat="server" /></a>
             </div>
         </div>
 

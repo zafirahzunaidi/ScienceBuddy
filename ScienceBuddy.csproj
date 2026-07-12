@@ -202,6 +202,7 @@
     <Content Include="ProjectRules.md" />
     <Content Include="connectionStrings.config" />
     <Content Include="Database\DatabaseSchema.md" />
+    <Content Include="AppSettingsSecrets.config" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />
@@ -611,6 +612,7 @@
     <Compile Include="Register.aspx.designer.cs">
       <DependentUpon>Register.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Services\StudentLearningAnalysisService.cs" />
     <Compile Include="Site.Master.cs">
       <DependentUpon>Site.Master</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

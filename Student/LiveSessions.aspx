@@ -1,9 +1,19 @@
 <%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="LiveSessions.aspx.cs" Inherits="ScienceBuddy.Student.LiveSessions1" %>
-<asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
+<asp:Content ID="HeadStyle" ContentPlaceHolderID="HeadContent" runat="server">
     <link href="<%: ResolveUrl("~/Content/Student.css") %>" rel="stylesheet" />
 </asp:Content>
 
-<asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
+<asp:Content ID="TopNavigationLinks" ContentPlaceHolderID="TopNavLinks" runat="server">
+</asp:Content>
+
+<asp:Content ID="TopNavActions" ContentPlaceHolderID="TopNavActions" runat="server">
+</asp:Content>
+
+<asp:Content ID="TopNavigationMainContent" ContentPlaceHolderID="MainContent" runat="server">
+</asp:Content>
+
+<%-- Student Sidebar --%>
+<asp:Content ID="StudentSidebarMenu" ContentPlaceHolderID="SidebarMenu" runat="server">
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Main</div>
         <a href="<%: ResolveUrl("~/Student/Dashboard.aspx") %>" class="sb-sidebar-item"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label">Dashboard</span></a>
@@ -37,9 +47,21 @@
     </div>
 </asp:Content>
 
-<asp:Content ID="cPageTitle" ContentPlaceHolderID="PageTitle" runat="server"><asp:Literal ID="litPageTitle" runat="server" Text="Live Sessions" /></asp:Content>
+<asp:Content ID="StudentSidebarFooter" ContentPlaceHolderID="SidebarFooter" runat="server">
+</asp:Content>
 
-<asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
+<asp:Content ID="LiveSessionsPageTitle" ContentPlaceHolderID="PageTitle" runat="server">
+    <asp:Literal ID="litPageTitle" runat="server" Text="Live Sessions" />
+</asp:Content>
+
+<asp:Content ID="StudentUserDropdownMenu" ContentPlaceHolderID="UserDropdownMenu" runat="server">
+</asp:Content>
+
+<asp:Content ID="LiveSessionsBreadcrumb" ContentPlaceHolderID="BreadcrumbContent" runat="server">
+</asp:Content>
+
+<%-- Live Main Content --%>
+<asp:Content ID="LiveSessionsMainContent" ContentPlaceHolderID="MainContentSidebar" runat="server">
 
 <div class="st-livesessions-header">
     <div class="st-livesessions-title"><asp:Literal ID="litTitle" runat="server" Text="Live Sessions" /></div>
@@ -97,10 +119,23 @@
     </div>
 </asp:Panel>
 
+<%-- Embedded Live Call --%>
+<asp:Panel ID="pnlJoinedRoom" runat="server" Visible="false">
+    <div class="sb-flex-between mb-md">
+        <h3><asp:Literal ID="litRoomTitle" runat="server" /></h3>
+        <asp:Button ID="btnLeaveRoom" runat="server" Text="Leave Session"
+            CssClass="sb-btn sb-btn-ghost" OnClick="btnLeaveRoom_Click" />
+    </div>
+    <div id="jitsi-container" style="width:100%; height:600px; border-radius:12px; overflow:hidden;"></div>
+
+    <asp:HiddenField ID="hidRoomName" runat="server" />
+    <asp:HiddenField ID="hidDisplayName" runat="server" />
+</asp:Panel>
+
 <%-- Empty State --%>
 <asp:Panel ID="pnlEmpty" runat="server" Visible="false">
     <div class="st-livesessions-empty">
-        <div class="st-livesessions-empty-icon">??</div>
+        <div class="st-livesessions-empty-icon"><i class="bi bi-camera-video"></i></div>
         <div class="st-livesessions-empty-title"><asp:Literal ID="litEmptyTitle" runat="server" Text="No live sessions available" /></div>
         <div class="st-livesessions-empty-desc"><asp:Literal ID="litEmptyDesc" runat="server" Text="No live sessions are available yet." /></div>
         <a href="<%: ResolveUrl("~/Student/Dashboard.aspx") %>" class="st-livesessions-card-btn" style="display:inline-flex;width:auto;">
@@ -109,4 +144,25 @@
     </div>
 </asp:Panel>
 
+</asp:Content>
+
+<asp:Content ID="LiveSessionsScripts" ContentPlaceHolderID="ScriptsContent" runat="server">
+    <script src="https://meet.jit.si/external_api.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var container = document.getElementById('jitsi-container');
+        if (!container) return;
+
+        var roomName = document.getElementById('<%= hidRoomName.ClientID %>').value;
+        var displayName = document.getElementById('<%= hidDisplayName.ClientID %>').value;
+
+        var api = new JitsiMeetExternalAPI("meet.jit.si", {
+            roomName: roomName,
+            width: "100%",
+            height: 600,
+            parentNode: container,
+            userInfo: { displayName: displayName }
+        });
+    });
+    </script>
 </asp:Content>

@@ -22,7 +22,11 @@ namespace ScienceBuddy.Student
 
         private string T(string en, string bm)
         {
-            return CurrentLanguage == "BM" ? bm : en;
+            if (CurrentLanguage == "BM")
+            {
+                return bm;
+            }
+            return en;
         }
 
         protected void Page_Load(object sender, EventArgs e)
@@ -34,7 +38,7 @@ namespace ScienceBuddy.Student
                 return;
             }
 
-            var master = (ScienceBuddy.SiteMaster)Master;
+            ScienceBuddy.SiteMaster master = (ScienceBuddy.SiteMaster)Master;
             master.LayoutMode = "Sidebar";
 
             if (!IsPostBack)
@@ -43,7 +47,7 @@ namespace ScienceBuddy.Student
                 LoadDashboard(Session["userId"].ToString());
             }
         }
-        
+
         private void InitLanguage()
         {
             string lang = Session["preferredLanguage"] as string;
@@ -59,12 +63,12 @@ namespace ScienceBuddy.Student
                 try
                 {
                     const string sql = "SELECT preferredLanguage FROM [User] WHERE userId = @userId";
-                    using (var conn = new SqlConnection(ConnStr))
-                    using (var cmd = new SqlCommand(sql, conn))
+                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlCommand command = new SqlCommand(sql, connection))
                     {
-                        cmd.Parameters.AddWithValue("@userId", userId);
-                        conn.Open();
-                        object result = cmd.ExecuteScalar();
+                        command.Parameters.AddWithValue("@userId", userId);
+                        connection.Open();
+                        object result = command.ExecuteScalar();
                         if (result != null && result != DBNull.Value)
                         {
                             lang = result.ToString();
@@ -74,7 +78,10 @@ namespace ScienceBuddy.Student
                         }
                     }
                 }
-                catch (SqlException) { }
+                catch (SqlException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Database error: " + ex.Message);
+                }
             }
 
             CurrentLanguage = "EN";
@@ -85,11 +92,11 @@ namespace ScienceBuddy.Student
         private void LoadDashboard(string userId)
         {
             // All data fetched in a single open connection for efficiency.
-            using (var conn = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnStr))
             {
-                conn.Open();
+                connection.Open();
 
-                var studentData = GetStudentData(conn, userId);
+                DataRow studentData = GetStudentData(connection, userId);
                 if (studentData == null)
                 {
                     SetHero("Student", "Student", "Beginner", "🔬", null, null, null, "EN");
@@ -105,33 +112,93 @@ namespace ScienceBuddy.Student
                 string studentId = studentData["studentId"].ToString();
                 string name = studentData["name"].ToString();
                 string nickname = studentData["nickname"].ToString();
-                int xp = studentData["XP"] == DBNull.Value ? 0 : Convert.ToInt32(studentData["XP"]);
-                string levelId = studentData["currentlevelId"]?.ToString();
-                string levelEN = studentData["levelNameEN"]?.ToString() ?? "Beginner";
-                string personalityId = studentData["personalityId"]?.ToString();
-                string personalityEN = studentData["personalityNameEN"]?.ToString() ?? "Learner";
-                string avatar = studentData["avatar"]?.ToString();
-                string colour = studentData["colour"]?.ToString() ?? "#F5F5F5";
-                string lang = studentData["preferredLanguage"]?.ToString() ?? "EN";
+
+                int xp;
+                if (studentData["XP"] == DBNull.Value)
+                {
+                    xp = 0;
+                }
+                else
+                {
+                    xp = Convert.ToInt32(studentData["XP"]);
+                }
+
+                string levelId = "";
+                if (studentData["currentlevelId"] != null)
+                {
+                    levelId = studentData["currentlevelId"].ToString();
+                }
+
+                string levelEN = "";
+                if (studentData["levelNameEN"] != null && studentData["levelNameEN"] != DBNull.Value)
+                {
+                    levelEN = studentData["levelNameEN"].ToString();
+                }
+                else
+                {
+                    levelEN = "Beginner";
+                }
+
+                string personalityId = "";
+                if (studentData["personalityId"] != null)
+                {
+                    personalityId = studentData["personalityId"].ToString();
+                }
+
+                string personalityEN = "";
+                if (studentData["personalityNameEN"] != null && studentData["personalityNameEN"] != DBNull.Value)
+                {
+                    personalityEN = studentData["personalityNameEN"].ToString();
+                }
+                else
+                {
+                    personalityEN = "Learner";
+                }
+
+                string avatar = "";
+                if (studentData["avatar"] != null && studentData["avatar"] != DBNull.Value)
+                {
+                    avatar = studentData["avatar"].ToString();
+                }
+
+                string colour = "";
+                if (studentData["colour"] != null && studentData["colour"] != DBNull.Value)
+                {
+                    colour = studentData["colour"].ToString();
+                }
+                else
+                {
+                    colour = "#F5F5F5";
+                }
+
+                string lang = "";
+                if (studentData["preferredLanguage"] != null && studentData["preferredLanguage"] != DBNull.Value)
+                {
+                    lang = studentData["preferredLanguage"].ToString();
+                }
+                else
+                {
+                    lang = "EN";
+                }
 
                 // Counts
-                int badgeCount = GetBadgeCount(conn, studentId);
-                int lessonCount = GetLessonCount(conn, studentId);
+                int badgeCount = GetBadgeCount(connection, studentId);
+                int lessonCount = GetLessonCount(connection, studentId);
 
                 // Hero + master user widget
                 SetHero(name, nickname, levelEN, personalityEN, avatar, colour, personalityId, lang);
                 SetStats(levelEN, xp, badgeCount, lessonCount);
 
-                var master = (ScienceBuddy.SiteMaster)Master;
+                ScienceBuddy.SiteMaster master = (ScienceBuddy.SiteMaster)Master;
                 string initials = GetInitials(string.IsNullOrWhiteSpace(nickname) ? name : nickname);
                 master.SetUserInfo(string.IsNullOrWhiteSpace(nickname) ? name : nickname, "Student", initials);
 
                 // Continue learning
-                LoadContinueLearning(conn, studentId, lang);
+                LoadContinueLearning(connection, studentId, lang);
 
                 // Notifications
-                int unread = GetUnreadNotifCount(conn, userId);
-                LoadNotifications(conn, userId, lang, unread);
+                int unread = GetUnreadNotifCount(connection, userId);
+                LoadNotifications(connection, userId, lang, unread);
 
                 // Personality recommendation banner + section ordering
                 SetPersonalityCard(personalityId, personalityEN, avatar, colour, lang);
@@ -211,7 +278,7 @@ namespace ScienceBuddy.Student
         /// Returns a single row joining Student + Level + Personality + User.
         /// Uses Student.userId = @userId to ensure no cross-student access.
         /// </summary>
-        private DataRow GetStudentData(SqlConnection conn, string userId)
+        private DataRow GetStudentData(SqlConnection connection, string userId)
         {
             const string sql = @"
                 SELECT  s.studentId, s.name, s.nickname, s.XP,
@@ -227,60 +294,73 @@ namespace ScienceBuddy.Student
                 LEFT JOIN Personality p ON p.personalityId = s.personalityId
                 WHERE   s.userId = @userId";
 
-            using (var cmd = new SqlCommand(sql, conn))
+            using (SqlCommand command = new SqlCommand(sql, connection))
             {
-                cmd.Parameters.AddWithValue("@userId", userId);
-                var da = new SqlDataAdapter(cmd);
-                var dt = new DataTable();
-                da.Fill(dt);
-                return dt.Rows.Count > 0 ? dt.Rows[0] : null;
+                command.Parameters.AddWithValue("@userId", userId);
+                SqlDataAdapter adapter = new SqlDataAdapter(command);
+                DataTable dataTable = new DataTable();
+                adapter.Fill(dataTable);
+                if (dataTable.Rows.Count > 0)
+                {
+                    return dataTable.Rows[0];
+                }
+                return null;
             }
         }
 
-        private int GetBadgeCount(SqlConnection conn, string studentId)
+        private int GetBadgeCount(SqlConnection connection, string studentId)
         {
-            if (!TableExists(conn, "StudentBadge")) return 0;
+            if (!TableExists(connection, "StudentBadge"))
+            {
+                return 0;
+            }
             const string sql = "SELECT COUNT(*) FROM StudentBadge WHERE studentId = @studentId";
-            using (var cmd = new SqlCommand(sql, conn))
+            using (SqlCommand command = new SqlCommand(sql, connection))
             {
-                cmd.Parameters.AddWithValue("@studentId", studentId);
-                return (int)cmd.ExecuteScalar();
+                command.Parameters.AddWithValue("@studentId", studentId);
+                return (int)command.ExecuteScalar();
             }
         }
 
-        private int GetLessonCount(SqlConnection conn, string studentId)
+        private int GetLessonCount(SqlConnection connection, string studentId)
         {
-            if (!TableExists(conn, "LessonProgress")) return 0;
+            if (!TableExists(connection, "LessonProgress"))
+            {
+                return 0;
+            }
             const string sql = @"
                 SELECT COUNT(*) FROM LessonProgress
                 WHERE  studentId   = @studentId
                 AND    isCompleted = 1";
-            using (var cmd = new SqlCommand(sql, conn))
+            using (SqlCommand command = new SqlCommand(sql, connection))
             {
-                cmd.Parameters.AddWithValue("@studentId", studentId);
-                return (int)cmd.ExecuteScalar();
+                command.Parameters.AddWithValue("@studentId", studentId);
+                return (int)command.ExecuteScalar();
             }
         }
 
-        private int GetUnreadNotifCount(SqlConnection conn, string userId)
+        private int GetUnreadNotifCount(SqlConnection connection, string userId)
         {
-            if (!TableExists(conn, "Notification")) return 0;
+            if (!TableExists(connection, "Notification"))
+            {
+                return 0;
+            }
             const string sql = @"
                 SELECT COUNT(*) FROM Notification
                 WHERE  toUserId = @userId AND isRead = 0";
-            using (var cmd = new SqlCommand(sql, conn))
+            using (SqlCommand command = new SqlCommand(sql, connection))
             {
-                cmd.Parameters.AddWithValue("@userId", userId);
-                return (int)cmd.ExecuteScalar();
+                command.Parameters.AddWithValue("@userId", userId);
+                return (int)command.ExecuteScalar();
             }
         }
 
-        private void LoadContinueLearning(SqlConnection conn, string studentId, string lang)
+        private void LoadContinueLearning(SqlConnection connection, string studentId, string lang)
         {
             // If Lesson/Subtopic/Unit tables don't exist yet, show empty state.
-            if (!TableExists(conn, "Lesson") ||
-                !TableExists(conn, "Subtopic") ||
-                !TableExists(conn, "Unit"))
+            if (!TableExists(connection, "Lesson") ||
+                !TableExists(connection, "Subtopic") ||
+                !TableExists(connection, "Unit"))
             {
                 ShowContinueEmpty();
                 return;
@@ -298,7 +378,7 @@ namespace ScienceBuddy.Student
                 JOIN   Unit     un ON un.unitId      = st.unitId";
 
             // Only subtract completed lessons if LessonProgress exists.
-            if (TableExists(conn, "LessonProgress"))
+            if (TableExists(connection, "LessonProgress"))
             {
                 sql += @"
                 WHERE  l.lessonId NOT IN (
@@ -310,26 +390,63 @@ namespace ScienceBuddy.Student
 
             sql += " ORDER BY un.orderNo, st.orderNo, l.orderNo";
 
-            using (var cmd = new SqlCommand(sql, conn))
+            using (SqlCommand command = new SqlCommand(sql, connection))
             {
-                cmd.Parameters.AddWithValue("@studentId", studentId);
-                var da = new SqlDataAdapter(cmd);
-                var dt = new DataTable();
-                da.Fill(dt);
+                command.Parameters.AddWithValue("@studentId", studentId);
+                SqlDataAdapter adapter = new SqlDataAdapter(command);
+                DataTable dataTable = new DataTable();
+                adapter.Fill(dataTable);
 
-                if (dt.Rows.Count == 0)
+                if (dataTable.Rows.Count == 0)
                 {
                     ShowContinueEmpty();
                     return;
                 }
 
-                var row = dt.Rows[0];
+                DataRow row = dataTable.Rows[0];
                 bool isBM = lang == "BM";
-                string title = isBM ? row["lessonTitleBM"].ToString() : row["lessonTitleEN"].ToString();
-                string unit = isBM ? row["unitNameBM"].ToString() : row["unitNameEN"].ToString();
-                string sub = isBM ? row["subtopicTitleBM"].ToString() : row["subtopicTitleEN"].ToString();
 
-                if (string.IsNullOrWhiteSpace(title)) title = isBM ? row["lessonTitleEN"].ToString() : row["lessonTitleBM"].ToString();
+                string title;
+                if (isBM)
+                {
+                    title = row["lessonTitleBM"].ToString();
+                }
+                else
+                {
+                    title = row["lessonTitleEN"].ToString();
+                }
+
+                string unit;
+                if (isBM)
+                {
+                    unit = row["unitNameBM"].ToString();
+                }
+                else
+                {
+                    unit = row["unitNameEN"].ToString();
+                }
+
+                string sub;
+                if (isBM)
+                {
+                    sub = row["subtopicTitleBM"].ToString();
+                }
+                else
+                {
+                    sub = row["subtopicTitleEN"].ToString();
+                }
+
+                if (string.IsNullOrWhiteSpace(title))
+                {
+                    if (isBM)
+                    {
+                        title = row["lessonTitleEN"].ToString();
+                    }
+                    else
+                    {
+                        title = row["lessonTitleBM"].ToString();
+                    }
+                }
 
                 pnlContinue.Visible = true;
                 pnlContinueEmpty.Visible = false;
@@ -338,9 +455,9 @@ namespace ScienceBuddy.Student
             }
         }
 
-        private void LoadNotifications(SqlConnection conn, string userId, string lang, int unread = 0)
+        private void LoadNotifications(SqlConnection connection, string userId, string lang, int unread = 0)
         {
-            if (!TableExists(conn, "Notification"))
+            if (!TableExists(connection, "Notification"))
             {
                 ShowNotificationsEmpty();
                 return;
@@ -351,6 +468,7 @@ namespace ScienceBuddy.Student
                 pnlUnreadBadge.Visible = true;
                 litUnreadCount.Text = unread > 99 ? "99+" : unread.ToString();
             }
+
             const string sql = @"
                 SELECT TOP 3
                     notificationId, titleEN, titleBM,
@@ -359,29 +477,46 @@ namespace ScienceBuddy.Student
                 WHERE  toUserId = @userId
                 ORDER  BY createdAt DESC";
 
-            using (var cmd = new SqlCommand(sql, conn))
+            using (SqlCommand command = new SqlCommand(sql, connection))
             {
-                cmd.Parameters.AddWithValue("@userId", userId);
-                var da = new SqlDataAdapter(cmd);
-                var dt = new DataTable();
-                da.Fill(dt);
+                command.Parameters.AddWithValue("@userId", userId);
+                SqlDataAdapter adapter = new SqlDataAdapter(command);
+                DataTable dataTable = new DataTable();
+                adapter.Fill(dataTable);
 
-                if (dt.Rows.Count == 0)
+                if (dataTable.Rows.Count == 0)
                 {
                     ShowNotificationsEmpty();
                     return;
                 }
 
                 bool isBM = lang == "BM";
-                var list = new System.Collections.Generic.List<object>();
-                foreach (DataRow row in dt.Rows)
+                List<object> list = new List<object>();
+                foreach (DataRow row in dataTable.Rows)
                 {
-                    string title = isBM ? row["titleBM"].ToString() : row["titleEN"].ToString();
-                    if (string.IsNullOrWhiteSpace(title)) title = row["titleEN"].ToString();
+                    string title;
+                    if (isBM)
+                    {
+                        title = row["titleBM"].ToString();
+                    }
+                    else
+                    {
+                        title = row["titleEN"].ToString();
+                    }
+                    if (string.IsNullOrWhiteSpace(title))
+                    {
+                        title = row["titleEN"].ToString();
+                    }
 
-                    DateTime created = row["createdAt"] == DBNull.Value
-                        ? DateTime.Now
-                        : Convert.ToDateTime(row["createdAt"]);
+                    DateTime created;
+                    if (row["createdAt"] == DBNull.Value)
+                    {
+                        created = DateTime.Now;
+                    }
+                    else
+                    {
+                        created = Convert.ToDateTime(row["createdAt"]);
+                    }
 
                     list.Add(new
                     {
@@ -405,9 +540,21 @@ namespace ScienceBuddy.Student
                               string personalityId, string lang)
         {
             // Set personality colour for hero gradient
-            if (!string.IsNullOrWhiteSpace(colour)) PersonalityColour = colour;
+            if (!string.IsNullOrWhiteSpace(colour))
+            {
+                PersonalityColour = colour;
+            }
 
-            string displayName = string.IsNullOrWhiteSpace(nickname) ? name : nickname;
+            string displayName;
+            if (string.IsNullOrWhiteSpace(nickname))
+            {
+                displayName = name;
+            }
+            else
+            {
+                displayName = nickname;
+            }
+
             litGreeting.Text = T("Hi, ", "Hai, ") + System.Web.HttpUtility.HtmlEncode(displayName) + "! 👋";
             litMotivation.Text = GetMotivation(personalityId);
             litHeroLevel.Text = T("Level: ", "Tahap: ") + System.Web.HttpUtility.HtmlEncode(levelEN);
@@ -417,9 +564,20 @@ namespace ScienceBuddy.Student
             if (!string.IsNullOrWhiteSpace(avatar))
             {
                 // Avatar path from DB may already include "Images/Personality/" or just the filename
-                string avatarPath = avatar.StartsWith("~/") ? avatar
-                    : avatar.StartsWith("Images/") ? "~/" + avatar
-                    : "~/Images/Personality/" + avatar;
+                string avatarPath;
+                if (avatar.StartsWith("~/"))
+                {
+                    avatarPath = avatar;
+                }
+                else if (avatar.StartsWith("Images/"))
+                {
+                    avatarPath = "~/" + avatar;
+                }
+                else
+                {
+                    avatarPath = "~/Images/Personality/" + avatar;
+                }
+
                 imgPersonalityAvatar.ImageUrl = ResolveUrl(avatarPath);
                 imgPersonalityAvatar.Visible = true;
                 // Keep fallback rendered but hidden so JS onerror can show it
@@ -473,16 +631,40 @@ namespace ScienceBuddy.Student
             divRecBanner.Style["background"] = bannerBg;
 
             // Avatar background
-            divPersonalityAvatar.Style["background"] =
-                string.IsNullOrWhiteSpace(colour) ? "rgba(255,255,255,.2)" : colour;
+            if (string.IsNullOrWhiteSpace(colour))
+            {
+                divPersonalityAvatar.Style["background"] = "rgba(255,255,255,.2)";
+            }
+            else
+            {
+                divPersonalityAvatar.Style["background"] = colour;
+            }
 
-            litPersonalityName.Text = System.Web.HttpUtility.HtmlEncode(personalityEN ?? "Learner");
+            if (personalityEN != null)
+            {
+                litPersonalityName.Text = System.Web.HttpUtility.HtmlEncode(personalityEN);
+            }
+            else
+            {
+                litPersonalityName.Text = System.Web.HttpUtility.HtmlEncode("Learner");
+            }
 
             if (!string.IsNullOrWhiteSpace(avatar))
             {
-                string avatarPath = avatar.StartsWith("~/") ? avatar
-                    : avatar.StartsWith("Images/") ? "~/" + avatar
-                    : "~/Images/Personality/" + avatar;
+                string avatarPath;
+                if (avatar.StartsWith("~/"))
+                {
+                    avatarPath = avatar;
+                }
+                else if (avatar.StartsWith("Images/"))
+                {
+                    avatarPath = "~/" + avatar;
+                }
+                else
+                {
+                    avatarPath = "~/Images/Personality/" + avatar;
+                }
+
                 imgPersonalityThumb.ImageUrl = ResolveUrl(avatarPath);
                 imgPersonalityThumb.Visible = true;
                 litPersonalityThumbFallback.Text = "<span style=\"display:none;\"><i class=\"bi bi-person-hearts\" style=\"font-size:1.5rem;\"></i></span>";
@@ -554,7 +736,11 @@ namespace ScienceBuddy.Student
         private void ApplyPersonalityOrder(string personalityId)
         {
             // Default order values (1=top … 6=bottom)
-            int oRec = 1, oContinue = 2, oQuick = 3, oSocial = 5, oNotif = 4;
+            int oRec = 1;
+            int oContinue = 2;
+            int oQuick = 3;
+            int oSocial = 5;
+            int oNotif = 4;
 
             switch (personalityId)
             {
@@ -577,7 +763,7 @@ namespace ScienceBuddy.Student
                     pnlSectionSocial.Visible = true;
                     oSocial = 1; oContinue = 2; oRec = 3; oNotif = 4; oQuick = 5;
                     break;
-                default:     // No personality — safe default
+                default: // No personality — safe default
                     oContinue = 1; oRec = 2; oQuick = 3; oNotif = 4; oSocial = 5;
                     break;
             }
@@ -607,20 +793,41 @@ namespace ScienceBuddy.Student
 
         private static string GetInitials(string name)
         {
-            if (string.IsNullOrWhiteSpace(name)) return "S";
-            var parts = name.Trim().Split(' ');
-            return parts.Length >= 2
-                ? (parts[0][0].ToString() + parts[parts.Length - 1][0].ToString()).ToUpper()
-                : name[0].ToString().ToUpper();
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return "S";
+            }
+
+            string[] parts = name.Trim().Split(' ');
+            if (parts.Length >= 2)
+            {
+                return (parts[0][0].ToString() + parts[parts.Length - 1][0].ToString()).ToUpper();
+            }
+            else
+            {
+                return name[0].ToString().ToUpper();
+            }
         }
 
         private static string FormatTimeAgo(DateTime dt)
         {
-            var span = DateTime.Now - dt;
-            if (span.TotalMinutes < 1) return "Just now";
-            if (span.TotalHours < 1) return (int)span.TotalMinutes + " min ago";
-            if (span.TotalDays < 1) return (int)span.TotalHours + " hr ago";
-            if (span.TotalDays < 7) return (int)span.TotalDays + " day" + ((int)span.TotalDays == 1 ? "" : "s") + " ago";
+            TimeSpan span = DateTime.Now - dt;
+            if (span.TotalMinutes < 1)
+            {
+                return "Just now";
+            }
+            if (span.TotalHours < 1)
+            {
+                return (int)span.TotalMinutes + " min ago";
+            }
+            if (span.TotalDays < 1)
+            {
+                return (int)span.TotalHours + " hr ago";
+            }
+            if (span.TotalDays < 7)
+            {
+                return (int)span.TotalDays + " day" + ((int)span.TotalDays == 1 ? "" : "s") + " ago";
+            }
             return dt.ToString("d MMM yyyy");
         }
 
@@ -628,16 +835,16 @@ namespace ScienceBuddy.Student
         /// Returns true if the given table exists in the current database.
         /// Uses INFORMATION_SCHEMA so it never throws on a missing table.
         /// </summary>
-        private static bool TableExists(SqlConnection conn, string tableName)
+        private static bool TableExists(SqlConnection connection, string tableName)
         {
             const string sql = @"
                 SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
                 WHERE  TABLE_NAME = @tableName
                 AND    TABLE_TYPE = 'BASE TABLE'";
-            using (var cmd = new SqlCommand(sql, conn))
+            using (SqlCommand command = new SqlCommand(sql, connection))
             {
-                cmd.Parameters.AddWithValue("@tableName", tableName);
-                return (int)cmd.ExecuteScalar() > 0;
+                command.Parameters.AddWithValue("@tableName", tableName);
+                return (int)command.ExecuteScalar() > 0;
             }
         }
     }

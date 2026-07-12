@@ -3,7 +3,7 @@
     Title="Forum" MaintainScrollPositionOnPostback="true" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
-<link href="<%: ResolveUrl("~/Content/Parent.css") %>" rel="stylesheet" />
+<link href="<%: ResolveUrl("~/Content/Parent.css") %>?v=4" rel="stylesheet" />
 <script type="text/javascript">
 function toggleChildPopover(e){e.stopPropagation();var pop=document.getElementById('divChildPopover');if(!pop)return;if(pop.classList.contains('pt-popover-open')){pop.classList.remove('pt-popover-open');return;}var ddl=document.querySelector('.sb-sidebar-child-ddl');if(!ddl)return;var html='<div class="pt-child-popover-title">Select Child</div>';for(var i=0;i<ddl.options.length;i++){var o=ddl.options[i];var init=o.text.charAt(0).toUpperCase();var ac=o.selected?' pt-popover-active':'';html+='<div class="pt-child-popover-item'+ac+'" onclick="selectChildFromPopover(\''+o.value+'\')"><span class="pt-popover-avatar">'+init+'</span>'+o.text+'</div>';}pop.innerHTML=html;pop.classList.add('pt-popover-open');}
 function selectChildFromPopover(v){var ddl=document.querySelector('.sb-sidebar-child-ddl');if(ddl&&ddl.value!==v){ddl.value=v;__doPostBack(ddl.id.replace(/_/g,'$'),'');}var pop=document.getElementById('divChildPopover');if(pop)pop.classList.remove('pt-popover-open');}
@@ -55,7 +55,7 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;border:none;">
         <div class="pt-forum-tabs">
             <asp:LinkButton ID="lnkPublic" runat="server" CssClass="pt-forum-tab pt-forum-tab-active" OnClick="TabPublic_Click" CausesValidation="false"><%: T("Public","Awam") %></asp:LinkButton>
-            <asp:LinkButton ID="lnkPrivate" runat="server" CssClass="pt-forum-tab" OnClick="TabPrivate_Click" CausesValidation="false"><%: T("Student-Parent","Murid-Ibu Bapa") %></asp:LinkButton>
+            <asp:LinkButton ID="lnkPrivate" runat="server" CssClass="pt-forum-tab" OnClick="TabPrivate_Click" CausesValidation="false"><%: T("Family","Keluarga") %></asp:LinkButton>
         </div>
         <a href="<%: ResolveUrl("~/Parent/CreateDiscussion.aspx") + "?type=" + (ViewState["Tab"] != null && ViewState["Tab"].ToString() == "Private" ? "Private" : "Public") %>" class="pt-btn primary"><i class="bi bi-plus-circle"></i> <%: T("Create Discussion","Buat Perbincangan") %></a>
     </div>

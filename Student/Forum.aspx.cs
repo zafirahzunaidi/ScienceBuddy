@@ -12,15 +12,21 @@ namespace ScienceBuddy.Student
     public partial class Forum : Page
     {
         // ── Connection string ─────────────────────────────────────────
-        private string ConnStr =>
-            ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+        private string ConnStr
+        {
+            get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
+        }
 
         // ── Language helper ────────────────────────────────────────────
         public string CurrentLanguage = "EN";
 
         public string T(string en, string bm)
         {
-            return CurrentLanguage == "BM" ? bm : en;
+            if (CurrentLanguage == "BM")
+            {
+                return bm;
+            }
+            return en;
         }
 
         // ── Page Load ─────────────────────────────────────────────────
@@ -62,12 +68,12 @@ namespace ScienceBuddy.Student
                 try
                 {
                     const string sql = "SELECT preferredLanguage FROM [User] WHERE userId = @userId";
-                    using (var conn = new SqlConnection(ConnStr))
-                    using (var cmd = new SqlCommand(sql, conn))
+                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlCommand command = new SqlCommand(sql, connection))
                     {
-                        cmd.Parameters.AddWithValue("@userId", userId);
-                        conn.Open();
-                        object result = cmd.ExecuteScalar();
+                        command.Parameters.AddWithValue("@userId", userId);
+                        connection.Open();
+                        object result = command.ExecuteScalar();
                         if (result != null && result != DBNull.Value)
                         {
                             lang = result.ToString();
@@ -77,7 +83,10 @@ namespace ScienceBuddy.Student
                         }
                     }
                 }
-                catch (SqlException) { }
+                catch (SqlException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Database error: " + ex.Message);
+                }
             }
 
             CurrentLanguage = "EN";
@@ -89,47 +98,47 @@ namespace ScienceBuddy.Student
         {
             bool isPrivate = hfCategory.Value == "private";
 
-            litPageTitle.Text       = T("Forum", "Forum");
-            litTitle.Text           = T("Forum", "Forum");
-            litSubtitle.Text        = T("Ask questions, share ideas, and learn Science together.",
-                                        "Tanya soalan, kongsi idea, dan belajar Sains bersama-sama.");
+            litPageTitle.Text = T("Forum", "Forum");
+            litTitle.Text = T("Forum", "Forum");
+            litSubtitle.Text = T("Ask questions, share ideas, and learn Science together.",
+                                "Tanya soalan, kongsi idea, dan belajar Sains bersama-sama.");
 
             // Tab labels (include icon HTML so it persists on postback)
-            litTabPublic.Text       = "<i class=\"bi bi-globe\"></i> " + T("Public", "Awam");
-            litTabPrivate.Text      = "<i class=\"bi bi-people-fill\"></i> " + T("Student-Parent", "Murid-Ibu Bapa");
+            litTabPublic.Text = "<i class=\"bi bi-globe\"></i> " + T("Public", "Awam");
+            litTabPrivate.Text = "<i class=\"bi bi-people-fill\"></i> " + T("Student-Parent", "Murid-Ibu Bapa");
 
             // Summary card labels based on selected tab
             if (isPrivate)
             {
-                litTotalDiscLbl.Text    = T("Private Discussions", "Perbincangan Peribadi");
-                litMyDiscLbl.Text       = T("My Discussions", "Perbincangan Saya");
+                litTotalDiscLbl.Text = T("Private Discussions", "Perbincangan Peribadi");
+                litMyDiscLbl.Text = T("My Discussions", "Perbincangan Saya");
                 litTotalRepliesLbl.Text = T("Total Replies", "Jumlah Balasan");
             }
             else
             {
-                litTotalDiscLbl.Text    = T("Public Discussions", "Perbincangan Awam");
-                litMyDiscLbl.Text       = T("My Discussions", "Perbincangan Saya");
+                litTotalDiscLbl.Text = T("Public Discussions", "Perbincangan Awam");
+                litMyDiscLbl.Text = T("My Discussions", "Perbincangan Saya");
                 litTotalRepliesLbl.Text = T("Total Replies", "Jumlah Balasan");
             }
 
             // Empty state labels and CTA based on selected tab
             if (isPrivate)
             {
-                litEmptyTitle.Text  = T("No private parent-student discussions yet.",
+                litEmptyTitle.Text = T("No private parent-student discussions yet.",
                                         "Tiada perbincangan peribadi murid-ibu bapa lagi.");
-                litEmptyDesc.Text   = T("Start a private discussion with your linked parent. Only you and your parent can see these conversations.",
+                litEmptyDesc.Text = T("Start a private discussion with your linked parent. Only you and your parent can see these conversations.",
                                         "Mulakan perbincangan peribadi dengan ibu bapa anda yang dipautkan. Hanya anda dan ibu bapa anda boleh melihat perbualan ini.");
-                litCTAText.Text     = T("Want to chat with your parent privately?", "Ingin berbual dengan ibu bapa anda secara peribadi?");
-                litCTABtn.Text      = T("Create Private Discussion", "Cipta Perbincangan Peribadi");
+                litCTAText.Text = T("Want to chat with your parent privately?", "Ingin berbual dengan ibu bapa anda secara peribadi?");
+                litCTABtn.Text = T("Create Private Discussion", "Cipta Perbincangan Peribadi");
             }
             else
             {
-                litEmptyTitle.Text  = T("No public discussions yet.",
+                litEmptyTitle.Text = T("No public discussions yet.",
                                         "Tiada perbincangan awam lagi.");
-                litEmptyDesc.Text   = T("Be the first to ask a Science question!",
+                litEmptyDesc.Text = T("Be the first to ask a Science question!",
                                         "Jadilah yang pertama bertanya soalan Sains!");
-                litCTAText.Text     = T("Have a Science question?", "Ada soalan Sains?");
-                litCTABtn.Text      = T("Create Discussion", "Cipta Perbincangan");
+                litCTAText.Text = T("Have a Science question?", "Ada soalan Sains?");
+                litCTABtn.Text = T("Create Discussion", "Cipta Perbincangan");
             }
 
             // Sort dropdown bilingual
@@ -145,12 +154,12 @@ namespace ScienceBuddy.Student
             // Highlight active tab CSS
             if (isPrivate)
             {
-                btnTabPublic.CssClass  = "st-forum-cat-tab";
+                btnTabPublic.CssClass = "st-forum-cat-tab";
                 btnTabPrivate.CssClass = "st-forum-cat-tab active";
             }
             else
             {
-                btnTabPublic.CssClass  = "st-forum-cat-tab active";
+                btnTabPublic.CssClass = "st-forum-cat-tab active";
                 btnTabPrivate.CssClass = "st-forum-cat-tab";
             }
         }
@@ -173,23 +182,23 @@ namespace ScienceBuddy.Student
         // ── Build filter dropdowns ────────────────────────────────────
         private void BuildFilters()
         {
-            using (var conn = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnStr))
             {
-                conn.Open();
+                connection.Open();
 
                 // Tags
                 ddlTag.Items.Clear();
                 ddlTag.Items.Add(new ListItem(T("All Tags", "Semua Tag"), ""));
 
-                if (Tbl(conn, "Tag"))
+                if (Tbl(connection, "Tag"))
                 {
                     const string sql = "SELECT tagId, tagName FROM Tag ORDER BY tagName";
-                    using (var cmd = new SqlCommand(sql, conn))
-                    using (var rdr = cmd.ExecuteReader())
+                    using (SqlCommand command = new SqlCommand(sql, connection))
+                    using (SqlDataReader reader = command.ExecuteReader())
                     {
-                        while (rdr.Read())
+                        while (reader.Read())
                         {
-                            ddlTag.Items.Add(new ListItem(rdr["tagName"].ToString(), rdr["tagId"].ToString()));
+                            ddlTag.Items.Add(new ListItem(reader["tagName"].ToString(), reader["tagId"].ToString()));
                         }
                     }
                 }
@@ -205,11 +214,11 @@ namespace ScienceBuddy.Student
             string search = txtSearch.Text.Trim();
             bool isPrivate = hfCategory.Value == "private";
 
-            using (var conn = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnStr))
             {
-                conn.Open();
+                connection.Open();
 
-                if (!Tbl(conn, "Forum"))
+                if (!Tbl(connection, "Forum"))
                 {
                     ShowEmpty();
                     return;
@@ -217,16 +226,16 @@ namespace ScienceBuddy.Student
 
                 // ── Build WHERE clause based on category tab ──
                 string categoryWhere;
-                var extraParams = new List<SqlParameter>();
+                List<SqlParameter> extraParams = new List<SqlParameter>();
 
                 if (isPrivate)
                 {
                     // Get linked parent userIds
-                    var allowedUserIds = new List<string> { userId };
-                    allowedUserIds.AddRange(GetLinkedParentUserIds(conn, userId));
+                    List<string> allowedUserIds = new List<string> { userId };
+                    allowedUserIds.AddRange(GetLinkedParentUserIds(connection, userId));
 
                     // Build IN clause with parameters
-                    var inParams = new List<string>();
+                    List<string> inParams = new List<string>();
                     for (int i = 0; i < allowedUserIds.Count; i++)
                     {
                         string pName = "@allowedUid" + i;
@@ -263,7 +272,7 @@ namespace ScienceBuddy.Student
                 string orderBy = "ORDER BY f.createdAt DESC";
 
                 // Tag filter
-                if (!string.IsNullOrEmpty(tagFilter) && Tbl(conn, "ForumTag"))
+                if (!string.IsNullOrEmpty(tagFilter) && Tbl(connection, "ForumTag"))
                 {
                     joinTag = "JOIN ForumTag ft ON ft.forumId = f.forumId";
                     whereTag = "AND ft.tagId = @tagId";
@@ -291,84 +300,130 @@ namespace ScienceBuddy.Student
 
                 sql = string.Format(sql, joinTag, categoryWhere, whereTag, whereSearch, orderBy);
 
-                using (var cmd = new SqlCommand(sql, conn))
+                using (SqlCommand command = new SqlCommand(sql, connection))
                 {
-                    cmd.Parameters.AddWithValue("@userId", userId);
+                    command.Parameters.AddWithValue("@userId", userId);
                     if (!string.IsNullOrEmpty(tagFilter))
-                        cmd.Parameters.AddWithValue("@tagId", tagFilter);
+                    {
+                        command.Parameters.AddWithValue("@tagId", tagFilter);
+                    }
                     if (!string.IsNullOrEmpty(search))
-                        cmd.Parameters.AddWithValue("@search", search);
+                    {
+                        command.Parameters.AddWithValue("@search", search);
+                    }
 
                     // Add extra parameters for private tab IN clause
-                    foreach (var p in extraParams)
-                        cmd.Parameters.Add(p);
+                    foreach (SqlParameter p in extraParams)
+                    {
+                        command.Parameters.Add(p);
+                    }
 
-                    var da = new SqlDataAdapter(cmd);
-                    var dt = new DataTable();
-                    da.Fill(dt);
+                    SqlDataAdapter adapter = new SqlDataAdapter(command);
+                    DataTable dataTable = new DataTable();
+                    adapter.Fill(dataTable);
 
-                    if (dt.Rows.Count == 0)
+                    if (dataTable.Rows.Count == 0)
                     {
                         ShowEmpty();
                         return;
                     }
 
                     // Get tags for each forum
-                    var forumTags = new Dictionary<string, string>();
-                    if (Tbl(conn, "ForumTag") && Tbl(conn, "Tag"))
+                    Dictionary<string, string> forumTags = new Dictionary<string, string>();
+                    if (Tbl(connection, "ForumTag") && Tbl(connection, "Tag"))
                     {
                         const string tagSql = @"
                             SELECT ft.forumId, t.tagName
                             FROM ForumTag ft
                             JOIN Tag t ON t.tagId = ft.tagId";
-                        using (var tagCmd = new SqlCommand(tagSql, conn))
-                        using (var tagRdr = tagCmd.ExecuteReader())
+                        using (SqlCommand tagCmd = new SqlCommand(tagSql, connection))
+                        using (SqlDataReader tagReader = tagCmd.ExecuteReader())
                         {
-                            while (tagRdr.Read())
+                            while (tagReader.Read())
                             {
-                                string fId = tagRdr["forumId"].ToString();
-                                string tName = tagRdr["tagName"].ToString();
+                                string fId = tagReader["forumId"].ToString();
+                                string tName = tagReader["tagName"].ToString();
                                 if (forumTags.ContainsKey(fId))
+                                {
                                     forumTags[fId] += ", " + tName;
+                                }
                                 else
+                                {
                                     forumTags[fId] = tName;
+                                }
                             }
                         }
                     }
 
                     // Build display list
-                    var list = new List<object>();
+                    List<object> list = new List<object>();
                     int myCount = 0;
                     int totalReplies = 0;
 
-                    foreach (DataRow row in dt.Rows)
+                    foreach (DataRow row in dataTable.Rows)
                     {
                         string forumId = row["forumId"].ToString();
                         string title = row["title"].ToString();
                         string message = row["message"].ToString();
                         string creatorName = row["creatorName"].ToString();
-                        DateTime createdAt = row["createdAt"] == DBNull.Value
-                            ? DateTime.Now : Convert.ToDateTime(row["createdAt"]);
+
+                        DateTime createdAt;
+                        if (row["createdAt"] == DBNull.Value)
+                        {
+                            createdAt = DateTime.Now;
+                        }
+                        else
+                        {
+                            createdAt = Convert.ToDateTime(row["createdAt"]);
+                        }
+
                         int replyCount = Convert.ToInt32(row["replyCount"]);
                         int likeCount = Convert.ToInt32(row["likeCount"]);
                         bool isLiked = Convert.ToInt32(row["isLiked"]) > 0;
-                        string discType = row["discussionType"] == DBNull.Value
-                            ? "" : row["discussionType"].ToString();
+
+                        string discType = "";
+                        if (row["discussionType"] != DBNull.Value)
+                        {
+                            discType = row["discussionType"].ToString();
+                        }
+
                         string createdBy = row["createdBy"].ToString();
 
                         // Count my discussions
-                        if (createdBy == userId) myCount++;
+                        if (createdBy == userId)
+                        {
+                            myCount++;
+                        }
                         totalReplies += replyCount;
 
                         // Message preview (first 120 chars)
-                        string preview = message.Length > 120 ? message.Substring(0, 120) + "…" : message;
+                        string preview;
+                        if (message.Length > 120)
+                        {
+                            preview = message.Substring(0, 120) + "…";
+                        }
+                        else
+                        {
+                            preview = message;
+                        }
 
                         // Creator initial
-                        string initial = !string.IsNullOrWhiteSpace(creatorName)
-                            ? creatorName[0].ToString().ToUpper() : "?";
+                        string initial;
+                        if (!string.IsNullOrWhiteSpace(creatorName))
+                        {
+                            initial = creatorName[0].ToString().ToUpper();
+                        }
+                        else
+                        {
+                            initial = "?";
+                        }
 
                         // Tags
-                        string tags = forumTags.ContainsKey(forumId) ? forumTags[forumId] : "";
+                        string tags = "";
+                        if (forumTags.ContainsKey(forumId))
+                        {
+                            tags = forumTags[forumId];
+                        }
 
                         // Discussion type label and badge CSS
                         string typeLabel;
@@ -408,7 +463,7 @@ namespace ScienceBuddy.Student
                     rptDiscussions.DataBind();
 
                     // Stats
-                    litTotalDisc.Text = dt.Rows.Count.ToString();
+                    litTotalDisc.Text = dataTable.Rows.Count.ToString();
                     litMyDisc.Text = myCount.ToString();
                     litTotalReplies.Text = totalReplies.ToString();
                 }
@@ -416,12 +471,14 @@ namespace ScienceBuddy.Student
         }
 
         // ── Get linked parent userIds ─────────────────────────────────
-        private List<string> GetLinkedParentUserIds(SqlConnection conn, string userId)
+        private List<string> GetLinkedParentUserIds(SqlConnection connection, string userId)
         {
-            var parentUserIds = new List<string>();
+            List<string> parentUserIds = new List<string>();
 
-            if (!Tbl(conn, "StudentParent") || !Tbl(conn, "Parent") || !Tbl(conn, "Student"))
+            if (!Tbl(connection, "StudentParent") || !Tbl(connection, "Parent") || !Tbl(connection, "Student"))
+            {
                 return parentUserIds;
+            }
 
             const string sql = @"
                 SELECT p.userId
@@ -430,15 +487,17 @@ namespace ScienceBuddy.Student
                 JOIN Student s ON s.studentId = sp.studentId
                 WHERE s.userId = @userId";
 
-            using (var cmd = new SqlCommand(sql, conn))
+            using (SqlCommand command = new SqlCommand(sql, connection))
             {
-                cmd.Parameters.AddWithValue("@userId", userId);
-                using (var rdr = cmd.ExecuteReader())
+                command.Parameters.AddWithValue("@userId", userId);
+                using (SqlDataReader reader = command.ExecuteReader())
                 {
-                    while (rdr.Read())
+                    while (reader.Read())
                     {
-                        if (rdr["userId"] != DBNull.Value)
-                            parentUserIds.Add(rdr["userId"].ToString());
+                        if (reader["userId"] != DBNull.Value)
+                        {
+                            parentUserIds.Add(reader["userId"].ToString());
+                        }
                     }
                 }
             }
@@ -455,21 +514,24 @@ namespace ScienceBuddy.Student
         // ── Like / Unlike ─────────────────────────────────────────────
         protected void rptDiscussions_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
-            if (e.CommandName != "Like") return;
+            if (e.CommandName != "Like")
+            {
+                return;
+            }
 
             string forumId = e.CommandArgument.ToString();
             string userId = Session["userId"].ToString();
 
-            using (var conn = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnStr))
             {
-                conn.Open();
+                connection.Open();
 
                 // Check if already liked
                 const string checkSql = @"
                     SELECT COUNT(*) FROM ForumLike
                     WHERE forumId = @forumId AND senderUserId = @userId";
                 bool exists;
-                using (var checkCmd = new SqlCommand(checkSql, conn))
+                using (SqlCommand checkCmd = new SqlCommand(checkSql, connection))
                 {
                     checkCmd.Parameters.AddWithValue("@forumId", forumId);
                     checkCmd.Parameters.AddWithValue("@userId", userId);
@@ -482,7 +544,7 @@ namespace ScienceBuddy.Student
                     const string delSql = @"
                         DELETE FROM ForumLike
                         WHERE forumId = @forumId AND senderUserId = @userId";
-                    using (var delCmd = new SqlCommand(delSql, conn))
+                    using (SqlCommand delCmd = new SqlCommand(delSql, connection))
                     {
                         delCmd.Parameters.AddWithValue("@forumId", forumId);
                         delCmd.Parameters.AddWithValue("@userId", userId);
@@ -496,7 +558,7 @@ namespace ScienceBuddy.Student
                     const string seqSql = @"
                         SELECT ISNULL(MAX(CAST(SUBSTRING(likeId, 3, LEN(likeId) - 2) AS INT)), 0)
                         FROM ForumLike WHERE likeId LIKE 'FL[0-9]%'";
-                    using (var seqCmd = new SqlCommand(seqSql, conn))
+                    using (SqlCommand seqCmd = new SqlCommand(seqSql, connection))
                     {
                         object lastVal = seqCmd.ExecuteScalar();
                         if (lastVal != null && lastVal != DBNull.Value)
@@ -509,7 +571,7 @@ namespace ScienceBuddy.Student
                     const string insSql = @"
                         INSERT INTO ForumLike (likeId, forumId, senderUserId, createdAt)
                         VALUES (@likeId, @forumId, @userId, @now)";
-                    using (var insCmd = new SqlCommand(insSql, conn))
+                    using (SqlCommand insCmd = new SqlCommand(insSql, connection))
                     {
                         insCmd.Parameters.AddWithValue("@likeId", likeId);
                         insCmd.Parameters.AddWithValue("@forumId", forumId);
@@ -537,11 +599,23 @@ namespace ScienceBuddy.Student
 
         private static string FormatDate(DateTime dt)
         {
-            var span = DateTime.Now - dt;
-            if (span.TotalMinutes < 1) return "Just now";
-            if (span.TotalHours < 1) return (int)span.TotalMinutes + " min ago";
-            if (span.TotalDays < 1) return (int)span.TotalHours + " hr ago";
-            if (span.TotalDays < 7) return (int)span.TotalDays + " day" + ((int)span.TotalDays == 1 ? "" : "s") + " ago";
+            TimeSpan span = DateTime.Now - dt;
+            if (span.TotalMinutes < 1)
+            {
+                return "Just now";
+            }
+            if (span.TotalHours < 1)
+            {
+                return (int)span.TotalMinutes + " min ago";
+            }
+            if (span.TotalDays < 1)
+            {
+                return (int)span.TotalHours + " hr ago";
+            }
+            if (span.TotalDays < 7)
+            {
+                return (int)span.TotalDays + " day" + ((int)span.TotalDays == 1 ? "" : "s") + " ago";
+            }
             return dt.ToString("d MMM yyyy");
         }
 
@@ -549,16 +623,16 @@ namespace ScienceBuddy.Student
         /// Returns true if the given table exists in the current database.
         /// Uses INFORMATION_SCHEMA so it never throws on a missing table.
         /// </summary>
-        private static bool Tbl(SqlConnection conn, string tableName)
+        private static bool Tbl(SqlConnection connection, string tableName)
         {
             const string sql = @"
                 SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
                 WHERE  TABLE_NAME = @tableName
                 AND    TABLE_TYPE = 'BASE TABLE'";
-            using (var cmd = new SqlCommand(sql, conn))
+            using (SqlCommand command = new SqlCommand(sql, connection))
             {
-                cmd.Parameters.AddWithValue("@tableName", tableName);
-                return (int)cmd.ExecuteScalar() > 0;
+                command.Parameters.AddWithValue("@tableName", tableName);
+                return (int)command.ExecuteScalar() > 0;
             }
         }
     }

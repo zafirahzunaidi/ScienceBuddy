@@ -2,7 +2,7 @@
     Inherits="ScienceBuddy.Parent.EditDiscussion" MasterPageFile="~/Site.Master"
     Title="Edit Discussion" MaintainScrollPositionOnPostback="true" %>
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
-<link href="<%: ResolveUrl("~/Content/Parent.css") %>" rel="stylesheet" />
+<link href="<%: ResolveUrl("~/Content/Parent.css") %>?v=4" rel="stylesheet" />
 <script type="text/javascript">
 function toggleChildPopover(e){e.stopPropagation();var pop=document.getElementById('divChildPopover');if(!pop)return;if(pop.classList.contains('pt-popover-open')){pop.classList.remove('pt-popover-open');return;}var ddl=document.querySelector('.sb-sidebar-child-ddl');if(!ddl)return;var html='<div class="pt-child-popover-title">Select Child</div>';for(var i=0;i<ddl.options.length;i++){var o=ddl.options[i];var init=o.text.charAt(0).toUpperCase();var ac=o.selected?' pt-popover-active':'';html+='<div class="pt-child-popover-item'+ac+'" onclick="selectChildFromPopover(\''+o.value+'\')"><span class="pt-popover-avatar">'+init+'</span>'+o.text+'</div>';}pop.innerHTML=html;pop.classList.add('pt-popover-open');}
 function selectChildFromPopover(v){var ddl=document.querySelector('.sb-sidebar-child-ddl');if(ddl&&ddl.value!==v){ddl.value=v;__doPostBack(ddl.id.replace(/_/g,'$'),'');}var pop=document.getElementById('divChildPopover');if(pop)pop.classList.remove('pt-popover-open');}
@@ -45,7 +45,7 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
             <a href="" id="lnkBack" runat="server" class="pt-btn soft"><i class="bi bi-arrow-left"></i> <%: T("Back","Kembali") %></a></div>
         <div class="pt-profile-section">
             <div class="pt-field"><label class="pt-label"><%: T("Discussion Type","Jenis Perbincangan") %></label>
-                <asp:DropDownList ID="ddlType" runat="server" CssClass="pt-select"><asp:ListItem Value="Public" Text="Public" /><asp:ListItem Value="Private" Text="Student-Parent" /></asp:DropDownList></div>
+                <asp:DropDownList ID="ddlType" runat="server" CssClass="pt-select"><asp:ListItem Value="Public" Text="Public" /><asp:ListItem Value="Private" Text="Family" /></asp:DropDownList></div>
             <div class="pt-field"><label class="pt-label"><%: T("Title","Tajuk") %></label><asp:TextBox ID="txtTitle" runat="server" CssClass="pt-input" MaxLength="200" /></div>
             <div class="pt-field"><label class="pt-label"><%: T("Message","Mesej") %></label><asp:TextBox ID="txtMessage" runat="server" CssClass="pt-input" TextMode="MultiLine" Rows="5" /></div>
             <div class="pt-field"><label class="pt-label"><%: T("Current Tags","Tag Semasa") %></label>

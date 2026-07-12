@@ -188,25 +188,66 @@ namespace ScienceBuddy.Teacher
 
             string tid = GetTeacherId(); if (string.IsNullOrEmpty(tid)) return;
             string unitId = null;
+            string newId = null;  // ← moved up here
             using (var conn = new SqlConnection(ConnStr))
             {
                 conn.Open();
-                using (var cmd = new SqlCommand("SELECT [unitId] FROM dbo.[Subtopic] WHERE [subtopicId]=@s", conn)) { cmd.Parameters.AddWithValue("@s", sub); unitId = cmd.ExecuteScalar()?.ToString(); }
-                string newId;
-                using (var cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING([sessionId],2,LEN([sessionId])-1) AS INT)),0) FROM dbo.[LiveConsultationSession]", conn))
-                { newId = "S" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3"); }
+                using (var cmd = new SqlCommand("SELECT [unitId] FROM dbo.[Subtopic] WHERE [subtopicId]=@s", conn))
+                { cmd.Parameters.AddWithValue("@s", sub); unitId = cmd.ExecuteScalar()?.ToString(); }
+
+                using (var cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING([sessionId],5,LEN([sessionId])-4) AS INT)),0) FROM dbo.[LiveConsultationSession] WHERE [sessionId] LIKE 'LIVE%'", conn))
+                { newId = "LIVE" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3"); }
+
                 DateTime now = DateTime.Now;
                 using (var cmd = new SqlCommand("INSERT INTO dbo.[LiveConsultationSession]([sessionId],[teacherId],[unitId],[subtopicId],[sessionTitle],[sessionDescription],[meetingLink],[startDateTime],[endDateTime],[status]) VALUES(@id,@t,@u,@s,@title,@desc,@link,@st,@en,'Live')", conn))
                 {
-                    cmd.Parameters.AddWithValue("@id", newId); cmd.Parameters.AddWithValue("@t", tid);
-                    cmd.Parameters.AddWithValue("@u", (object)unitId ?? DBNull.Value); cmd.Parameters.AddWithValue("@s", sub);
-                    cmd.Parameters.AddWithValue("@title", title); cmd.Parameters.AddWithValue("@desc", (object)txtInstantDesc.Text.Trim() ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@link", platform); cmd.Parameters.AddWithValue("@st", now); cmd.Parameters.AddWithValue("@en", now.AddHours(1));
+                    cmd.Parameters.AddWithValue("@id", newId);
+                    cmd.Parameters.AddWithValue("@t", tid);
+                    cmd.Parameters.AddWithValue("@u", (object)unitId ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@s", sub);
+                    cmd.Parameters.AddWithValue("@title", title);
+                    cmd.Parameters.AddWithValue("@desc", (object)txtInstantDesc.Text.Trim() ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@link", platform);
+                    cmd.Parameters.AddWithValue("@st", now);
+                    cmd.Parameters.AddWithValue("@en", now.AddHours(1));
                     cmd.ExecuteNonQuery();
                 }
+            
             }
+
+            string teacherName = GetTeacherName(tid);
+            string roomName = "ScienceBuddy-" + newId;
+
+            hidLiveRoomName.Value = roomName;
+            hidLiveDisplayName.Value = HttpUtility.HtmlEncode(teacherName);
+            litLiveRoomTitle.Text = HttpUtility.HtmlEncode(title);
+
+            pnlList.Visible = false;
+            pnlEmpty.Visible = false;
+            pnlLiveRoom.Visible = true;
+
             hidToast.Value = T("Instant live session started successfully!", "Sesi langsung segera berjaya dimulakan!");
             txtInstantTitle.Text = ""; txtInstantDesc.Text = "";
+            return; // pnlLiveRoom stays visible
+
+        }
+
+        private string GetTeacherName(string teacherId)
+        {
+            using (var conn = new SqlConnection(ConnStr))
+            {
+                conn.Open();
+                using (var cmd = new SqlCommand("SELECT [name] FROM dbo.[Teacher] WHERE [teacherId]=@t", conn))
+                {
+                    cmd.Parameters.AddWithValue("@t", teacherId);
+                    return cmd.ExecuteScalar()?.ToString() ?? "Teacher";
+                }
+            }
+        }
+
+        protected void btnEndLive_Click(object sender, EventArgs e)
+        {
+            pnlLiveRoom.Visible = false;
             LoadPage();
         }
 
@@ -219,7 +260,9 @@ namespace ScienceBuddy.Teacher
             if (!DateTime.TryParse(date + " " + start, out startDt) || !DateTime.TryParse(date + " " + end, out endDt)) { ShowError(T("Invalid date/time.", "Tarikh/masa tidak sah.")); return; }
             if (endDt <= startDt) { ShowError(T("End time must be after start time.", "Masa tamat mesti selepas masa mula.")); return; }
 
-            string tid = GetTeacherId(); if (string.IsNullOrEmpty(tid)) return;
+            string tid = GetTeacherId(); 
+            if (string.IsNullOrEmpty(tid)) 
+                return;
             string unitId = null;
             using (var conn = new SqlConnection(ConnStr))
             {

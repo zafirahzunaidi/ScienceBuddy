@@ -8,9 +8,21 @@ namespace ScienceBuddy.Student
 {
     public partial class VirtualLab1 : Page
     {
-        private string ConnStr => ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+        private string ConnStr
+        {
+            get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
+        }
+
         private string CurrentLanguage = "EN";
-        private string T(string en, string bm) { return CurrentLanguage == "BM" ? bm : en; }
+
+        private string T(string en, string bm)
+        {
+            if (CurrentLanguage == "BM")
+            {
+                return bm;
+            }
+            return en;
+        }
 
         // Lab routing map: labId -> aspx page filename
         private static readonly Dictionary<string, string> LabRoutes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -28,50 +40,82 @@ namespace ScienceBuddy.Student
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["userId"] == null || Session["role"] == null || Session["role"].ToString() != "Student")
-            { Response.Redirect("~/Login.aspx", false); return; }
+            {
+                Response.Redirect("~/Login.aspx", false);
+                return;
+            }
 
             ((SiteMaster)Master).LayoutMode = "Sidebar";
             InitLang();
 
             string labId = Request.QueryString["labId"];
             if (string.IsNullOrEmpty(labId))
-            { ShowError(T("No lab selected", "Tiada makmal dipilih"),
-                T("Please select a virtual lab from the list.", "Sila pilih makmal maya dari senarai.")); return; }
+            {
+                ShowError(T("No lab selected", "Tiada makmal dipilih"),
+                    T("Please select a virtual lab from the list.", "Sila pilih makmal maya dari senarai."));
+                return;
+            }
 
             // Check if lab exists in routing map
             if (!LabRoutes.ContainsKey(labId))
-            { ShowError(T("Lab not found", "Makmal tidak dijumpai"),
-                T("This virtual lab does not exist or is not yet available.", "Makmal maya ini tidak wujud atau belum tersedia.")); return; }
+            {
+                ShowError(T("Lab not found", "Makmal tidak dijumpai"),
+                    T("This virtual lab does not exist or is not yet available.", "Makmal maya ini tidak wujud atau belum tersedia."));
+                return;
+            }
 
             // Verify lab exists in database and student has access
             if (!Tbl("VirtualLab") || !Tbl("Student") || !Tbl("Unit"))
-            { ShowError(T("Lab not available", "Makmal tidak tersedia"),
-                T("Virtual labs are not configured yet.", "Makmal maya belum dikonfigurasi.")); return; }
+            {
+                ShowError(T("Lab not available", "Makmal tidak tersedia"),
+                    T("Virtual labs are not configured yet.", "Makmal maya belum dikonfigurasi."));
+                return;
+            }
 
             string userId = Session["userId"].ToString();
-            using (var conn = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnStr))
             {
-                conn.Open();
+                connection.Open();
 
                 // Get student's current level
                 string curLevel = "LV001";
-                using (var cmd = new SqlCommand("SELECT currentlevelId FROM Student WHERE userId=@u", conn))
-                { cmd.Parameters.AddWithValue("@u", userId); var r = cmd.ExecuteScalar(); if (r != null) curLevel = r.ToString(); }
+                using (SqlCommand command = new SqlCommand("SELECT currentlevelId FROM Student WHERE userId=@u", connection))
+                {
+                    command.Parameters.AddWithValue("@u", userId);
+                    object result = command.ExecuteScalar();
+                    if (result != null)
+                    {
+                        curLevel = result.ToString();
+                    }
+                }
 
                 // Get lab's level via Unit
                 string labLevel = null;
-                using (var cmd = new SqlCommand(@"SELECT u.levelId FROM VirtualLab v
-                    JOIN Unit u ON u.unitId=v.unitId WHERE v.labId=@l", conn))
-                { cmd.Parameters.AddWithValue("@l", labId); var r = cmd.ExecuteScalar(); labLevel = r?.ToString(); }
+                using (SqlCommand command = new SqlCommand(@"SELECT u.levelId FROM VirtualLab v
+                    JOIN Unit u ON u.unitId=v.unitId WHERE v.labId=@l", connection))
+                {
+                    command.Parameters.AddWithValue("@l", labId);
+                    object result = command.ExecuteScalar();
+                    if (result != null)
+                    {
+                        labLevel = result.ToString();
+                    }
+                }
 
                 if (string.IsNullOrEmpty(labLevel))
-                { ShowError(T("Lab not found", "Makmal tidak dijumpai"),
-                    T("This lab does not exist in the database.", "Makmal ini tidak wujud dalam pangkalan data.")); return; }
+                {
+                    ShowError(T("Lab not found", "Makmal tidak dijumpai"),
+                        T("This lab does not exist in the database.", "Makmal ini tidak wujud dalam pangkalan data."));
+                    return;
+                }
 
                 // Access check
                 if (Ord(labLevel) > Ord(curLevel))
-                { ShowError(T("Lab Locked", "Makmal Dikunci"),
-                    T("Complete your current level to unlock this lab.", "Selesaikan tahap semasa untuk membuka makmal ini.")); return; }
+                {
+                    ShowError(T("Lab Locked", "Makmal Dikunci"),
+                        T("Complete your current level to unlock this lab.", "Selesaikan tahap semasa untuk membuka makmal ini."));
+                    return;
+                }
             }
 
             // All checks passed — redirect to specific lab activity page
@@ -91,17 +135,67 @@ namespace ScienceBuddy.Student
 
         private void InitLang()
         {
-            string l = Session["preferredLanguage"] as string;
-            if (!string.IsNullOrEmpty(l)) { CurrentLanguage = l; return; }
+            string lang = Session["preferredLanguage"] as string;
+            if (!string.IsNullOrEmpty(lang))
+            {
+                CurrentLanguage = lang;
+                return;
+            }
+
             string uid = Session["userId"] as string;
             if (!string.IsNullOrEmpty(uid))
-            { try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT preferredLanguage FROM [User] WHERE userId=@u", c))
-              { cmd.Parameters.AddWithValue("@u", uid); c.Open(); var r = cmd.ExecuteScalar();
-                if (r != null && r != System.DBNull.Value) { l = r.ToString(); Session["preferredLanguage"] = l; CurrentLanguage = l; return; } } } catch {} }
-            CurrentLanguage = "EN"; Session["preferredLanguage"] = "EN";
+            {
+                try
+                {
+                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlCommand command = new SqlCommand("SELECT preferredLanguage FROM [User] WHERE userId=@u", connection))
+                    {
+                        command.Parameters.AddWithValue("@u", uid);
+                        connection.Open();
+                        object result = command.ExecuteScalar();
+                        if (result != null && result != System.DBNull.Value)
+                        {
+                            lang = result.ToString();
+                            Session["preferredLanguage"] = lang;
+                            CurrentLanguage = lang;
+                            return;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Error: " + ex.Message);
+                }
+            }
+
+            CurrentLanguage = "EN";
+            Session["preferredLanguage"] = "EN";
         }
 
-        private static int Ord(string id) { switch (id) { case "LV001": return 1; case "LV002": return 2; case "LV003": return 3; default: return 0; } }
-        private bool Tbl(string t) { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME=@t AND TABLE_TYPE='BASE TABLE'", c)) { cmd.Parameters.AddWithValue("@t", t); c.Open(); return (int)cmd.ExecuteScalar() > 0; } }
+        private static int Ord(string id)
+        {
+            switch (id)
+            {
+                case "LV001":
+                    return 1;
+                case "LV002":
+                    return 2;
+                case "LV003":
+                    return 3;
+                default:
+                    return 0;
+            }
+        }
+
+        private bool Tbl(string t)
+        {
+            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME=@t AND TABLE_TYPE='BASE TABLE'", connection))
+            {
+                command.Parameters.AddWithValue("@t", t);
+                connection.Open();
+                return (int)command.ExecuteScalar() > 0;
+            }
+        }
     }
 }

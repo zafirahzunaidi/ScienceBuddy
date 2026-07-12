@@ -21,6 +21,13 @@
     box-shadow: 0 2px 8px rgba(249,115,22,.2);
 }
 .mm-btn-upload:hover { background: #EA580C; box-shadow: 0 4px 16px rgba(249,115,22,.3); transform: translateY(-1px); color: #fff; text-decoration: none; }
+.mm-btn-upload-disabled {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #D1D5DB; border: none; border-radius: 10px;
+    padding: .6rem 1.25rem; font-weight: 700; font-size: .85rem;
+    color: #9CA3AF; cursor: not-allowed; text-decoration: none;
+    box-shadow: none; pointer-events: none;
+}
 
 /* ─── Tabs (underline style) ─── */
 .mm-tabs{display:flex;gap:0;border-bottom:2px solid var(--tc-border);margin-bottom:1.25rem;}
@@ -203,13 +210,6 @@
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 
 <%-- Status panels --%>
-<asp:Panel ID="pnlPending" runat="server" Visible="false">
-    <div style="display:flex;flex-direction:column;align-items:center;padding:3rem;text-align:center;">
-        <div style="font-size:3rem;margin-bottom:1rem;">⏳</div>
-        <h2 style="color:var(--tc-text);font-weight:800;">Verification Pending</h2>
-        <p style="color:var(--tc-muted);max-width:450px;">Your certificate is under review. You will gain access once approved.</p>
-    </div>
-</asp:Panel>
 <asp:Panel ID="pnlDenied" runat="server" Visible="false">
     <div style="display:flex;flex-direction:column;align-items:center;padding:3rem;text-align:center;">
         <div style="font-size:3rem;margin-bottom:1rem;">🚫</div>
@@ -227,9 +227,18 @@
         <p style="font-size:.85rem;color:var(--tc-muted);margin:.3rem 0 0;"><%: T("Upload, manage, and discover learning materials.","Muat naik, urus, dan terokai bahan pembelajaran.") %></p>
     </div>
     <asp:Panel ID="pnlUploadBtn" runat="server">
-        <a href="<%: ResolveUrl("~/Teacher/uploadMaterial.aspx") %>" class="mm-btn-upload"><i class="bi bi-plus-lg"></i> <%: T("Upload Material","Muat Naik Bahan") %></a>
-    </asp:Panel>
-</div>
+        <%-- Shown when Certified --%>
+        <asp:Panel ID="pnlUploadEnabled" runat="server">
+            <a href="<%: ResolveUrl("~/Teacher/uploadMaterial.aspx") %>" class="mm-btn-upload"><i class="bi bi-plus-lg"></i> <%: T("Upload Material","Muat Naik Bahan") %></a>
+        </asp:Panel>
+        <%-- Shown when Pending --%>
+        <asp:Panel ID="pnlUploadDisabled" runat="server" Visible="false">
+            <button type="button" class="mm-btn-upload-disabled" disabled
+                title="<%: T("Your teaching certificate is pending verification.","Sijil pengajaran anda sedang dalam semakan.") %>">
+                <i class="bi bi-plus-lg"></i> <%: T("Upload Material","Muat Naik Bahan") %>
+            </button>
+        </asp:Panel>
+    </asp:Panel></div>
 
 <%-- Tabs --%>
 <div class="mm-tabs">
@@ -237,7 +246,8 @@
     <asp:LinkButton ID="btnTabDiscover" runat="server" CssClass="mm-tab" OnClick="btnTabDiscover_Click" CausesValidation="false"><i class="bi bi-globe2"></i> <%: T("Discover Materials","Terokai Bahan") %></asp:LinkButton>
 </div>
 
-<%-- Search & Filter --%>
+<%-- Search & Filter — hidden for pending teachers and on Discover tab --%>
+<asp:Panel ID="pnlFilterBar" runat="server">
 <div class="mm-filter-bar">
     <div class="mm-search-wrap">
         <i class="bi bi-search"></i>
@@ -248,6 +258,7 @@
     <asp:DropDownList ID="ddlFilterType" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlFilterType_Changed" CssClass="mm-select" />
     <asp:Button ID="btnSearch" runat="server" Text="Search" OnClick="btnSearch_Click" CausesValidation="false" CssClass="mm-btn-search" />
 </div>
+</asp:Panel>
 
 <%-- Status chips (My Materials only) --%>
 <asp:Panel ID="pnlStatusChips" runat="server">
@@ -259,6 +270,15 @@
 </div>
 </asp:Panel>
 <asp:DropDownList ID="ddlFilterStatus" runat="server" Visible="false" />
+
+<%-- Pending verification state (My Materials tab only) --%>
+<asp:Panel ID="pnlMyMaterialsPending" runat="server" Visible="false">
+    <div style="display:flex;flex-direction:column;align-items:center;padding:3.5rem 2rem;text-align:center;">
+        <div style="font-size:3.5rem;margin-bottom:1rem;opacity:.85;">⏳</div>
+        <h2 style="font-size:1.15rem;font-weight:800;color:var(--tc-text);margin:0 0 .6rem;"><%: T("Verification Pending","Pengesahan Sedang Diproses") %></h2>
+        <p style="font-size:.88rem;color:var(--tc-muted);max-width:480px;line-height:1.65;margin:0;"><%: T("Your teaching certificate is under review. You'll be able to upload and manage learning materials once your verification is approved.","Sijil pengajaran anda sedang dalam semakan. Anda boleh memuat naik dan mengurus bahan pembelajaran setelah pengesahan anda diluluskan.") %></p>
+    </div>
+</asp:Panel>
 
 <%-- Materials list --%>
 <asp:Panel ID="pnlMaterials" runat="server" Visible="false">

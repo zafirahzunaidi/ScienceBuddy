@@ -11,19 +11,22 @@ namespace ScienceBuddy.Student
 {
     public partial class LiveSessions1 : Page
     {
-        // ── Connection string ─────────────────────────────────────────
-        private string ConnStr =>
-            ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+        private string ConnStr
+        {
+            get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
+        }
 
-        // ── Language helper ────────────────────────────────────────────
         public string CurrentLanguage = "EN";
 
         public string T(string en, string bm)
         {
-            return CurrentLanguage == "BM" ? bm : en;
+            if (CurrentLanguage == "BM")
+            {
+                return bm;
+            }
+            return en;
         }
 
-        // ── Page Load ─────────────────────────────────────────────────
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["userId"] == null || Session["role"] == null ||
@@ -43,7 +46,6 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Language initialisation ───────────────────────────────────
         private void InitLang()
         {
             string lang = Session["preferredLanguage"] as string;
@@ -59,12 +61,12 @@ namespace ScienceBuddy.Student
                 try
                 {
                     const string sql = "SELECT preferredLanguage FROM [User] WHERE userId = @userId";
-                    using (var conn = new SqlConnection(ConnStr))
-                    using (var cmd = new SqlCommand(sql, conn))
+                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlCommand command = new SqlCommand(sql, connection))
                     {
-                        cmd.Parameters.AddWithValue("@userId", userId);
-                        conn.Open();
-                        object result = cmd.ExecuteScalar();
+                        command.Parameters.AddWithValue("@userId", userId);
+                        connection.Open();
+                        object result = command.ExecuteScalar();
                         if (result != null && result != DBNull.Value)
                         {
                             lang = result.ToString();
@@ -74,14 +76,16 @@ namespace ScienceBuddy.Student
                         }
                     }
                 }
-                catch (SqlException) { }
+                catch (SqlException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Database error: " + ex.Message);
+                }
             }
 
             CurrentLanguage = "EN";
             Session["preferredLanguage"] = "EN";
         }
 
-        // ── Set bilingual labels ──────────────────────────────────────
         private void SetLabels()
         {
             litPageTitle.Text = T("Live Sessions", "Sesi Langsung");
@@ -106,20 +110,43 @@ namespace ScienceBuddy.Student
 
             // Highlight active filter tab
             string filter = hfFilter.Value;
-            btnFilterAll.CssClass = "st-livesessions-filter-btn" + (filter == "all" ? " active" : "");
-            btnFilterUpcoming.CssClass = "st-livesessions-filter-btn" + (filter == "upcoming" ? " active" : "");
-            btnFilterOngoing.CssClass = "st-livesessions-filter-btn" + (filter == "ongoing" ? " active" : "");
-            btnFilterCompleted.CssClass = "st-livesessions-filter-btn" + (filter == "completed" ? " active" : "");
+
+            string allClass = "st-livesessions-filter-btn";
+            if (filter == "all")
+            {
+                allClass += " active";
+            }
+            btnFilterAll.CssClass = allClass;
+
+            string upcomingClass = "st-livesessions-filter-btn";
+            if (filter == "upcoming")
+            {
+                upcomingClass += " active";
+            }
+            btnFilterUpcoming.CssClass = upcomingClass;
+
+            string ongoingClass = "st-livesessions-filter-btn";
+            if (filter == "ongoing")
+            {
+                ongoingClass += " active";
+            }
+            btnFilterOngoing.CssClass = ongoingClass;
+
+            string completedClass = "st-livesessions-filter-btn";
+            if (filter == "completed")
+            {
+                completedClass += " active";
+            }
+            btnFilterCompleted.CssClass = completedClass;
         }
 
-        // ── Load session cards ────────────────────────────────────────
         private void LoadSessions()
         {
-            using (var conn = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnStr))
             {
-                conn.Open();
+                connection.Open();
 
-                if (!Tbl(conn, "LiveConsultationSession"))
+                if (!Tbl(connection, "LiveConsultationSession"))
                 {
                     pnlGrid.Visible = false;
                     pnlEmpty.Visible = true;
@@ -129,7 +156,7 @@ namespace ScienceBuddy.Student
                     return;
                 }
 
-                string studentId = GetStudentId(conn);
+                string studentId = GetStudentId(connection);
 
                 // Build query
                 string sql = @"
@@ -139,7 +166,7 @@ namespace ScienceBuddy.Student
                             u.unitNameEN, u.unitNameBM,
                             st.subtopicTitleEN, st.subtopicTitleBM";
 
-                if (!string.IsNullOrEmpty(studentId) && Tbl(conn, "LiveSessionParticipant"))
+                if (!string.IsNullOrEmpty(studentId) && Tbl(connection, "LiveSessionParticipant"))
                 {
                     sql += @",
                             lsp.participantId AS hasJoinedId";
@@ -156,7 +183,7 @@ namespace ScienceBuddy.Student
                     LEFT JOIN Unit u ON u.unitId = s.unitId
                     LEFT JOIN Subtopic st ON st.subtopicId = s.subtopicId";
 
-                if (!string.IsNullOrEmpty(studentId) && Tbl(conn, "LiveSessionParticipant"))
+                if (!string.IsNullOrEmpty(studentId) && Tbl(connection, "LiveSessionParticipant"))
                 {
                     sql += @"
                     LEFT JOIN LiveSessionParticipant lsp ON lsp.sessionId = s.sessionId AND lsp.studentId = @studentId";
@@ -165,16 +192,18 @@ namespace ScienceBuddy.Student
                 sql += @"
                     ORDER BY s.startDateTime DESC";
 
-                using (var cmd = new SqlCommand(sql, conn))
+                using (SqlCommand command = new SqlCommand(sql, connection))
                 {
                     if (!string.IsNullOrEmpty(studentId))
-                        cmd.Parameters.AddWithValue("@studentId", studentId);
+                    {
+                        command.Parameters.AddWithValue("@studentId", studentId);
+                    }
 
-                    var da = new SqlDataAdapter(cmd);
-                    var dt = new DataTable();
-                    da.Fill(dt);
+                    SqlDataAdapter adapter = new SqlDataAdapter(command);
+                    DataTable dataTable = new DataTable();
+                    adapter.Fill(dataTable);
 
-                    if (dt.Rows.Count == 0)
+                    if (dataTable.Rows.Count == 0)
                     {
                         pnlGrid.Visible = false;
                         pnlEmpty.Visible = true;
@@ -202,9 +231,9 @@ namespace ScienceBuddy.Student
                     int countUpcoming = 0, countJoined = 0, countCompleted = 0;
                     string filter = hfFilter.Value;
 
-                    var sessionList = new List<object>();
+                    List<object> sessionList = new List<object>();
 
-                    foreach (DataRow row in dt.Rows)
+                    foreach (DataRow row in dataTable.Rows)
                     {
                         DateTime startDT = Convert.ToDateTime(row["startDateTime"]);
                         DateTime endDT = Convert.ToDateTime(row["endDateTime"]);
@@ -232,37 +261,115 @@ namespace ScienceBuddy.Student
 
                         bool hasJoined = row["hasJoinedId"] != DBNull.Value &&
                                          !string.IsNullOrEmpty(row["hasJoinedId"].ToString());
-                        if (hasJoined) countJoined++;
+                        if (hasJoined)
+                        {
+                            countJoined++;
+                        }
 
                         // Apply filter
-                        if (filter == "upcoming" && status != upcomingLabel) continue;
-                        if (filter == "ongoing" && status != ongoingLabel) continue;
-                        if (filter == "completed" && status != completedLabel) continue;
+                        if (filter == "upcoming" && status != upcomingLabel)
+                        {
+                            continue;
+                        }
+                        if (filter == "ongoing" && status != ongoingLabel)
+                        {
+                            continue;
+                        }
+                        if (filter == "completed" && status != completedLabel)
+                        {
+                            continue;
+                        }
 
                         // Build display fields
-                        string title = row["sessionTitle"] != DBNull.Value
-                            ? HttpUtility.HtmlEncode(row["sessionTitle"].ToString()) : "";
+                        string title;
+                        if (row["sessionTitle"] != DBNull.Value)
+                        {
+                            title = HttpUtility.HtmlEncode(row["sessionTitle"].ToString());
+                        }
+                        else
+                        {
+                            title = "";
+                        }
 
                         string description = "";
                         if (row["sessionDescription"] != DBNull.Value)
                         {
                             string desc = row["sessionDescription"].ToString();
                             if (desc.Length > 100)
+                            {
                                 desc = desc.Substring(0, 100) + "...";
+                            }
                             description = HttpUtility.HtmlEncode(desc);
                         }
 
-                        string teacherName = row["teacherName"] != DBNull.Value
-                            ? HttpUtility.HtmlEncode(row["teacherName"].ToString()) : "";
+                        string teacherName;
+                        if (row["teacherName"] != DBNull.Value)
+                        {
+                            teacherName = HttpUtility.HtmlEncode(row["teacherName"].ToString());
+                        }
+                        else
+                        {
+                            teacherName = "";
+                        }
 
-                        string unitName = isBM
-                            ? (row["unitNameBM"] != DBNull.Value ? row["unitNameBM"].ToString() : row["unitNameEN"]?.ToString() ?? "")
-                            : (row["unitNameEN"] != DBNull.Value ? row["unitNameEN"].ToString() : "");
+                        string unitName;
+                        if (isBM)
+                        {
+                            if (row["unitNameBM"] != DBNull.Value)
+                            {
+                                unitName = row["unitNameBM"].ToString();
+                            }
+                            else
+                            {
+                                string fallback = "";
+                                if (row["unitNameEN"] != null && row["unitNameEN"] != DBNull.Value)
+                                {
+                                    fallback = row["unitNameEN"].ToString();
+                                }
+                                unitName = fallback;
+                            }
+                        }
+                        else
+                        {
+                            if (row["unitNameEN"] != DBNull.Value)
+                            {
+                                unitName = row["unitNameEN"].ToString();
+                            }
+                            else
+                            {
+                                unitName = "";
+                            }
+                        }
                         unitName = HttpUtility.HtmlEncode(unitName);
 
-                        string subtopicName = isBM
-                            ? (row["subtopicTitleBM"] != DBNull.Value ? row["subtopicTitleBM"].ToString() : row["subtopicTitleEN"]?.ToString() ?? "")
-                            : (row["subtopicTitleEN"] != DBNull.Value ? row["subtopicTitleEN"].ToString() : "");
+                        string subtopicName;
+                        if (isBM)
+                        {
+                            if (row["subtopicTitleBM"] != DBNull.Value)
+                            {
+                                subtopicName = row["subtopicTitleBM"].ToString();
+                            }
+                            else
+                            {
+                                string fallback = "";
+                                if (row["subtopicTitleEN"] != null && row["subtopicTitleEN"] != DBNull.Value)
+                                {
+                                    fallback = row["subtopicTitleEN"].ToString();
+                                }
+                                subtopicName = fallback;
+                            }
+                        }
+                        else
+                        {
+                            if (row["subtopicTitleEN"] != DBNull.Value)
+                            {
+                                subtopicName = row["subtopicTitleEN"].ToString();
+                            }
+                            else
+                            {
+                                subtopicName = "";
+                            }
+                        }
                         subtopicName = HttpUtility.HtmlEncode(subtopicName);
 
                         string dateFormatted = startDT.ToString("dd MMM yyyy");
@@ -315,7 +422,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Filter click handlers ─────────────────────────────────────
+        // Filter click handlers
         protected void btnFilterAll_Click(object sender, EventArgs e)
         {
             hfFilter.Value = "all";
@@ -348,19 +455,25 @@ namespace ScienceBuddy.Student
             LoadSessions();
         }
 
-        // ── Repeater item command (Join Session) ──────────────────────
+        // Repeater item command (Join Session)
         protected void rptSessions_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
-            if (e.CommandName != "Join") return;
+            if (e.CommandName != "Join")
+            {
+                return;
+            }
 
             string sessionId = e.CommandArgument.ToString();
 
-            using (var conn = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnStr))
             {
-                conn.Open();
+                connection.Open();
 
-                string studentId = GetStudentId(conn);
-                if (string.IsNullOrEmpty(studentId)) return;
+                string studentId = GetStudentId(connection);
+                if (string.IsNullOrEmpty(studentId))
+                {
+                    return;
+                }
 
                 // Check if participant already exists
                 const string sqlCheck = @"
@@ -368,11 +481,11 @@ namespace ScienceBuddy.Student
                     WHERE  sessionId = @sessionId AND studentId = @studentId";
 
                 bool exists = false;
-                using (var cmd = new SqlCommand(sqlCheck, conn))
+                using (SqlCommand command = new SqlCommand(sqlCheck, connection))
                 {
-                    cmd.Parameters.AddWithValue("@sessionId", sessionId);
-                    cmd.Parameters.AddWithValue("@studentId", studentId);
-                    exists = (int)cmd.ExecuteScalar() > 0;
+                    command.Parameters.AddWithValue("@sessionId", sessionId);
+                    command.Parameters.AddWithValue("@studentId", studentId);
+                    exists = (int)command.ExecuteScalar() > 0;
                 }
 
                 DateTime now = DateTime.Now;
@@ -384,13 +497,13 @@ namespace ScienceBuddy.Student
                     const string sqlInsert = @"
                         INSERT INTO LiveSessionParticipant(participantId, sessionId, studentId, joinedAt)
                         VALUES(@pid, @sid, @stid, @now)";
-                    using (var cmd = new SqlCommand(sqlInsert, conn))
+                    using (SqlCommand command = new SqlCommand(sqlInsert, connection))
                     {
-                        cmd.Parameters.AddWithValue("@pid", participantId);
-                        cmd.Parameters.AddWithValue("@sid", sessionId);
-                        cmd.Parameters.AddWithValue("@stid", studentId);
-                        cmd.Parameters.AddWithValue("@now", now);
-                        cmd.ExecuteNonQuery();
+                        command.Parameters.AddWithValue("@pid", participantId);
+                        command.Parameters.AddWithValue("@sid", sessionId);
+                        command.Parameters.AddWithValue("@stid", studentId);
+                        command.Parameters.AddWithValue("@now", now);
+                        command.ExecuteNonQuery();
                     }
                 }
                 else
@@ -399,57 +512,96 @@ namespace ScienceBuddy.Student
                     const string sqlUpdate = @"
                         UPDATE LiveSessionParticipant SET joinedAt = @now
                         WHERE  sessionId = @sessionId AND studentId = @studentId";
-                    using (var cmd = new SqlCommand(sqlUpdate, conn))
+                    using (SqlCommand command = new SqlCommand(sqlUpdate, connection))
                     {
-                        cmd.Parameters.AddWithValue("@now", now);
-                        cmd.Parameters.AddWithValue("@sessionId", sessionId);
-                        cmd.Parameters.AddWithValue("@studentId", studentId);
-                        cmd.ExecuteNonQuery();
+                        command.Parameters.AddWithValue("@now", now);
+                        command.Parameters.AddWithValue("@sessionId", sessionId);
+                        command.Parameters.AddWithValue("@studentId", studentId);
+                        command.ExecuteNonQuery();
                     }
                 }
 
                 // Get meeting link
                 const string sqlLink = "SELECT meetingLink FROM LiveConsultationSession WHERE sessionId = @sessionId";
                 string meetingLink = "";
-                using (var cmd = new SqlCommand(sqlLink, conn))
+                using (SqlCommand command = new SqlCommand(sqlLink, connection))
                 {
-                    cmd.Parameters.AddWithValue("@sessionId", sessionId);
-                    object result = cmd.ExecuteScalar();
+                    command.Parameters.AddWithValue("@sessionId", sessionId);
+                    object result = command.ExecuteScalar();
                     if (result != null && result != DBNull.Value)
+                    {
                         meetingLink = result.ToString();
+                    }
                 }
 
-                // Open meeting link in new tab
-                if (!string.IsNullOrEmpty(meetingLink))
+                // Get student display name for the call
+                const string sqlName = "SELECT name, nickname FROM Student WHERE studentId = @studentId";
+                string displayName = "Student";
+                using (SqlCommand cmdName = new SqlCommand(sqlName, connection))
                 {
-                    string script = "window.open('" + meetingLink.Replace("'", "\\'") + "', '_blank');";
-                    ClientScript.RegisterStartupScript(this.GetType(), "openMeeting", script, true);
+                    cmdName.Parameters.AddWithValue("@studentId", studentId);
+                    using (SqlDataReader reader = cmdName.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            string name = reader["name"].ToString();
+                            string nickname = reader["nickname"] == DBNull.Value ? "" : reader["nickname"].ToString();
+                            displayName = string.IsNullOrEmpty(nickname) ? name : nickname;
+                        }
+                    }
                 }
+
+                // Build a unique, safe room name from the session ID
+                string roomName = "ScienceBuddy-" + sessionId;
+
+                hidRoomName.Value = roomName;
+                hidDisplayName.Value = HttpUtility.HtmlEncode(displayName);
+                litRoomTitle.Text = "Live Session";
+
+                pnlGrid.Visible = false;
+                pnlJoinedRoom.Visible = true;
             }
 
-            // Reload sessions
+        }
+        protected void btnLeaveRoom_Click(object sender, EventArgs e)
+        {
+            pnlJoinedRoom.Visible = false;
+            pnlGrid.Visible = true;
             InitLang();
             SetLabels();
             LoadSessions();
         }
 
-        // ── Get studentId for the logged-in user ──────────────────────
+        // Get studentId for the logged-in user
         private string GetStudentId(SqlConnection conn)
         {
-            if (!Tbl(conn, "Student")) return null;
+            if (!Tbl(conn, "Student"))
+            {
+                return null;
+            }
+
             string userId = Session["userId"] as string;
-            if (string.IsNullOrEmpty(userId)) return null;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return null;
+            }
 
             const string sql = "SELECT studentId FROM Student WHERE userId = @userId";
-            using (var cmd = new SqlCommand(sql, conn))
+            using (SqlCommand command = new SqlCommand(sql, conn))
             {
-                cmd.Parameters.AddWithValue("@userId", userId);
-                object result = cmd.ExecuteScalar();
-                return result != null && result != DBNull.Value ? result.ToString() : null;
+                command.Parameters.AddWithValue("@userId", userId);
+                object result = command.ExecuteScalar();
+                if (result != null && result != DBNull.Value)
+                {
+                    return result.ToString();
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 
-        // ── Table exists helper ───────────────────────────────────────
         /// <summary>
         /// Returns true if the given table exists in the current database.
         /// Uses INFORMATION_SCHEMA so it never throws on a missing table.
@@ -460,11 +612,12 @@ namespace ScienceBuddy.Student
                 SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
                 WHERE  TABLE_NAME = @tableName
                 AND    TABLE_TYPE = 'BASE TABLE'";
-            using (var cmd = new SqlCommand(sql, conn))
+            using (SqlCommand command = new SqlCommand(sql, conn))
             {
-                cmd.Parameters.AddWithValue("@tableName", tableName);
-                return (int)cmd.ExecuteScalar() > 0;
+                command.Parameters.AddWithValue("@tableName", tableName);
+                return (int)command.ExecuteScalar() > 0;
             }
         }
+
     }
 }
