@@ -108,6 +108,7 @@
     <Content Include="Admin\SystemActivityLogs.aspx" />
     <Content Include="Admin\LiveSessions.aspx" />
     <Content Include="Admin\CertificateManagement.aspx" />
+    <Content Include="Admin\TeacherCertificateApproval.aspx" />
     <Content Include="Admin\LessonManagement.aspx" />
     <Content Include="Admin\QuizManagement.aspx" />
     <Content Include="Admin\SuspiciousLogins.aspx" />
@@ -352,6 +353,13 @@
     </Compile>
     <Compile Include="Admin\CertificateManagement.aspx.designer.cs">
       <DependentUpon>CertificateManagement.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\TeacherCertificateApproval.aspx.cs">
+      <DependentUpon>TeacherCertificateApproval.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\TeacherCertificateApproval.aspx.designer.cs">
+      <DependentUpon>TeacherCertificateApproval.aspx</DependentUpon>
     </Compile>
     <Compile Include="Admin\LessonManagement.aspx.cs">
       <DependentUpon>LessonManagement.aspx</DependentUpon>

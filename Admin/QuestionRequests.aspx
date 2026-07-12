@@ -16,6 +16,7 @@
         <a href="<%: ResolveUrl("~/Admin/StudentManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-people item-icon"></i><span class="item-label">Students</span></a>
         <a href="<%: ResolveUrl("~/Admin/ParentManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person-heart item-icon"></i><span class="item-label">Parents</span></a>
         <a href="<%: ResolveUrl("~/Admin/TeacherManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person-badge item-icon"></i><span class="item-label">Teachers</span></a>
+        <a href="<%: ResolveUrl("~/Admin/TeacherCertificateApproval.aspx") %>" class="sb-sidebar-item"><i class="bi bi-patch-check item-icon"></i><span class="item-label">Teacher Certificate Approval</span></a>
     </div>
     <div class="sb-nav-section"><div class="sb-nav-section-label">Learning Content</div>
         <a href="<%: ResolveUrl("~/Admin/LessonManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-book item-icon"></i><span class="item-label">Lessons</span></a>
@@ -161,6 +162,15 @@ function reviewQuestion(qId, action, tUid, btn) {
         var basePath = window.location.pathname;
         if (basePath.indexOf('.aspx') === -1) basePath += '.aspx';
         var url = basePath + '?handler=ReviewQuestion&qId=' + encodeURIComponent(qId) + '&action=' + action + '&tUid=' + encodeURIComponent(tUid);
+
+        // Snapshot row cells NOW, before any DOM removal
+        var cells = row ? row.querySelectorAll('td') : [];
+        var qIdText  = cells[0] ? cells[0].innerHTML : '';
+        var qText    = cells[1] ? cells[1].innerHTML : '';
+        var qType    = cells[2] ? cells[2].innerHTML : '';
+        var teacher  = cells[3] ? cells[3].innerHTML : '';
+        var diff     = cells[4] ? cells[4].innerHTML : '';
+
         fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
         .then(function(resp) {
             if (!resp.ok) throw new Error('Server returned ' + resp.status);
@@ -171,6 +181,7 @@ function reviewQuestion(qId, action, tUid, btn) {
         })
         .then(function(data) {
             if (!data.success) { Swal.fire({ icon: 'error', title: 'Error', text: data.msg }); return; }
+
             // 1. Remove row from pending with animation
             if (row) {
                 row.style.transition = 'opacity .4s, transform .4s';
@@ -179,34 +190,38 @@ function reviewQuestion(qId, action, tUid, btn) {
             }
             setTimeout(function() {
                 if (row) row.remove();
-                // Check if pending table is empty
+                // Check if pending table is now empty — guard all getElementById calls
                 var pendingBody = document.querySelector('#pendingTable tbody');
                 if (pendingBody && pendingBody.children.length === 0) {
-                    document.getElementById('pnlPendingWrap').style.display = 'none';
-                    document.getElementById('pnlPendingEmptyWrap').style.display = '';
+                    var pendingWrap = document.getElementById('pnlPendingWrap');
+                    var pendingEmptyWrap = document.getElementById('pnlPendingEmptyWrap');
+                    if (pendingWrap) pendingWrap.style.display = 'none';
+                    if (pendingEmptyWrap) pendingEmptyWrap.style.display = '';
                 }
             }, 400);
 
-            // 2. Update stats
-            document.getElementById('statPending').textContent = data.pending;
-            document.getElementById('statApproved').textContent = data.approved;
-            document.getElementById('statRejected').textContent = data.rejected;
-            document.getElementById('statToday').textContent = data.today;
+            // 2. Update stats — guard all getElementById calls
+            var elPending  = document.getElementById('statPending');
+            var elApproved = document.getElementById('statApproved');
+            var elRejected = document.getElementById('statRejected');
+            var elToday    = document.getElementById('statToday');
+            if (elPending)  elPending.textContent  = data.pending;
+            if (elApproved) elApproved.textContent = data.approved;
+            if (elRejected) elRejected.textContent = data.rejected;
+            if (elToday)    elToday.textContent    = data.today;
             var badge = document.getElementById('pendingBadge');
             if (badge) badge.innerHTML = data.pending > 0 ? '<span class="sb-badge sb-badge-warning" style="margin-left:6px;">' + data.pending + '</span>' : '';
 
-            // 3. Add row to history table at top with highlight
+            // 3. Add row to history table — guard all getElementById calls
             var histTable = document.getElementById('historyTable');
-            var histBody = histTable ? histTable.querySelector('tbody') : null;
+            var histBody  = histTable ? histTable.querySelector('tbody') : null;
             if (histBody) {
-                document.getElementById('pnlHistoryWrap').style.display = '';
-                document.getElementById('pnlHistoryEmptyWrap').style.display = 'none';
-                var cells = row.querySelectorAll('td');
-                var qIdText = cells[0] ? cells[0].innerHTML : '';
-                var qText = cells[1] ? cells[1].innerHTML : '';
-                var qType = cells[2] ? cells[2].innerHTML : '';
-                var teacher = cells[3] ? cells[3].innerHTML : '';
-                var diff = cells[4] ? cells[4].innerHTML : '';
+                // Show history table, hide empty state — with null guards
+                var histWrap      = document.getElementById('pnlHistoryWrap');
+                var histEmptyWrap = document.getElementById('pnlHistoryEmptyWrap');
+                if (histWrap)      histWrap.style.display      = '';
+                if (histEmptyWrap) histEmptyWrap.style.display = 'none';
+
                 var statusBadge = action === 'Approve'
                     ? '<span class="sb-badge sb-badge-success"><i class="bi bi-check-circle-fill"></i> Approved</span>'
                     : '<span class="sb-badge sb-badge-error"><i class="bi bi-x-circle-fill"></i> Rejected</span>';
@@ -228,8 +243,7 @@ function reviewQuestion(qId, action, tUid, btn) {
                 setTimeout(function() {
                     newRow.classList.remove('ad-question-request-highlight-approved', 'ad-question-request-highlight-rejected');
                     var jb = newRow.querySelector('.ad-question-request-just-badge');
-                    if (jb) jb.style.opacity = '0';
-                    setTimeout(function() { if (jb) jb.remove(); }, 500);
+                    if (jb) { jb.style.opacity = '0'; setTimeout(function() { if (jb && jb.parentNode) jb.remove(); }, 500); }
                 }, 5000);
             }
 
