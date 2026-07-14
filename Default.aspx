@@ -9,37 +9,46 @@
 
     <%-- ══ SECTION 1: HERO ══ --%>
         <section class="about-hero" aria-label="Hero">
-            <div class="about-hero__content about-reveal">
-                <div class="about-hero__label">
-                    MEET SCIENCEBUDDY</div>
-                <h1 class="about-hero__title">Every Great Discovery,<br/>Starts With Curiosity.</h1>
-                <p class="about-hero__subtitle">
-                    Learning designed for curious minds.</p>
-                <div class="about-hero__audience-label">
-                    Made for every part of the learning journey</div>
-                <div class="about-hero__cards">
-                    <div class="about-hero__card">
-                        <div class="about-hero__card-title">
-                            Student</div>
-                        <div class="about-hero__card-desc">
-                            Learn, practise, and grow.</div>
-                    </div>
-                    <div class="about-hero__card">
-                        <div class="about-hero__card-title">
-                            Parent</div>
-                        <div class="about-hero__card-desc">
-                            Support every learning step.</div>
-                    </div>
-                    <div class="about-hero__card">
-                        <div class="about-hero__card-title">
-                            Teacher</div>
-                        <div class="about-hero__card-desc">
-                            Guide curious minds.</div>
-                    </div>
+            <div class="about-hero__top">
+                <div class="about-hero__text">
+                    <h1 class="about-hero__title">Every Great Discovery,<br/>Starts With Curiosity.</h1>
+                    <p class="about-hero__subtitle">
+                        Learning designed for curious minds.</p>
+                </div>
+                <div class="about-hero__visual">
+                    <img src="<%: ResolveUrl("~/Images/About/heading-about.png") %>" alt="ScienceBuddy platform overview" />
                 </div>
             </div>
-            <div class="about-hero__visual about-reveal about-reveal--right">
-                <img src="<%: ResolveUrl("~/Images/About/heading-about.png") %>" alt="ScienceBuddy platform overview" />
+            <div class="about-hero__bottom">
+                <p class="about-hero__cta-label">
+                    Get started as a...</p>
+                <div class="about-hero__cards">
+                    <a href="<%: ResolveUrl("~/Register") %>" class="about-hero__card" data-role="student">
+                    <div class="about-hero__card-icon about-hero__card-icon--student">
+                        <i class="bi bi-mortarboard-fill"></i>
+                    </div>
+                    <div class="about-hero__card-title">
+                        Student</div>
+                    <div class="about-hero__card-desc">
+                        Learn, practise, and grow.</div>
+                    </a><a href="<%: ResolveUrl("~/Register") %>" class="about-hero__card" data-role="parent">
+                    <div class="about-hero__card-icon about-hero__card-icon--parent">
+                        <i class="bi bi-heart-fill"></i>
+                    </div>
+                    <div class="about-hero__card-title">
+                        Parent</div>
+                    <div class="about-hero__card-desc">
+                        Support every learning step.</div>
+                    </a><a href="<%: ResolveUrl("~/Register") %>" class="about-hero__card" data-role="teacher">
+                    <div class="about-hero__card-icon about-hero__card-icon--teacher">
+                        <i class="bi bi-journal-bookmark-fill"></i>
+                    </div>
+                    <div class="about-hero__card-title">
+                        Teacher</div>
+                    <div class="about-hero__card-desc">
+                        Guide curious minds.</div>
+                    </a>
+                </div>
             </div>
         </section>
 

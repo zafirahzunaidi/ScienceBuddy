@@ -17,7 +17,19 @@
     --ab-font: 'Poppins', 'Nunito', 'Segoe UI', Arial, sans-serif;
     font-family: var(--ab-font);
     color: var(--ab-navy);
-    overflow-x: hidden;
+    height: auto;
+    overflow: visible;
+}
+
+/* Prevent double scrollbar on About page */
+.about-page ~ *, .sb-layout-topnav:has(.about-page) {
+    height: auto !important;
+    overflow: visible !important;
+    max-height: none !important;
+}
+.sb-layout-topnav:has(.about-page) .sb-main-content {
+    overflow: visible;
+    max-height: none;
 }
 
 .about-section {
@@ -28,50 +40,51 @@
 
 /* ── HERO ── */
 .about-hero {
-    display: flex;
-    align-items: center;
-    gap: 48px;
-    padding: 100px 24px 80px;
-    max-width: var(--ab-max-w);
-    margin: 0 auto;
+    padding: 80px 24px 60px; max-width: var(--ab-max-w); margin: 0 auto;
 }
-.about-hero__content { flex: 0 0 55%; }
+.about-hero__top {
+    display: flex; align-items: center; gap: 40px; margin-bottom: 40px;
+}
+.about-hero__text { flex: 1; }
 .about-hero__visual { flex: 0 0 45%; text-align: center; }
-.about-hero__visual img { width: 100%; max-width: 480px; height: auto; object-fit: contain; }
-.about-hero__label {
-    font-size: 0.75rem; font-weight: 700; letter-spacing: 2px;
-    text-transform: uppercase; color: var(--ab-purple); margin-bottom: 12px;
-}
+.about-hero__visual img { width: 100%; max-width: 460px; height: auto; object-fit: contain; }
 .about-hero__title {
-    font-size: clamp(2.8rem, 6vw, 5rem); font-weight: 900;
-    line-height: 1.05; color: var(--ab-navy); margin: 0 0 20px;
+    font-size: clamp(2.4rem, 5.5vw, 4.2rem); font-weight: 900;
+    line-height: 1.08; color: var(--ab-navy); margin: 0 0 16px;
 }
 .about-hero__subtitle {
-    font-size: 1.15rem; color: #475569; margin: 0 0 32px; line-height: 1.6;
+    font-size: 1.15rem; color: #475569; margin: 0; line-height: 1.6;
 }
-.about-hero__audience-label {
-    font-size: 0.82rem; font-weight: 700; color: #64748B;
-    margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;
+.about-hero__bottom { text-align: center; }
+.about-hero__cta-label {
+    font-size: 0.9rem; font-weight: 700; color: #64748B;
+    margin: 0 0 16px; text-transform: uppercase; letter-spacing: 0.5px;
 }
-.about-hero__cards { display: flex; gap: 12px; flex-wrap: wrap; }
+.about-hero__cards { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
 .about-hero__card {
-    background: #fff; border: 1.5px solid #E2E8F0; border-radius: 14px;
-    padding: 16px 20px; flex: 1; min-width: 140px;
-    transition: transform 0.2s, box-shadow 0.2s;
+    background: #fff; border: 2px solid #E2E8F0; border-radius: 18px;
+    padding: 28px 24px; width: 200px; text-align: center; text-decoration: none;
+    color: inherit; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
 }
-.about-hero__card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.06); }
-.about-hero__card-title { font-size: 0.9rem; font-weight: 800; color: var(--ab-navy); margin-bottom: 4px; }
-.about-hero__card-desc { font-size: 0.78rem; color: #64748B; }
+.about-hero__card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); border-color: var(--ab-purple); }
+.about-hero__card:focus-visible { outline: 3px solid var(--ab-purple); outline-offset: 2px; }
+.about-hero__card-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin: 0 auto 12px; }
+.about-hero__card-icon--student { background: #DBEAFE; color: #1D4ED8; }
+.about-hero__card-icon--parent { background: #FCE7F3; color: #BE185D; }
+.about-hero__card-icon--teacher { background: #D1FAE5; color: #059669; }
+.about-hero__card-title { font-size: 1rem; font-weight: 800; color: var(--ab-navy); margin-bottom: 4px; }
+.about-hero__card-desc { font-size: 0.8rem; color: #64748B; }
+.about-hero__mascot { display: none; }
 
 /* ── WHAT IS SCIENCEBUDDY ── */
 .about-what { background: var(--ab-lavender); }
 .about-what__inner {
     display: flex; align-items: center; gap: 48px;
-    max-width: var(--ab-max-w); margin: 0 auto; padding: 80px 24px;
+    max-width: var(--ab-max-w); margin: 0 auto; padding: 100px 48px;
 }
 .about-what__text { flex: 1; }
-.about-what__text h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; color: var(--ab-navy); margin: 0 0 16px; }
-.about-what__text p { font-size: 1rem; color: #475569; line-height: 1.7; margin: 0 0 14px; max-width: 580px; }
+.about-what__text h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; color: var(--ab-navy); margin: 0 0 20px; }
+.about-what__text p { font-size: 1rem; color: var(--ab-navy); line-height: 1.8; margin: 0 0 16px; max-width: 600px; text-align: justify; }
 .about-what__visual { flex: 0 0 320px; text-align: center; }
 .about-what__visual img { width: 100%; max-width: 280px; height: auto; object-fit: contain; }
 
@@ -211,9 +224,12 @@
 
 /* ── RESPONSIVE ── */
 @media (max-width: 900px) {
-    .about-hero { flex-direction: column; padding: 60px 20px 40px; gap: 32px; }
-    .about-hero__content, .about-hero__visual { flex: none; width: 100%; }
-    .about-what__inner { flex-direction: column; gap: 32px; }
+    .about-hero { padding: 60px 20px 40px; }
+    .about-hero__top { flex-direction: column; gap: 24px; }
+    .about-hero__visual { flex: none; width: 100%; }
+    .about-hero__cards { flex-direction: column; align-items: center; }
+    .about-hero__card { width: 100%; max-width: 280px; }
+    .about-what__inner { flex-direction: column; gap: 32px; padding: 60px 24px; }
     .about-what__visual { flex: none; }
     .about-feature { flex-direction: column !important; gap: 32px; min-height: auto; padding: 60px 20px; }
     .about-feature__visual { flex: none; width: 100%; }
