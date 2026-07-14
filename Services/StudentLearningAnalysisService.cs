@@ -53,6 +53,7 @@ namespace ScienceBuddy.Services
         public string NextMissionTitle { get; set; }
         public List<string> NextMissionSteps { get; set; }
 
+
         public LearningAnalysisData()
         {
             StudyTips = new List<string>();
