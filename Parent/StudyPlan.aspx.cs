@@ -66,8 +66,14 @@ namespace ScienceBuddy.Parent
             var rewards = new List<RewardInfo>();
             try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT rewardId, rewardName, requiredProgress, isUnlocked, rewardImage FROM dbo.SPReward WHERE studyPlanId=@id ORDER BY requiredProgress", c)) { cmd.Parameters.AddWithValue("@id", planId); c.Open(); using (var r = cmd.ExecuteReader()) { while (r.Read()) { var rw = new RewardInfo { Id = r["rewardId"].ToString(), RequiredProgress = r["requiredProgress"] != DBNull.Value ? Convert.ToInt32(r["requiredProgress"]) : 100, IsUnlocked = r["isUnlocked"] != DBNull.Value && Convert.ToBoolean(r["isUnlocked"]), Name = r["rewardName"] != DBNull.Value ? r["rewardName"].ToString() : "", ImageFile = r["rewardImage"] != DBNull.Value ? r["rewardImage"].ToString() : "" }; rewards.Add(rw); } } } } catch { }
 
-            // Update unlock status based on progress
-            foreach (var rw in rewards) { if (progressPct >= rw.RequiredProgress && !rw.IsUnlocked) { rw.IsUnlocked = true; UpdateRewardUnlock(rw.Id); } }
+            // Sync unlock status based on current progress
+            foreach (var rw in rewards)
+            {
+                if (progressPct >= rw.RequiredProgress && !rw.IsUnlocked)
+                { rw.IsUnlocked = true; SyncRewardUnlock(rw.Id, true); }
+                else if (progressPct < rw.RequiredProgress && rw.IsUnlocked)
+                { rw.IsUnlocked = false; SyncRewardUnlock(rw.Id, false); }
+            }
 
             BuildRewardMarkers(rewards, progressPct);
             BuildTaskList(tasks);
@@ -80,9 +86,21 @@ namespace ScienceBuddy.Parent
             return null;
         }
 
-        private void UpdateRewardUnlock(string rewardId)
+        private void SyncRewardUnlock(string rewardId, bool unlock)
         {
-            try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("UPDATE dbo.SPReward SET isUnlocked=1, unlockedAt=@now WHERE rewardId=@id", c)) { cmd.Parameters.AddWithValue("@now", DateTime.Now); cmd.Parameters.AddWithValue("@id", rewardId); c.Open(); cmd.ExecuteNonQuery(); } } catch { }
+            try
+            {
+                string sql = unlock
+                    ? "UPDATE dbo.SPReward SET isUnlocked=1, unlockedAt=@now WHERE rewardId=@id"
+                    : "UPDATE dbo.SPReward SET isUnlocked=0, unlockedAt=NULL WHERE rewardId=@id";
+                using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand(sql, c))
+                {
+                    if (unlock) cmd.Parameters.AddWithValue("@now", DateTime.Now);
+                    cmd.Parameters.AddWithValue("@id", rewardId);
+                    c.Open(); cmd.ExecuteNonQuery();
+                }
+            }
+            catch { }
         }
 
         private void BuildRewardMarkers(List<RewardInfo> rewards, int progressPct)
@@ -91,19 +109,19 @@ namespace ScienceBuddy.Parent
             if (rewards.Count == 0) return;
             StringBuilder sb = new StringBuilder();
 
-            // Determine if ALL rewards are unlocked
-            bool allUnlocked = rewards.Count > 0 && rewards.TrueForAll(r => r.IsUnlocked);
+            // Determine if ALL rewards are unlocked based on current progress
+            bool allUnlocked = rewards.Count > 0 && rewards.TrueForAll(r => progressPct >= r.RequiredProgress);
 
             foreach (var rw in rewards)
             {
                 string imgUrl = !string.IsNullOrEmpty(rw.ImageFile) ? ResolveUrl("~/Images/Rewards/" + rw.ImageFile) : "";
                 string leftPct = Math.Max(2, Math.Min(98, rw.RequiredProgress)).ToString();
 
-                // Determine bubble state class
+                // Determine bubble state class based on current progress only
                 string stateClass;
                 if (allUnlocked)
                     stateClass = "pt-reward-state-complete";
-                else if (rw.IsUnlocked || progressPct >= rw.RequiredProgress)
+                else if (progressPct >= rw.RequiredProgress)
                     stateClass = "pt-reward-state-unlocked";
                 else if (rw.RequiredProgress - progressPct <= 10 && rw.RequiredProgress - progressPct > 0)
                     stateClass = "pt-reward-state-almost";
