@@ -53,6 +53,30 @@
 .um-toast-wrap{position:fixed;top:1.25rem;right:1.25rem;z-index:9999;}
 .um-toast{background:var(--s);color:#fff;padding:.75rem 1.25rem;border-radius:10px;font-size:.88rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 6px 18px rgba(16,185,129,.25);animation:umF .3s ease;}
 @media(max-width:768px){.um-row,.um-row-3col{grid-template-columns:1fr;}.um-card{padding:1.3rem;}.um-actions{flex-direction:column;}.um-btn{width:100%;justify-content:center;}}
+
+/* ── Rich-text Description Editor ─────────────────────── */
+.um-rte-wrap{border:1.5px solid var(--b);border-radius:10px;background:var(--w);transition:border-color .2s,box-shadow .2s;overflow:hidden;}
+.um-rte-wrap:focus-within{border-color:var(--p);box-shadow:0 0 0 3px rgba(108,99,255,.10);}
+.um-rte-wrap.invalid{border-color:var(--e)!important;box-shadow:none!important;}
+
+/* Toolbar */
+.um-rte-toolbar{display:flex;align-items:center;gap:4px;padding:.45rem .7rem;background:#FAFAFA;border-bottom:1.5px solid var(--b);position:sticky;top:0;z-index:2;flex-wrap:wrap;}
+.um-rte-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border:1.5px solid transparent;border-radius:8px;background:transparent;color:var(--t);cursor:pointer;font-size:1.15rem;font-weight:600;transition:background .15s,border-color .15s,color .15s;flex-shrink:0;-webkit-font-smoothing:antialiased;}
+.um-rte-btn:hover{background:#EEF2FF;border-color:#C7D2FE;color:var(--p);}
+.um-rte-btn.active{background:#EEF2FF;border-color:var(--p);color:var(--p);}
+.um-rte-sep{width:1px;height:20px;background:var(--b);margin:0 4px;flex-shrink:0;}
+
+/* Editor area */
+.um-rte-editor{min-height:130px;max-height:340px;overflow-y:auto;padding:.7rem .9rem;font-size:.9rem;line-height:1.65;color:var(--t);outline:none;font-family:inherit;}
+.um-rte-editor:empty::before{content:attr(data-placeholder);color:#9CA3AF;pointer-events:none;}
+.um-rte-editor ul{list-style-type:disc;padding-left:1.6rem;margin:.3rem 0;}
+.um-rte-editor ol{list-style-type:decimal;padding-left:1.6rem;margin:.3rem 0;}
+.um-rte-editor li{margin-bottom:.3rem;padding-left:.2rem;}
+.um-rte-editor ul ul{list-style-type:circle;margin:.2rem 0;}
+.um-rte-editor ul ul ul{list-style-type:square;}
+.um-rte-editor b,.um-rte-editor strong{font-weight:700;}
+.um-rte-editor i,.um-rte-editor em{font-style:italic;}
+.um-rte-editor u{text-decoration:underline;}
 </style>
 </asp:Content>
 
@@ -89,15 +113,34 @@
         </div>
     </div>
 
-    <%-- Row 2: Description full width --%>
+    <%-- Row 2: Description full width — rich-text editor --%>
     <div class="um-row-full">
         <div class="um-field">
             <label class="um-label"><%: T("Description","Penerangan") %></label>
-            <asp:TextBox ID="txtDescription" runat="server" TextMode="MultiLine" Rows="4" CssClass="um-input um-textarea" placeholder="Describe what this material covers..." />
+            <%-- Hidden textarea — stays connected to backend unchanged --%>
+            <asp:TextBox ID="txtDescription" runat="server" TextMode="MultiLine" Rows="4"
+                CssClass="um-input um-textarea" placeholder="Describe what this material covers..."
+                ValidateRequestMode="Disabled" style="display:none;" />
+            <%-- Rich-text editor shell --%>
+            <div class="um-rte-wrap" id="rteWrap">
+                <div class="um-rte-toolbar" id="rteToolbar">
+                    <button type="button" class="um-rte-btn" id="rteBold"    title="Bold (Ctrl+B)"      onclick="rteCmd('bold')"><i class="bi bi-type-bold"></i></button>
+                    <button type="button" class="um-rte-btn" id="rteItalic"  title="Italic (Ctrl+I)"    onclick="rteCmd('italic')"><i class="bi bi-type-italic"></i></button>
+                    <button type="button" class="um-rte-btn" id="rteUnder"   title="Underline (Ctrl+U)" onclick="rteCmd('underline')"><i class="bi bi-type-underline"></i></button>
+                    <div class="um-rte-sep"></div>
+                    <button type="button" class="um-rte-btn" id="rteBullet"  title="Bulleted List"      onclick="rteCmd('insertUnorderedList')"><i class="bi bi-list-ul"></i></button>
+                    <button type="button" class="um-rte-btn" id="rteNumber"  title="Numbered List"      onclick="rteCmd('insertOrderedList')"><i class="bi bi-list-ol"></i></button>
+                </div>
+                <div class="um-rte-editor" id="rteEditor" contenteditable="true"
+                     data-placeholder="Describe what this material covers..."></div>
+            </div>
         </div>
     </div>
 
-    <%-- Row 3: Language 15% + Level 20% + Unit 30% + Subtopic 35% --%>
+    <%-- Row 3: Language 15% + Level 20% + Unit 30% + Subtopic 35%
+         UpdatePanel keeps dropdown cascading partial — no full reload --%>
+    <asp:UpdatePanel ID="upDropdowns" runat="server" UpdateMode="Conditional">
+    <ContentTemplate>
     <div class="um-row-3col">
         <div class="um-field">
             <label class="um-label"><%: T("Language","Bahasa") %> *</label>
@@ -123,6 +166,8 @@
             <div class="um-val" id="vSub"><%: T("Select Subtopic.","Pilih Subtopik.") %></div>
         </div>
     </div>
+    </ContentTemplate>
+    </asp:UpdatePanel>
 
     <%-- Row 4: Upload File full width --%>
     <div class="um-row-full">
@@ -194,6 +239,8 @@ function fmtSize(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(
 function show(id){document.getElementById(id).classList.add('show');}
 function hide(id){document.getElementById(id).classList.remove('show');}
 function validateForm(){
+    // sync RTE → hidden textarea before validation
+    syncRteToTextarea();
     var ok=true;
     var t=document.querySelector('[id$="txtTitle"]');if(!t.value.trim()){show('vTitle');t.classList.add('invalid');ok=false;}else{hide('vTitle');t.classList.remove('invalid');}
     var u=document.querySelector('[id$="ddlUnit"]');if(!u.value){show('vUnit');u.classList.add('invalid');ok=false;}else{hide('vUnit');u.classList.remove('invalid');}
@@ -202,6 +249,70 @@ function validateForm(){
     if(!fileOk){show('vFile');document.getElementById('dropZone').classList.add('invalid');ok=false;}else{hide('vFile');}
     if(ok)document.getElementById('confirmModal').style.display='flex';}
 function closeModal(){document.getElementById('confirmModal').style.display='none';}
+
+/* ── Rich-text editor logic ─────────────────────────────── */
+(function(){
+    var editor  = document.getElementById('rteEditor');
+    var wrap    = document.getElementById('rteWrap');
+    var txDesc  = document.querySelector('[id$="txtDescription"]');
+
+    if(!editor||!txDesc) return;
+
+    /* Populate editor from textarea value on page load (postback round-trip) */
+    if(txDesc.value.trim()){
+        editor.innerHTML = txDesc.value;
+    }
+
+    /* Sync editor HTML → hidden textarea */
+    window.syncRteToTextarea = function(){
+        if(!txDesc||!editor) return;
+        /* Strip completely empty editor state */
+        var html = editor.innerHTML.trim();
+        if(html === '<br>' || html === '') html = '';
+        txDesc.value = html;
+    };
+
+    /* execCommand wrapper — re-focus editor then execute */
+    window.rteCmd = function(cmd){
+        editor.focus();
+        document.execCommand(cmd, false, null);
+        updateToolbarState();
+    };
+
+    /* Keep toolbar button active states in sync with cursor position */
+    function updateToolbarState(){
+        var cmds = {bold:'rteBold', italic:'rteItalic', underline:'rteUnder',
+                    insertUnorderedList:'rteBullet', insertOrderedList:'rteNumber'};
+        Object.keys(cmds).forEach(function(c){
+            var btn = document.getElementById(cmds[c]);
+            if(!btn) return;
+            try{
+                btn.classList.toggle('active', document.queryCommandState(c));
+            }catch(e){}
+        });
+    }
+
+    editor.addEventListener('keyup',   updateToolbarState);
+    editor.addEventListener('mouseup', updateToolbarState);
+    editor.addEventListener('focus',   updateToolbarState);
+
+    /* Strip pasted rich formatting — keep plain text only, then re-apply via execCommand */
+    editor.addEventListener('paste', function(e){
+        e.preventDefault();
+        var txt = (e.clipboardData || window.clipboardData).getData('text/plain');
+        document.execCommand('insertText', false, txt);
+    });
+
+    /* Sync on every input so the hidden field is always up to date */
+    /* editor.addEventListener('input', function(){ syncRteToTextarea(); }); */
+    /* Sync happens only on submit — see validateForm() and btnUpload click below */
+
+    /* Also sync before the modal upload button triggers the postback */
+    var btnUpload = document.querySelector('[id$="btnUpload"]');
+    if(btnUpload){
+        btnUpload.addEventListener('click', function(){ syncRteToTextarea(); });
+    }
+})();
 // Drag & drop
 var dz=document.getElementById('dropZone');
 if(dz){['dragenter','dragover'].forEach(function(ev){dz.addEventListener(ev,function(e){e.preventDefault();dz.classList.add('dragover');});});

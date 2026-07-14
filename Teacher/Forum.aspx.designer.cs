@@ -34,5 +34,6 @@ namespace ScienceBuddy.Teacher
         // ── Hidden fields ────────────────────────────────────────────
         protected global::System.Web.UI.WebControls.HiddenField hidToast;
         protected global::System.Web.UI.WebControls.HiddenField hidShowModal;
+        protected global::System.Web.UI.WebControls.HiddenField hidLicenseStatus;
     }
 }

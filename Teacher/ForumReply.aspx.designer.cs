@@ -30,5 +30,6 @@ namespace ScienceBuddy.Teacher
         protected global::System.Web.UI.WebControls.Repeater rptMore;
         protected global::System.Web.UI.WebControls.HiddenField hidToast;
         protected global::System.Web.UI.WebControls.HiddenField hidForumId;
+        protected global::System.Web.UI.WebControls.HiddenField hidLicenseStatus;
     }
 }

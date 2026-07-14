@@ -96,6 +96,14 @@
 @keyframes frdIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
 @media(max-width:900px){.frd-layout{grid-template-columns:1fr;}}
 @media(max-width:600px){.frd-main-card{padding:1.1rem;}.frd-reply-msg{padding-left:0;margin-top:.5rem;}}
+/* Pending License Notice */
+.frd-pending-notice{display:flex;align-items:flex-start;gap:.75rem;padding:.85rem 1.1rem;margin-bottom:1rem;background:#FEF2F2;border:1.5px solid #FECACA;border-left:4px solid #DC2626;border-radius:10px;}
+.frd-pending-notice-icon{flex-shrink:0;width:32px;height:32px;border-radius:8px;background:#FEE2E2;color:#DC2626;display:flex;align-items:center;justify-content:center;font-size:1rem;}
+.frd-pending-notice-content{flex:1;min-width:0;}
+.frd-pending-notice-title{font-size:.84rem;font-weight:700;color:#991B1B;margin-bottom:2px;}
+.frd-pending-notice-msg{font-size:.78rem;color:#B91C1C;line-height:1.45;}
+.frd-composer-ta[disabled]{opacity:.6;cursor:not-allowed;background:#F9FAFB;}
+.frd-send-btn[disabled]{opacity:.5;cursor:not-allowed;background:#9CA3AF !important;box-shadow:none !important;}
 </style>
 </asp:Content>
 
@@ -162,6 +170,16 @@
                 <div class="frd-main-footer">
                     <span class="frd-stat"><i class="bi bi-chat-text"></i> <asp:Literal ID="litReplyCount" runat="server" /> <%: T("replies","balasan") %></span>
                     <asp:LinkButton ID="btnLike" runat="server" OnClick="btnLike_Click" CausesValidation="false" />
+                </div>
+            </div>
+
+            <%-- Pending License Notice (above reply textbox) --%>
+            <asp:HiddenField ID="hidLicenseStatus" runat="server" Value="" />
+            <div id="frdPendingNotice" class="frd-pending-notice" style="display:none;">
+                <div class="frd-pending-notice-icon"><i class="bi bi-shield-exclamation"></i></div>
+                <div class="frd-pending-notice-content">
+                    <div class="frd-pending-notice-title"><%: T("Verification Pending","Pengesahan Menunggu") %></div>
+                    <div class="frd-pending-notice-msg"><%: T("Your Teaching License is still under review. Replying to forum discussions is temporarily unavailable until your verification has been approved.","Lesen Mengajar anda masih dalam semakan. Membalas perbincangan forum tidak tersedia buat sementara waktu sehingga pengesahan anda diluluskan.") %></div>
                 </div>
             </div>
 
@@ -276,6 +294,12 @@
     if (ta) {
         ta.addEventListener('focus', function () { this.style.borderColor = '#6C63FF'; this.style.boxShadow = '0 0 0 3px rgba(108,99,255,.08)'; });
         ta.addEventListener('blur',  function () { this.style.borderColor = '#E5E7EB'; this.style.boxShadow = 'none'; });
+    }
+    // Pending License: show notice
+    var lic = document.getElementById('<%=hidLicenseStatus.ClientID%>');
+    if (lic && lic.value === 'Pending') {
+        var notice = document.getElementById('frdPendingNotice');
+        if (notice) notice.style.display = 'flex';
     }
 }());
 </script>

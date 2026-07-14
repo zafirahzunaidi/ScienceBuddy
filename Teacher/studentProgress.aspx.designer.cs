@@ -7,6 +7,8 @@ namespace ScienceBuddy.Teacher
 {
     public partial class studentProgress
     {
+        protected global::System.Web.UI.WebControls.Panel pnlPending;
+        protected global::System.Web.UI.WebControls.Panel pnlContent;
         protected global::System.Web.UI.WebControls.TextBox txtSearch;
         protected global::System.Web.UI.WebControls.DropDownList ddlSort;
         protected global::System.Web.UI.WebControls.Button btnSearch;
