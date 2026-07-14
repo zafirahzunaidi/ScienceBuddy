@@ -55,7 +55,6 @@ namespace ScienceBuddy.Student
 
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
 
-            // Initialise language on every request, including the chat postback.
             InitLang();
 
             if (!IsPostBack)
@@ -68,8 +67,6 @@ namespace ScienceBuddy.Student
                     "Hi! I am your AI Study Companion. Ask me anything about your Science lessons.",
                     "Hai! Saya Rakan Pembelajaran AI anda. Tanya saya apa-apa tentang pelajaran Sains anda."));
             }
-
-
         }
 
         // ── Language initialisation ───────────────────────────────────
@@ -118,34 +115,30 @@ namespace ScienceBuddy.Student
         {
             litPageTitle.Text = T("AI Study Companion", "Rakan Pembelajaran AI");
             litHeroTitle.Text = T("AI Study Companion", "Rakan Pembelajaran AI");
-            litHeroSub.Text = T("Your smart learning buddy is here to guide your next step.",
-                                "Rakan pembelajaran pintar anda sedia membantu langkah seterusnya.");
-            litHealthTitle.Text = T("My Learning Snapshot", "Ringkasan Pembelajaran Saya");
-            litAvgScoreLbl.Text = T("Average Score", "Purata Skor");
-            litTotalAttemptsLbl.Text = T("Quizzes Tried", "Kuiz Dicuba");
-            litStrongTopicsLbl.Text = T("Current Trend", "Trend Semasa");
-            litWeakTopicsLbl.Text = T("Learning Picture", "Gambaran Pembelajaran");
-            litHealthEmpty.Text = T("Complete more quizzes to unlock your personalised learning analysis.",
-                                    "Selesaikan lebih banyak kuiz untuk membuka analisis pembelajaran peribadi anda.");
-            litStrongTitle.Text = T("I'm Great At", "Saya Hebat Dalam");
-            litStrongEmptyTitle.Text = T("I'm Great At", "Saya Hebat Dalam");
-            litStrongEmpty.Text = T("Your strong topics will appear here after you attempt more quizzes.",
-                                    "Topik kuat anda akan dipaparkan di sini selepas anda menjawab lebih banyak kuiz.");
-            litWeakTitle.Text = T("Let's Practise", "Jom Berlatih");
-            litWeakEmptyTitle.Text = T("Let's Practise", "Jom Berlatih");
-            litWeakEmpty.Text = T("No weak topics detected yet. Keep learning!",
-                                  "Tiada topik lemah dikesan buat masa ini. Teruskan belajar!");
-            litTopicZoneTitle.Text = T("My Topic Zone", "Zon Topik Saya");
-            litRecommendTitle.Text = T("Your Next Adventure", "Pengembaraan Seterusnya");
+            litHealthTitle.Text = T("AI noticed this about you", "AI perasan ini tentang anda");
+            litAvgScoreLbl.Text = T("Latest Score", "Skor Terkini");
+            litTotalAttemptsLbl.Text = T("Previous Avg", "Purata Sebelum");
+            litStrongTopicsLbl.Text = T("Change", "Perubahan");
+            litWeakTopicsLbl.Text = T("quizzes", "kuiz");
+            litStrongTitle.Text = T("Your Win", "Kemenangan Anda");
+            litStrongEmpty.Text = T("Keep going to discover your strengths!",
+                                    "Teruskan untuk mengetahui kekuatan anda!");
+            litWeakTitle.Text = T("Your Focus", "Fokus Anda");
+            litWeakEmpty.Text = T("No weak topics yet. Great job!",
+                                  "Tiada topik lemah lagi. Bagus!");
+            litRecommendTitle.Text = T("Your plan for today", "Pelan anda untuk hari ini");
             litTipsTitle.Text = T("Your 3-Step Mission", "Misi 3 Langkah Anda");
-            litChatTitle.Text = T("Ask ScienceBuddy AI", "Tanya ScienceBuddy AI");
-            litChatSub.Text = T("I know your latest results. Ask what to learn next!", "Saya tahu keputusan terkini anda. Tanya apa yang perlu dipelajari seterusnya!");
+            litChatTitle.Text = T("Ask your AI Coach", "Tanya Coach AI anda");
+            litChatSub.Text = T("I know your latest results. Ask what to learn next!",
+                                "Saya tahu keputusan terkini anda. Tanya apa yang perlu dipelajari seterusnya!");
             litChatNote.Text = T("AI can make mistakes, so always check with your teacher or lesson notes.",
                                  "AI boleh membuat kesilapan, jadi sentiasa semak dengan guru atau nota pelajaran anda.");
             litEmptyTitle.Text = T("Start your learning journey!",
                                    "Mulakan perjalanan pembelajaran anda!");
             litEmptyDesc.Text = T("Start your learning journey first to unlock your AI companion's insights.",
                                   "Mulakan perjalanan pembelajaran anda dahulu untuk membuka pandangan rakan AI anda.");
+            litHealthEmpty.Text = T("Complete more quizzes to unlock your personalised learning analysis.",
+                                    "Selesaikan lebih banyak kuiz untuk membuka analisis pembelajaran peribadi anda.");
         }
 
         // ── Load page data ────────────────────────────────────────────
@@ -179,42 +172,10 @@ namespace ScienceBuddy.Student
                         if (reader.Read())
                         {
                             studentId = reader["studentId"] != null ? reader["studentId"].ToString() : null;
-
-                            if (reader["name"] != null && reader["name"] != DBNull.Value)
-                            {
-                                name = reader["name"].ToString();
-                            }
-                            else
-                            {
-                                name = "";
-                            }
-
-                            if (reader["nickname"] != null && reader["nickname"] != DBNull.Value)
-                            {
-                                nickname = reader["nickname"].ToString();
-                            }
-                            else
-                            {
-                                nickname = "";
-                            }
-
-                            if (reader["currentlevelId"] != null && reader["currentlevelId"] != DBNull.Value)
-                            {
-                                currentlevelId = reader["currentlevelId"].ToString();
-                            }
-                            else
-                            {
-                                currentlevelId = "";
-                            }
-
-                            if (reader["personalityId"] != null && reader["personalityId"] != DBNull.Value)
-                            {
-                                personalityId = reader["personalityId"].ToString();
-                            }
-                            else
-                            {
-                                personalityId = "";
-                            }
+                            name = reader["name"] != DBNull.Value ? reader["name"].ToString() : "";
+                            nickname = reader["nickname"] != DBNull.Value ? reader["nickname"].ToString() : "";
+                            currentlevelId = reader["currentlevelId"] != DBNull.Value ? reader["currentlevelId"].ToString() : "";
+                            personalityId = reader["personalityId"] != DBNull.Value ? reader["personalityId"].ToString() : "";
                         }
                     }
                 }
@@ -240,35 +201,14 @@ namespace ScienceBuddy.Student
                         {
                             if (reader.Read())
                             {
-                                string nameEN = "";
-                                if (reader["personalityNameEN"] != null && reader["personalityNameEN"] != DBNull.Value)
-                                {
-                                    nameEN = reader["personalityNameEN"].ToString();
-                                }
-
-                                string nameBM = "";
-                                if (reader["personalityNameBM"] != null && reader["personalityNameBM"] != DBNull.Value)
-                                {
-                                    nameBM = reader["personalityNameBM"].ToString();
-                                }
-
+                                string nameEN = reader["personalityNameEN"] != DBNull.Value ? reader["personalityNameEN"].ToString() : "";
+                                string nameBM = reader["personalityNameBM"] != DBNull.Value ? reader["personalityNameBM"].ToString() : "";
                                 personalityName = T(nameEN, nameBM);
 
-                                string styleEN = "";
-                                if (reader["learningStyleEN"] != null && reader["learningStyleEN"] != DBNull.Value)
-                                {
-                                    styleEN = reader["learningStyleEN"].ToString();
-                                }
-
-                                string styleBM = "";
-                                if (reader["learningStyleBM"] != null && reader["learningStyleBM"] != DBNull.Value)
-                                {
-                                    styleBM = reader["learningStyleBM"].ToString();
-                                }
-
+                                string styleEN = reader["learningStyleEN"] != DBNull.Value ? reader["learningStyleEN"].ToString() : "";
+                                string styleBM = reader["learningStyleBM"] != DBNull.Value ? reader["learningStyleBM"].ToString() : "";
                                 learningStyle = T(styleEN, styleBM);
 
-                                // Load avatar and colour for visual theming
                                 if (reader["avatar"] != null && reader["avatar"] != DBNull.Value)
                                 {
                                     string avatar = reader["avatar"].ToString().Trim();
@@ -280,13 +220,11 @@ namespace ScienceBuddy.Student
                                         else if (avatar.StartsWith("Images/"))
                                             avatarPath = "~/" + avatar;
                                         else
-                                            avatarPath = "~/Images/Personality/" + System.IO.Path.GetFileName(avatar);
+                                            avatarPath = "~/Images/Personality/" + Path.GetFileName(avatar);
 
                                         string physicalPath = Server.MapPath(avatarPath);
-                                        if (System.IO.File.Exists(physicalPath))
+                                        if (File.Exists(physicalPath))
                                             PersonalityAvatar = ResolveUrl(avatarPath);
-                                        else
-                                            PersonalityAvatar = ""; // fallback will show icon
                                     }
                                 }
 
@@ -294,9 +232,7 @@ namespace ScienceBuddy.Student
                                 {
                                     string colour = reader["colour"].ToString().Trim();
                                     if (System.Text.RegularExpressions.Regex.IsMatch(colour, "^#[0-9A-Fa-f]{6}$"))
-                                    {
                                         PersonalityColour = colour;
-                                    }
                                 }
                             }
                         }
@@ -315,18 +251,8 @@ namespace ScienceBuddy.Student
                         {
                             if (reader.Read())
                             {
-                                string lvlEN = "";
-                                if (reader["levelNameEN"] != null && reader["levelNameEN"] != DBNull.Value)
-                                {
-                                    lvlEN = reader["levelNameEN"].ToString();
-                                }
-
-                                string lvlBM = "";
-                                if (reader["levelNameBM"] != null && reader["levelNameBM"] != DBNull.Value)
-                                {
-                                    lvlBM = reader["levelNameBM"].ToString();
-                                }
-
+                                string lvlEN = reader["levelNameEN"] != DBNull.Value ? reader["levelNameEN"].ToString() : "";
+                                string lvlBM = reader["levelNameBM"] != DBNull.Value ? reader["levelNameBM"].ToString() : "";
                                 levelName = T(lvlEN, lvlBM);
                             }
                         }
@@ -334,41 +260,27 @@ namespace ScienceBuddy.Student
                 }
 
                 // 4. Set hero card
-                string displayName;
-                if (!string.IsNullOrEmpty(nickname))
-                {
-                    displayName = nickname;
-                }
-                else
-                {
-                    displayName = name;
-                }
+                string displayName = !string.IsNullOrEmpty(nickname) ? nickname : name;
                 litStudentName.Text = HttpUtility.HtmlEncode(displayName);
                 litCurrentLevel.Text = HttpUtility.HtmlEncode(levelName);
                 litPersonality.Text = HttpUtility.HtmlEncode(personalityName);
-                litAIMessage.Text = GetAIMessage(personalityId);
 
-                // 5. Try load AILearningAnalysis
+                // 5. Load AILearningAnalysis
                 decimal avgScore = 0;
                 int totalAttempts = 0;
                 string strongTopics = "";
                 string weakTopics = "";
-                string overallSummary = "";
                 LearningAnalysisData generatedAnalysis = null;
                 bool hasAnalysis = false;
 
                 if (Tbl(connection, "AILearningAnalysis"))
                 {
                     const string sqlAI = @"SELECT TOP 1
-                                           avgQuizScore,
-                                           totalQuizAttempts,
-                                           strongTopics,
-                                           weakTopics,
-                                           overallSummary,
-                                           analysisJson
+                                           avgQuizScore, totalQuizAttempts,
+                                           strongTopics, weakTopics,
+                                           overallSummary, analysisJson
                                            FROM AILearningAnalysis
-                                           WHERE studentId = @s
-                                           AND isLatest = 1";
+                                           WHERE studentId = @s AND isLatest = 1";
                     using (SqlCommand command = new SqlCommand(sqlAI, connection))
                     {
                         command.Parameters.AddWithValue("@s", studentId);
@@ -377,187 +289,47 @@ namespace ScienceBuddy.Student
                             if (reader.Read())
                             {
                                 hasAnalysis = true;
+                                avgScore = reader["avgQuizScore"] != DBNull.Value ? Convert.ToDecimal(reader["avgQuizScore"]) : 0;
+                                totalAttempts = reader["totalQuizAttempts"] != DBNull.Value ? Convert.ToInt32(reader["totalQuizAttempts"]) : 0;
+                                strongTopics = reader["strongTopics"] != DBNull.Value ? reader["strongTopics"].ToString() : "";
+                                weakTopics = reader["weakTopics"] != DBNull.Value ? reader["weakTopics"].ToString() : "";
 
-                                if (reader["avgQuizScore"] != DBNull.Value)
-                                {
-                                    avgScore = Convert.ToDecimal(reader["avgQuizScore"]);
-                                }
-                                else
-                                {
-                                    avgScore = 0;
-                                }
-
-                                if (reader["totalQuizAttempts"] != DBNull.Value)
-                                {
-                                    totalAttempts = Convert.ToInt32(reader["totalQuizAttempts"]);
-                                }
-                                else
-                                {
-                                    totalAttempts = 0;
-                                }
-
-                                if (reader["strongTopics"] != null && reader["strongTopics"] != DBNull.Value)
-                                {
-                                    strongTopics = reader["strongTopics"].ToString();
-                                }
-                                else
-                                {
-                                    strongTopics = "";
-                                }
-
-                                if (reader["weakTopics"] != null && reader["weakTopics"] != DBNull.Value)
-                                {
-                                    weakTopics = reader["weakTopics"].ToString();
-                                }
-                                else
-                                {
-                                    weakTopics = "";
-                                }
-
-                                if (reader["overallSummary"] != null && reader["overallSummary"] != DBNull.Value)
-                                {
-                                    overallSummary = reader["overallSummary"].ToString();
-                                }
-                                else
-                                {
-                                    overallSummary = "";
-                                }
-
-                                if (reader["analysisJson"] != null &&
-                                    reader["analysisJson"] != DBNull.Value)
-                                {
-                                    generatedAnalysis =
-                                        ParseLearningAnalysisJson(
-                                            reader["analysisJson"].ToString());
-                                }
-
-
+                                if (reader["analysisJson"] != null && reader["analysisJson"] != DBNull.Value)
+                                    generatedAnalysis = ParseLearningAnalysisJson(reader["analysisJson"].ToString());
                             }
                         }
                     }
                 }
 
-                // Display the personalised AI message.
-                if (generatedAnalysis != null)
+                // Load quiz metadata if ResultId is available
+                if (generatedAnalysis != null && !string.IsNullOrWhiteSpace(generatedAnalysis.ResultId) && Tbl(connection, "QuizResult"))
                 {
-                    // Load quiz metadata if ResultId is available
-                    if (!string.IsNullOrWhiteSpace(generatedAnalysis.ResultId) && Tbl(connection, "QuizResult"))
+                    const string sqlQM = @"SELECT q.quizTitleEN, q.quizTitleBM, qr.attemptedDate, qr.percentage 
+                                           FROM QuizResult qr INNER JOIN Quiz q ON q.quizId = qr.quizId 
+                                           WHERE qr.resultId = @rid AND qr.studentId = @sid";
+                    using (SqlCommand cmdQM = new SqlCommand(sqlQM, connection))
                     {
-                        const string sqlQM = @"SELECT q.quizTitleEN, q.quizTitleBM, qr.attemptedDate, qr.percentage 
-                                               FROM QuizResult qr INNER JOIN Quiz q ON q.quizId = qr.quizId 
-                                               WHERE qr.resultId = @rid AND qr.studentId = @sid";
-                        using (SqlCommand cmdQM = new SqlCommand(sqlQM, connection))
+                        cmdQM.Parameters.AddWithValue("@rid", generatedAnalysis.ResultId);
+                        cmdQM.Parameters.AddWithValue("@sid", studentId);
+                        using (SqlDataReader rdrQM = cmdQM.ExecuteReader())
                         {
-                            cmdQM.Parameters.AddWithValue("@rid", generatedAnalysis.ResultId);
-                            cmdQM.Parameters.AddWithValue("@sid", studentId);
-                            using (SqlDataReader rdrQM = cmdQM.ExecuteReader())
+                            if (rdrQM.Read())
                             {
-                                if (rdrQM.Read())
-                                {
-                                    string titleEN = rdrQM["quizTitleEN"] != DBNull.Value ? rdrQM["quizTitleEN"].ToString() : "";
-                                    string titleBM = rdrQM["quizTitleBM"] != DBNull.Value ? rdrQM["quizTitleBM"].ToString() : "";
-                                    GeneratedQuizTitle = T(titleEN, titleBM);
+                                string titleEN = rdrQM["quizTitleEN"] != DBNull.Value ? rdrQM["quizTitleEN"].ToString() : "";
+                                string titleBM = rdrQM["quizTitleBM"] != DBNull.Value ? rdrQM["quizTitleBM"].ToString() : "";
+                                GeneratedQuizTitle = T(titleEN, titleBM);
 
-                                    if (rdrQM["attemptedDate"] != DBNull.Value)
-                                    {
-                                        DateTime attemptDate = Convert.ToDateTime(rdrQM["attemptedDate"]);
-                                        GeneratedQuizDate = attemptDate.ToString("dd MMM yyyy");
-                                    }
+                                if (rdrQM["attemptedDate"] != DBNull.Value)
+                                    GeneratedQuizDate = Convert.ToDateTime(rdrQM["attemptedDate"]).ToString("dd MMM yyyy");
 
-                                    if (rdrQM["percentage"] != DBNull.Value)
-                                    {
-                                        GeneratedQuizScore = Convert.ToDecimal(rdrQM["percentage"]).ToString("0") + "%";
-                                    }
-                                }
+                                if (rdrQM["percentage"] != DBNull.Value)
+                                    GeneratedQuizScore = Convert.ToDecimal(rdrQM["percentage"]).ToString("0") + "%";
                             }
                         }
                     }
-
-                    string heroMessage = "";
-
-                    if (!string.IsNullOrWhiteSpace(
-                        generatedAnalysis.ProgressHeadline))
-                    {
-                        heroMessage =
-                            generatedAnalysis.ProgressHeadline;
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(
-                        generatedAnalysis.CelebrationMessage))
-                    {
-                        if (!string.IsNullOrWhiteSpace(heroMessage))
-                        {
-                            heroMessage += " ";
-                        }
-
-                        heroMessage +=
-                            generatedAnalysis.CelebrationMessage;
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(heroMessage))
-                    {
-                        litAIMessage.Text =
-                            HttpUtility.HtmlEncode(heroMessage);
-                    }
-
-                    // Show personality insight in separate card
-                    if (!string.IsNullOrWhiteSpace(generatedAnalysis.PersonalityInsight))
-                    {
-                        pnlPersonalityInsight.Visible = true;
-                        litPersonalityInsightLabel.Text = T("Why this fits you", "Mengapa ini sesuai untuk anda");
-                        litPersonalityInsightText.Text = HttpUtility.HtmlEncode(generatedAnalysis.PersonalityInsight);
-                    }
-
-                    // Show status badges row
-                    if (!string.IsNullOrWhiteSpace(generatedAnalysis.PerformanceTrend) ||
-                        !string.IsNullOrWhiteSpace(generatedAnalysis.Confidence))
-                    {
-                        pnlStatusRow.Visible = true;
-
-                        // Child-friendly trend labels
-                        string trendLabel = "";
-                        switch (generatedAnalysis.PerformanceTrend)
-                        {
-                            case "Improving":
-                                trendLabel = T("Going Up!", "Meningkat!");
-                                break;
-                            case "Stable":
-                                trendLabel = T("Steady!", "Stabil!");
-                                break;
-                            case "Needs Support":
-                                trendLabel = T("Let's Practise More!", "Jom Berlatih Lagi!");
-                                break;
-                            case "First Attempt":
-                                trendLabel = T("Just Starting!", "Baru Bermula!");
-                                break;
-                            default:
-                                trendLabel = T("Steady!", "Stabil!");
-                                break;
-                        }
-                        litTrendBadge.Text = HttpUtility.HtmlEncode(trendLabel);
-
-                        // Child-friendly confidence labels
-                        string confidenceLabel = "";
-                        switch (generatedAnalysis.Confidence)
-                        {
-                            case "Established":
-                                confidenceLabel = T("Strong Picture", "Gambaran Kukuh");
-                                break;
-                            case "Developing":
-                                confidenceLabel = T("Learning Your Pattern", "Mengenali Corak Anda");
-                                break;
-                            case "Early":
-                                confidenceLabel = T("Getting to Know You", "Mula Mengenali Anda");
-                                break;
-                            default:
-                                confidenceLabel = T("Learning Your Pattern", "Mengenali Corak Anda");
-                                break;
-                        }
-                        litConfidenceBadge.Text = HttpUtility.HtmlEncode(confidenceLabel);
-                    }
                 }
 
-                // 6. Fallback from QuizResult and LessonProgress if no analysis
+                // 6. Fallback from QuizResult if no analysis
                 int lessonsDone = 0;
                 int quizAttempts = 0;
 
@@ -574,23 +346,8 @@ namespace ScienceBuddy.Student
                             {
                                 if (reader.Read())
                                 {
-                                    if (reader["avgPct"] != DBNull.Value)
-                                    {
-                                        avgScore = Convert.ToDecimal(reader["avgPct"]);
-                                    }
-                                    else
-                                    {
-                                        avgScore = 0;
-                                    }
-
-                                    if (reader["cnt"] != DBNull.Value)
-                                    {
-                                        quizAttempts = Convert.ToInt32(reader["cnt"]);
-                                    }
-                                    else
-                                    {
-                                        quizAttempts = 0;
-                                    }
+                                    avgScore = reader["avgPct"] != DBNull.Value ? Convert.ToDecimal(reader["avgPct"]) : 0;
+                                    quizAttempts = reader["cnt"] != DBNull.Value ? Convert.ToInt32(reader["cnt"]) : 0;
                                     totalAttempts = quizAttempts;
                                 }
                             }
@@ -605,20 +362,12 @@ namespace ScienceBuddy.Student
                         {
                             command.Parameters.AddWithValue("@s", studentId);
                             object result = command.ExecuteScalar();
-                            if (result != null && result != DBNull.Value)
-                            {
-                                lessonsDone = Convert.ToInt32(result);
-                            }
-                            else
-                            {
-                                lessonsDone = 0;
-                            }
+                            lessonsDone = (result != null && result != DBNull.Value) ? Convert.ToInt32(result) : 0;
                         }
                     }
                 }
                 else
                 {
-                    // Get lessonsDone even with analysis for recommendations
                     if (Tbl(connection, "LessonProgress"))
                     {
                         const string sqlLP = @"SELECT COUNT(*) FROM LessonProgress 
@@ -627,14 +376,7 @@ namespace ScienceBuddy.Student
                         {
                             command.Parameters.AddWithValue("@s", studentId);
                             object result = command.ExecuteScalar();
-                            if (result != null && result != DBNull.Value)
-                            {
-                                lessonsDone = Convert.ToInt32(result);
-                            }
-                            else
-                            {
-                                lessonsDone = 0;
-                            }
+                            lessonsDone = (result != null && result != DBNull.Value) ? Convert.ToInt32(result) : 0;
                         }
                     }
                     quizAttempts = totalAttempts;
@@ -647,63 +389,56 @@ namespace ScienceBuddy.Student
                     return;
                 }
 
-                // Display health summary
                 pnlEmpty.Visible = false;
 
-                if (totalAttempts > 0 || hasAnalysis)
+                // ═══ SECTION 1: HERO - Progress scores ═══
+                if (generatedAnalysis != null)
                 {
+                    // Hero headline and celebration
+                    string headline = generatedAnalysis.ProgressHeadline ?? "";
+                    string celebration = generatedAnalysis.CelebrationMessage ?? "";
+                    litAIMessage.Text = HttpUtility.HtmlEncode(headline);
+                    litHeroSub.Text = HttpUtility.HtmlEncode(celebration);
+
+                    // Score values
+                    litAvgScore.Text = generatedAnalysis.CurrentQuizScore.ToString("0.0") + "%";
+                    litTotalAttempts.Text = generatedAnalysis.PreviousRecentAverage.ToString("0.0") + "%";
+
+                    string changePrefix = generatedAnalysis.ScoreChange >= 0 ? "+" : "";
+                    litStrongTopics.Text = changePrefix + generatedAnalysis.ScoreChange.ToString("0.0") + "%";
+
                     pnlHealth.Visible = true;
-                    pnlHealthEmpty.Visible = false;
+                }
+                else if (totalAttempts > 0)
+                {
+                    litAIMessage.Text = HttpUtility.HtmlEncode(GetAIMessage(personalityId));
+                    litHeroSub.Text = "";
                     litAvgScore.Text = avgScore.ToString("0.0") + "%";
-                    litTotalAttempts.Text = totalAttempts.ToString();
+                    litTotalAttempts.Text = "—";
+                    litStrongTopics.Text = "—";
+                    pnlHealth.Visible = true;
+                }
+                else
+                {
+                    litAIMessage.Text = HttpUtility.HtmlEncode(GetAIMessage(personalityId));
+                    litHeroSub.Text = "";
+                    pnlHealth.Visible = false;
+                }
 
-                    // Current Trend card (replaces strong topics in pulse grid)
-                    string trendCardLabel = T("Steady!", "Stabil!");
-                    if (generatedAnalysis != null && !string.IsNullOrWhiteSpace(generatedAnalysis.PerformanceTrend))
-                    {
-                        switch (generatedAnalysis.PerformanceTrend)
-                        {
-                            case "Improving":
-                                trendCardLabel = T("Going Up!", "Meningkat!");
-                                break;
-                            case "Stable":
-                                trendCardLabel = T("Steady!", "Stabil!");
-                                break;
-                            case "Needs Support":
-                                trendCardLabel = T("Let's Practise More!", "Jom Berlatih Lagi!");
-                                break;
-                            case "First Attempt":
-                                trendCardLabel = T("Just Starting!", "Baru Bermula!");
-                                break;
-                        }
-                    }
-                    litStrongTopics.Text = HttpUtility.HtmlEncode(trendCardLabel);
+                // Total quiz attempts chip
+                litWeakTopics.Text = totalAttempts.ToString();
 
-                    // Learning Picture card (replaces weak topics in pulse grid)
-                    string confidenceCardLabel = T("Learning Your Pattern", "Mengenali Corak Anda");
-                    if (generatedAnalysis != null && !string.IsNullOrWhiteSpace(generatedAnalysis.Confidence))
-                    {
-                        switch (generatedAnalysis.Confidence)
-                        {
-                            case "Established":
-                                confidenceCardLabel = T("Strong Picture", "Gambaran Kukuh");
-                                break;
-                            case "Developing":
-                                confidenceCardLabel = T("Learning Your Pattern", "Mengenali Corak Anda");
-                                break;
-                            case "Early":
-                                confidenceCardLabel = T("Getting to Know You", "Mula Mengenali Anda");
-                                break;
-                        }
-                    }
-                    litWeakTopics.Text = HttpUtility.HtmlEncode(confidenceCardLabel);
+                // ═══ SECTION 2: AI NOTICED THIS ABOUT YOU ═══
+                if (hasAnalysis && generatedAnalysis != null)
+                {
+                    pnlStatusRow.Visible = true;
 
-                    // Strong topics detail section
+                    // Strong topics card
                     if (!string.IsNullOrWhiteSpace(strongTopics))
                     {
                         pnlStrong.Visible = true;
                         pnlStrongEmpty.Visible = false;
-                        litStrongList.Text = FormatTopicList(strongTopics, "green");
+                        litStrongList.Text = FormatChips(strongTopics, "green");
                     }
                     else
                     {
@@ -711,37 +446,51 @@ namespace ScienceBuddy.Student
                         pnlStrongEmpty.Visible = true;
                     }
 
-                    // Weak topics detail section
+                    // Weak topics card
                     if (!string.IsNullOrWhiteSpace(weakTopics))
                     {
                         pnlWeak.Visible = true;
                         pnlWeakEmpty.Visible = false;
-                        litWeakList.Text = FormatTopicList(weakTopics, "orange");
+                        litWeakList.Text = FormatChips(weakTopics, "orange");
                     }
                     else
                     {
                         pnlWeak.Visible = false;
                         pnlWeakEmpty.Visible = true;
                     }
+
+                    // Personality insight card
+                    if (!string.IsNullOrWhiteSpace(generatedAnalysis.PersonalityInsight))
+                    {
+                        pnlPersonalityInsight.Visible = true;
+                        string pName = !string.IsNullOrWhiteSpace(generatedAnalysis.PersonalityName)
+                            ? generatedAnalysis.PersonalityName : personalityName;
+                        litPersonalityInsightLabel.Text = T(
+                            "Your " + HttpUtility.HtmlEncode(pName) + " Style",
+                            "Gaya " + HttpUtility.HtmlEncode(pName) + " Anda");
+                        litPersonalityInsightText.Text = HttpUtility.HtmlEncode(generatedAnalysis.PersonalityInsight);
+
+                        // Show learning style below insight
+                        if (!string.IsNullOrWhiteSpace(learningStyle))
+                            litTopicZoneTitle.Text = "<i class=\"bi bi-mortarboard\"></i> " + HttpUtility.HtmlEncode(learningStyle);
+                        else
+                            litTopicZoneTitle.Text = "";
+                    }
+                    else
+                    {
+                        pnlPersonalityInsight.Visible = false;
+                        litTopicZoneTitle.Text = "";
+                    }
                 }
                 else
                 {
-                    pnlHealth.Visible = false;
-                    pnlHealthEmpty.Visible = true;
-                    pnlStrong.Visible = false;
-                    pnlStrongEmpty.Visible = true;
-                    pnlWeak.Visible = false;
-                    pnlWeakEmpty.Visible = true;
+                    pnlStatusRow.Visible = false;
                 }
 
-                // 7. Build recommendations from the saved AI analysis.
+                // ═══ SECTION 3: YOUR PLAN FOR TODAY ═══
                 List<object> recommendations = BuildRecommendations(
-                    generatedAnalysis,
-                    personalityId,
-                    weakTopics,
-                    avgScore,
-                    lessonsDone,
-                    quizAttempts);
+                    generatedAnalysis, personalityId, weakTopics,
+                    avgScore, lessonsDone, quizAttempts);
 
                 if (recommendations.Count > 0)
                 {
@@ -749,39 +498,22 @@ namespace ScienceBuddy.Student
                     rptRecommendations.DataSource = recommendations;
                     rptRecommendations.DataBind();
 
-                    string explanation = overallSummary;
-
-                    if (generatedAnalysis != null &&
-                        !string.IsNullOrWhiteSpace(
-                            generatedAnalysis.StudentAdvice))
-                    {
-                        if (!string.IsNullOrWhiteSpace(explanation))
-                        {
-                            explanation += " ";
-                        }
-
-                        explanation += generatedAnalysis.StudentAdvice;
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(explanation))
-                    {
-                        litExplanation.Text =
-                            HttpUtility.HtmlEncode(explanation);
-                    }
+                    // Coach Tip = StudentAdvice only
+                    if (generatedAnalysis != null && !string.IsNullOrWhiteSpace(generatedAnalysis.StudentAdvice))
+                        litExplanation.Text = HttpUtility.HtmlEncode(generatedAnalysis.StudentAdvice);
                     else
-                    {
                         litExplanation.Text = T(
                             "These recommendations are based on your learning patterns and personality type.",
                             "Cadangan ini berdasarkan corak pembelajaran dan jenis personaliti anda.");
-                    }
                 }
                 else
                 {
                     pnlRecommend.Visible = false;
                 }
 
-                // 8. Use the personalised AI mission when available.
+                // ═══ SECTION 4: PERSONALITY MISSION ═══
                 List<string> tips;
+                string[] missionLabels = GetMissionLabels(personalityId);
 
                 if (generatedAnalysis != null &&
                     generatedAnalysis.NextMissionSteps != null &&
@@ -789,19 +521,10 @@ namespace ScienceBuddy.Student
                 {
                     tips = generatedAnalysis.NextMissionSteps;
 
-                    if (!string.IsNullOrWhiteSpace(
-                        generatedAnalysis.NextMissionTitle))
-                    {
-                        litTipsTitle.Text =
-                            HttpUtility.HtmlEncode(
-                                generatedAnalysis.NextMissionTitle);
-                    }
+                    if (!string.IsNullOrWhiteSpace(generatedAnalysis.NextMissionTitle))
+                        litTipsTitle.Text = HttpUtility.HtmlEncode(generatedAnalysis.NextMissionTitle);
                     else
-                    {
-                        litTipsTitle.Text = T(
-                            "Your 3-Step Mission",
-                            "Misi 3 Langkah Anda");
-                    }
+                        litTipsTitle.Text = T("Your 3-Step Mission", "Misi 3 Langkah Anda");
                 }
                 else if (generatedAnalysis != null &&
                          generatedAnalysis.StudyTips != null &&
@@ -814,17 +537,75 @@ namespace ScienceBuddy.Student
                     tips = GetStudyTips(personalityId);
                 }
 
-                litTip1.Text = tips.Count > 0
-                    ? HttpUtility.HtmlEncode(tips[0])
-                    : "";
+                // Set personality-specific step labels
+                litStrongEmptyTitle.Text = missionLabels[0];
+                litTrendBadge.Text = missionLabels[1];
+                litConfidenceBadge.Text = missionLabels[2];
 
-                litTip2.Text = tips.Count > 1
-                    ? HttpUtility.HtmlEncode(tips[1])
-                    : "";
+                litTip1.Text = tips.Count > 0 ? HttpUtility.HtmlEncode(tips[0]) : "";
+                litTip2.Text = tips.Count > 1 ? HttpUtility.HtmlEncode(tips[1]) : "";
+                litTip3.Text = tips.Count > 2 ? HttpUtility.HtmlEncode(tips[2]) : "";
 
-                litTip3.Text = tips.Count > 2
-                    ? HttpUtility.HtmlEncode(tips[2])
-                    : "";
+                // ═══ SECTION 5: CHATBOT - personalised chips ═══
+                string firstWeak = "";
+                if (!string.IsNullOrWhiteSpace(weakTopics))
+                {
+                    string[] weakArr = weakTopics.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (weakArr.Length > 0) firstWeak = weakArr[0].Trim();
+                }
+
+                string pNameForChat = !string.IsNullOrWhiteSpace(personalityName) ? personalityName : "my";
+
+                if (!string.IsNullOrEmpty(firstWeak))
+                {
+                    litChatChip1.Text = string.Format(
+                        "<button type=\"button\" class=\"st-ai-chip\" onclick=\"document.getElementById('{0}').value = 'Why should I practise {1}?';\">" +
+                        "<i class=\"bi bi-bullseye\"></i> Why practise {1}?</button>",
+                        txtAIMessage.ClientID, HttpUtility.HtmlAttributeEncode(firstWeak));
+
+                    litChatChip2.Text = string.Format(
+                        "<button type=\"button\" class=\"st-ai-chip\" onclick=\"document.getElementById('{0}').value = 'Help me understand {1}.';\">" +
+                        "<i class=\"bi bi-lightbulb\"></i> Help me understand {1}</button>",
+                        txtAIMessage.ClientID, HttpUtility.HtmlAttributeEncode(firstWeak));
+                }
+                else
+                {
+                    litChatChip1.Text = string.Format(
+                        "<button type=\"button\" class=\"st-ai-chip\" onclick=\"document.getElementById('{0}').value = 'What should I learn next?';\">" +
+                        "<i class=\"bi bi-signpost-split\"></i> What next?</button>",
+                        txtAIMessage.ClientID);
+
+                    litChatChip2.Text = string.Format(
+                        "<button type=\"button\" class=\"st-ai-chip\" onclick=\"document.getElementById('{0}').value = 'Help me with my focus topic';\">" +
+                        "<i class=\"bi bi-bullseye\"></i> Focus topic</button>",
+                        txtAIMessage.ClientID);
+                }
+
+                litChatChip3.Text = string.Format(
+                    "<button type=\"button\" class=\"st-ai-chip\" onclick=\"document.getElementById('{0}').value = 'Make a {1} study plan.';\">" +
+                    "<i class=\"bi bi-calendar-check\"></i> {1} study plan</button>",
+                    txtAIMessage.ClientID, HttpUtility.HtmlAttributeEncode(pNameForChat));
+
+                litChatChip4.Text = string.Format(
+                    "<button type=\"button\" class=\"st-ai-chip\" onclick=\"document.getElementById('{0}').value = 'How did my score change?';\">" +
+                    "<i class=\"bi bi-graph-up-arrow\"></i> Score change?</button>",
+                    txtAIMessage.ClientID);
+
+            } // end using connection
+        }
+
+        // ── Mission labels by personality ─────────────────────────────
+        private string[] GetMissionLabels(string personalityId)
+        {
+            switch (personalityId)
+            {
+                case "P001": return new[] { "GOAL", "CHALLENGE", "WIN" };
+                case "P002": return new[] { "SEE", "CREATE", "EXPLORE" };
+                case "P003": return new[] { "UNDERSTAND", "EXPLAIN", "CHECK" };
+                case "P004": return new[] { "START", "CHALLENGE", "BEAT" };
+                case "P005": return new[] { "LEARN", "PAUSE", "TRY" };
+                case "P006": return new[] { "DISCUSS", "SHARE", "PRACTISE" };
+                default: return new[] { "STEP 1", "STEP 2", "STEP 3" };
             }
         }
 
@@ -834,71 +615,24 @@ namespace ScienceBuddy.Student
             pnlEmpty.Visible = true;
             pnlHealth.Visible = false;
             pnlHealthEmpty.Visible = false;
-            pnlStrong.Visible = false;
-            pnlStrongEmpty.Visible = false;
-            pnlWeak.Visible = false;
-            pnlWeakEmpty.Visible = false;
+            pnlStatusRow.Visible = false;
             pnlRecommend.Visible = false;
         }
 
-        // ── Format chips for health cards ─────────────────────────────
+        // ── Format chips ──────────────────────────────────────────────
         private string FormatChips(string topics, string color)
         {
-            if (string.IsNullOrWhiteSpace(topics))
-            {
-                return "";
-            }
+            if (string.IsNullOrWhiteSpace(topics)) return "";
 
             string[] items = topics.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
-            string cssClass;
-            if (color == "green")
-            {
-                cssClass = "st-ai-chip st-ai-chip--green";
-            }
-            else
-            {
-                cssClass = "st-ai-chip st-ai-chip--orange";
-            }
+            string cssClass = color == "green" ? "st-ai-chip st-ai-chip--green" : "st-ai-chip st-ai-chip--orange";
 
-            System.Text.StringBuilder htmlBuilder = new System.Text.StringBuilder();
+            StringBuilder htmlBuilder = new StringBuilder();
             foreach (string item in items)
             {
                 string trimmed = item.Trim();
                 if (!string.IsNullOrEmpty(trimmed))
-                {
                     htmlBuilder.AppendFormat("<span class='{0}'>{1}</span>", cssClass, HttpUtility.HtmlEncode(trimmed));
-                }
-            }
-            return htmlBuilder.ToString();
-        }
-
-        // ── Format topic list for detail sections ─────────────────────
-        private string FormatTopicList(string topics, string color)
-        {
-            if (string.IsNullOrWhiteSpace(topics))
-            {
-                return "";
-            }
-
-            string[] items = topics.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
-            string icon;
-            if (color == "green")
-            {
-                icon = "<i class=\"bi bi-check-circle-fill\" style=\"color:#10B981;\"></i>";
-            }
-            else
-            {
-                icon = "<i class=\"bi bi-pin-fill\" style=\"color:#F59E0B;\"></i>";
-            }
-
-            System.Text.StringBuilder htmlBuilder = new System.Text.StringBuilder();
-            foreach (string item in items)
-            {
-                string trimmed = item.Trim();
-                if (!string.IsNullOrEmpty(trimmed))
-                {
-                    htmlBuilder.AppendFormat("{0} {1}<br/>", icon, HttpUtility.HtmlEncode(trimmed));
-                }
             }
             return htmlBuilder.ToString();
         }
@@ -908,188 +642,126 @@ namespace ScienceBuddy.Student
         {
             switch (personalityId)
             {
-                case "P001": // Achiever
-                    return T("I can help you earn your next badge faster.",
+                case "P001": return T("I can help you earn your next badge faster.",
                              "Saya boleh membantu anda memperoleh lencana seterusnya dengan lebih cepat.");
-                case "P002": // Creative
-                    return T("Let's explore Science in a fun and visual way.",
+                case "P002": return T("Let's explore Science in a fun and visual way.",
                              "Jom terokai Sains dengan cara yang menyeronokkan dan visual.");
-                case "P003": // Thinker
-                    return T("Let's understand your mistakes and improve step by step.",
+                case "P003": return T("Let's understand your mistakes and improve step by step.",
                              "Jom fahami kesilapan anda dan tambah baik langkah demi langkah.");
-                case "P004": // Go-Getter
-                    return T("Ready for your next challenge?",
+                case "P004": return T("Ready for your next challenge?",
                              "Bersedia untuk cabaran seterusnya?");
-                case "P005": // Chill Learner
-                    return T("No rush. Let's learn calmly together.",
+                case "P005": return T("No rush. Let's learn calmly together.",
                              "Tidak perlu tergesa-gesa. Jom belajar dengan tenang bersama.");
-                case "P006": // Socializer
-                    return T("Let's learn together with your friends and teachers.",
+                case "P006": return T("Let's learn together with your friends and teachers.",
                              "Jom belajar bersama rakan dan guru anda.");
-                default:
-                    return T("I'm here to help you learn better!",
+                default: return T("I'm here to help you learn better!",
                              "Saya di sini untuk membantu anda belajar dengan lebih baik!");
             }
         }
 
         // ── Build recommendations ─────────────────────────────────────
         private List<object> BuildRecommendations(
-            LearningAnalysisData analysis,
-            string personalityId,
-            string weakTopics,
-            decimal avgScore,
-            int lessonsDone,
-            int quizAttempts)
+            LearningAnalysisData analysis, string personalityId,
+            string weakTopics, decimal avgScore, int lessonsDone, int quizAttempts)
         {
             List<object> recommendations = new List<object>();
-            string buttonText = T("Open", "Buka");
+            string buttonText = T("Let's Go", "Jom");
 
             if (analysis != null)
             {
-                if (!string.IsNullOrWhiteSpace(
-                    analysis.RecommendedLessonId))
+                if (!string.IsNullOrWhiteSpace(analysis.RecommendedLessonId))
                 {
-                    string lessonTitle =
-                        analysis.RecommendedLessonTitle;
+                    string lessonTitle = !string.IsNullOrWhiteSpace(analysis.RecommendedLessonTitle)
+                        ? analysis.RecommendedLessonTitle
+                        : T("Recommended Lesson", "Pelajaran Dicadangkan");
 
-                    if (string.IsNullOrWhiteSpace(lessonTitle))
-                    {
-                        lessonTitle = T(
-                            "Recommended Lesson",
-                            "Pelajaran Dicadangkan");
-                    }
+                    string shortReason = T("Review before your next quiz", "Ulang kaji sebelum kuiz seterusnya");
+                    string fullReason = !string.IsNullOrWhiteSpace(analysis.LessonReason)
+                        ? analysis.LessonReason
+                        : T("Review this lesson to strengthen your understanding.", "Ulang kaji pelajaran ini untuk mengukuhkan kefahaman anda.");
 
                     recommendations.Add(new
                     {
-                        Icon =
-                            "<i class=\"bi bi-book\"></i>",
-                        Title = T(
-                            "Review: ",
-                            "Ulang Kaji: ") +
-                            lessonTitle,
-                        Reason =
-                            !string.IsNullOrWhiteSpace(
-                                analysis.LessonReason)
-                            ? analysis.LessonReason
-                            : T(
-                                "Review this lesson before your next quiz.",
-                                "Ulang kaji pelajaran ini sebelum kuiz seterusnya."),
-                        Url =
-                            ResolveUrl(
-                                "~/Student/Lesson.aspx") +
-                            "?lessonId=" +
-                            HttpUtility.UrlEncode(
-                                analysis.RecommendedLessonId),
+                        Category = T("LEARN", "BELAJAR"),
+                        Icon = "<i class=\"bi bi-book-half\"></i>",
+                        Title = lessonTitle,
+                        ShortReason = shortReason,
+                        Reason = fullReason,
+                        Url = ResolveUrl("~/Student/Lesson.aspx") + "?lessonId=" + HttpUtility.UrlEncode(analysis.RecommendedLessonId),
                         BtnText = buttonText
                     });
                 }
 
-                if (!string.IsNullOrWhiteSpace(
-                    analysis.RecommendedQuizDifficulty))
+                if (!string.IsNullOrWhiteSpace(analysis.RecommendedQuizDifficulty))
                 {
-                    string difficultyLabel =
-                        analysis.RecommendedQuizDifficulty;
-
+                    string diffLabel = analysis.RecommendedQuizDifficulty;
                     if (CurrentLanguage == "BM")
                     {
-                        if (difficultyLabel == "Easy")
-                        {
-                            difficultyLabel = "Mudah";
-                        }
-                        else if (difficultyLabel == "Medium")
-                        {
-                            difficultyLabel = "Sederhana";
-                        }
-                        else if (difficultyLabel == "Hard")
-                        {
-                            difficultyLabel = "Sukar";
-                        }
+                        if (diffLabel == "Easy") diffLabel = "Mudah";
+                        else if (diffLabel == "Medium") diffLabel = "Sederhana";
+                        else if (diffLabel == "Hard") diffLabel = "Sukar";
                     }
+
+                    string shortReason = T("Matches your current level", "Sepadan dengan tahap semasa anda");
+                    string fullReason = !string.IsNullOrWhiteSpace(analysis.QuizReason)
+                        ? analysis.QuizReason
+                        : T("This difficulty matches your recent performance.", "Tahap ini sepadan dengan prestasi terkini anda.");
 
                     recommendations.Add(new
                     {
-                        Icon =
-                            "<i class=\"bi bi-clipboard-check\"></i>",
-                        Title = T(
-                            "Recommended Quiz: ",
-                            "Kuiz Dicadangkan: ") +
-                            difficultyLabel,
-                        Reason =
-                            !string.IsNullOrWhiteSpace(
-                                analysis.QuizReason)
-                            ? analysis.QuizReason
-                            : T(
-                                "This difficulty matches your recent quiz performance.",
-                                "Tahap ini sepadan dengan prestasi kuiz terkini anda."),
-                        Url =
-                            ResolveUrl(
-                                "~/Student/PracticeLibrary.aspx"),
+                        Category = T("PRACTISE", "BERLATIH"),
+                        Icon = "<i class=\"bi bi-clipboard-check\"></i>",
+                        Title = T("Quiz: ", "Kuiz: ") + diffLabel,
+                        ShortReason = shortReason,
+                        Reason = fullReason,
+                        Url = ResolveUrl("~/Student/PracticeLibrary.aspx"),
                         BtnText = buttonText
                     });
                 }
 
-                if (!string.IsNullOrWhiteSpace(
-                    analysis.RecommendedLabId))
+                if (!string.IsNullOrWhiteSpace(analysis.RecommendedLabId))
                 {
-                    string labTitle =
-                        analysis.RecommendedLabTitle;
+                    string labTitle = !string.IsNullOrWhiteSpace(analysis.RecommendedLabTitle)
+                        ? analysis.RecommendedLabTitle
+                        : T("Recommended Virtual Lab", "Makmal Maya Dicadangkan");
 
-                    if (string.IsNullOrWhiteSpace(labTitle))
-                    {
-                        labTitle = T(
-                            "Recommended Virtual Lab",
-                            "Makmal Maya Dicadangkan");
-                    }
+                    string shortReason = T("Hands-on practice for this topic", "Latihan amali untuk topik ini");
+                    string fullReason = !string.IsNullOrWhiteSpace(analysis.LabReason)
+                        ? analysis.LabReason
+                        : T("Try this lab to strengthen the related Science concept.", "Cuba makmal ini untuk mengukuhkan konsep Sains berkaitan.");
 
                     recommendations.Add(new
                     {
-                        Icon =
-                            "<i class=\"bi bi-eyedropper\"></i>",
+                        Category = T("EXPLORE", "TEROKAI"),
+                        Icon = "<i class=\"bi bi-eyedropper\"></i>",
                         Title = labTitle,
-                        Reason =
-                            !string.IsNullOrWhiteSpace(
-                                analysis.LabReason)
-                            ? analysis.LabReason
-                            : T(
-                                "Try this lab to strengthen the related Science concept.",
-                                "Cuba makmal ini untuk mengukuhkan konsep Sains berkaitan."),
-                        Url =
-                            ResolveUrl(
-                                "~/Student/VirtualLab.aspx") +
-                            "?labId=" +
-                            HttpUtility.UrlEncode(
-                                analysis.RecommendedLabId),
+                        ShortReason = shortReason,
+                        Reason = fullReason,
+                        Url = ResolveUrl("~/Student/VirtualLab.aspx") + "?labId=" + HttpUtility.UrlEncode(analysis.RecommendedLabId),
                         BtnText = buttonText
                     });
                 }
 
-                if (recommendations.Count > 0)
-                {
-                    return recommendations;
-                }
+                if (recommendations.Count > 0) return recommendations;
             }
 
-            return BuildFallbackRecommendations(
-                personalityId,
-                weakTopics,
-                avgScore,
-                lessonsDone,
-                quizAttempts);
+            return BuildFallbackRecommendations(personalityId, weakTopics, avgScore, lessonsDone, quizAttempts);
         }
 
         private List<object> BuildFallbackRecommendations(string personalityId, string weakTopics,
             decimal avgScore, int lessonsDone, int quizAttempts)
         {
             List<object> list = new List<object>();
-            string goText = T("Let's Go!", "Jom!");
+            string goText = T("Let's Go", "Jom");
 
-            // If weak topics exist, recommend practice
             if (!string.IsNullOrWhiteSpace(weakTopics))
             {
                 list.Add(new
                 {
+                    Category = T("PRACTISE", "BERLATIH"),
                     Icon = "<i class=\"bi bi-pencil-square\"></i>",
                     Title = T("Practice Weak Topics", "Latih Topik Lemah"),
+                    ShortReason = T("Focus on weak areas to improve", "Fokus pada kawasan lemah untuk meningkat"),
                     Reason = T("Focus on your weak areas to improve your overall score.",
                                "Fokus pada kawasan lemah anda untuk meningkatkan skor keseluruhan."),
                     Url = ResolveUrl("~/Student/PracticeLibrary.aspx"),
@@ -1097,13 +769,14 @@ namespace ScienceBuddy.Student
                 });
             }
 
-            // If few lessons completed
             if (lessonsDone < 3)
             {
                 list.Add(new
                 {
+                    Category = T("LEARN", "BELAJAR"),
                     Icon = "<i class=\"bi bi-book\"></i>",
                     Title = T("Continue Learning", "Teruskan Belajar"),
+                    ShortReason = T("More lessons to explore", "Lebih banyak pelajaran untuk diterokai"),
                     Reason = T("You have more lessons to explore. Keep going!",
                                "Anda mempunyai lebih banyak pelajaran untuk diterokai. Teruskan!"),
                     Url = ResolveUrl("~/Student/MyLearning.aspx"),
@@ -1111,89 +784,19 @@ namespace ScienceBuddy.Student
                 });
             }
 
-            // If few quiz attempts
             if (quizAttempts < 3)
             {
                 list.Add(new
                 {
+                    Category = T("PRACTISE", "BERLATIH"),
                     Icon = "<i class=\"bi bi-clipboard-check\"></i>",
                     Title = T("Try More Quizzes", "Cuba Lebih Banyak Kuiz"),
+                    ShortReason = T("Reinforce what you've learned", "Kukuhkan apa yang dipelajari"),
                     Reason = T("Quizzes help reinforce what you've learned. Try a few more!",
                                "Kuiz membantu mengukuhkan apa yang anda pelajari. Cuba lebih banyak!"),
                     Url = ResolveUrl("~/Student/PracticeLibrary.aspx"),
                     BtnText = goText
                 });
-            }
-
-            // Personality-specific recommendations
-            switch (personalityId)
-            {
-                case "P001": // Achiever → Progress & Rewards
-                    list.Add(new
-                    {
-                        Icon = "<i class=\"bi bi-trophy\"></i>",
-                        Title = T("Check Your Progress", "Semak Kemajuan Anda"),
-                        Reason = T("See how close you are to your next achievement!",
-                                   "Lihat sejauh mana anda daripada pencapaian seterusnya!"),
-                        Url = ResolveUrl("~/Student/ProgressRewards.aspx"),
-                        BtnText = goText
-                    });
-                    break;
-                case "P002": // Creative → Virtual Labs
-                    list.Add(new
-                    {
-                        Icon = "<i class=\"bi bi-eyedropper\"></i>",
-                        Title = T("Explore Virtual Labs", "Terokai Makmal Maya"),
-                        Reason = T("Hands-on experiments to spark your creativity!",
-                                   "Eksperimen secara praktikal untuk mencetus kreativiti anda!"),
-                        Url = ResolveUrl("~/Student/VirtualLabs.aspx"),
-                        BtnText = goText
-                    });
-                    break;
-                case "P003": // Thinker → Lesson review
-                    list.Add(new
-                    {
-                        Icon = "<i class=\"bi bi-search\"></i>",
-                        Title = T("Review Your Lessons", "Ulang Kaji Pelajaran"),
-                        Reason = T("Go deeper into topics to strengthen your understanding.",
-                                   "Dalami topik untuk mengukuhkan pemahaman anda."),
-                        Url = ResolveUrl("~/Student/MyLearning.aspx"),
-                        BtnText = goText
-                    });
-                    break;
-                case "P004": // Go-Getter → Practice more
-                    list.Add(new
-                    {
-                        Icon = "<i class=\"bi bi-lightning-charge\"></i>",
-                        Title = T("Take on a Challenge", "Terima Cabaran"),
-                        Reason = T("Push yourself with harder quizzes!",
-                                   "Uji diri anda dengan kuiz yang lebih mencabar!"),
-                        Url = ResolveUrl("~/Student/PracticeLibrary.aspx"),
-                        BtnText = goText
-                    });
-                    break;
-                case "P005": // Chill Learner → Continue Learning
-                    list.Add(new
-                    {
-                        Icon = "<i class=\"bi bi-flower1\"></i>",
-                        Title = T("Learn at Your Pace", "Belajar Mengikut Kadar Anda"),
-                        Reason = T("No rush — pick up where you left off.",
-                                   "Tidak perlu tergesa — sambung dari mana anda berhenti."),
-                        Url = ResolveUrl("~/Student/MyLearning.aspx"),
-                        BtnText = goText
-                    });
-                    break;
-                case "P006": // Socializer → Forum / Live
-                    list.Add(new
-                    {
-                        Icon = "<i class=\"bi bi-chat-dots\"></i>",
-                        Title = T("Join the Forum", "Sertai Forum"),
-                        Reason = T("Discuss and learn together with your peers!",
-                                   "Bincang dan belajar bersama rakan sebaya anda!"),
-                        Url = ResolveUrl("~/Student/Forum.aspx"),
-                        BtnText = goText
-                    });
-                    break;
             }
 
             return list;
@@ -1203,92 +806,58 @@ namespace ScienceBuddy.Student
         private List<string> GetStudyTips(string personalityId)
         {
             List<string> tips = new List<string>();
-
             switch (personalityId)
             {
-                case "P001": // Achiever
-                    tips.Add(T("Set small daily goals and track your streaks to stay motivated.",
-                               "Tetapkan matlamat harian kecil dan jejaki rekod anda untuk kekal bermotivasi."));
-                    tips.Add(T("Challenge yourself with harder quizzes after mastering easy ones.",
-                               "Cabari diri anda dengan kuiz lebih sukar selepas menguasai yang mudah."));
-                    tips.Add(T("Celebrate your wins! Check your badges and XP regularly.",
-                               "Raikan kemenangan anda! Semak lencana dan XP anda secara berkala."));
+                case "P001":
+                    tips.Add(T("Set small daily goals and track your streaks.", "Tetapkan matlamat harian kecil dan jejaki rekod anda."));
+                    tips.Add(T("Challenge yourself with harder quizzes.", "Cabari diri anda dengan kuiz lebih sukar."));
+                    tips.Add(T("Celebrate your wins! Check your badges.", "Raikan kemenangan anda! Semak lencana anda."));
                     break;
-                case "P002": // Creative
-                    tips.Add(T("Draw mind maps or diagrams to visualise Science concepts.",
-                               "Lukis peta minda atau gambar rajah untuk memvisualisasikan konsep Sains."));
-                    tips.Add(T("Try the Virtual Labs — they're great for hands-on exploration!",
-                               "Cuba Makmal Maya — sesuai untuk penerokaan secara praktikal!"));
-                    tips.Add(T("Create your own study notes with colours and doodles.",
-                               "Cipta nota belajar anda sendiri dengan warna dan lukisan."));
+                case "P002":
+                    tips.Add(T("Draw mind maps to visualise concepts.", "Lukis peta minda untuk memvisualisasikan konsep."));
+                    tips.Add(T("Try the Virtual Labs for hands-on exploration!", "Cuba Makmal Maya untuk penerokaan praktikal!"));
+                    tips.Add(T("Create colourful study notes.", "Cipta nota belajar berwarna."));
                     break;
-                case "P003": // Thinker
-                    tips.Add(T("Review your mistakes after each quiz to understand why.",
-                               "Ulang kaji kesilapan anda selepas setiap kuiz untuk memahami sebabnya."));
-                    tips.Add(T("Take notes and summarise lessons in your own words.",
-                               "Ambil nota dan rumuskan pelajaran dalam perkataan anda sendiri."));
-                    tips.Add(T("Ask 'why' questions — understanding the reason helps you remember.",
-                               "Tanya soalan 'kenapa' — memahami sebab membantu anda mengingat."));
+                case "P003":
+                    tips.Add(T("Review mistakes after each quiz to understand why.", "Ulang kaji kesilapan selepas setiap kuiz."));
+                    tips.Add(T("Summarise lessons in your own words.", "Rumuskan pelajaran dalam perkataan sendiri."));
+                    tips.Add(T("Ask 'why' — understanding reasons helps you remember.", "Tanya 'kenapa' — memahami sebab membantu mengingat."));
                     break;
-                case "P004": // Go-Getter
-                    tips.Add(T("Time yourself during quizzes to build speed and accuracy.",
-                               "Ukur masa anda semasa kuiz untuk membina kelajuan dan ketepatan."));
-                    tips.Add(T("Try to beat your previous best score on each quiz.",
-                               "Cuba atasi skor terbaik anda sebelum ini pada setiap kuiz."));
-                    tips.Add(T("Don't skip lessons — each one builds your foundation.",
-                               "Jangan langkau pelajaran — setiap satu membina asas anda."));
+                case "P004":
+                    tips.Add(T("Time yourself during quizzes for speed.", "Ukur masa semasa kuiz untuk kelajuan."));
+                    tips.Add(T("Try to beat your previous best score.", "Cuba atasi skor terbaik sebelum ini."));
+                    tips.Add(T("Don't skip lessons — each builds your foundation.", "Jangan langkau pelajaran — setiap satu membina asas."));
                     break;
-                case "P005": // Chill Learner
-                    tips.Add(T("Study in short 15-minute sessions with breaks in between.",
-                               "Belajar dalam sesi pendek 15 minit dengan rehat di antaranya."));
-                    tips.Add(T("Pick one topic per day and explore it deeply.",
-                               "Pilih satu topik sehari dan terokai secara mendalam."));
-                    tips.Add(T("It's okay to go slow. Consistency matters more than speed.",
-                               "Tidak mengapa untuk perlahan. Konsistensi lebih penting daripada kelajuan."));
+                case "P005":
+                    tips.Add(T("Study in short 15-minute sessions.", "Belajar dalam sesi pendek 15 minit."));
+                    tips.Add(T("Pick one topic per day and explore deeply.", "Pilih satu topik sehari dan terokai mendalam."));
+                    tips.Add(T("Go slow. Consistency matters more than speed.", "Perlahan. Konsistensi lebih penting daripada kelajuan."));
                     break;
-                case "P006": // Socializer
-                    tips.Add(T("Study with a friend or discuss topics in the Forum.",
-                               "Belajar bersama rakan atau bincangkan topik di Forum."));
-                    tips.Add(T("Teach what you've learned to someone else — it helps you remember!",
-                               "Ajar apa yang anda pelajari kepada orang lain — ia membantu anda mengingat!"));
-                    tips.Add(T("Join Live Sessions to interact with your teacher and classmates.",
-                               "Sertai Sesi Langsung untuk berinteraksi dengan guru dan rakan sekelas."));
+                case "P006":
+                    tips.Add(T("Study with a friend or discuss in the Forum.", "Belajar bersama rakan atau bincang di Forum."));
+                    tips.Add(T("Teach what you've learned to someone else!", "Ajar apa yang dipelajari kepada orang lain!"));
+                    tips.Add(T("Join Live Sessions to interact with your teacher.", "Sertai Sesi Langsung untuk berinteraksi dengan guru."));
                     break;
                 default:
-                    tips.Add(T("Review your lessons regularly to keep concepts fresh.",
-                               "Ulang kaji pelajaran anda secara berkala untuk mengekalkan konsep."));
-                    tips.Add(T("Practice makes perfect — try a quiz every day!",
-                               "Latihan menjadikan sempurna — cuba satu kuiz setiap hari!"));
-                    tips.Add(T("Take breaks and stay hydrated while studying.",
-                               "Ambil rehat dan kekal terhidrat semasa belajar."));
+                    tips.Add(T("Review your lessons regularly.", "Ulang kaji pelajaran secara berkala."));
+                    tips.Add(T("Practice makes perfect — try a quiz every day!", "Latihan menjadikan sempurna — cuba kuiz setiap hari!"));
+                    tips.Add(T("Take breaks and stay hydrated.", "Ambil rehat dan kekal terhidrat."));
                     break;
             }
-
             return tips;
         }
 
-        private LearningAnalysisData ParseLearningAnalysisJson(
-            string analysisJson)
+        private LearningAnalysisData ParseLearningAnalysisJson(string analysisJson)
         {
-            if (string.IsNullOrWhiteSpace(analysisJson))
-            {
-                return null;
-            }
-
+            if (string.IsNullOrWhiteSpace(analysisJson)) return null;
             try
             {
-                JavaScriptSerializer serializer =
-                    new JavaScriptSerializer();
-
-                return serializer.Deserialize<LearningAnalysisData>(
-                    analysisJson);
+                JavaScriptSerializer serializer = new JavaScriptSerializer();
+                return serializer.Deserialize<LearningAnalysisData>(analysisJson);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(
-                    "Could not read analysis JSON: " +
-                    ex.Message);
-
+                System.Diagnostics.Debug.WriteLine("Could not read analysis JSON: " + ex.Message);
                 return null;
             }
         }
@@ -1296,58 +865,29 @@ namespace ScienceBuddy.Student
         private string GetLatestLearningContext()
         {
             string userId = Session["userId"] as string;
+            if (string.IsNullOrWhiteSpace(userId)) return "";
 
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                return "";
-            }
-
-            const string sql = @"
-                SELECT TOP 1
-                    ai.analysisJson
+            const string sql = @"SELECT TOP 1 ai.analysisJson
                 FROM AILearningAnalysis ai
-                INNER JOIN Student s
-                    ON s.studentId = ai.studentId
-                WHERE s.userId = @userId
-                AND ai.isLatest = 1";
+                INNER JOIN Student s ON s.studentId = ai.studentId
+                WHERE s.userId = @userId AND ai.isLatest = 1";
 
-            using (SqlConnection connection =
-                new SqlConnection(ConnStr))
-            using (SqlCommand command =
-                new SqlCommand(sql, connection))
+            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlCommand command = new SqlCommand(sql, connection))
             {
-                command.Parameters.AddWithValue(
-                    "@userId",
-                    userId);
-
+                command.Parameters.AddWithValue("@userId", userId);
                 connection.Open();
-
-                object result =
-                    command.ExecuteScalar();
-
-                if (result == null ||
-                    result == DBNull.Value)
-                {
-                    return "";
-                }
-
+                object result = command.ExecuteScalar();
+                if (result == null || result == DBNull.Value) return "";
                 return result.ToString();
             }
         }
 
-
-
         // ── Table exists helper ───────────────────────────────────────
-        /// <summary>
-        /// Returns true if the given table exists in the current database.
-        /// Uses INFORMATION_SCHEMA so it never throws on a missing table.
-        /// </summary>
         private static bool Tbl(SqlConnection connection, string tableName)
         {
-            const string sql = @"
-                SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
-                WHERE  TABLE_NAME = @tableName
-                AND    TABLE_TYPE = 'BASE TABLE'";
+            const string sql = @"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
+                WHERE TABLE_NAME = @tableName AND TABLE_TYPE = 'BASE TABLE'";
             using (SqlCommand command = new SqlCommand(sql, connection))
             {
                 command.Parameters.AddWithValue("@tableName", tableName);
@@ -1358,11 +898,7 @@ namespace ScienceBuddy.Student
         protected void btnAISend_Click(object sender, EventArgs e)
         {
             string userMessage = (txtAIMessage.Text ?? "").Trim();
-
-            if (string.IsNullOrEmpty(userMessage))
-            {
-                return;
-            }
+            if (string.IsNullOrEmpty(userMessage)) return;
 
             AppendAIMessage("user", userMessage);
             txtAIMessage.Text = "";
@@ -1381,24 +917,17 @@ namespace ScienceBuddy.Student
         private void AppendAIMessage(string role, string text)
         {
             var history = Session["AIChatHistory"] as List<Dictionary<string, string>>;
-
-            if (history == null)
-            {
-                history = new List<Dictionary<string, string>>();
-            }
+            if (history == null) history = new List<Dictionary<string, string>>();
 
             history.Add(new Dictionary<string, string>
-    {
-        { "role", role },
-        { "content", text }
-    });
-
+            {
+                { "role", role },
+                { "content", text }
+            });
             Session["AIChatHistory"] = history;
 
             string cssClass = role == "user" ? "st-ai-msg-user" : "st-ai-msg-bot";
-
             string safeText = Server.HtmlEncode(text).Replace("\n", "<br/>");
-
             chatBox.InnerHtml += "<div class='st-ai-msg " + cssClass + "'>" + safeText + "</div>";
         }
 
@@ -1409,90 +938,56 @@ namespace ScienceBuddy.Student
             string endpoint = ConfigurationManager.AppSettings["NvidiaApiEndpoint"];
             string systemPrompt = ConfigurationManager.AppSettings["AIStudyCompanionPrompt"];
 
-            if (string.IsNullOrEmpty(model))
-            {
-                model = "meta/llama-3.1-8b-instruct";
-            }
-
-            if (string.IsNullOrEmpty(endpoint))
-            {
-                endpoint = "https://integrate.api.nvidia.com/v1/chat/completions";
-            }
-
+            if (string.IsNullOrEmpty(model)) model = "meta/llama-3.1-8b-instruct";
+            if (string.IsNullOrEmpty(endpoint)) endpoint = "https://integrate.api.nvidia.com/v1/chat/completions";
             if (string.IsNullOrEmpty(apiKey) || apiKey == "YOUR_NVIDIA_API_KEY_HERE")
-            {
                 return "Please set the NVIDIA API key in Web.config first.";
-            }
 
             var history = Session["AIChatHistory"] as List<Dictionary<string, string>>;
+            if (history == null) history = new List<Dictionary<string, string>>();
 
-            if (history == null)
-            {
-                history = new List<Dictionary<string, string>>();
-            }
-
-            var messagesList =
-    new List<Dictionary<string, string>>();
+            var messagesList = new List<Dictionary<string, string>>();
 
             if (!string.IsNullOrEmpty(systemPrompt))
             {
-                messagesList.Add(
-                    new Dictionary<string, string>
-                    {
-            { "role", "system" },
-            { "content", systemPrompt }
-                    });
+                messagesList.Add(new Dictionary<string, string>
+                {
+                    { "role", "system" },
+                    { "content", systemPrompt }
+                });
             }
 
-            string learningContext =
-                GetLatestLearningContext();
-
-            if (!string.IsNullOrWhiteSpace(
-                learningContext))
+            string learningContext = GetLatestLearningContext();
+            if (!string.IsNullOrWhiteSpace(learningContext))
             {
-                messagesList.Add(
-                    new Dictionary<string, string>
-                    {
-            {
-                "role",
-                "system"
-            },
-            {
-                "content",
-                "This is the student's latest verified " +
-                "learning analysis. Use it when the " +
-                "student asks about progress, weak topics, " +
-                "recommended lessons, quiz difficulty, " +
-                "virtual labs or study advice. Do not " +
-                "change or invent the factual values:\n" +
-                learningContext
-            }
-                    });
+                messagesList.Add(new Dictionary<string, string>
+                {
+                    { "role", "system" },
+                    { "content", "This is the student's latest verified learning analysis. Use it when the student asks about progress, weak topics, recommended lessons, quiz difficulty, virtual labs or study advice. Do not change or invent the factual values:\n" + learningContext }
+                });
             }
 
             foreach (var message in history)
             {
-                messagesList.Add(
-                    new Dictionary<string, string>
-                    {
-            { "role", message["role"] },
-            { "content", message["content"] }
-                    });
+                messagesList.Add(new Dictionary<string, string>
+                {
+                    { "role", message["role"] },
+                    { "content", message["content"] }
+                });
             }
 
             var payload = new Dictionary<string, object>
-    {
-        { "model", model },
-        { "messages", messagesList },
-        { "temperature", 0.7 },
-        { "top_p", 0.9 },
-        { "max_tokens", 700 },
-        { "stream", false }
-    };
+            {
+                { "model", model },
+                { "messages", messagesList },
+                { "temperature", 0.7 },
+                { "top_p", 0.9 },
+                { "max_tokens", 700 },
+                { "stream", false }
+            };
 
             var serializer = new JavaScriptSerializer();
             serializer.MaxJsonLength = int.MaxValue;
-
             string jsonPayload = serializer.Serialize(payload);
             byte[] requestBytes = Encoding.UTF8.GetBytes(jsonPayload);
 
@@ -1510,7 +1005,6 @@ namespace ScienceBuddy.Student
             }
 
             string responseBody;
-
             try
             {
                 using (var response = (HttpWebResponse)request.GetResponse())
@@ -1530,36 +1024,25 @@ namespace ScienceBuddy.Student
                         throw new Exception("NVIDIA API returned an error: " + errorBody);
                     }
                 }
-
                 throw new Exception("Network error calling NVIDIA API: " + wex.Message);
             }
 
             var result = serializer.DeserializeObject(responseBody) as Dictionary<string, object>;
-
             if (result == null || !result.ContainsKey("choices"))
-            {
                 return "Sorry, I received an unexpected response from the AI.";
-            }
 
             var choices = result["choices"] as object[];
-
             if (choices == null || choices.Length == 0)
-            {
                 return "Sorry, the AI did not return an answer.";
-            }
 
             var firstChoice = choices[0] as Dictionary<string, object>;
             var replyMessage = firstChoice != null && firstChoice.ContainsKey("message")
-                ? firstChoice["message"] as Dictionary<string, object>
-                : null;
+                ? firstChoice["message"] as Dictionary<string, object> : null;
 
             string reply = replyMessage != null && replyMessage.ContainsKey("content")
-                ? replyMessage["content"] as string
-                : null;
+                ? replyMessage["content"] as string : null;
 
             return string.IsNullOrEmpty(reply) ? "Sorry, I received an empty reply." : reply.Trim();
         }
-
-
     }
 }

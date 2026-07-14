@@ -93,17 +93,43 @@
 
 <div class="st-ai-page" style="--pc: <%= PersonalityColour %>;">
 
-<%-- 1. HERO --%>
+<%-- ═══ 1. PERSONAL PROGRESS HERO ═══ --%>
 <div class="st-ai-hero">
-    <div class="st-ai-hero-decor"></div>
     <div class="st-ai-hero-body">
         <div class="st-ai-hero-left">
-            <span class="st-ai-hero-label">YOUR AI SCIENCE COACH</span>
-            <div class="st-ai-hero-sub"><asp:Literal ID="litHeroSub" runat="server" Text="Your smart learning buddy is here to guide your next step." /></div>
-            <div class="st-ai-hero-msg"><asp:Literal ID="litAIMessage" runat="server" /></div>
+            <div class="st-ai-hero-greeting">Hi, <asp:Literal ID="litStudentName" runat="server" />!</div>
+            <div class="st-ai-hero-headline"><asp:Literal ID="litAIMessage" runat="server" /></div>
+            <div class="st-ai-hero-celebration"><asp:Literal ID="litHeroSub" runat="server" /></div>
+
+            <asp:Panel ID="pnlHealth" runat="server">
+                <div class="st-ai-hero-scores">
+                    <div class="st-ai-hero-score-item">
+                        <span class="st-ai-hero-score-label"><asp:Literal ID="litAvgScoreLbl" runat="server" Text="Latest Score" /></span>
+                        <span class="st-ai-hero-score-value"><asp:Literal ID="litAvgScore" runat="server" Text="0%" /></span>
+                    </div>
+                    <div class="st-ai-hero-score-item">
+                        <span class="st-ai-hero-score-label"><asp:Literal ID="litTotalAttemptsLbl" runat="server" Text="Previous Avg" /></span>
+                        <span class="st-ai-hero-score-value"><asp:Literal ID="litTotalAttempts" runat="server" Text="0%" /></span>
+                    </div>
+                    <div class="st-ai-hero-score-item">
+                        <span class="st-ai-hero-score-label"><asp:Literal ID="litStrongTopicsLbl" runat="server" Text="Change" /></span>
+                        <span class="st-ai-hero-score-value st-ai-hero-score-change"><asp:Literal ID="litStrongTopics" runat="server" /></span>
+                    </div>
+                </div>
+                <div class="st-ai-hero-quiz-meta">
+                    <% if (!string.IsNullOrEmpty(GeneratedQuizTitle)) { %>
+                    <span class="st-ai-hero-quiz-title"><i class="bi bi-clipboard-check"></i> <%= HttpUtility.HtmlEncode(GeneratedQuizTitle) %></span>
+                    <% } %>
+                    <% if (!string.IsNullOrEmpty(GeneratedQuizDate)) { %>
+                    <span class="st-ai-hero-quiz-date"><%= HttpUtility.HtmlEncode(GeneratedQuizDate) %></span>
+                    <% } %>
+                </div>
+            </asp:Panel>
+
             <div class="st-ai-hero-tags">
-                <span class="st-ai-hero-tag"><i class="bi bi-book"></i> <asp:Literal ID="litCurrentLevel" runat="server" /></span>
-                <span class="st-ai-hero-tag"><i class="bi bi-stars"></i> <asp:Literal ID="litPersonality" runat="server" /></span>
+                <span class="st-ai-hero-tag"><i class="bi bi-layers"></i> <asp:Literal ID="litCurrentLevel" runat="server" /></span>
+                <span class="st-ai-hero-tag" style="background:var(--pc);"><i class="bi bi-stars"></i> <asp:Literal ID="litPersonality" runat="server" /></span>
+                <span class="st-ai-hero-tag"><i class="bi bi-pencil-square"></i> <asp:Literal ID="litWeakTopics" runat="server" /> <asp:Literal ID="litWeakTopicsLbl" runat="server" Text="quizzes" /></span>
             </div>
         </div>
         <div class="st-ai-hero-right">
@@ -112,168 +138,115 @@
             <% } else { %>
             <div class="st-ai-hero-avatar-fallback"><i class="bi bi-robot"></i></div>
             <% } %>
-            <span class="st-ai-hero-name"><asp:Literal ID="litStudentName" runat="server" /></span>
         </div>
     </div>
     <span style="display:none;"><asp:Literal ID="litHeroTitle" runat="server" Text="AI Study Companion" /></span>
 </div>
 
-<%-- 2. PERSONALITY INSIGHT --%>
-<asp:Panel ID="pnlPersonalityInsight" runat="server" Visible="false">
-    <div class="st-ai-insight">
-        <i class="bi bi-lightbulb-fill st-ai-insight-icon"></i>
-        <div class="st-ai-insight-body">
-            <div class="st-ai-insight-label"><asp:Literal ID="litPersonalityInsightLabel" runat="server" Text="Why this fits you" /></div>
-            <div class="st-ai-insight-text"><asp:Literal ID="litPersonalityInsightText" runat="server" /></div>
-        </div>
-    </div>
-</asp:Panel>
-
-<%-- 3. LEARNING SNAPSHOT --%>
-<div class="st-ai-section-card">
-    <div class="st-ai-section-header"><i class="bi bi-graph-up"></i> <asp:Literal ID="litHealthTitle" runat="server" Text="Learning Health" /></div>
-    <asp:Panel ID="pnlStatusRow" runat="server" Visible="false">
-        <div class="st-ai-status-badges">
-            <span class="st-ai-badge st-ai-badge-green"><i class="bi bi-graph-up-arrow"></i> <asp:Literal ID="litTrendBadge" runat="server" /></span>
-            <span class="st-ai-badge st-ai-badge-purple"><i class="bi bi-shield-check"></i> <asp:Literal ID="litConfidenceBadge" runat="server" /></span>
-        </div>
-    </asp:Panel>
-
-    <asp:Panel ID="pnlHealth" runat="server">
-        <div class="st-ai-stats-grid">
-            <div class="st-ai-stat-card st-ai-stat-blue">
-                <div class="st-ai-stat-value"><asp:Literal ID="litAvgScore" runat="server" Text="0%" /></div>
-                <div class="st-ai-stat-label"><asp:Literal ID="litAvgScoreLbl" runat="server" Text="Average Score" /></div>
-            </div>
-            <div class="st-ai-stat-card st-ai-stat-purple">
-                <div class="st-ai-stat-value"><asp:Literal ID="litTotalAttempts" runat="server" Text="0" /></div>
-                <div class="st-ai-stat-label"><asp:Literal ID="litTotalAttemptsLbl" runat="server" Text="Quizzes Tried" /></div>
-            </div>
-            <div class="st-ai-stat-card st-ai-stat-green">
-                <div class="st-ai-stat-value"><asp:Literal ID="litStrongTopics" runat="server" /></div>
-                <div class="st-ai-stat-label"><asp:Literal ID="litStrongTopicsLbl" runat="server" Text="Current Trend" /></div>
-            </div>
-            <div class="st-ai-stat-card st-ai-stat-orange">
-                <div class="st-ai-stat-value"><asp:Literal ID="litWeakTopics" runat="server" /></div>
-                <div class="st-ai-stat-label"><asp:Literal ID="litWeakTopicsLbl" runat="server" Text="Learning Picture" /></div>
-            </div>
-        </div>
-    </asp:Panel>
-
-    <asp:Panel ID="pnlHealthEmpty" runat="server" Visible="false">
-        <div class="st-ai-empty-state">
-            <i class="bi bi-clipboard2-data"></i>
-            <p><asp:Literal ID="litHealthEmpty" runat="server" Text="Complete more quizzes to unlock your personalised learning analysis." /></p>
-        </div>
-    </asp:Panel>
-</div>
-
-<%-- 4. TOPIC ZONE --%>
-<div class="st-ai-section-card">
-    <div class="st-ai-section-header"><i class="bi bi-map"></i> <asp:Literal ID="litTopicZoneTitle" runat="server" Text="My Topic Zone" /></div>
-    <div class="st-ai-topics-grid">
-        <%-- Strong --%>
-        <div>
+<%-- ═══ 2. AI NOTICED THIS ABOUT YOU ═══ --%>
+<asp:Panel ID="pnlStatusRow" runat="server" Visible="false">
+<div class="st-ai-noticed">
+    <div class="st-ai-noticed-title"><i class="bi bi-lightbulb"></i> <asp:Literal ID="litHealthTitle" runat="server" Text="AI noticed this about you" /></div>
+    <div class="st-ai-noticed-grid">
+        <%-- Card 1: Your Win --%>
+        <div class="st-ai-noticed-card st-ai-noticed-green">
+            <div class="st-ai-noticed-card-label"><i class="bi bi-trophy-fill"></i> <asp:Literal ID="litStrongTitle" runat="server" Text="Your Win" /></div>
             <asp:Panel ID="pnlStrong" runat="server">
-                <div class="st-ai-topic-card st-ai-topic-green">
-                    <div class="st-ai-topic-title"><i class="bi bi-hand-thumbs-up-fill"></i> <asp:Literal ID="litStrongTitle" runat="server" Text="Strong Topics" /></div>
-                    <div class="st-ai-topic-chips"><asp:Literal ID="litStrongList" runat="server" /></div>
-                </div>
+                <div class="st-ai-noticed-chips"><asp:Literal ID="litStrongList" runat="server" /></div>
             </asp:Panel>
             <asp:Panel ID="pnlStrongEmpty" runat="server" Visible="false">
-                <div class="st-ai-topic-card st-ai-topic-green st-ai-topic-empty">
-                    <div class="st-ai-topic-title"><i class="bi bi-hand-thumbs-up-fill"></i> <asp:Literal ID="litStrongEmptyTitle" runat="server" Text="Strong Topics" /></div>
-                    <div class="st-ai-topic-desc"><asp:Literal ID="litStrongEmpty" runat="server" Text="Your strong topics will appear here after you attempt more quizzes." /></div>
-                </div>
+                <div class="st-ai-noticed-empty"><asp:Literal ID="litStrongEmpty" runat="server" Text="Keep going to discover your strengths!" /></div>
             </asp:Panel>
         </div>
-        <%-- Weak --%>
-        <div>
+        <%-- Card 2: Your Focus --%>
+        <div class="st-ai-noticed-card st-ai-noticed-orange">
+            <div class="st-ai-noticed-card-label"><i class="bi bi-bullseye"></i> <asp:Literal ID="litWeakTitle" runat="server" Text="Your Focus" /></div>
             <asp:Panel ID="pnlWeak" runat="server">
-                <div class="st-ai-topic-card st-ai-topic-orange">
-                    <div class="st-ai-topic-title"><i class="bi bi-bullseye"></i> <asp:Literal ID="litWeakTitle" runat="server" Text="Weak Topics" /></div>
-                    <div class="st-ai-topic-chips"><asp:Literal ID="litWeakList" runat="server" /></div>
-                </div>
+                <div class="st-ai-noticed-chips"><asp:Literal ID="litWeakList" runat="server" /></div>
             </asp:Panel>
             <asp:Panel ID="pnlWeakEmpty" runat="server" Visible="false">
-                <div class="st-ai-topic-card st-ai-topic-orange st-ai-topic-empty">
-                    <div class="st-ai-topic-title"><i class="bi bi-bullseye"></i> <asp:Literal ID="litWeakEmptyTitle" runat="server" Text="Weak Topics" /></div>
-                    <div class="st-ai-topic-desc"><asp:Literal ID="litWeakEmpty" runat="server" Text="No weak topics detected yet. Keep learning!" /></div>
-                </div>
+                <div class="st-ai-noticed-empty"><asp:Literal ID="litWeakEmpty" runat="server" Text="No weak topics yet. Great job!" /></div>
+            </asp:Panel>
+        </div>
+        <%-- Card 3: Your Personality Style --%>
+        <div class="st-ai-noticed-card st-ai-noticed-purple">
+            <div class="st-ai-noticed-card-label"><i class="bi bi-person-hearts"></i> <asp:Literal ID="litPersonalityInsightLabel" runat="server" Text="Your Style" /></div>
+            <asp:Panel ID="pnlPersonalityInsight" runat="server" Visible="false">
+                <div class="st-ai-noticed-text"><asp:Literal ID="litPersonalityInsightText" runat="server" /></div>
+                <div class="st-ai-noticed-style"><asp:Literal ID="litTopicZoneTitle" runat="server" /></div>
             </asp:Panel>
         </div>
     </div>
 </div>
-
-<%-- 5. NEXT ADVENTURE --%>
-<asp:Panel ID="pnlRecommend" runat="server">
-    <div class="st-ai-section-card">
-        <div class="st-ai-section-header"><i class="bi bi-rocket-takeoff"></i> <asp:Literal ID="litRecommendTitle" runat="server" Text="Recommended Next Steps" /></div>
-        <div class="st-ai-recommend-grid">
-            <asp:Repeater ID="rptRecommendations" runat="server">
-                <ItemTemplate>
-                    <div class="st-ai-recommend-card">
-                        <div class="st-ai-recommend-icon"><%# Eval("Icon") %></div>
-                        <div class="st-ai-recommend-body">
-                            <div class="st-ai-recommend-title"><%# Eval("Title") %></div>
-                            <div class="st-ai-recommend-reason"><%# Eval("Reason") %></div>
-                        </div>
-                        <a href='<%# Eval("Url") %>' class="st-ai-recommend-btn"><i class="bi bi-arrow-right"></i> <%# Eval("BtnText") %></a>
-                    </div>
-                </ItemTemplate>
-            </asp:Repeater>
-        </div>
-        <div class="st-ai-coach-says">
-            <i class="bi bi-chat-square-quote"></i>
-            <span><asp:Literal ID="litExplanation" runat="server" /></span>
-        </div>
-    </div>
 </asp:Panel>
 
-<%-- 6. MISSION PATH --%>
-<div class="st-ai-section-card st-ai-mission-card">
-    <div class="st-ai-section-header"><i class="bi bi-signpost-2"></i> <asp:Literal ID="litTipsTitle" runat="server" Text="Your 3-Step Mission" /></div>
-    <div class="st-ai-mission-steps">
-        <div class="st-ai-step">
-            <div class="st-ai-step-num">1</div>
-            <div class="st-ai-step-text"><asp:Literal ID="litTip1" runat="server" /></div>
+<%-- ═══ 3. YOUR PLAN FOR TODAY ═══ --%>
+<asp:Panel ID="pnlRecommend" runat="server">
+<div class="st-ai-plan">
+    <div class="st-ai-plan-title"><i class="bi bi-rocket-takeoff"></i> <asp:Literal ID="litRecommendTitle" runat="server" Text="Your plan for today" /></div>
+    <div class="st-ai-plan-grid">
+        <asp:Repeater ID="rptRecommendations" runat="server">
+            <ItemTemplate>
+                <div class="st-ai-plan-card">
+                    <div class="st-ai-plan-card-category"><%# Eval("Category") %></div>
+                    <div class="st-ai-plan-card-icon"><%# Eval("Icon") %></div>
+                    <div class="st-ai-plan-card-title"><%# Eval("Title") %></div>
+                    <div class="st-ai-plan-card-short"><%# Eval("ShortReason") %></div>
+                    <details class="st-ai-plan-card-details">
+                        <summary>Why this?</summary>
+                        <p><%# Eval("Reason") %></p>
+                    </details>
+                    <a href='<%# Eval("Url") %>' class="st-ai-plan-card-btn"><i class="bi bi-arrow-right"></i> <%# Eval("BtnText") %></a>
+                </div>
+            </ItemTemplate>
+        </asp:Repeater>
+    </div>
+    <div class="st-ai-plan-tip">
+        <i class="bi bi-chat-square-quote"></i>
+        <span><strong>Coach Tip:</strong> <asp:Literal ID="litExplanation" runat="server" /></span>
+    </div>
+</div>
+</asp:Panel>
+
+<%-- ═══ 4. YOUR PERSONALITY MISSION ═══ --%>
+<div class="st-ai-mission">
+    <div class="st-ai-mission-title"><i class="bi bi-signpost-2"></i> <asp:Literal ID="litTipsTitle" runat="server" Text="Your 3-Step Mission" /></div>
+    <div class="st-ai-mission-grid">
+        <div class="st-ai-mission-step">
+            <div class="st-ai-mission-step-label"><asp:Literal ID="litStrongEmptyTitle" runat="server" Text="STEP 1" /></div>
+            <div class="st-ai-mission-step-text"><asp:Literal ID="litTip1" runat="server" /></div>
         </div>
-        <div class="st-ai-step-chevron"><i class="bi bi-chevron-right"></i></div>
-        <div class="st-ai-step">
-            <div class="st-ai-step-num">2</div>
-            <div class="st-ai-step-text"><asp:Literal ID="litTip2" runat="server" /></div>
+        <div class="st-ai-mission-step-arrow"><i class="bi bi-chevron-right"></i></div>
+        <div class="st-ai-mission-step">
+            <div class="st-ai-mission-step-label"><asp:Literal ID="litTrendBadge" runat="server" Text="STEP 2" /></div>
+            <div class="st-ai-mission-step-text"><asp:Literal ID="litTip2" runat="server" /></div>
         </div>
-        <div class="st-ai-step-chevron"><i class="bi bi-chevron-right"></i></div>
-        <div class="st-ai-step">
-            <div class="st-ai-step-num">3</div>
-            <div class="st-ai-step-text"><asp:Literal ID="litTip3" runat="server" /></div>
+        <div class="st-ai-mission-step-arrow"><i class="bi bi-chevron-right"></i></div>
+        <div class="st-ai-mission-step">
+            <div class="st-ai-mission-step-label"><asp:Literal ID="litConfidenceBadge" runat="server" Text="STEP 3" /></div>
+            <div class="st-ai-mission-step-text"><asp:Literal ID="litTip3" runat="server" /></div>
         </div>
     </div>
 </div>
 
-<%-- 7. AI CHATBOT --%>
+<%-- ═══ 5. ASK YOUR AI COACH ═══ --%>
 <asp:Panel ID="pnlAIChat" runat="server">
     <div class="st-ai-chat-card">
         <div class="st-ai-chat-header">
             <i class="bi bi-robot st-ai-chat-header-icon"></i>
             <div>
-                <div class="st-ai-chat-title"><asp:Literal ID="litChatTitle" runat="server" Text="Ask ScienceBuddy AI" /></div>
-                <div class="st-ai-chat-subtitle"><asp:Literal ID="litChatSub" runat="server" Text="Ask me anything about your Science lessons." /></div>
+                <div class="st-ai-chat-title"><asp:Literal ID="litChatTitle" runat="server" Text="Ask your AI Coach" /></div>
+                <div class="st-ai-chat-subtitle"><asp:Literal ID="litChatSub" runat="server" Text="I know your latest results. Ask what to learn next!" /></div>
             </div>
         </div>
 
         <div id="chatBox" runat="server" clientidmode="Static" class="st-ai-chatbox"></div>
 
         <div class="st-ai-chat-chips">
-            <button type="button" class="st-ai-chip" onclick="document.getElementById('<%= txtAIMessage.ClientID %>').value = 'What should I learn next?';">
-                <i class="bi bi-signpost-split"></i> What next?
-            </button>
-            <button type="button" class="st-ai-chip" onclick="document.getElementById('<%= txtAIMessage.ClientID %>').value = 'Help me with my focus topic';">
-                <i class="bi bi-bullseye"></i> Focus topic
-            </button>
-            <button type="button" class="st-ai-chip" onclick="document.getElementById('<%= txtAIMessage.ClientID %>').value = 'Give me a 10-minute mission';">
-                <i class="bi bi-lightning-charge"></i> 10-min mission
-            </button>
+            <asp:Literal ID="litChatChip1" runat="server" />
+            <asp:Literal ID="litChatChip2" runat="server" />
+            <asp:Literal ID="litChatChip3" runat="server" />
+            <asp:Literal ID="litChatChip4" runat="server" />
         </div>
 
         <div class="st-ai-chat-input-row">
@@ -284,13 +257,17 @@
     </div>
 </asp:Panel>
 
-<%-- 8. EMPTY STATE --%>
+<%-- EMPTY STATE --%>
 <asp:Panel ID="pnlEmpty" runat="server" Visible="false">
     <div class="st-ai-empty-page">
         <div class="st-ai-empty-page-icon"><i class="bi bi-rocket-takeoff-fill"></i></div>
         <h2 class="st-ai-empty-page-title"><asp:Literal ID="litEmptyTitle" runat="server" Text="Start your learning journey!" /></h2>
         <p class="st-ai-empty-page-desc"><asp:Literal ID="litEmptyDesc" runat="server" Text="Start your learning journey first to unlock your AI companion's insights." /></p>
     </div>
+</asp:Panel>
+
+<asp:Panel ID="pnlHealthEmpty" runat="server" Visible="false">
+    <asp:Literal ID="litHealthEmpty" runat="server" />
 </asp:Panel>
 
 </div><%-- /st-ai-page --%>
