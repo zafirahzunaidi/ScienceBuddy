@@ -43,6 +43,9 @@ namespace ScienceBuddy.Teacher
             var master = (ScienceBuddy.SiteMaster)Master;
             master.LayoutMode = "Sidebar";
 
+            // Always resolve teacher certification status (needed for every request)
+            if (!AuthorizeTeacher()) return;
+
             // Handle edit modal postback
             string eventTarget = Request["__EVENTTARGET"];
             string eventArg = Request["__EVENTARGUMENT"];
@@ -55,12 +58,13 @@ namespace ScienceBuddy.Teacher
 
             if (!IsPostBack)
             {
-                if (!AuthorizeTeacher()) return;
                 LoadFilterDropdowns();
                 SetTabUI();
                 LoadMaterials();
             }
         }
+
+        private bool _isCertified = false;
 
         private bool AuthorizeTeacher()
         {
@@ -76,8 +80,18 @@ namespace ScienceBuddy.Teacher
                         var val = cmd.ExecuteScalar();
                         if (val == null || val == DBNull.Value) { pnlDenied.Visible = true; return false; }
                         string s = val.ToString();
-                        if (s.Equals("Certified", StringComparison.OrdinalIgnoreCase)) { pnlMain.Visible = true; return true; }
-                        if (s.Equals("Pending", StringComparison.OrdinalIgnoreCase)) { pnlPending.Visible = true; return false; }
+                        if (s.Equals("Certified", StringComparison.OrdinalIgnoreCase))
+                        {
+                            _isCertified = true;
+                            pnlMain.Visible = true;
+                            return true;
+                        }
+                        if (s.Equals("Pending", StringComparison.OrdinalIgnoreCase))
+                        {
+                            _isCertified = false;
+                            pnlMain.Visible = true;
+                            return true;
+                        }
                         pnlDenied.Visible = true; return false;
                     }
                 }
@@ -119,6 +133,16 @@ namespace ScienceBuddy.Teacher
 
         private void LoadMaterials()
         {
+            // If not certified, hide all My Materials content — pending panel is shown via SetTabUI
+            if (!_isCertified)
+            {
+                pnlMaterials.Visible = false;
+                pnlEmpty.Visible = false;
+                pnlDiscover.Visible = false;
+                pnlDiscoverEmpty.Visible = false;
+                return;
+            }
+
             string userId = Session["userId"].ToString();
             string search = txtSearch.Text.Trim();
             string lvl = ddlFilterLevel.SelectedValue, unit = ddlFilterUnit.SelectedValue;
@@ -207,8 +231,21 @@ namespace ScienceBuddy.Teacher
             bool isMine = hidActiveTab.Value != "discover";
             btnTabMine.CssClass = "mm-tab" + (isMine ? " active" : "");
             btnTabDiscover.CssClass = "mm-tab" + (!isMine ? " active" : "");
+
+            // Upload button: visible on Mine tab, enabled only when certified
             pnlUploadBtn.Visible = isMine;
-            pnlStatusChips.Visible = isMine;
+            if (isMine)
+            {
+                pnlUploadEnabled.Visible = _isCertified;
+                pnlUploadDisabled.Visible = !_isCertified;
+            }
+
+            // Filter bar and status chips: visible only when certified AND on Mine tab
+            pnlFilterBar.Visible = isMine && _isCertified;
+            pnlStatusChips.Visible = isMine && _isCertified;
+
+            // Pending state panel: visible when on Mine tab and not certified
+            pnlMyMaterialsPending.Visible = isMine && !_isCertified;
         }
 
         private void LoadForActiveTab()

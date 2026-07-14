@@ -30,6 +30,7 @@
             <i class="bi bi-person-badge item-icon"></i>
             <span class="item-label">Teachers</span>
         </a>
+        <a href="<%: ResolveUrl("~/Admin/TeacherCertificateApproval.aspx") %>" class="sb-sidebar-item"><i class="bi bi-patch-check item-icon"></i><span class="item-label">Teacher Certificate Approval</span></a>
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Learning Content</div>

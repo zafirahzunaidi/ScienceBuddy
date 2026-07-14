@@ -17,6 +17,7 @@
         <a href="<%: ResolveUrl("~/Admin/StudentManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-people item-icon"></i><span class="item-label">Students</span></a>
         <a href="<%: ResolveUrl("~/Admin/ParentManagement.aspx") %>" class="sb-sidebar-item active"><i class="bi bi-person-heart item-icon"></i><span class="item-label">Parents</span></a>
         <a href="<%: ResolveUrl("~/Admin/TeacherManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person-badge item-icon"></i><span class="item-label">Teachers</span></a>
+        <a href="<%: ResolveUrl("~/Admin/TeacherCertificateApproval.aspx") %>" class="sb-sidebar-item"><i class="bi bi-patch-check item-icon"></i><span class="item-label">Teacher Certificate Approval</span></a>
     </div>
     <div class="sb-nav-section"><div class="sb-nav-section-label">Learning Content</div>
         <a href="<%: ResolveUrl("~/Admin/LessonManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-book item-icon"></i><span class="item-label">Lessons</span></a>
@@ -208,7 +209,7 @@
 <div style="background:#fff;border-radius:20px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.2);animation:ad-parent-management-modalIn .3s ease;">
 <div style="padding:24px 28px;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;">
     <div><div style="font-family:var(--font-primary);font-size:1.1rem;font-weight:800;display:flex;align-items:center;gap:8px;"><i class="bi bi-person-plus-fill" style="color:#0891B2;"></i> <%= T("Add New Parent","Tambah Ibu Bapa Baharu") %></div><div style="font-size:.8rem;color:#64748B;margin-top:2px;"><%= T("Create a new parent account.","Cipta akaun ibu bapa baharu.") %></div></div>
-    <button onclick="closeAddParent()" style="width:36px;height:36px;border:none;background:#F1F5F9;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;"><i class="bi bi-x-lg"></i></button>
+    <button type="button" onclick="closeAddParent()" style="width:36px;height:36px;border:none;background:#F1F5F9;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;"><i class="bi bi-x-lg"></i></button>
 </div>
 <div style="padding:24px 28px;">
 <div class="ad-parent-management-add-grid">
@@ -221,8 +222,8 @@
 <div class="ad-parent-management-add-field"><label class="ad-parent-management-add-label"><%= T("Preferred Language","Bahasa Pilihan") %></label><select id="p_lang" class="ad-parent-management-add-input"><option value="EN">English</option><option value="BM">Bahasa Melayu</option></select></div>
 </div>
 <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid #F1F5F9;">
-<button onclick="closeAddParent()" style="padding:10px 22px;border-radius:10px;border:1.5px solid #E2E8F0;background:#fff;font-weight:600;cursor:pointer;"><%= T("Cancel","Batal") %></button>
-<button onclick="submitAddParent()" style="padding:10px 26px;border-radius:10px;border:none;background:linear-gradient(135deg,#0E7490,#0891B2);color:#fff;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(8,145,178,.3);"><i class="bi bi-person-plus-fill"></i> <%= T("Create Parent","Cipta Ibu Bapa") %></button>
+<button type="button" onclick="closeAddParent()" style="padding:10px 22px;border-radius:10px;border:1.5px solid #E2E8F0;background:#fff;font-weight:600;cursor:pointer;"><%= T("Cancel","Batal") %></button>
+<button type="button" onclick="submitAddParent()" style="padding:10px 26px;border-radius:10px;border:none;background:linear-gradient(135deg,#0E7490,#0891B2);color:#fff;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(8,145,178,.3);"><i class="bi bi-person-plus-fill"></i> <%= T("Create Parent","Cipta Ibu Bapa") %></button>
 </div>
 </div></div></div>
 
@@ -231,18 +232,20 @@ function openAddParent(){document.getElementById('addParentOverlay').style.displ
 function closeAddParent(){document.getElementById('addParentOverlay').style.display='none';}
 function submitAddParent(){
     var n=document.getElementById('p_name').value.trim(),u=document.getElementById('p_username').value.trim(),e=document.getElementById('p_email').value.trim(),pw=document.getElementById('p_pw').value,pw2=document.getElementById('p_pw2').value;
-    var ok=true;['pe_name','pe_username','pe_email','pe_pw','pe_pw2'].forEach(function(id){document.getElementById(id).style.display='none';});
-    if(!n){document.getElementById('pe_name').style.display='block';ok=false;}
-    if(!u){document.getElementById('pe_username').style.display='block';ok=false;}
-    if(!e||e.indexOf('@')<0){document.getElementById('pe_email').style.display='block';ok=false;}
-    if(pw.length<8){document.getElementById('pe_pw').style.display='block';ok=false;}
-    if(pw!==pw2){document.getElementById('pe_pw2').style.display='block';ok=false;}
+    var ok=true;
+    ['pe_name','pe_username','pe_email','pe_pw','pe_pw2'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
+    document.querySelectorAll('#addParentOverlay .ad-parent-management-add-input').forEach(function(el){el.classList.remove('error');});
+    if(!n){document.getElementById('pe_name').style.display='block';document.getElementById('p_name').classList.add('error');ok=false;}
+    if(!u){document.getElementById('pe_username').style.display='block';document.getElementById('p_username').classList.add('error');ok=false;}
+    if(!e||e.indexOf('@')<0){document.getElementById('pe_email').style.display='block';document.getElementById('p_email').classList.add('error');ok=false;}
+    if(pw.length<8){document.getElementById('pe_pw').style.display='block';document.getElementById('p_pw').classList.add('error');ok=false;}
+    if(pw!==pw2){document.getElementById('pe_pw2').style.display='block';document.getElementById('p_pw2').classList.add('error');ok=false;}
     if(!ok)return;
     var ph=document.getElementById('p_phone').value.trim(),lang=document.getElementById('p_lang').value;
     closeAddParent();
     Swal.fire({
-        title:'<%= T("Create New Account?","Cipta Akaun Baharu?") %>',
-        text:'<%= T("Are you sure you want to create this account?","Adakah anda pasti ingin mencipta akaun ini?") %>',
+        title:'<%= T("Create Parent Account?","Cipta Akaun Ibu Bapa?") %>',
+        text:'<%= T("Are you sure you want to create this parent account?","Adakah anda pasti ingin mencipta akaun ibu bapa ini?") %>',
         icon:'question',showCancelButton:true,
         confirmButtonText:'<i class="bi bi-person-plus-fill"></i> <%= T("Create","Cipta") %>',
         cancelButtonText:'<%= T("Cancel","Batal") %>',
@@ -251,10 +254,35 @@ function submitAddParent(){
         if(!r.isConfirmed){openAddParent();return;}
         var fd=new FormData();fd.append('name',n);fd.append('username',u);fd.append('email',e);fd.append('password',pw);fd.append('phone',ph);fd.append('lang',lang);
         fetch(window.location.pathname + (window.location.pathname.indexOf('.aspx') === -1 ? '.aspx' : '') + '?handler=ParentCRUD&action=addParent',{method:'POST',body:fd})
-        .then(function(r){return r.json();}).then(function(d){
-            if(d.success){Swal.fire({icon:'success',title:'<%= T("Parent Created!","Ibu Bapa Dicipta!") %>',text:'<%= T("The parent account has been created successfully.","Akaun ibu bapa telah berjaya dicipta.") %>',confirmButtonColor:'#0891B2',timer:3000,timerProgressBar:true}).then(function(){__doPostBack('<%= btnSearch.UniqueID %>','');});}
-            else{openAddParent();Swal.fire({icon:'error',title:'<%= T("Error","Ralat") %>',text:d.msg});}
-        }).catch(function(){openAddParent();Swal.fire({icon:'error',title:'Network Error',text:'Please try again.'});});
+        .then(function(r){return r.json();})
+        .then(function(d){
+            if(d.success){
+                var successHtml='<div style="text-align:left;font-size:.88rem;line-height:1.7;color:#334155;">' +
+                    '<p style="margin-bottom:12px;color:#475569;"><%= T("The new parent account has been created successfully.","Akaun ibu bapa baharu telah berjaya dicipta.") %></p>' +
+                    '<div style="background:#F8FAFC;border-radius:10px;padding:14px 16px;margin-bottom:14px;border:1px solid #E2E8F0;">' +
+                    '<div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#94A3B8;margin-bottom:8px;"><%= T("Parent Details","Butiran Ibu Bapa") %></div>' +
+                    '<div><strong><%= T("Parent ID","ID Ibu Bapa") %>:</strong> '+d.parentId+'</div>' +
+                    '<div><strong><%= T("User ID","ID Pengguna") %>:</strong> '+d.userId+'</div>' +
+                    '<div><strong><%= T("Username","Nama Pengguna") %>:</strong> '+d.username+'</div>' +
+                    '<div><strong><%= T("Full Name","Nama Penuh") %>:</strong> '+d.name+'</div>' +
+                    '</div></div>';
+                Swal.fire({
+                    icon:'success',
+                    title:'<%= T("Parent Created Successfully","Ibu Bapa Berjaya Dicipta") %>',
+                    html:successHtml,
+                    confirmButtonText:'<%= T("Done","Selesai") %>',
+                    confirmButtonColor:'#0891B2',
+                    allowOutsideClick:false,
+                    width:480
+                }).then(function(){
+                    document.getElementById('p_name').value='';document.getElementById('p_username').value='';document.getElementById('p_email').value='';document.getElementById('p_phone').value='';document.getElementById('p_pw').value='';document.getElementById('p_pw2').value='';
+                    __doPostBack('<%= btnSearch.UniqueID %>','');
+                });
+            } else {
+                openAddParent();
+                Swal.fire({icon:'error',title:'<%= T("Error","Ralat") %>',text:d.msg,confirmButtonColor:'#DC2626'});
+            }
+        }).catch(function(){openAddParent();Swal.fire({icon:'error',title:'<%= T("Network Error","Ralat Rangkaian") %>',text:'<%= T("Please try again.","Sila cuba lagi.") %>',confirmButtonColor:'#DC2626'});});
     });
 }
 </script>

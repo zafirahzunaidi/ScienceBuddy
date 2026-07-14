@@ -18,6 +18,7 @@
         <a href="<%: ResolveUrl("~/Admin/StudentManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-people item-icon"></i><span class="item-label">Students</span></a>
         <a href="<%: ResolveUrl("~/Admin/ParentManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person-heart item-icon"></i><span class="item-label">Parents</span></a>
         <a href="<%: ResolveUrl("~/Admin/TeacherManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person-badge item-icon"></i><span class="item-label">Teachers</span></a>
+        <a href="<%: ResolveUrl("~/Admin/TeacherCertificateApproval.aspx") %>" class="sb-sidebar-item"><i class="bi bi-patch-check item-icon"></i><span class="item-label">Teacher Certificate Approval</span></a>
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Learning Content</div>
@@ -72,10 +73,10 @@
 
 <!-- SUMMARY STATS -->
 <div class="ad-material-request-stats">
-    <div class="ad-material-request-stat s-pending"><div class="ad-material-request-stat-ico" style="background:#FEF3C7;color:#D97706;"><i class="bi bi-hourglass-split"></i></div><div><div class="ad-material-request-stat-val"><asp:Literal ID="litPending" runat="server" Text="0" /></div><div class="ad-material-request-stat-lbl"><%= T("Pending Reviews", "Menunggu Semakan") %></div></div></div>
-    <div class="ad-material-request-stat s-approved"><div class="ad-material-request-stat-ico" style="background:#D1FAE5;color:#059669;"><i class="bi bi-check-circle-fill"></i></div><div><div class="ad-material-request-stat-val"><asp:Literal ID="litApproved" runat="server" Text="0" /></div><div class="ad-material-request-stat-lbl"><%= T("Approved", "Diluluskan") %></div></div></div>
-    <div class="ad-material-request-stat s-rejected"><div class="ad-material-request-stat-ico" style="background:#FEE2E2;color:#DC2626;"><i class="bi bi-x-circle-fill"></i></div><div><div class="ad-material-request-stat-val"><asp:Literal ID="litRejected" runat="server" Text="0" /></div><div class="ad-material-request-stat-lbl"><%= T("Rejected", "Ditolak") %></div></div></div>
-    <div class="ad-material-request-stat s-total"><div class="ad-material-request-stat-ico" style="background:#E0F2FE;color:#0EA5E9;"><i class="bi bi-archive-fill"></i></div><div><div class="ad-material-request-stat-val"><asp:Literal ID="litTotal" runat="server" Text="0" /></div><div class="ad-material-request-stat-lbl"><%= T("Total Materials", "Jumlah Bahan") %></div></div></div>
+    <div class="ad-material-request-stat s-pending"><div class="ad-material-request-stat-ico ad-material-request-stat-ico-pending"><i class="bi bi-hourglass-split"></i></div><div><div class="ad-material-request-stat-val"><asp:Literal ID="litPending" runat="server" Text="0" /></div><div class="ad-material-request-stat-lbl"><%= T("Pending Reviews", "Menunggu Semakan") %></div></div></div>
+    <div class="ad-material-request-stat s-approved"><div class="ad-material-request-stat-ico ad-material-request-stat-ico-approved"><i class="bi bi-check-circle-fill"></i></div><div><div class="ad-material-request-stat-val"><asp:Literal ID="litApproved" runat="server" Text="0" /></div><div class="ad-material-request-stat-lbl"><%= T("Approved", "Diluluskan") %></div></div></div>
+    <div class="ad-material-request-stat s-rejected"><div class="ad-material-request-stat-ico ad-material-request-stat-ico-rejected"><i class="bi bi-x-circle-fill"></i></div><div><div class="ad-material-request-stat-val"><asp:Literal ID="litRejected" runat="server" Text="0" /></div><div class="ad-material-request-stat-lbl"><%= T("Rejected", "Ditolak") %></div></div></div>
+    <div class="ad-material-request-stat s-total"><div class="ad-material-request-stat-ico ad-material-request-stat-ico-total"><i class="bi bi-archive-fill"></i></div><div><div class="ad-material-request-stat-val"><asp:Literal ID="litTotal" runat="server" Text="0" /></div><div class="ad-material-request-stat-lbl"><%= T("Total Materials", "Jumlah Bahan") %></div></div></div>
 </div>
 
 <!-- TOOLBAR -->
@@ -106,7 +107,7 @@
                         <span><i class="bi bi-translate"></i> <%# Eval("language") %></span>
                     </div>
                     <div class="ad-material-request-card-actions">
-                        <a class="ad-material-request-abtn tm-abtn-view" href="javascript:;" data-mat='<%# HttpUtility.HtmlAttributeEncode(Eval("jsonData").ToString()) %>' onclick="viewMaterial(JSON.parse(this.getAttribute('data-mat')))"><i class="bi bi-eye"></i> <%= T("View", "Lihat") %></a>
+                        <a class="ad-material-request-abtn ad-material-request-abtn-view" href="javascript:;" data-mat='<%# HttpUtility.HtmlAttributeEncode(Eval("jsonData").ToString()) %>' onclick="viewMaterial(JSON.parse(this.getAttribute('data-mat')))"><i class="bi bi-eye"></i> <%= T("View", "Lihat") %></a>
                         <%# GetActionButtons(Eval("status"), Eval("materialId")) %>
                     </div>
                 </div>
@@ -116,7 +117,7 @@
 </div>
 
 <!-- EMPTY STATE -->
-<div class="ad-material-request-empty" id="tmEmpty"><i class="bi bi-folder2-open"></i><div style="font-size:1rem;font-weight:600;color:var(--color-text-secondary);"><%= T("No materials found.", "Tiada bahan dijumpai.") %></div><div style="font-size:.85rem;margin-top:4px;"><%= T("Try adjusting your filters.", "Cuba ubah penapis anda.") %></div></div>
+<div class="ad-material-request-empty" id="tmEmpty"><i class="bi bi-folder2-open"></i><div class="ad-material-request-empty-msg"><%= T("No materials found.", "Tiada bahan dijumpai.") %></div><div class="ad-material-request-empty-sub"><%= T("Try adjusting your filters.", "Cuba ubah penapis anda.") %></div></div>
 
 <!-- VIEW DETAIL MODAL -->
 <div class="ad-material-request-modal-overlay" id="tmViewModal">
@@ -132,7 +133,7 @@
 <!-- REJECT REASON MODAL -->
 <div class="ad-material-request-reject-modal" id="tmRejectModal">
     <div class="ad-material-request-reject-box">
-        <h3><i class="bi bi-x-octagon" style="color:#DC2626;"></i> <%= T("Reject Material", "Tolak Bahan") %></h3>
+        <h3><i class="bi bi-x-octagon ad-material-request-reject-icon"></i> <%= T("Reject Material", "Tolak Bahan") %></h3>
         <p style="font-size:.85rem;color:var(--color-text-secondary);margin-bottom:var(--space-md);"><%= T("Please provide a reason for rejecting this material.", "Sila berikan alasan untuk menolak bahan ini.") %></p>
         <textarea id="rejectReason" placeholder="<%= T("Enter reason...", "Masukkan alasan...") %>"></textarea>
         <input type="hidden" id="rejectMatId" />

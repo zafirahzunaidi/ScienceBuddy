@@ -43,6 +43,16 @@ namespace ScienceBuddy.Teacher
             // Handle AJAX request for subtopics
             if (Request.QueryString["handler"] == "subtopics")
             { HandleSubtopicRequest(); return; }
+            // Handle AJAX request for Discover Quiz questions
+            if (Request.QueryString["handler"] == "discoverquiz")
+            { HandleDiscoverQuizRequest(); return; }
+            // Handle AJAX requests for Practice Quiz selection popup
+            if (Request.QueryString["handler"] == "pqlevels")
+            { HandlePQLevelsRequest(); return; }
+            if (Request.QueryString["handler"] == "pqunits")
+            { HandlePQUnitsRequest(); return; }
+            if (Request.QueryString["handler"] == "pqsubtopics")
+            { HandlePQSubtopicsRequest(); return; }
 
             var master = (ScienceBuddy.SiteMaster)Master;
             master.LayoutMode = "Sidebar";
@@ -332,6 +342,212 @@ namespace ScienceBuddy.Teacher
             }
         }
 
+        private void HandleDiscoverQuizRequest()
+        {
+            Response.Clear();
+            Response.ContentType = "text/html";
+            string quizId = (Request.QueryString["quizId"] ?? "").Trim();
+            if (string.IsNullOrEmpty(quizId)) { Response.Write("<div class='mq-empty'><div class='mq-empty-title'>Invalid request.</div></div>"); Response.End(); return; }
+            try
+            {
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    var sb = new System.Text.StringBuilder();
+
+                    // Load all questions for this Practice Quiz (no userId filter — all teachers can view)
+                    const string sql = @"
+                        SELECT qn.[questionTextEN], qn.[questionTextBM], qn.[questionType], qn.[difficulty],
+                               qn.[optionA_EN], qn.[optionA_BM], qn.[optionB_EN], qn.[optionB_BM],
+                               qn.[optionC_EN], qn.[optionC_BM], qn.[optionD_EN], qn.[optionD_BM],
+                               qn.[correctAnswer],
+                               qn.[correctExplanationEN], qn.[correctExplanationBM],
+                               qn.[wrongExplanationEN], qn.[wrongExplanationBM],
+                               qn.[questionImageUrl]
+                        FROM dbo.[Question] qn
+                        WHERE qn.[quizId]=@qid AND qn.[status]='Approved'
+                        ORDER BY qn.[questionId]";
+
+                    using (var cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@qid", quizId);
+                        using (var r = cmd.ExecuteReader())
+                        {
+                            int num = 0;
+                            while (r.Read())
+                            {
+                                num++;
+                                string qEN  = r["questionTextEN"]?.ToString() ?? "";
+                                string qBM  = r["questionTextBM"]?.ToString() ?? "";
+                                string qtype = r["questionType"]?.ToString() ?? "MCQ";
+                                string diff  = r["difficulty"]?.ToString() ?? "Medium";
+                                string correctAns = r["correctAnswer"]?.ToString() ?? "";
+                                string imgUrl = r["questionImageUrl"]?.ToString() ?? "";
+                                string aEN=r["optionA_EN"]?.ToString()??"", aBM=r["optionA_BM"]?.ToString()??"";
+                                string bEN=r["optionB_EN"]?.ToString()??"", bBM=r["optionB_BM"]?.ToString()??"";
+                                string cEN=r["optionC_EN"]?.ToString()??"", cBM=r["optionC_BM"]?.ToString()??"";
+                                string dEN=r["optionD_EN"]?.ToString()??"", dBM=r["optionD_BM"]?.ToString()??"";
+                                string ceEN=r["correctExplanationEN"]?.ToString()??"", ceBM=r["correctExplanationBM"]?.ToString()??"";
+                                string weEN=r["wrongExplanationEN"]?.ToString()??"",  weBM=r["wrongExplanationBM"]?.ToString()??"";
+
+                                string diffCss = diff.Equals("Easy",StringComparison.OrdinalIgnoreCase)?"vq-badge-green":diff.Equals("Hard",StringComparison.OrdinalIgnoreCase)?"vq-badge-red":"vq-badge-amber";
+                                bool expanded = (num == 1);
+
+                                sb.AppendFormat("<div class='vq-card{0}'>", expanded?" vq-expanded":"");
+                                sb.Append("<div class='vq-card-hd' onclick='toggleVQ(this)'>");
+                                sb.AppendFormat("<span class='vq-card-num'>Q{0}</span>", num);
+                                sb.AppendFormat("<span class='vq-badge {0}'>{1}</span>", diffCss, HttpUtility.HtmlEncode(diff));
+                                sb.Append("<i class='bi bi-chevron-down vq-chevron'></i>");
+                                sb.Append("</div>");
+
+                                sb.Append("<div class='vq-card-body'>");
+                                sb.AppendFormat("<div class='vq-format-row'><span class='vq-format-label'>Question Format:</span> <span class='vq-format-val'>{0}</span></div>", HttpUtility.HtmlEncode(qtype));
+                                sb.Append("<div class='vq-cols'>");
+
+                                // EN column
+                                sb.Append("<div class='vq-col'><div class='vq-col-hd'>English</div>");
+                                sb.AppendFormat("<div class='vq-question'>{0}</div>", HttpUtility.HtmlEncode(qEN));
+                                RenderOptions(sb, aEN, bEN, cEN, dEN, correctAns, qtype, false);
+                                if (!string.IsNullOrEmpty(ceEN)) sb.AppendFormat("<div class='vq-expl vq-expl-correct'><div class='vq-expl-title'><i class='bi bi-check-circle-fill'></i> Correct Explanation</div><div>{0}</div></div>", HttpUtility.HtmlEncode(ceEN));
+                                if (!string.IsNullOrEmpty(weEN)) sb.AppendFormat("<div class='vq-expl vq-expl-wrong'><div class='vq-expl-title'><i class='bi bi-x-circle-fill'></i> Wrong Explanation</div><div>{0}</div></div>", HttpUtility.HtmlEncode(weEN));
+                                sb.Append("</div>");
+
+                                // BM column
+                                sb.Append("<div class='vq-col'><div class='vq-col-hd'>Bahasa Melayu</div>");
+                                sb.AppendFormat("<div class='vq-question'>{0}</div>", HttpUtility.HtmlEncode(qBM));
+                                RenderOptions(sb, aBM, bBM, cBM, dBM, correctAns, qtype, true);
+                                if (!string.IsNullOrEmpty(ceBM)) sb.AppendFormat("<div class='vq-expl vq-expl-correct'><div class='vq-expl-title'><i class='bi bi-check-circle-fill'></i> Penjelasan Betul</div><div>{0}</div></div>", HttpUtility.HtmlEncode(ceBM));
+                                if (!string.IsNullOrEmpty(weBM)) sb.AppendFormat("<div class='vq-expl vq-expl-wrong'><div class='vq-expl-title'><i class='bi bi-x-circle-fill'></i> Penjelasan Salah</div><div>{0}</div></div>", HttpUtility.HtmlEncode(weBM));
+                                sb.Append("</div>");
+
+                                sb.Append("</div>"); // vq-cols
+
+                                if (!string.IsNullOrWhiteSpace(imgUrl))
+                                {
+                                    string fileName = System.IO.Path.GetFileName(imgUrl);
+                                    string resolvedPath = ResolveUrl("~/Images/Question/" + fileName);
+                                    sb.AppendFormat("<div class='vq-img-row'><i class='bi bi-image'></i> <a href='#' class='vq-img-link' onclick='openImgPreview(\"{0}\");return false;'>{1}</a></div>", HttpUtility.HtmlEncode(resolvedPath), HttpUtility.HtmlEncode(fileName));
+                                }
+
+                                sb.Append("</div>"); // vq-card-body
+                                sb.Append("</div>"); // vq-card
+                            }
+                            if (num == 0)
+                                sb.Append("<div class='mq-empty'><div style='font-size:2.5rem;opacity:.4;margin-bottom:.75rem;'>📭</div><div class='mq-empty-title'>No approved questions in this quiz yet.</div></div>");
+                        }
+                    }
+                    Response.Write(sb.ToString());
+                }
+            }
+            catch { Response.Write("<div class='mq-empty'><div class='mq-empty-title'>Error loading questions.</div></div>"); }
+            Response.End();
+        }
+
+        private void HandlePQLevelsRequest()        {
+            Response.Clear();
+            Response.ContentType = "application/json";
+            try
+            {
+                var sb = new System.Text.StringBuilder();
+                sb.Append("[");
+                bool first = true;
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand("SELECT [levelId],[levelNameEN] FROM dbo.[Level] ORDER BY [levelId]", conn))
+                    using (var r = cmd.ExecuteReader())
+                    {
+                        while (r.Read())
+                        {
+                            if (!first) sb.Append(",");
+                            first = false;
+                            sb.AppendFormat("{{\"id\":\"{0}\",\"name\":\"{1}\"}}",
+                                HttpUtility.JavaScriptStringEncode(r["levelId"].ToString()),
+                                HttpUtility.JavaScriptStringEncode(r["levelNameEN"].ToString()));
+                        }
+                    }
+                }
+                sb.Append("]");
+                Response.Write(sb.ToString());
+            }
+            catch { Response.Write("[]"); }
+            Response.End();
+        }
+
+        private void HandlePQUnitsRequest()
+        {
+            Response.Clear();
+            Response.ContentType = "application/json";
+            string levelId = (Request.QueryString["levelId"] ?? "").Trim();
+            if (string.IsNullOrEmpty(levelId)) { Response.Write("[]"); Response.End(); return; }
+            try
+            {
+                var sb = new System.Text.StringBuilder();
+                sb.Append("[");
+                bool first = true;
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand("SELECT [unitId],[unitNameEN] FROM dbo.[Unit] WHERE [levelId]=@lid ORDER BY [orderNo]", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@lid", levelId);
+                        using (var r = cmd.ExecuteReader())
+                        {
+                            while (r.Read())
+                            {
+                                if (!first) sb.Append(",");
+                                first = false;
+                                sb.AppendFormat("{{\"id\":\"{0}\",\"name\":\"{1}\"}}",
+                                    HttpUtility.JavaScriptStringEncode(r["unitId"].ToString()),
+                                    HttpUtility.JavaScriptStringEncode(r["unitNameEN"].ToString()));
+                            }
+                        }
+                    }
+                }
+                sb.Append("]");
+                Response.Write(sb.ToString());
+            }
+            catch { Response.Write("[]"); }
+            Response.End();
+        }
+
+        private void HandlePQSubtopicsRequest()
+        {
+            Response.Clear();
+            Response.ContentType = "application/json";
+            string unitId = (Request.QueryString["unitId"] ?? "").Trim();
+            if (string.IsNullOrEmpty(unitId)) { Response.Write("[]"); Response.End(); return; }
+            try
+            {
+                var sb = new System.Text.StringBuilder();
+                sb.Append("[");
+                bool first = true;
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand("SELECT [subtopicId],[subtopicTitleEN] FROM dbo.[Subtopic] WHERE [unitId]=@uid ORDER BY [orderNo]", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@uid", unitId);
+                        using (var r = cmd.ExecuteReader())
+                        {
+                            while (r.Read())
+                            {
+                                if (!first) sb.Append(",");
+                                first = false;
+                                sb.AppendFormat("{{\"id\":\"{0}\",\"name\":\"{1}\"}}",
+                                    HttpUtility.JavaScriptStringEncode(r["subtopicId"].ToString()),
+                                    HttpUtility.JavaScriptStringEncode(r["subtopicTitleEN"].ToString()));
+                            }
+                        }
+                    }
+                }
+                sb.Append("]");
+                Response.Write(sb.ToString());
+            }
+            catch { Response.Write("[]"); }
+            Response.End();
+        }
+
         private bool Authorize()
         {
             using (var conn = new SqlConnection(ConnStr))
@@ -341,12 +557,25 @@ namespace ScienceBuddy.Teacher
                 {
                     cmd.Parameters.AddWithValue("@u", Session["userId"].ToString());
                     var val = cmd.ExecuteScalar();
-                    if (val == null || val == DBNull.Value || !val.ToString().Equals("Certified", StringComparison.OrdinalIgnoreCase))
+                    if (val == null || val == DBNull.Value)
                     { pnlDenied.Visible = true; return false; }
+                    string teacherStatus = val.ToString();
+                    if (teacherStatus.Equals("Certified", StringComparison.OrdinalIgnoreCase))
+                    {
+                        pnlMain.Visible = true;
+                        hidTeacherLicenseStatus.Value = "Certified";
+                        return true;
+                    }
+                    if (teacherStatus.Equals("Pending", StringComparison.OrdinalIgnoreCase))
+                    {
+                        pnlMain.Visible = true;
+                        hidTeacherLicenseStatus.Value = "Pending";
+                        return true;
+                    }
+                    pnlDenied.Visible = true;
+                    return false;
                 }
             }
-            pnlMain.Visible = true;
-            return true;
         }
 
         private void SetupControls()
@@ -551,11 +780,12 @@ namespace ScienceBuddy.Teacher
                        COALESCE(u.[unitNameEN],'-') AS unitNameEN,
                        COALESCE(u.[unitNameBM], u.[unitNameEN],'-') AS unitNameBM,
                        u.[unitId], u.[orderNo],
-                       COUNT(qn.[questionId]) AS totalCount,
+                       COUNT(qn.[questionId]) AS yourCount,
                        SUM(CASE WHEN qn.[status]='Approved' THEN 1 ELSE 0 END) AS approvedCount,
                        SUM(CASE WHEN qn.[status]='Pending' OR (qn.[status] IS NULL AND qn.[questionId] IS NOT NULL) THEN 1 ELSE 0 END) AS pendingCount,
                        SUM(CASE WHEN qn.[status]='Rejected' THEN 1 ELSE 0 END) AS rejectedCount,
-                       MAX(qn.[createdAt]) AS lastDate
+                       MAX(qn.[createdAt]) AS lastDate,
+                       (SELECT COUNT(*) FROM dbo.[Question] qa WHERE qa.[quizId]=q.[quizId] AND qa.[status]='Approved') AS overallApproved
                 FROM dbo.[Quiz] q
                 LEFT JOIN dbo.[Unit] u ON u.[unitId]=q.[unitId]
                 LEFT JOIN dbo.[Question] qn ON qn.[quizId]=q.[quizId] AND qn.[createdByUserId]=@userId
@@ -569,11 +799,12 @@ namespace ScienceBuddy.Teacher
                 SELECT q.[quizId],
                        ISNULL(q.[quizTitleEN], q.[quizTitleBM]) AS quizName,
                        COALESCE(lv.[levelNameEN],'-') AS levelName,
-                       COUNT(qn.[questionId]) AS totalCount,
+                       COUNT(qn.[questionId]) AS yourCount,
                        SUM(CASE WHEN qn.[status]='Approved' THEN 1 ELSE 0 END) AS approvedCount,
                        SUM(CASE WHEN qn.[status]='Pending' OR (qn.[status] IS NULL AND qn.[questionId] IS NOT NULL) THEN 1 ELSE 0 END) AS pendingCount,
                        SUM(CASE WHEN qn.[status]='Rejected' THEN 1 ELSE 0 END) AS rejectedCount,
-                       MAX(qn.[createdAt]) AS lastDate
+                       MAX(qn.[createdAt]) AS lastDate,
+                       (SELECT COUNT(*) FROM dbo.[Question] qa WHERE qa.[quizId]=q.[quizId] AND qa.[status]='Approved') AS overallApproved
                 FROM dbo.[Quiz] q
                 LEFT JOIN dbo.[Level] lv ON lv.[levelId]=q.[levelId]
                 LEFT JOIN dbo.[Question] qn ON qn.[quizId]=q.[quizId] AND qn.[createdByUserId]=@userId
@@ -612,19 +843,22 @@ namespace ScienceBuddy.Teacher
 
                             string unitName = isBM ? r["unitNameBM"].ToString() : r["unitNameEN"].ToString();
                             string quizId = r["quizId"].ToString();
-                            int total = Convert.ToInt32(r["totalCount"]);
+                            int yourCount = Convert.ToInt32(r["yourCount"]);
+                            int overallApproved = Convert.ToInt32(r["overallApproved"]);
                             int approved = Convert.ToInt32(r["approvedCount"]);
                             int pending = Convert.ToInt32(r["pendingCount"]);
                             int rejected = Convert.ToInt32(r["rejectedCount"]);
-                            string lastDate = r["lastDate"] != DBNull.Value ? Convert.ToDateTime(r["lastDate"]).ToString("d MMM yyyy") : T("Not submitted", "Belum dihantar");
+
+                            string overallTip = T("Total approved questions available for this quiz from all teachers.", "Jumlah soalan yang diluluskan tersedia untuk kuiz ini daripada semua guru.");
+                            string yourTip = T("Total questions you have submitted for this quiz, including approved, pending and rejected questions.", "Jumlah soalan yang telah anda hantar untuk kuiz ini, termasuk yang diluluskan, menunggu dan ditolak.");
 
                             sb.Append("<div class=\"mq-ulq-card\">");
                             sb.AppendFormat("<div class=\"mq-ulq-left\"><div class=\"mq-ulq-icon mq-ulq-icon-unit\"><i class=\"bi bi-layers-fill\"></i></div><div class=\"mq-ulq-info\"><div class=\"mq-ulq-title\">{0}</div></div></div>", HttpUtility.HtmlEncode(unitName));
-                            sb.AppendFormat("<div class=\"mq-ulq-col\"><div class=\"mq-ulq-col-label\">{0}</div><div class=\"mq-ulq-col-val\">{1}</div></div>", T("Total Submitted Questions", "Jumlah Soalan Dihantar"), total);
+                            sb.AppendFormat("<div class=\"mq-ulq-col\"><div class=\"mq-ulq-col-label\">{0} <span class=\"mq-info-icon\" tabindex=\"0\" data-tip=\"{2}\"><i class=\"bi bi-info-circle\"></i></span></div><div class=\"mq-ulq-col-val mq-val-overall\">{1}</div></div>", T("Overall Approved", "Diluluskan Semua"), overallApproved, HttpUtility.HtmlEncode(overallTip));
+                            sb.AppendFormat("<div class=\"mq-ulq-col\"><div class=\"mq-ulq-col-label\">{0} <span class=\"mq-info-icon\" tabindex=\"0\" data-tip=\"{2}\"><i class=\"bi bi-info-circle\"></i></span></div><div class=\"mq-ulq-col-val\">{1}</div></div>", T("Your Submitted", "Hantar Anda"), yourCount, HttpUtility.HtmlEncode(yourTip));
                             sb.AppendFormat("<div class=\"mq-ulq-col\"><span class=\"mq-ulq-badge mq-ulq-badge-green\">{0}</span><div class=\"mq-ulq-badge-count mq-ulq-badge-count-green\">{1}</div></div>", T("Approved", "Diluluskan"), approved);
                             sb.AppendFormat("<div class=\"mq-ulq-col\"><span class=\"mq-ulq-badge mq-ulq-badge-amber\">{0}</span><div class=\"mq-ulq-badge-count mq-ulq-badge-count-amber\">{1}</div></div>", T("Pending", "Menunggu"), pending);
                             sb.AppendFormat("<div class=\"mq-ulq-col\"><span class=\"mq-ulq-badge mq-ulq-badge-red\">{0}</span><div class=\"mq-ulq-badge-count mq-ulq-badge-count-red\">{1}</div></div>", T("Rejected", "Ditolak"), rejected);
-                            sb.AppendFormat("<div class=\"mq-ulq-date\"><div class=\"mq-ulq-date-label\">{0}</div><div class=\"mq-ulq-date-val\">{1}</div></div>", T("Last Submitted", "Terakhir Dihantar"), lastDate);
                             sb.AppendFormat("<div class=\"mq-ulq-btn-col\"><a href=\"#\" class=\"mq-ulq-btn mq-ulq-btn-add\" onclick='openSubtopicModal(\"{0}\");return false;'><i class=\"bi bi-plus-lg\"></i> {1}</a><button type=\"button\" class=\"mq-ulq-btn\" onclick='openULModal(\"{0}\")'><i class=\"bi bi-eye\"></i> {2}</button></div>", HttpUtility.HtmlEncode(quizId), T("Add", "Tambah"), T("View", "Lihat"));
                             sb.Append("</div>");
                         }
@@ -645,11 +879,11 @@ namespace ScienceBuddy.Teacher
                                 quizId = r["quizId"].ToString(),
                                 quizName = r["quizName"].ToString(),
                                 levelName = r["levelName"].ToString(),
-                                totalCount = Convert.ToInt32(r["totalCount"]),
+                                yourCount = Convert.ToInt32(r["yourCount"]),
+                                overallApproved = Convert.ToInt32(r["overallApproved"]),
                                 approvedCount = Convert.ToInt32(r["approvedCount"]),
                                 pendingCount = Convert.ToInt32(r["pendingCount"]),
-                                rejectedCount = Convert.ToInt32(r["rejectedCount"]),
-                                lastDate = r["lastDate"] != DBNull.Value ? Convert.ToDateTime(r["lastDate"]).ToString("d MMM yyyy") : T("Not submitted","Belum dihantar")
+                                rejectedCount = Convert.ToInt32(r["rejectedCount"])
                             });
                 }
 

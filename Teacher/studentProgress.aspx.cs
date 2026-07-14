@@ -21,6 +21,16 @@ namespace ScienceBuddy.Teacher
             if (Session["userId"] == null || Session["role"]?.ToString() != "Teacher")
             { Response.Redirect("~/Login.aspx", false); Context.ApplicationInstance.CompleteRequest(); return; }
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
+
+            // Check Teaching License status
+            string licenseStatus = GetTeacherLicenseStatus();
+            if (licenseStatus.Equals("Pending", StringComparison.OrdinalIgnoreCase))
+            {
+                pnlContent.Visible = false;
+                pnlPending.Visible = true;
+                return;
+            }
+
             if (!IsPostBack)
             {
                 txtSearch.Attributes["placeholder"] = T("Search student name...", "Cari nama pelajar...");
@@ -37,6 +47,24 @@ namespace ScienceBuddy.Teacher
                 LoadPodium();
                 LoadTable("");
             }
+        }
+
+        private string GetTeacherLicenseStatus()
+        {
+            try
+            {
+                using (var c = new SqlConnection(ConnStr))
+                {
+                    c.Open();
+                    using (var cmd = new SqlCommand("SELECT [status] FROM dbo.[Teacher] WHERE [userId]=@u", c))
+                    {
+                        cmd.Parameters.AddWithValue("@u", Session["userId"].ToString());
+                        var val = cmd.ExecuteScalar();
+                        return val != null && val != DBNull.Value ? val.ToString() : "";
+                    }
+                }
+            }
+            catch { return ""; }
         }
 
         protected void btnSearch_Click(object sender, EventArgs e) { LoadPodium(); LoadTable(txtSearch.Text.Trim()); }

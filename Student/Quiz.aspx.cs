@@ -7,6 +7,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using ScienceBuddy.Services;
 
 namespace ScienceBuddy.Student
 {
@@ -864,7 +865,35 @@ namespace ScienceBuddy.Student
                         AwardXP(connection, trans, studentId, quizType, percentage, attemptNo);
 
                         trans.Commit();
-                        Response.Redirect("~/Student/QuizResult.aspx?resultId=" + resultId, false);
+
+                        // Generate the analysis only after the quiz has been saved.
+                        try
+                        {
+                            StudentLearningAnalysisService analysisService = new StudentLearningAnalysisService(ConnStr);
+
+                            analysisService.GenerateAndSaveAnalysis(
+                                studentId,
+                                resultId,
+                                CurrentLanguage
+                            );
+                        }
+                        catch (Exception analysisEx)
+                        {
+                            // Do not cancel the quiz submission if the AI fails.
+                            System.Diagnostics.Debug.WriteLine(
+                                "Learning analysis error: " +
+                                analysisEx.Message
+                            );
+                        }
+
+                        Response.Redirect(
+                            "~/Student/QuizResult.aspx?resultId=" +
+                            resultId,
+                            false
+                        );
+
+                        Context.ApplicationInstance.CompleteRequest();
+                        return;
                     }
                     catch (Exception ex)
                     {

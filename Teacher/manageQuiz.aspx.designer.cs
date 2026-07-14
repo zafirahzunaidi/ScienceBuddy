@@ -45,5 +45,6 @@ namespace ScienceBuddy.Teacher
         protected global::System.Web.UI.WebControls.Repeater rptDiscover;
         protected global::System.Web.UI.WebControls.Panel pnlDiscoverEmpty;
         protected global::System.Web.UI.WebControls.HiddenField hidActiveTab;
+        protected global::System.Web.UI.WebControls.HiddenField hidTeacherLicenseStatus;
     }
 }

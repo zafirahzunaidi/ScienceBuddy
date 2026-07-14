@@ -41,6 +41,17 @@ namespace ScienceBuddy.Teacher
                 if (string.IsNullOrEmpty(qsId))
                 { ShowError(T("No discussion ID was provided.", "Tiada ID perbincangan disediakan.")); return; }
                 ForumId = qsId;
+
+                // Check Teaching License status
+                string licStatus = GetTeacherLicenseStatus();
+                hidLicenseStatus.Value = licStatus;
+                if (licStatus.Equals("Pending", StringComparison.OrdinalIgnoreCase))
+                {
+                    txtReply.Enabled = false;
+                    txtReply.Attributes["placeholder"] = T("Replying is disabled until your teaching license has been approved.", "Membalas dilumpuhkan sehingga lesen mengajar anda diluluskan.");
+                    btnPostReply.Enabled = false;
+                }
+
                 LoadPage();
             }
             else
@@ -48,6 +59,24 @@ namespace ScienceBuddy.Teacher
                 if (string.IsNullOrEmpty(ForumId))
                     ShowError(T("No discussion ID was provided.", "Tiada ID perbincangan disediakan."));
             }
+        }
+
+        private string GetTeacherLicenseStatus()
+        {
+            try
+            {
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand("SELECT [status] FROM dbo.[Teacher] WHERE [userId]=@u", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@u", Session["userId"].ToString());
+                        var val = cmd.ExecuteScalar();
+                        return val != null && val != DBNull.Value ? val.ToString() : "";
+                    }
+                }
+            }
+            catch { return ""; }
         }
 
         // ════════════════════════════════════════════════════════════

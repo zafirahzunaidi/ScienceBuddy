@@ -21,6 +21,13 @@
     box-shadow: 0 2px 8px rgba(249,115,22,.2);
 }
 .mm-btn-upload:hover { background: #EA580C; box-shadow: 0 4px 16px rgba(249,115,22,.3); transform: translateY(-1px); color: #fff; text-decoration: none; }
+.mm-btn-upload-disabled {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #D1D5DB; border: none; border-radius: 10px;
+    padding: .6rem 1.25rem; font-weight: 700; font-size: .85rem;
+    color: #9CA3AF; cursor: not-allowed; text-decoration: none;
+    box-shadow: none; pointer-events: none;
+}
 
 /* ─── Tabs (underline style) ─── */
 .mm-tabs{display:flex;gap:0;border-bottom:2px solid var(--tc-border);margin-bottom:1.25rem;}
@@ -97,7 +104,9 @@
 .mm-card-info { flex: 1; min-width: 0; }
 .mm-card-title { font-weight: 800; font-size: 1rem; color: var(--tc-text); margin-bottom: 4px; line-height: 1.3; }
 .mm-card-desc { font-size: .86rem; color: var(--tc-muted); margin-bottom: 10px; line-height: 1.5; }
-.mm-card-desc.collapsed { display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.mm-card-desc .mm-desc-full { display: none; }
+.mm-card-desc.expanded .mm-desc-short { display: none; }
+.mm-card-desc.expanded .mm-desc-full { display: inline; }
 .mm-view-more { font-size: .78rem; font-weight: 600; color: var(--tc-primary); cursor: pointer; display: inline-block; margin-bottom: 8px; }
 .mm-view-more:hover { color: var(--tc-hover); text-decoration: underline; }
 .mm-card-meta { display: flex; gap: .9rem; flex-wrap: wrap; font-size: .8rem; color: var(--tc-muted); }
@@ -203,13 +212,6 @@
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 
 <%-- Status panels --%>
-<asp:Panel ID="pnlPending" runat="server" Visible="false">
-    <div style="display:flex;flex-direction:column;align-items:center;padding:3rem;text-align:center;">
-        <div style="font-size:3rem;margin-bottom:1rem;">⏳</div>
-        <h2 style="color:var(--tc-text);font-weight:800;">Verification Pending</h2>
-        <p style="color:var(--tc-muted);max-width:450px;">Your certificate is under review. You will gain access once approved.</p>
-    </div>
-</asp:Panel>
 <asp:Panel ID="pnlDenied" runat="server" Visible="false">
     <div style="display:flex;flex-direction:column;align-items:center;padding:3rem;text-align:center;">
         <div style="font-size:3rem;margin-bottom:1rem;">🚫</div>
@@ -227,9 +229,18 @@
         <p style="font-size:.85rem;color:var(--tc-muted);margin:.3rem 0 0;"><%: T("Upload, manage, and discover learning materials.","Muat naik, urus, dan terokai bahan pembelajaran.") %></p>
     </div>
     <asp:Panel ID="pnlUploadBtn" runat="server">
-        <a href="<%: ResolveUrl("~/Teacher/uploadMaterial.aspx") %>" class="mm-btn-upload"><i class="bi bi-plus-lg"></i> <%: T("Upload Material","Muat Naik Bahan") %></a>
-    </asp:Panel>
-</div>
+        <%-- Shown when Certified --%>
+        <asp:Panel ID="pnlUploadEnabled" runat="server">
+            <a href="<%: ResolveUrl("~/Teacher/uploadMaterial.aspx") %>" class="mm-btn-upload"><i class="bi bi-plus-lg"></i> <%: T("Upload Material","Muat Naik Bahan") %></a>
+        </asp:Panel>
+        <%-- Shown when Pending --%>
+        <asp:Panel ID="pnlUploadDisabled" runat="server" Visible="false">
+            <button type="button" class="mm-btn-upload-disabled" disabled
+                title="<%: T("Your teaching certificate is pending verification.","Sijil pengajaran anda sedang dalam semakan.") %>">
+                <i class="bi bi-plus-lg"></i> <%: T("Upload Material","Muat Naik Bahan") %>
+            </button>
+        </asp:Panel>
+    </asp:Panel></div>
 
 <%-- Tabs --%>
 <div class="mm-tabs">
@@ -237,7 +248,8 @@
     <asp:LinkButton ID="btnTabDiscover" runat="server" CssClass="mm-tab" OnClick="btnTabDiscover_Click" CausesValidation="false"><i class="bi bi-globe2"></i> <%: T("Discover Materials","Terokai Bahan") %></asp:LinkButton>
 </div>
 
-<%-- Search & Filter --%>
+<%-- Search & Filter — hidden for pending teachers and on Discover tab --%>
+<asp:Panel ID="pnlFilterBar" runat="server">
 <div class="mm-filter-bar">
     <div class="mm-search-wrap">
         <i class="bi bi-search"></i>
@@ -248,6 +260,7 @@
     <asp:DropDownList ID="ddlFilterType" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlFilterType_Changed" CssClass="mm-select" />
     <asp:Button ID="btnSearch" runat="server" Text="Search" OnClick="btnSearch_Click" CausesValidation="false" CssClass="mm-btn-search" />
 </div>
+</asp:Panel>
 
 <%-- Status chips (My Materials only) --%>
 <asp:Panel ID="pnlStatusChips" runat="server">
@@ -260,6 +273,15 @@
 </asp:Panel>
 <asp:DropDownList ID="ddlFilterStatus" runat="server" Visible="false" />
 
+<%-- Pending verification state (My Materials tab only) --%>
+<asp:Panel ID="pnlMyMaterialsPending" runat="server" Visible="false">
+    <div style="display:flex;flex-direction:column;align-items:center;padding:3.5rem 2rem;text-align:center;">
+        <div style="font-size:3.5rem;margin-bottom:1rem;opacity:.85;">⏳</div>
+        <h2 style="font-size:1.15rem;font-weight:800;color:var(--tc-text);margin:0 0 .6rem;"><%: T("Verification Pending","Pengesahan Sedang Diproses") %></h2>
+        <p style="font-size:.88rem;color:var(--tc-muted);max-width:480px;line-height:1.65;margin:0;"><%: T("Your teaching certificate is under review. You'll be able to upload and manage learning materials once your verification is approved.","Sijil pengajaran anda sedang dalam semakan. Anda boleh memuat naik dan mengurus bahan pembelajaran setelah pengesahan anda diluluskan.") %></p>
+    </div>
+</asp:Panel>
+
 <%-- Materials list --%>
 <asp:Panel ID="pnlMaterials" runat="server" Visible="false">
     <asp:Repeater ID="rptMaterials" runat="server" OnItemCommand="rptMaterials_ItemCommand">
@@ -269,7 +291,7 @@
                     <div class='mm-card-ico <%# GetIconCss(Eval("materialType").ToString()) %>'><i class='bi <%# GetFileIcon(Eval("materialType").ToString()) %>'></i></div>
                     <div class="mm-card-info">
                         <div class="mm-card-title"><%# HttpUtility.HtmlEncode(Eval("materialTitle")) %></div>
-                        <div class='mm-card-desc<%# (Eval("materialContent")?.ToString() ?? "").Length > 120 ? " collapsed" : "" %>'><%# HttpUtility.HtmlEncode(Eval("materialContent")?.ToString() ?? "") %></div>
+                        <div class="mm-card-desc"><%# (Eval("materialContent")?.ToString() ?? "").Length > 120 ? "<span class='mm-desc-short'>" + HttpUtility.HtmlEncode((Eval("materialContent")?.ToString() ?? "").Substring(0,120)) + "...</span><span class='mm-desc-full'>" + HttpUtility.HtmlEncode(Eval("materialContent")?.ToString() ?? "") + "</span>" : HttpUtility.HtmlEncode(Eval("materialContent")?.ToString() ?? "") %></div>
                         <%# (Eval("materialContent")?.ToString() ?? "").Length > 120 ? "<span class='mm-view-more' onclick='toggleDesc(this)'>View More</span>" : "" %>
                         <div class="mm-card-meta">
                             <span><i class="bi bi-folder2"></i> <%# HttpUtility.HtmlEncode(Eval("subtopicName")) %></span>
@@ -281,7 +303,13 @@
                     <span class='mm-badge <%# GetStatusCss(Eval("status").ToString()) %>'><%# HttpUtility.HtmlEncode(Eval("status")) %></span>
                 </div>
                 <div class="mm-card-actions">
-                    <asp:LinkButton ID="lnkView" runat="server" CommandName="ViewMaterial" CommandArgument='<%# Eval("fileUrl") %>' CssClass="mm-action-btn mm-act-view" CausesValidation="false"><i class="bi bi-eye"></i> View</asp:LinkButton>
+                    <button type="button" class="mm-action-btn mm-act-view" onclick="openViewModal(this)"
+                        data-title='<%# HttpUtility.HtmlAttributeEncode(Eval("materialTitle").ToString()) %>'
+                        data-desc='<%# HttpUtility.HtmlAttributeEncode(Eval("materialContent")?.ToString() ?? "") %>'
+                        data-type='<%# HttpUtility.HtmlAttributeEncode(Eval("materialType").ToString()) %>'
+                        data-lang='<%# HttpUtility.HtmlAttributeEncode(Eval("language")?.ToString() ?? "") %>'
+                        data-subtopic='<%# HttpUtility.HtmlAttributeEncode(Eval("subtopicName")?.ToString() ?? "") %>'
+                        data-file='<%# HttpUtility.HtmlAttributeEncode(GetFilePath(Eval("fileUrl"))) %>'><i class="bi bi-eye"></i> View</button>
                     <asp:LinkButton ID="lnkDownload" runat="server" CommandName="DownloadMaterial" CommandArgument='<%# Eval("fileUrl") %>' CssClass="mm-action-btn mm-act-download" CausesValidation="false"><i class="bi bi-download"></i> Download</asp:LinkButton>
                     <%# Eval("status").ToString() == "Rejected" ?
                         "<button type='button' class='mm-action-btn mm-act-resubmit' onclick=\"openEditModal('" + Eval("materialId") + "')\"><i class='bi bi-arrow-counterclockwise'></i> Resubmit</button>" :
@@ -313,7 +341,7 @@
                     <div class="mm-card-info">
                         <div class="mm-card-title"><%# HttpUtility.HtmlEncode(Eval("materialTitle")) %></div>
                         <div style="font-size:.78rem;color:var(--tc-primary);font-weight:600;margin-bottom:4px;"><%: T("By","Oleh") %> <%# HttpUtility.HtmlEncode(Eval("teacherName")) %></div>
-                        <div class='mm-card-desc<%# (Eval("materialContent")?.ToString() ?? "").Length > 120 ? " collapsed" : "" %>'><%# HttpUtility.HtmlEncode(Eval("materialContent")?.ToString() ?? "") %></div>
+                        <div class="mm-card-desc"><%# (Eval("materialContent")?.ToString() ?? "").Length > 120 ? "<span class='mm-desc-short'>" + HttpUtility.HtmlEncode((Eval("materialContent")?.ToString() ?? "").Substring(0,120)) + "...</span><span class='mm-desc-full'>" + HttpUtility.HtmlEncode(Eval("materialContent")?.ToString() ?? "") + "</span>" : HttpUtility.HtmlEncode(Eval("materialContent")?.ToString() ?? "") %></div>
                         <%# (Eval("materialContent")?.ToString() ?? "").Length > 120 ? "<span class='mm-view-more' onclick='toggleDesc(this)'>View More</span>" : "" %>
                         <div class="mm-card-meta">
                             <span><i class="bi bi-folder2"></i> <%# HttpUtility.HtmlEncode(Eval("subtopicName")) %></span>
@@ -324,7 +352,14 @@
                     </div>
                 </div>
                 <div class="mm-card-actions">
-                    <asp:LinkButton ID="lnkViewD" runat="server" CommandName="ViewMaterial" CommandArgument='<%# Eval("fileUrl") %>' CssClass="mm-action-btn mm-act-view" CausesValidation="false"><i class="bi bi-eye"></i> <%: T("View","Lihat") %></asp:LinkButton>
+                    <button type="button" class="mm-action-btn mm-act-view" onclick="openViewModal(this)"
+                        data-title='<%# HttpUtility.HtmlAttributeEncode(Eval("materialTitle").ToString()) %>'
+                        data-desc='<%# HttpUtility.HtmlAttributeEncode(Eval("materialContent")?.ToString() ?? "") %>'
+                        data-type='<%# HttpUtility.HtmlAttributeEncode(Eval("materialType").ToString()) %>'
+                        data-lang='<%# HttpUtility.HtmlAttributeEncode(Eval("language")?.ToString() ?? "") %>'
+                        data-subtopic='<%# HttpUtility.HtmlAttributeEncode(Eval("subtopicName")?.ToString() ?? "") %>'
+                        data-teacher='<%# HttpUtility.HtmlAttributeEncode(Eval("teacherName")?.ToString() ?? "") %>'
+                        data-file='<%# HttpUtility.HtmlAttributeEncode(GetFilePath(Eval("fileUrl"))) %>'><i class="bi bi-eye"></i> <%: T("View","Lihat") %></button>
                     <asp:LinkButton ID="lnkDownloadD" runat="server" CommandName="DownloadMaterial" CommandArgument='<%# Eval("fileUrl") %>' CssClass="mm-action-btn mm-act-download" CausesValidation="false"><i class="bi bi-download"></i> <%: T("Download","Muat Turun") %></asp:LinkButton>
                 </div>
             </div>
@@ -447,6 +482,21 @@
 <asp:HiddenField ID="hidToast" runat="server" Value="" />
 <asp:HiddenField ID="hidActiveTab" runat="server" Value="mine" />
 
+<%-- ═══ VIEW MATERIAL MODAL ═══ --%>
+<div id="viewMaterialModal" class="mm-modal-overlay" style="display:none;" onclick="if(event.target===this)closeViewModal()">
+    <div class="mm-modal" style="max-width:780px;max-height:90vh;display:flex;flex-direction:column;border-radius:18px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.22);">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.5rem;border-bottom:1px solid var(--tc-border);flex-shrink:0;">
+            <h3 id="vmTitle" style="font-size:1rem;font-weight:800;color:var(--tc-text);margin:0;"></h3>
+            <button type="button" style="background:none;border:none;font-size:1.3rem;color:var(--tc-muted);cursor:pointer;" onclick="closeViewModal()">×</button>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:1.25rem 1.5rem;">
+            <div id="vmMeta" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1rem;font-size:.8rem;"></div>
+            <div id="vmDesc" style="font-size:.86rem;color:var(--tc-muted);line-height:1.6;margin-bottom:1.25rem;"></div>
+            <div id="vmPreview" style="border-radius:12px;overflow:hidden;"></div>
+        </div>
+    </div>
+</div>
+
 <%-- Toast container --%>
 <div id="mmToastContainer" class="mm-toast-container"></div>
 
@@ -457,14 +507,58 @@
 <script>
 function toggleDesc(el) {
     var desc = el.previousElementSibling;
-    if (desc.classList.contains('collapsed')) {
-        desc.classList.remove('collapsed');
+    if (!desc.classList.contains('expanded')) {
+        desc.classList.add('expanded');
         el.textContent = 'View Less';
     } else {
-        desc.classList.add('collapsed');
+        desc.classList.remove('expanded');
         el.textContent = 'View More';
     }
 }
+function openViewModal(btn) {
+    var title = btn.dataset.title || '';
+    var desc = btn.dataset.desc || '';
+    var type = btn.dataset.type || '';
+    var lang = btn.dataset.lang || '';
+    var subtopic = btn.dataset.subtopic || '';
+    var teacher = btn.dataset.teacher || '';
+    var file = btn.dataset.file || '';
+
+    document.getElementById('vmTitle').textContent = title;
+    document.getElementById('vmDesc').textContent = desc || 'No description provided.';
+
+    // Meta chips
+    var metaHtml = '';
+    if (type) metaHtml += '<span style="background:#EDE9FE;color:#6C63FF;padding:3px 10px;border-radius:6px;font-weight:600;"><i class="bi bi-file-earmark"></i> ' + escVM(type) + '</span>';
+    if (lang) metaHtml += '<span style="background:#DBEAFE;color:#1D4ED8;padding:3px 10px;border-radius:6px;font-weight:600;"><i class="bi bi-translate"></i> ' + escVM(lang) + '</span>';
+    if (subtopic) metaHtml += '<span style="background:#D1FAE5;color:#047857;padding:3px 10px;border-radius:6px;font-weight:600;"><i class="bi bi-folder2"></i> ' + escVM(subtopic) + '</span>';
+    if (teacher) metaHtml += '<span style="background:#FEF3C7;color:#92400E;padding:3px 10px;border-radius:6px;font-weight:600;"><i class="bi bi-person"></i> ' + escVM(teacher) + '</span>';
+    document.getElementById('vmMeta').innerHTML = metaHtml;
+
+    // Preview
+    var preview = document.getElementById('vmPreview');
+    var resolvedUrl = '<%: ResolveUrl("~/") %>' + file;
+    var ext = file.split('.').pop().toLowerCase();
+
+    if (ext === 'pdf') {
+        preview.innerHTML = '<iframe src="' + resolvedUrl + '" style="width:100%;height:500px;border:1px solid #E5E7EB;border-radius:10px;" frameborder="0"></iframe>';
+    } else if (['jpg','jpeg','png','gif','webp'].indexOf(ext) >= 0) {
+        preview.innerHTML = '<img src="' + resolvedUrl + '" style="max-width:100%;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.08);" alt="Preview" />';
+    } else if (['mp4','webm','ogg'].indexOf(ext) >= 0) {
+        preview.innerHTML = '<video controls style="width:100%;border-radius:10px;"><source src="' + resolvedUrl + '" type="video/' + ext + '">Your browser does not support video.</video>';
+    } else {
+        preview.innerHTML = '<div style="text-align:center;padding:2.5rem;background:#F9FAFB;border-radius:12px;border:1.5px dashed #E5E7EB;"><i class="bi bi-file-earmark" style="font-size:2.5rem;color:var(--tc-muted);opacity:.4;"></i><p style="margin:.75rem 0 0;font-size:.88rem;color:var(--tc-muted);">Preview is not available for this file type. Use the Download button to view it.</p></div>';
+    }
+
+    document.getElementById('viewMaterialModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+function closeViewModal() {
+    document.getElementById('viewMaterialModal').style.display = 'none';
+    document.getElementById('vmPreview').innerHTML = '';
+    document.body.style.overflow = '';
+}
+function escVM(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 function openEditModal(id) {
     document.getElementById('<%=hidMaterialId.ClientID%>').value = id;
     __doPostBack('LoadEdit', id);

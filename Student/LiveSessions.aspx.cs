@@ -534,15 +534,39 @@ namespace ScienceBuddy.Student
                     }
                 }
 
-                // Open meeting link in new tab
-                if (!string.IsNullOrEmpty(meetingLink))
+                // Get student display name for the call
+                const string sqlName = "SELECT name, nickname FROM Student WHERE studentId = @studentId";
+                string displayName = "Student";
+                using (SqlCommand cmdName = new SqlCommand(sqlName, connection))
                 {
-                    string script = "window.open('" + meetingLink.Replace("'", "\\'") + "', '_blank');";
-                    ClientScript.RegisterStartupScript(this.GetType(), "openMeeting", script, true);
+                    cmdName.Parameters.AddWithValue("@studentId", studentId);
+                    using (SqlDataReader reader = cmdName.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            string name = reader["name"].ToString();
+                            string nickname = reader["nickname"] == DBNull.Value ? "" : reader["nickname"].ToString();
+                            displayName = string.IsNullOrEmpty(nickname) ? name : nickname;
+                        }
+                    }
                 }
+
+                // Build a unique, safe room name from the session ID
+                string roomName = "ScienceBuddy-" + sessionId;
+
+                hidRoomName.Value = roomName;
+                hidDisplayName.Value = HttpUtility.HtmlEncode(displayName);
+                litRoomTitle.Text = "Live Session";
+
+                pnlGrid.Visible = false;
+                pnlJoinedRoom.Visible = true;
             }
 
-            // Reload sessions
+        }
+        protected void btnLeaveRoom_Click(object sender, EventArgs e)
+        {
+            pnlJoinedRoom.Visible = false;
+            pnlGrid.Visible = true;
             InitLang();
             SetLabels();
             LoadSessions();
@@ -594,5 +618,6 @@ namespace ScienceBuddy.Student
                 return (int)command.ExecuteScalar() > 0;
             }
         }
+
     }
 }

@@ -17,6 +17,7 @@
         <a href="<%: ResolveUrl("~/Admin/StudentManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-people item-icon"></i><span class="item-label">Students</span></a>
         <a href="<%: ResolveUrl("~/Admin/ParentManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person-heart item-icon"></i><span class="item-label">Parents</span></a>
         <a href="<%: ResolveUrl("~/Admin/TeacherManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person-badge item-icon"></i><span class="item-label">Teachers</span></a>
+        <a href="<%: ResolveUrl("~/Admin/TeacherCertificateApproval.aspx") %>" class="sb-sidebar-item"><i class="bi bi-patch-check item-icon"></i><span class="item-label">Teacher Certificate Approval</span></a>
     </div>
     <div class="sb-nav-section"><div class="sb-nav-section-label">Learning Content</div>
         <a href="<%: ResolveUrl("~/Admin/LessonManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-book item-icon"></i><span class="item-label">Lessons</span></a>
@@ -95,8 +96,8 @@
                                             <i class="bi bi-eye"></i>
                                         </asp:LinkButton>
                                         <asp:LinkButton ID="lnkSend" runat="server" CssClass="sb-btn sb-btn-primary sb-btn-xs" CommandName="SendCert" CommandArgument='<%# Eval("certId") + "|" + Eval("studentUserId") + "|" + Eval("studentName") + "|" + Eval("levelName") %>'
-                                            Visible='<%# Eval("canSend") %>' OnClientClick="return confirm('Send this certificate?');" ToolTip="Send">
-                                            <i class="bi bi-send"></i> <%= T("Send", "Hantar") %>
+                                            Visible='<%# Eval("canSend") %>' OnClientClick='<%# "return swalConfirmSend(this, \u0027" + T("Send this certificate?","Hantar sijil ini?") + "\u0027, \u0027" + T("Send","Hantar") + "\u0027);" %>' ToolTip="Send">
+                                            <i class="bi bi-send"></i> <%# T("Send", "Hantar") %>
                                         </asp:LinkButton>
                                     </div>
                                 </td>
@@ -135,8 +136,8 @@
                                 <td class="col-actions">
                                     <asp:LinkButton ID="lnkGenerate" runat="server" CssClass="sb-btn sb-btn-success sb-btn-xs" CommandName="Generate"
                                         CommandArgument='<%# Eval("studentId") + "|" + Eval("levelId") + "|" + Eval("studentName") + "|" + Eval("levelName") + "|" + Eval("studentUserId") %>'
-                                        OnClientClick="return confirm('Generate certificate?');">
-                                        <i class="bi bi-plus-circle"></i> <%= T("Generate", "Jana") %>
+                                        OnClientClick='<%# "return swalConfirmSend(this, \u0027" + T("Generate certificate for this student?","Jana sijil untuk pelajar ini?") + "\u0027, \u0027" + T("Generate","Jana") + "\u0027);" %>'>
+                                        <i class="bi bi-plus-circle"></i> <%# T("Generate", "Jana") %>
                                     </asp:LinkButton>
                                 </td>
                             </tr>
@@ -176,8 +177,7 @@
                 <i class="bi bi-download"></i> <%= T("Download", "Muat Turun") %>
             </asp:HyperLink>
             <asp:LinkButton ID="btnModalSend" runat="server" CssClass="sb-btn sb-btn-primary sb-btn-sm"
-                OnClick="btnModalSend_Click" OnClientClick="return confirm('Send this certificate?');"
-                Visible="false">
+                OnClick="btnModalSend_Click" Visible="false">
                 <i class="bi bi-send"></i> <%= T("Send Certificate", "Hantar Sijil") %>
             </asp:LinkButton>
         </div>
@@ -193,5 +193,30 @@
 
 <%-- TOAST --%>
 <asp:Panel ID="pnlToast" runat="server" Visible="false"><asp:Literal ID="litToast" runat="server" /></asp:Panel>
+
+<script>
+function swalConfirmSend(btn, message, confirmLabel) {
+    Swal.fire({
+        title: message,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#2563EB',
+        cancelButtonColor: '#64748B',
+        confirmButtonText: '<i class="bi bi-send-fill"></i> ' + confirmLabel,
+        cancelButtonText: '<%= T("Cancel","Batal") %>',
+        reverseButtons: true
+    }).then(function(result) {
+        if (result.isConfirmed) {
+            // Temporarily remove OnClientClick to prevent recursion, then trigger postback
+            var prev = btn.onclick;
+            btn.onclick = null;
+            btn.click();
+            btn.onclick = prev;
+        }
+    });
+    // Return false to cancel the immediate default postback
+    return false;
+}
+</script>
 
 </asp:Content>
