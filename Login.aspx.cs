@@ -75,7 +75,7 @@ namespace ScienceBuddy
                         status = reader["status"].ToString();
                     }
 
-                    // 3. BCrypt verification
+                    // 3. BCrypt verification (with plain-text fallback)
                     if (!PasswordHelper.VerifyPassword(password, storedPassword))
                     {
                         RecordFailedAttempt();

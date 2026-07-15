@@ -7,25 +7,33 @@ namespace ScienceBuddy
     /// </summary>
     public static class PasswordHelper
     {
+        public static bool VerifyPassword(string plainPassword, string storedPasswordHash)
+        {
+            if (string.IsNullOrWhiteSpace(plainPassword) || string.IsNullOrWhiteSpace(storedPasswordHash))
+                return false;
+
+            // If it's a BCrypt hash, verify normally
+            if (IsBCryptHash(storedPasswordHash))
+            {
+                try
+                {
+                    return BCrypt.Net.BCrypt.Verify(plainPassword, storedPasswordHash);
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            }
+
+            // Fallback: plain-text comparison for un-migrated passwords
+            return string.Equals(plainPassword, storedPasswordHash, StringComparison.Ordinal);
+        }
+
         public static string HashPassword(string plainPassword)
         {
             if (string.IsNullOrWhiteSpace(plainPassword))
                 throw new ArgumentException("Password cannot be empty.");
             return BCrypt.Net.BCrypt.HashPassword(plainPassword);
-        }
-
-        public static bool VerifyPassword(string plainPassword, string storedPasswordHash)
-        {
-            if (string.IsNullOrWhiteSpace(plainPassword) || string.IsNullOrWhiteSpace(storedPasswordHash))
-                return false;
-            try
-            {
-                return BCrypt.Net.BCrypt.Verify(plainPassword, storedPasswordHash);
-            }
-            catch
-            {
-                return false;
-            }
         }
 
         /// <summary>

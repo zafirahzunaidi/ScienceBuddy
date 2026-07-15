@@ -202,12 +202,16 @@
         });
     }
     var loginBtn = document.getElementById('<%= btnLogin.ClientID %>');
-    var loginForm = loginBtn ? loginBtn.closest('form') : null;
-    if (loginBtn && loginForm) {
-        loginForm.addEventListener('submit', function () {
-            if (typeof Page_ClientValidate === 'function' && !Page_ClientValidate('LoginGroup')) return;
-            loginBtn.disabled = true; loginBtn.value = 'Signing in\u2026';
-            setTimeout(function () { loginBtn.disabled = false; loginBtn.value = 'Sign In'; }, 8000);
+    if (loginBtn) {
+        loginBtn.addEventListener('click', function () {
+            // Allow ASP.NET to handle validation; just show signing-in state after a short delay
+            setTimeout(function () {
+                if (typeof Page_IsValid !== 'undefined' && Page_IsValid) {
+                    loginBtn.disabled = true;
+                    loginBtn.value = 'Signing in\u2026';
+                    setTimeout(function () { loginBtn.disabled = false; loginBtn.value = 'Sign In'; }, 8000);
+                }
+            }, 50);
         });
     }
     window.addEventListener('DOMContentLoaded', function () {
