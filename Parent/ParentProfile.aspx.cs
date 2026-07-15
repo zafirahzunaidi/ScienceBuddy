@@ -86,7 +86,7 @@ namespace ScienceBuddy.Parent
 
         private void SetLabels()
         {
-            btnSave.Text = T("Save Changes", "Simpan Perubahan");
+            btnSave.Text = T("Save Profile Changes", "Simpan Perubahan Profil");
             btnChangePwd.Text = T("Change Password", "Tukar Kata Laluan");
         }
 

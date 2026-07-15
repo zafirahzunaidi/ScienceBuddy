@@ -3,7 +3,7 @@
     Title="Quiz Results" MaintainScrollPositionOnPostback="true" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
-<link href="<%: ResolveUrl("~/Content/Parent.css") %>?v=5" rel="stylesheet" />
+<link href="<%: ResolveUrl("~/Content/Parent.css") %>?v=6" rel="stylesheet" />
 <script type="text/javascript">
 function toggleChildPopover(e){e.stopPropagation();var pop=document.getElementById('divChildPopover');if(!pop)return;if(pop.classList.contains('pt-popover-open')){pop.classList.remove('pt-popover-open');return;}var ddl=document.querySelector('.sb-sidebar-child-ddl');if(!ddl)return;var html='<div class="pt-child-popover-title">Select Child</div>';for(var i=0;i<ddl.options.length;i++){var o=ddl.options[i];var init=o.text.charAt(0).toUpperCase();var ac=o.selected?' pt-popover-active':'';html+='<div class="pt-child-popover-item'+ac+'" onclick="selectChildFromPopover(\''+o.value+'\')"><span class="pt-popover-avatar">'+init+'</span>'+o.text+'</div>';}pop.innerHTML=html;pop.classList.add('pt-popover-open');}
 function selectChildFromPopover(v){var ddl=document.querySelector('.sb-sidebar-child-ddl');if(ddl&&ddl.value!==v){ddl.value=v;__doPostBack(ddl.id.replace(/_/g,'$'),'');}var pop=document.getElementById('divChildPopover');if(pop)pop.classList.remove('pt-popover-open');}
@@ -63,56 +63,65 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
     <%-- Main Content --%>
     <asp:Panel ID="pnlContent" runat="server" Visible="false">
 
-        <%-- ══ 1. HEADER ══ --%>
-        <div class="pt-progress-hero">
-            <i class="bi bi-star-fill pt-twinkle-star" style="top:12%;left:8%;"></i>
-            <i class="bi bi-stars pt-twinkle-star" style="top:55%;right:6%;"></i>
-            <div class="pt-progress-hero-body">
-                <h2 class="pt-progress-hero-title"><asp:Literal ID="litHeroTitle" runat="server" /></h2>
-                <p class="pt-progress-hero-sub"><asp:Literal ID="litHeroSub" runat="server" /></p>
-            </div>
+        <%-- ══ 1. PAGE HEADING + UNIT FILTER ══ --%>
+        <div class="pt-hero">
+            <i class="bi bi-star-fill pt-sparkle" style="top:12%;left:8%;"></i>
+            <i class="bi bi-stars pt-sparkle" style="top:50%;right:6%;animation-delay:1.2s;"></i>
+            <h2 class="pt-hero-title"><i class="bi bi-patch-check-fill"></i> <asp:Literal ID="litHeroTitle" runat="server" /></h2>
+            <p class="pt-hero-sub"><asp:Literal ID="litHeroSub" runat="server" /></p>
         </div>
 
         <%-- Unit Filter --%>
         <div class="pt-quiz-filter-row">
-            <span class="pt-quiz-filter-label"><i class="bi bi-funnel"></i> <%: T("Filter by Unit","Tapis mengikut Unit") %>:</span>
+            <span class="pt-quiz-filter-label"><i class="bi bi-funnel"></i> <%: T("Unit","Unit") %>:</span>
             <asp:DropDownList ID="ddlUnit" runat="server" CssClass="pt-heatmap-month-select"
                 AutoPostBack="true" OnSelectedIndexChanged="DdlUnit_Changed" />
         </div>
 
-        <%-- ══ 2. PERFORMANCE SUMMARY ══ --%>
-        <div class="pt-summary-grid pt-summary-grid-4 pt-stagger-in">
-            <div class="pt-summary-card progress-card">
-                <div class="pt-summary-icon"><i class="bi bi-percent"></i></div>
-                <span class="pt-summary-value"><asp:Literal ID="litAvgScore" runat="server" /></span>
-                <span class="pt-summary-label"><%: T("Average Score","Skor Purata") %></span>
+        <%-- ══ 2. PERFORMANCE SUMMARY SENTENCE ══ --%>
+        <asp:Panel ID="pnlPerfSummary" runat="server" Visible="false">
+            <div class="pt-quiz-perf-summary">
+                <i class="bi bi-info-circle-fill"></i>
+                <asp:Literal ID="litPerfSummary" runat="server" />
             </div>
-            <div class="pt-summary-card quiz-card">
-                <div class="pt-summary-icon"><i class="bi bi-trophy-fill"></i></div>
-                <span class="pt-summary-value"><asp:Literal ID="litHighScore" runat="server" /></span>
-                <span class="pt-summary-label"><%: T("Highest Score","Skor Tertinggi") %></span>
+        </asp:Panel>
+
+        <%-- ══ 3. STATISTICS ══ --%>
+        <div class="pt-quiz-stats-grid">
+            <div class="pt-quiz-stat-card pt-quiz-stat-primary">
+                <div class="pt-quiz-stat-icon"><i class="bi bi-percent"></i></div>
+                <span class="pt-quiz-stat-value"><asp:Literal ID="litAvgScore" runat="server" /></span>
+                <span class="pt-quiz-stat-label"><%: T("Average Score","Skor Purata") %></span>
             </div>
-            <div class="pt-summary-card badge-card">
-                <div class="pt-summary-icon"><i class="bi bi-check-circle-fill"></i></div>
-                <span class="pt-summary-value"><asp:Literal ID="litPassRate" runat="server" /></span>
-                <span class="pt-summary-label"><%: T("Pass Rate","Kadar Lulus") %></span>
+            <div class="pt-quiz-stat-card pt-quiz-stat-secondary">
+                <div class="pt-quiz-stat-icon"><i class="bi bi-trophy-fill"></i></div>
+                <span class="pt-quiz-stat-value"><asp:Literal ID="litHighScore" runat="server" /></span>
+                <span class="pt-quiz-stat-label"><%: T("Highest Score","Skor Tertinggi") %></span>
             </div>
-            <div class="pt-summary-card" style="background:#E0F2FE;">
-                <div class="pt-summary-icon" style="background:#BAE6FD;color:#0369A1;"><i class="bi bi-pencil-square"></i></div>
-                <span class="pt-summary-value"><asp:Literal ID="litTotalAttempts" runat="server" /></span>
-                <span class="pt-summary-label"><%: T("Total Attempts","Jumlah Percubaan") %></span>
+            <div class="pt-quiz-stat-card pt-quiz-stat-secondary">
+                <div class="pt-quiz-stat-icon"><i class="bi bi-check-circle-fill"></i></div>
+                <span class="pt-quiz-stat-value"><asp:Literal ID="litPassRate" runat="server" /></span>
+                <span class="pt-quiz-stat-label"><%: T("Pass Rate","Kadar Lulus") %></span>
+            </div>
+            <div class="pt-quiz-stat-card pt-quiz-stat-neutral">
+                <div class="pt-quiz-stat-icon"><i class="bi bi-pencil-square"></i></div>
+                <span class="pt-quiz-stat-value"><asp:Literal ID="litTotalAttempts" runat="server" /></span>
+                <span class="pt-quiz-stat-label"><%: T("Total Attempts","Jumlah Percubaan") %></span>
             </div>
         </div>
 
-        <%-- ══ 3. PERFORMANCE INSIGHTS ══ --%>
+        <%-- ══ 4. PERFORMANCE INSIGHTS ══ --%>
         <div class="pt-quiz-section-title"><i class="bi bi-graph-up-arrow"></i> <%: T("Performance Insights","Wawasan Prestasi") %></div>
+        <asp:Panel ID="pnlInsightsSummary" runat="server" Visible="false">
+            <p class="pt-insights-summary"><asp:Literal ID="litInsightsSummary" runat="server" /></p>
+        </asp:Panel>
         <div class="pt-two-col">
             <%-- Score Trend --%>
             <div class="pt-dashboard-card">
                 <div class="pt-dashboard-card-header">
-                    <span class="pt-dashboard-card-title"><i class="bi bi-activity"></i> <%: T("Score Trend","Trend Skor") %></span>
+                    <span class="pt-dashboard-card-subtitle"><%: T("Score Trend","Trend Skor") %></span>
                 </div>
-                <div class="pt-dashboard-card-body">
+                <div class="pt-dashboard-card-body pt-chart-body">
                     <asp:Panel ID="pnlScoreTrend" runat="server"></asp:Panel>
                     <asp:Panel ID="pnlNoTrend" runat="server" Visible="false">
                         <div class="pt-no-data"><%: T("No quiz attempts yet.","Belum ada percubaan kuiz.") %></div>
@@ -122,7 +131,7 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
             <%-- Performance by Unit --%>
             <div class="pt-dashboard-card">
                 <div class="pt-dashboard-card-header">
-                    <span class="pt-dashboard-card-title"><i class="bi bi-bar-chart-line"></i> <%: T("Performance by Unit","Prestasi mengikut Unit") %></span>
+                    <span class="pt-dashboard-card-subtitle"><%: T("Performance by Unit","Prestasi mengikut Unit") %></span>
                 </div>
                 <div class="pt-dashboard-card-body">
                     <asp:Panel ID="pnlUnitPerformance" runat="server"></asp:Panel>
@@ -136,9 +145,12 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
         <%-- ══ 4. RECENT QUIZ ATTEMPTS ══ --%>
         <div class="pt-dashboard-card" style="margin-bottom:24px;">
             <div class="pt-dashboard-card-header">
-                <span class="pt-dashboard-card-title"><i class="bi bi-clock-history"></i> <%: T("Recent Quiz Attempts","Percubaan Kuiz Terkini") %></span>
+                <div>
+                    <span class="pt-dashboard-card-title"><i class="bi bi-clock-history"></i> <%: T("Recent Quiz Attempts","Percubaan Kuiz Terkini") %></span>
+                    <p class="pt-quiz-attempts-helper"><%: T("Click any quiz to review your child's answers and explanations.","Klik mana-mana kuiz untuk menyemak jawapan dan penjelasan anak anda.") %></p>
+                </div>
                 <asp:Button ID="btnViewSelected" runat="server" CssClass="pt-btn primary"
-                    Text="View Selected Details" OnClick="BtnViewSelected_Click" CausesValidation="false" />
+                    Text="See Answers" OnClick="BtnViewSelected_Click" CausesValidation="false" />
             </div>
             <div class="pt-dashboard-card-body" style="padding:0;">
                 <asp:Panel ID="pnlAttempts" runat="server"></asp:Panel>
@@ -170,25 +182,30 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
 
         <%-- ══ 6. WEAK & STRONG AREAS ══ --%>
         <div class="pt-quiz-section-title"><i class="bi bi-lightbulb-fill"></i> <%: T("Learning Insights","Wawasan Pembelajaran") %></div>
-        <div class="pt-two-col">
-            <%-- Weak Areas --%>
-            <div class="pt-dashboard-card">
+        <div class="pt-two-col pt-two-col-insights">
+            <%-- Weak Areas (primary focus) --%>
+            <div class="pt-dashboard-card pt-insights-primary">
                 <div class="pt-dashboard-card-header">
-                    <span class="pt-dashboard-card-title" style="color:#DC2626;"><i class="bi bi-exclamation-triangle-fill"></i> <%: T("Areas That Need Improvement","Bidang yang Perlu Diperbaiki") %></span>
+                    <span class="pt-dashboard-card-subtitle" style="color:#DC2626;font-weight:700;"><i class="bi bi-exclamation-triangle-fill"></i> <%: T("Needs Improvement","Perlu Diperbaiki") %></span>
                 </div>
                 <div class="pt-dashboard-card-body">
                     <asp:Panel ID="pnlWeakAreas" runat="server"></asp:Panel>
                     <asp:Panel ID="pnlNoWeak" runat="server" Visible="false">
-                        <div class="pt-no-data"><%: T("No weak areas identified. Great work!","Tiada bidang lemah dikenal pasti. Syabas!") %></div>
+                        <div class="pt-no-data" style="padding:16px 0;"><i class="bi bi-check-circle" style="color:#16A34A;font-size:1.2rem;margin-right:6px;"></i><%: T("No weak areas identified. Great work!","Tiada bidang lemah dikenal pasti. Syabas!") %></div>
                     </asp:Panel>
-                    <asp:Button ID="btnAddWeakToStudyPlan" runat="server" CssClass="pt-btn primary" style="margin-top:14px;"
-                        OnClick="BtnAddWeakToStudyPlan_Click" CausesValidation="false" />
+                    <asp:Panel ID="pnlWeakAction" runat="server" Visible="false">
+                        <div class="pt-weak-action-row">
+                            <asp:Button ID="btnAddWeakToStudyPlan" runat="server" CssClass="pt-btn primary"
+                                OnClick="BtnAddWeakToStudyPlan_Click" CausesValidation="false" />
+                            <span class="pt-weak-action-hint"><%: T("Adds revision tasks for these topics to your child's study plan.","Menambah tugasan ulangkaji untuk topik ini ke pelan belajar anak anda.") %></span>
+                        </div>
+                    </asp:Panel>
                 </div>
             </div>
-            <%-- Strong Areas --%>
-            <div class="pt-dashboard-card">
+            <%-- Strong Areas (secondary) --%>
+            <div class="pt-dashboard-card pt-insights-secondary">
                 <div class="pt-dashboard-card-header">
-                    <span class="pt-dashboard-card-title" style="color:#16A34A;"><i class="bi bi-trophy-fill"></i> <%: T("Strong Areas","Bidang Kekuatan") %></span>
+                    <span class="pt-dashboard-card-subtitle" style="color:#16A34A;font-weight:700;"><i class="bi bi-trophy-fill"></i> <%: T("Strong Areas","Bidang Kekuatan") %></span>
                 </div>
                 <div class="pt-dashboard-card-body">
                     <div class="pt-quiz-most-improved">
@@ -197,11 +214,19 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
                     </div>
                     <asp:Panel ID="pnlStrongAreas" runat="server"></asp:Panel>
                     <asp:Panel ID="pnlNoStrong" runat="server" Visible="false">
-                        <div class="pt-no-data"><%: T("Not enough quiz history yet.","Belum cukup sejarah kuiz.") %></div>
+                        <div class="pt-no-data" style="padding:12px 0;"><%: T("Available after completing more quizzes.","Tersedia selepas menyelesaikan lebih banyak kuiz.") %></div>
                     </asp:Panel>
                 </div>
             </div>
         </div>
+
+        <%-- Next Step Summary --%>
+        <asp:Panel ID="pnlNextStepSummary" runat="server" Visible="false">
+            <div class="pt-next-step-summary">
+                <i class="bi bi-arrow-right-circle-fill"></i>
+                <asp:Literal ID="litNextStepSummary" runat="server" />
+            </div>
+        </asp:Panel>
 
         <%-- ══ ADD TO STUDY PLAN MODAL ══ --%>
         <asp:Panel ID="pnlTaskModal" runat="server" CssClass="pt-task-modal-overlay pt-task-modal-hidden">

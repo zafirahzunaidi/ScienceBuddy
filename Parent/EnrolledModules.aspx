@@ -3,7 +3,7 @@
     Title="Learning Journey" MaintainScrollPositionOnPostback="true" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
-<link href="<%: ResolveUrl("~/Content/Parent.css") %>?v=5" rel="stylesheet" />
+<link href="<%: ResolveUrl("~/Content/Parent.css") %>?v=6" rel="stylesheet" />
 <script type="text/javascript">
 function toggleChildPopover(e){e.stopPropagation();var pop=document.getElementById('divChildPopover');if(!pop)return;if(pop.classList.contains('pt-popover-open')){pop.classList.remove('pt-popover-open');return;}var ddl=document.querySelector('.sb-sidebar-child-ddl');if(!ddl)return;var html='<div class="pt-child-popover-title">Select Child</div>';for(var i=0;i<ddl.options.length;i++){var o=ddl.options[i];var init=o.text.charAt(0).toUpperCase();var ac=o.selected?' pt-popover-active':'';html+='<div class="pt-child-popover-item'+ac+'" onclick="selectChildFromPopover(\''+o.value+'\')"><span class="pt-popover-avatar">'+init+'</span>'+o.text+'</div>';}pop.innerHTML=html;pop.classList.add('pt-popover-open');}
 function selectChildFromPopover(v){var ddl=document.querySelector('.sb-sidebar-child-ddl');if(ddl&&ddl.value!==v){ddl.value=v;__doPostBack(ddl.id.replace(/_/g,'$'),'');}var pop=document.getElementById('divChildPopover');if(pop)pop.classList.remove('pt-popover-open');}
@@ -52,10 +52,11 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
 
     <%-- ══ LEVELS VIEW ══ --%>
     <asp:Panel ID="pnlLevels" runat="server" Visible="false">
-        <div class="pt-learning-hero">
-            <div class="pt-learning-hero-icon"><i class="bi bi-rocket-takeoff-fill"></i></div>
-            <h2><%: T("Learning Journey","Perjalanan Pembelajaran") %></h2>
-            <p><%: T("Explore your child's science learning levels and track their progress.","Terokai tahap pembelajaran sains anak anda dan jejak kemajuan mereka.") %></p>
+        <div class="pt-hero">
+            <i class="bi bi-star-fill pt-sparkle" style="top:13%;left:8%;"></i>
+            <i class="bi bi-stars pt-sparkle" style="top:50%;right:7%;animation-delay:1s;"></i>
+            <h2 class="pt-hero-title"><i class="bi bi-rocket-takeoff-fill"></i> <%: T("Learning Journey","Perjalanan Pembelajaran") %></h2>
+            <p class="pt-hero-sub"><%: T("Explore your child's science learning levels and track their progress.","Terokai tahap pembelajaran sains anak anda dan jejak kemajuan mereka.") %></p>
         </div>
         <div class="pt-levels-section">
             <h3 class="pt-levels-heading"><%: T("Levels","Tahap") %></h3>

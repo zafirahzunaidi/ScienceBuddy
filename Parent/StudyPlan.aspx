@@ -3,7 +3,7 @@
     Title="Study Plan" MaintainScrollPositionOnPostback="true" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
-<link href="<%: ResolveUrl("~/Content/Parent.css") %>?v=5" rel="stylesheet" />
+<link href="<%: ResolveUrl("~/Content/Parent.css") %>?v=6" rel="stylesheet" />
 <script type="text/javascript">
 function toggleChildPopover(e){e.stopPropagation();var pop=document.getElementById('divChildPopover');if(!pop)return;if(pop.classList.contains('pt-popover-open')){pop.classList.remove('pt-popover-open');return;}var ddl=document.querySelector('.sb-sidebar-child-ddl');if(!ddl)return;var html='<div class="pt-child-popover-title">Select Child</div>';for(var i=0;i<ddl.options.length;i++){var o=ddl.options[i];var init=o.text.charAt(0).toUpperCase();var ac=o.selected?' pt-popover-active':'';html+='<div class="pt-child-popover-item'+ac+'" onclick="selectChildFromPopover(\''+o.value+'\')"><span class="pt-popover-avatar">'+init+'</span>'+o.text+'</div>';}pop.innerHTML=html;pop.classList.add('pt-popover-open');}
 function selectChildFromPopover(v){var ddl=document.querySelector('.sb-sidebar-child-ddl');if(ddl&&ddl.value!==v){ddl.value=v;__doPostBack(ddl.id.replace(/_/g,'$'),'');}var pop=document.getElementById('divChildPopover');if(pop)pop.classList.remove('pt-popover-open');}
@@ -62,21 +62,61 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
     <asp:Panel ID="pnlContent" runat="server" Visible="false">
 
         <%-- ══ HEADER ══ --%>
-        <div class="pt-study-plan-header">
-            <div class="pt-study-plan-header-left">
-                <h2 class="pt-study-plan-title"><i class="bi bi-rocket-takeoff-fill"></i> <asp:Literal ID="litPlanTitle" runat="server" /></h2>
-                <p class="pt-study-plan-sub"><asp:Literal ID="litPlanSub" runat="server" /></p>
+        <div class="pt-hero">
+            <i class="bi bi-star-fill pt-sparkle" style="top:14%;left:9%;"></i>
+            <i class="bi bi-stars pt-sparkle" style="top:52%;right:7%;animation-delay:0.8s;"></i>
+            <h2 class="pt-hero-title"><i class="bi bi-rocket-takeoff-fill"></i> <asp:Literal ID="litPlanTitle" runat="server" /></h2>
+            <p class="pt-hero-sub"><asp:Literal ID="litPlanSub" runat="server" /></p>
+            <div class="pt-hero-actions">
+                <a href="<%: ResolveUrl("~/Parent/EditStudyPlan.aspx") %>" class="pt-hero-btn">
+                    <i class="bi bi-pencil-square"></i> <%: T("Edit Plan","Edit Pelan") %>
+                </a>
             </div>
-            <a href="<%: ResolveUrl("~/Parent/EditStudyPlan.aspx") %>" class="pt-btn primary">
-                <i class="bi bi-pencil-square"></i> <%: T("Edit Plan","Edit Pelan") %>
-            </a>
         </div>
 
-        <%-- ══ PROGRESS BAR WITH REWARDS ══ --%>
-        <div class="pt-mission-progress-card">
-            <div class="pt-mission-progress-label">
-                <span><i class="bi bi-trophy-fill"></i> <%: T("Mission Progress","Kemajuan Misi") %></span>
+        <%-- ══ INFO CHIPS (replaces summary table) ══ --%>
+        <div class="pt-sp-info-chips">
+            <div class="pt-sp-chip blue">
+                <i class="bi bi-check2-all"></i>
+                <asp:Literal ID="litCompletedCount" runat="server" />
             </div>
+            <asp:Panel ID="pnlRemainingDays" runat="server" Visible="false">
+                <div class="pt-sp-chip blue">
+                    <i class="bi bi-calendar-event"></i>
+                    <asp:Literal ID="litRemainingDays" runat="server" />
+                </div>
+            </asp:Panel>
+            <div class="pt-sp-chip yellow">
+                <i class="bi bi-gift-fill"></i>
+                <asp:Literal ID="litNextReward" runat="server" />
+            </div>
+            <div class="pt-sp-chip yellow">
+                <i class="bi bi-star-fill"></i>
+                <asp:Literal ID="litFinalReward" runat="server" />
+            </div>
+        </div>
+
+        <%-- Days Left Banner (only shows ≤3 days or overdue) --%>
+        <asp:Panel ID="pnlDaysLeftBanner" runat="server" Visible="false">
+            <div class="pt-days-left-banner">
+                <i class="bi bi-hourglass-split"></i>
+                <asp:Literal ID="litDaysLeftBanner" runat="server" />
+            </div>
+        </asp:Panel>
+
+        <%-- ══ TASK LIST (moved above progress) ══ --%>
+        <div class="pt-quiz-section-title"><i class="bi bi-list-check"></i> <%: T("Tasks","Tugasan") %></div>
+        <asp:Panel ID="pnlTasks" runat="server"></asp:Panel>
+        <asp:Panel ID="pnlNoTasks" runat="server" Visible="false">
+            <div class="pt-no-data"><%: T("No tasks in this study plan yet.","Belum ada tugasan dalam pelan belajar ini.") %></div>
+        </asp:Panel>
+
+        <%-- ══ MISSION PROGRESS ══ --%>
+        <div class="pt-quiz-section-title" style="margin-top:24px;"><i class="bi bi-trophy-fill"></i> <%: T("Mission Progress","Kemajuan Misi") %></div>
+        <div class="pt-sp-progress-summary">
+            <asp:Literal ID="litProgressSummary" runat="server" />
+        </div>
+        <div class="pt-mission-progress-card">
             <div class="pt-progress-track-wrap">
                 <%-- Reward markers rendered here --%>
                 <asp:Panel ID="pnlRewardMarkers" runat="server" CssClass="pt-reward-markers"></asp:Panel>
@@ -99,46 +139,10 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
         <asp:HiddenField ID="hidRewardClick" runat="server" />
         <asp:Button ID="btnRewardClick" runat="server" CssClass="d-none" OnClick="BtnRewardClick_Click" CausesValidation="false" />
 
-        <%-- ══ TASK LIST ══ --%>
-        <div class="pt-quiz-section-title" style="margin-top:24px;"><i class="bi bi-list-check"></i> <%: T("Tasks","Tugasan") %></div>
-        <asp:Panel ID="pnlTasks" runat="server"></asp:Panel>
-        <asp:Panel ID="pnlNoTasks" runat="server" Visible="false">
-            <div class="pt-no-data"><%: T("No tasks in this study plan yet.","Belum ada tugasan dalam pelan belajar ini.") %></div>
-        </asp:Panel>
-
-        <%-- ══ REWARD SUMMARY ══ --%>
-        <div class="pt-reward-summary-card">
-            <div class="pt-reward-summary-row">
-                <span class="pt-reward-summary-label"><i class="bi bi-gift-fill"></i> <%: T("Next Reward","Ganjaran Seterusnya") %></span>
-                <span class="pt-reward-summary-value"><asp:Literal ID="litNextReward" runat="server" /></span>
-            </div>
-            <div class="pt-reward-summary-row">
-                <span class="pt-reward-summary-label"><i class="bi bi-star-fill"></i> <%: T("Final Reward","Ganjaran Akhir") %></span>
-                <span class="pt-reward-summary-value"><asp:Literal ID="litFinalReward" runat="server" /></span>
-            </div>
-            <div class="pt-reward-summary-row">
-                <span class="pt-reward-summary-label"><i class="bi bi-check2-all"></i> <%: T("Completed","Selesai") %></span>
-                <span class="pt-reward-summary-value"><asp:Literal ID="litCompletedCount" runat="server" /></span>
-            </div>
-            <asp:Panel ID="pnlRemainingDays" runat="server" Visible="false">
-                <div class="pt-reward-summary-row">
-                    <span class="pt-reward-summary-label"><i class="bi bi-calendar-event"></i> <%: T("Remaining Days","Hari Berbaki") %></span>
-                    <span class="pt-reward-summary-value"><asp:Literal ID="litRemainingDays" runat="server" /></span>
-                </div>
-            </asp:Panel>
-        </div>
-
-        <%-- Days Left Banner --%>
-        <asp:Panel ID="pnlDaysLeftBanner" runat="server" Visible="false">
-            <div class="pt-days-left-banner">
-                <i class="bi bi-hourglass-split"></i>
-                <asp:Literal ID="litDaysLeftBanner" runat="server" />
-            </div>
-        </asp:Panel>
-
-        <%-- Reset Study Plan Button --%>
-        <div style="margin-top:16px;text-align:right;">
-            <button type="button" class="pt-btn soft" style="color:#DC2626;border:1.5px solid #FECACA;" onclick="document.getElementById('resetModal').style.display='flex'; return false;">
+        <%-- ══ DANGER ZONE ══ --%>
+        <div class="pt-sp-danger-zone">
+            <span class="pt-sp-danger-label"><%: T("Danger Zone","Zon Bahaya") %></span>
+            <button type="button" class="pt-sp-danger-btn" onclick="document.getElementById('resetModal').style.display='flex'; return false;">
                 <i class="bi bi-arrow-counterclockwise"></i> <%: T("Reset Study Plan","Tetapkan Semula Pelan Belajar") %>
             </button>
         </div>

@@ -3,7 +3,7 @@
     Title="Parent Profile" MaintainScrollPositionOnPostback="true" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
-<link href="<%: ResolveUrl("~/Content/Parent.css") %>?v=5" rel="stylesheet" />
+<link href="<%: ResolveUrl("~/Content/Parent.css") %>?v=6" rel="stylesheet" />
 <script type="text/javascript">
 function toggleChildPopover(e){e.stopPropagation();var pop=document.getElementById('divChildPopover');if(!pop)return;if(pop.classList.contains('pt-popover-open')){pop.classList.remove('pt-popover-open');return;}var ddl=document.querySelector('.sb-sidebar-child-ddl');if(!ddl)return;var html='<div class="pt-child-popover-title">Select Child</div>';for(var i=0;i<ddl.options.length;i++){var o=ddl.options[i];var init=o.text.charAt(0).toUpperCase();var ac=o.selected?' pt-popover-active':'';html+='<div class="pt-child-popover-item'+ac+'" onclick="selectChildFromPopover(\''+o.value+'\')"><span class="pt-popover-avatar">'+init+'</span>'+o.text+'</div>';}pop.innerHTML=html;pop.classList.add('pt-popover-open');}
 function selectChildFromPopover(v){var ddl=document.querySelector('.sb-sidebar-child-ddl');if(ddl&&ddl.value!==v){ddl.value=v;__doPostBack(ddl.id.replace(/_/g,'$'),'');}var pop=document.getElementById('divChildPopover');if(pop)pop.classList.remove('pt-popover-open');}
@@ -54,14 +54,18 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
     </asp:Panel>
 
     <%-- ══ HERO CARD ══ --%>
-    <div class="pt-profile-hero-card">
-        <div class="pt-profile-hero-avatar"><asp:Literal ID="litInitials" runat="server" /></div>
-        <div class="pt-profile-hero-info">
-            <div class="pt-profile-hero-name"><asp:Literal ID="litHeroName" runat="server" /></div>
-            <div class="pt-profile-hero-role"><i class="bi bi-person-heart"></i> <%: T("Parent","Ibu Bapa") %></div>
-            <div class="pt-profile-hero-chips">
-                <span class="pt-profile-hero-chip"><i class="bi bi-people-fill"></i> <asp:Literal ID="litChildrenCount" runat="server" /></span>
-                <span class="pt-profile-hero-chip"><i class="bi bi-envelope-fill"></i> <asp:Literal ID="litHeroEmail" runat="server" /></span>
+    <div class="pt-hero">
+        <i class="bi bi-star-fill pt-sparkle" style="top:14%;left:10%;"></i>
+        <i class="bi bi-stars pt-sparkle" style="top:50%;right:7%;animation-delay:0.9s;"></i>
+        <div style="display:flex;align-items:center;gap:18px;position:relative;z-index:1;flex-wrap:wrap;">
+            <div class="pt-profile-hero-avatar"><asp:Literal ID="litInitials" runat="server" /></div>
+            <div>
+                <h2 class="pt-hero-title" style="margin-bottom:2px;"><asp:Literal ID="litHeroName" runat="server" /></h2>
+                <p class="pt-hero-sub" style="margin-bottom:8px;"><i class="bi bi-person-heart"></i> <%: T("Parent","Ibu Bapa") %></p>
+                <div class="pt-hero-pills">
+                    <span class="pt-hero-pill"><i class="bi bi-people-fill"></i> <asp:Literal ID="litChildrenCount" runat="server" /></span>
+                    <span class="pt-hero-pill"><i class="bi bi-envelope-fill"></i> <asp:Literal ID="litHeroEmail" runat="server" /></span>
+                </div>
             </div>
         </div>
     </div>
@@ -72,7 +76,7 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
         <div class="pt-profile-form-grid">
             <div class="pt-field">
                 <label class="pt-label"><%: T("Username","Nama Pengguna") %></label>
-                <asp:TextBox ID="txtUsername" runat="server" CssClass="pt-input" ReadOnly="true" />
+                <asp:TextBox ID="txtUsername" runat="server" CssClass="pt-input pt-input-readonly" ReadOnly="true" />
             </div>
             <div class="pt-field">
                 <label class="pt-label"><%: T("Full Name","Nama Penuh") %></label>
@@ -90,10 +94,10 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
     </div>
 
     <%-- ══ LANGUAGE PREFERENCE ══ --%>
-    <div class="pt-profile-section">
+    <div class="pt-profile-section pt-profile-section-compact">
         <div class="pt-profile-section-title"><i class="bi bi-translate"></i> <%: T("Language Preference","Pilihan Bahasa") %></div>
-        <div class="pt-field" style="max-width:300px;">
-            <label class="pt-label"><%: T("Preferred Language","Bahasa Pilihan") %></label>
+        <p class="pt-profile-section-hint"><%: T("Choose your preferred display language.","Pilih bahasa paparan pilihan anda.") %></p>
+        <div class="pt-field" style="max-width:280px;">
             <asp:DropDownList ID="ddlLang" runat="server" CssClass="pt-select">
                 <asp:ListItem Value="EN" Text="English" />
                 <asp:ListItem Value="BM" Text="Bahasa Melayu" />
@@ -104,6 +108,7 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
     <%-- ══ CHANGE PASSWORD ══ --%>
     <div class="pt-profile-section">
         <div class="pt-profile-section-title"><i class="bi bi-shield-lock-fill"></i> <%: T("Change Password","Tukar Kata Laluan") %></div>
+        <p class="pt-profile-section-hint"><%: T("Leave blank if you don't want to change your password.","Biarkan kosong jika anda tidak mahu menukar kata laluan.") %></p>
         <div class="pt-profile-form-grid">
             <div class="pt-field">
                 <label class="pt-label"><%: T("Current Password","Kata Laluan Semasa") %></label>
@@ -118,32 +123,25 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
                 <asp:TextBox ID="txtConfirmPwd" runat="server" CssClass="pt-input" TextMode="Password" MaxLength="50" />
             </div>
         </div>
-        <asp:Button ID="btnChangePwd" runat="server" CssClass="pt-btn soft" style="margin-top:12px;"
+        <asp:Button ID="btnChangePwd" runat="server" CssClass="pt-btn soft" style="margin-top:10px;"
             OnClick="BtnChangePwd_Click" CausesValidation="false" />
     </div>
 
     <%-- ══ ACCOUNT STATUS ══ --%>
-    <div class="pt-profile-section">
+    <div class="pt-profile-section pt-profile-section-compact">
         <div class="pt-profile-section-title"><i class="bi bi-shield-check"></i> <%: T("Account Status","Status Akaun") %></div>
-        <div class="pt-profile-status-grid">
-            <div class="pt-profile-status-item">
-                <span class="pt-profile-status-label"><%: T("Role","Peranan") %></span>
-                <span class="pt-profile-status-value"><asp:Literal ID="litStatusRole" runat="server" /></span>
-            </div>
-            <div class="pt-profile-status-item">
-                <span class="pt-profile-status-label"><%: T("Account Status","Status Akaun") %></span>
-                <span class="pt-profile-status-value"><asp:Literal ID="litStatusStatus" runat="server" /></span>
-            </div>
-            <div class="pt-profile-status-item">
-                <span class="pt-profile-status-label"><%: T("Language","Bahasa") %></span>
-                <span class="pt-profile-status-value"><asp:Literal ID="litStatusLang" runat="server" /></span>
-            </div>
+        <p class="pt-profile-section-hint"><%: T("This information is read-only.","Maklumat ini hanya untuk bacaan.") %></p>
+        <div class="pt-profile-status-inline">
+            <span class="pt-profile-status-chip"><i class="bi bi-person-badge"></i> <asp:Literal ID="litStatusRole" runat="server" /></span>
+            <span class="pt-profile-status-chip"><i class="bi bi-check-circle-fill"></i> <asp:Literal ID="litStatusStatus" runat="server" /></span>
+            <span class="pt-profile-status-chip"><i class="bi bi-globe"></i> <asp:Literal ID="litStatusLang" runat="server" /></span>
         </div>
     </div>
 
     <%-- ══ SAVE BUTTON ══ --%>
-    <div style="margin-top:20px;">
+    <div class="pt-profile-save-area">
         <asp:Button ID="btnSave" runat="server" CssClass="pt-btn primary" OnClick="BtnSave_Click" CausesValidation="false" />
+        <p class="pt-profile-save-hint"><%: T("This saves all changes made on this page.","Ini menyimpan semua perubahan yang dibuat di halaman ini.") %></p>
     </div>
 
 </div>

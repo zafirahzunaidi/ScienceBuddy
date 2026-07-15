@@ -3,7 +3,7 @@
     Title="Parent Dashboard" MaintainScrollPositionOnPostback="true" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
-<link href="<%: ResolveUrl("~/Content/Parent.css") %>?v=5" rel="stylesheet" />
+<link href="<%: ResolveUrl("~/Content/Parent.css") %>?v=6" rel="stylesheet" />
 </asp:Content>
 
 <%-- ════ SIDEBAR MENU ════ --%>

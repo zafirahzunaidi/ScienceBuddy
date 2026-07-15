@@ -213,6 +213,84 @@ namespace ScienceBuddy.Parent
             LoadUnitPerformance(unitFilter);
             LoadRecentAttempts(unitFilter);
             LoadWeakAndStrongAreas();
+            BuildPerformanceSummary(childName);
+        }
+
+        private void BuildPerformanceSummary(string childName)
+        {
+            try
+            {
+                // Get strongest and weakest unit
+                string strongUnit = null, weakUnit = null;
+                decimal avgScore = 0;
+                int totalAttempts = 0;
+
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    // Overall average
+                    using (var cmd = new SqlCommand("SELECT AVG(percentage) AS avg, COUNT(*) AS cnt FROM dbo.QuizResult WHERE studentId=@sid", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                        using (var rdr = cmd.ExecuteReader())
+                        {
+                            if (rdr.Read())
+                            {
+                                avgScore = rdr["avg"] != DBNull.Value ? Convert.ToDecimal(rdr["avg"]) : 0;
+                                totalAttempts = rdr["cnt"] != DBNull.Value ? Convert.ToInt32(rdr["cnt"]) : 0;
+                            }
+                        }
+                    }
+
+                    if (totalAttempts == 0) { pnlPerfSummary.Visible = false; return; }
+
+                    // Best and worst unit
+                    string unitSql = @"SELECT TOP 1 CASE WHEN @lang='BM' THEN ISNULL(u.unitNameBM, u.unitNameEN) ELSE u.unitNameEN END AS uName, AVG(qr.percentage) AS avg
+                        FROM dbo.QuizResult qr INNER JOIN dbo.Quiz q ON qr.quizId=q.quizId INNER JOIN dbo.Unit u ON q.unitId=u.unitId
+                        WHERE qr.studentId=@sid GROUP BY u.unitId, u.unitNameEN, u.unitNameBM ORDER BY AVG(qr.percentage) DESC";
+                    using (var cmd = new SqlCommand(unitSql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                        cmd.Parameters.AddWithValue("@lang", CurrentLanguage);
+                        using (var rdr = cmd.ExecuteReader()) { if (rdr.Read()) strongUnit = rdr["uName"]?.ToString(); }
+                    }
+
+                    string weakSql = @"SELECT TOP 1 CASE WHEN @lang='BM' THEN ISNULL(u.unitNameBM, u.unitNameEN) ELSE u.unitNameEN END AS uName, AVG(qr.percentage) AS avg
+                        FROM dbo.QuizResult qr INNER JOIN dbo.Quiz q ON qr.quizId=q.quizId INNER JOIN dbo.Unit u ON q.unitId=u.unitId
+                        WHERE qr.studentId=@sid GROUP BY u.unitId, u.unitNameEN, u.unitNameBM HAVING COUNT(*) > 0 ORDER BY AVG(qr.percentage) ASC";
+                    using (var cmd = new SqlCommand(weakSql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                        cmd.Parameters.AddWithValue("@lang", CurrentLanguage);
+                        using (var rdr = cmd.ExecuteReader()) { if (rdr.Read()) weakUnit = rdr["uName"]?.ToString(); }
+                    }
+                }
+
+                // Build sentence
+                string status;
+                if (avgScore >= 80) status = T("is doing excellently", "berprestasi cemerlang");
+                else if (avgScore >= 60) status = T("is doing well", "berprestasi baik");
+                else if (avgScore >= 40) status = T("needs some attention", "memerlukan sedikit perhatian");
+                else status = T("needs extra support", "memerlukan sokongan tambahan");
+
+                string summary = string.Format("<strong>{0}</strong> {1}.", childName, status);
+                if (!string.IsNullOrEmpty(strongUnit))
+                    summary += " " + string.Format(T("Strongest unit: <strong>{0}</strong>.", "Unit terkuat: <strong>{0}</strong>."), strongUnit);
+                if (!string.IsNullOrEmpty(weakUnit) && weakUnit != strongUnit)
+                    summary += " " + string.Format(T("Recommended revision: <strong>{0}</strong>.", "Cadangan ulangkaji: <strong>{0}</strong>."), weakUnit);
+
+                litPerfSummary.Text = summary;
+                pnlPerfSummary.Visible = true;
+
+                // Insights summary
+                string insightText;
+                if (avgScore >= 80) insightText = string.Format(T("{0} is consistently performing well. Average quiz score has remained above 80%.", "{0} berprestasi cemerlang secara konsisten. Purata skor kuiz kekal melebihi 80%."), childName);
+                else if (avgScore >= 60) insightText = string.Format(T("{0} is making good progress. Keep encouraging regular practice.", "{0} menunjukkan kemajuan yang baik. Teruskan menggalakkan latihan biasa."), childName);
+                else insightText = string.Format(T("{0} may benefit from extra revision in weaker units.", "{0} mungkin mendapat manfaat daripada ulangkaji tambahan dalam unit yang lebih lemah."), childName);
+                litInsightsSummary.Text = insightText;
+                pnlInsightsSummary.Visible = true;
+            }
+            catch { pnlPerfSummary.Visible = false; }
         }
 
         // ══════════════════════════════════════════════════════════════
@@ -348,12 +426,17 @@ namespace ScienceBuddy.Parent
             StringBuilder sb = new StringBuilder();
             foreach (var u in units)
             {
-                string color = u.Item2 >= 80 ? "#16A34A" : u.Item2 >= 50 ? "#6366F1" : "#DC2626";
+                string color, label;
+                if (u.Item2 >= 80) { color = "#16A34A"; label = T("Excellent", "Cemerlang"); }
+                else if (u.Item2 >= 60) { color = "#F59E0B"; label = T("Good", "Baik"); }
+                else if (u.Item2 >= 40) { color = "#F97316"; label = T("Needs Practice", "Perlu Latihan"); }
+                else { color = "#DC2626"; label = T("Weak", "Lemah"); }
                 sb.AppendFormat(@"<div class=""pt-unit-perf-row"">
                     <div class=""pt-unit-perf-label"">{0}</div>
                     <div class=""pt-unit-perf-bar-wrap""><div class=""pt-unit-perf-bar"" style=""width:{1}%;background:{2};""></div></div>
                     <span class=""pt-unit-perf-pct"">{1:F0}%</span>
-                </div>", u.Item1, u.Item2, color);
+                    <span class=""pt-unit-perf-badge"" style=""color:{2};"">{3}</span>
+                </div>", u.Item1, u.Item2, color, label);
             }
             pnlUnitPerformance.Controls.Add(new LiteralControl(sb.ToString()));
         }
@@ -410,16 +493,16 @@ namespace ScienceBuddy.Parent
                 {
                     string statusClass = (r.Status == "Pass" || r.Status == "Passed") ? "pt-status-pass" : "pt-status-fail";
                     string statusText = (r.Status == "Pass" || r.Status == "Passed") ? T("Pass","Lulus") : T("Fail","Gagal");
-                    sb.AppendFormat(@"<tr>
-                        <td><input type=""checkbox"" class=""pt-quiz-check"" value=""{0}"" onclick=""updateSelectedQuizzes()"" /></td>
+                    sb.AppendFormat(@"<tr class=""pt-attempts-row"" onclick=""selectSingleQuiz('{0}');"" style=""cursor:pointer;"">
+                        <td><input type=""checkbox"" class=""pt-quiz-check"" value=""{0}"" onclick=""event.stopPropagation();updateSelectedQuizzes()"" /></td>
                         <td class=""pt-attempts-quiz"">{1}</td>
                         <td>{2}</td>
                         <td><strong>{3:F0}%</strong></td>
                         <td>{4}</td>
                         <td><span class=""pt-status-badge {5}"">{6}</span></td>
-                        <td><button type=""button"" class=""pt-btn-view-detail"" onclick=""selectSingleQuiz('{0}');""><i class=""bi bi-chevron-right""></i></button></td>
+                        <td><button type=""button"" class=""pt-btn-view-detail"" onclick=""event.stopPropagation();selectSingleQuiz('{0}');"">&#128065; {7}</button></td>
                     </tr>", r.ResultId, r.QuizTitle, r.UnitName, r.Percentage,
-                        r.Date != DateTime.MinValue ? r.Date.ToString("dd MMM yyyy") : "-", statusClass, statusText);
+                        r.Date != DateTime.MinValue ? r.Date.ToString("dd MMM yyyy") : "-", statusClass, statusText, T("View","Lihat"));
                 }
                 sb.Append("</tbody></table>");
 
@@ -641,15 +724,23 @@ function selectSingleQuiz(id){document.getElementById('" + hidSelectedResults.Cl
                 foreach (var w in weak)
                 {
                     sb.AppendFormat(@"<div class=""pt-weak-item"">
-                        <div class=""pt-weak-item-name"">{0}</div>
+                        <div class=""pt-weak-item-name""><i class=""bi bi-book""></i> {0}</div>
                         <div class=""pt-weak-item-detail""><i class=""bi bi-x-circle""></i> {1}: {2}</div>
                         <div class=""pt-weak-item-detail""><i class=""bi bi-percent""></i> {3}: {4:F0}%</div>
-                    </div>", w.UnitName, T("Incorrect questions","Soalan salah"), w.IncorrectCount, T("Average","Purata"), w.Avg);
+                        <div class=""pt-weak-item-action"">{5}</div>
+                    </div>", w.UnitName, T("Incorrect questions","Soalan salah"), w.IncorrectCount, T("Average","Purata"), w.Avg,
+                        string.Format(T("Revise this unit to improve scores.", "Ulangkaji unit ini untuk meningkatkan markah.")));
                 }
                 pnlWeakAreas.Controls.Add(new LiteralControl(sb.ToString()));
+                pnlWeakAction.Visible = true;
                 btnAddWeakToStudyPlan.Visible = true;
+
+                // Next step summary
+                string topWeak = weak[0].UnitName;
+                litNextStepSummary.Text = string.Format(T("Focus on revising <strong>{0}</strong> this week.", "Fokus pada mengulangkaji <strong>{0}</strong> minggu ini."), topWeak);
+                pnlNextStepSummary.Visible = true;
             }
-            else { pnlNoWeak.Visible = true; btnAddWeakToStudyPlan.Visible = false; }
+            else { pnlNoWeak.Visible = true; pnlWeakAction.Visible = false; btnAddWeakToStudyPlan.Visible = false; pnlNextStepSummary.Visible = false; }
 
             // Strong: avg >= 70, ranked highest first
             var strong = unitStats.Where(u => u.Avg >= 70).OrderByDescending(u => u.Avg).ToList();
@@ -659,10 +750,12 @@ function selectSingleQuiz(id){document.getElementById('" + hidSelectedResults.Cl
                 StringBuilder sb = new StringBuilder();
                 foreach (var s in strong)
                 {
+                    string badge = s.Avg >= 90 ? T("Excellent","Cemerlang") : T("Good","Baik");
+                    string badgeColor = s.Avg >= 90 ? "#16A34A" : "#F59E0B";
                     sb.AppendFormat(@"<div class=""pt-strong-item"">
-                        <div class=""pt-strong-item-name"">{0}</div>
-                        <div class=""pt-strong-item-detail""><i class=""bi bi-percent""></i> {1}: {2:F0}%</div>
-                    </div>", s.UnitName, T("Average","Purata"), s.Avg);
+                        <div class=""pt-strong-item-name""><i class=""bi bi-check-circle-fill"" style=""color:{3};""></i> {0} <span class=""pt-strong-badge"" style=""color:{3};"">{4}</span></div>
+                        <div class=""pt-strong-item-bar""><div style=""width:{2:F0}%;background:{3};height:4px;border-radius:99px;""></div></div>
+                    </div>", s.UnitName, T("Average","Purata"), s.Avg, badgeColor, badge);
                 }
                 pnlStrongAreas.Controls.Add(new LiteralControl(sb.ToString()));
             }

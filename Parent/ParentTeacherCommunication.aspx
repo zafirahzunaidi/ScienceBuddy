@@ -3,7 +3,7 @@
     Title="Messages" MaintainScrollPositionOnPostback="true" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
-<link href="<%: ResolveUrl("~/Content/Parent.css") %>?v=5" rel="stylesheet" />
+<link href="<%: ResolveUrl("~/Content/Parent.css") %>?v=6" rel="stylesheet" />
 <script type="text/javascript">
 function toggleChildPopover(e){e.stopPropagation();var pop=document.getElementById('divChildPopover');if(!pop)return;if(pop.classList.contains('pt-popover-open')){pop.classList.remove('pt-popover-open');return;}var ddl=document.querySelector('.sb-sidebar-child-ddl');if(!ddl)return;var html='<div class="pt-child-popover-title">Select Child</div>';for(var i=0;i<ddl.options.length;i++){var o=ddl.options[i];var init=o.text.charAt(0).toUpperCase();var ac=o.selected?' pt-popover-active':'';html+='<div class="pt-child-popover-item'+ac+'" onclick="selectChildFromPopover(\''+o.value+'\')"><span class="pt-popover-avatar">'+init+'</span>'+o.text+'</div>';}pop.innerHTML=html;pop.classList.add('pt-popover-open');}
 function selectChildFromPopover(v){var ddl=document.querySelector('.sb-sidebar-child-ddl');if(ddl&&ddl.value!==v){ddl.value=v;__doPostBack(ddl.id.replace(/_/g,'$'),'');}var pop=document.getElementById('divChildPopover');if(pop)pop.classList.remove('pt-popover-open');}
@@ -49,9 +49,11 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
     <asp:Panel ID="pnlMsg" runat="server" Visible="false"><div class="pt-success-popup-overlay"><div class="pt-success-popup"><div class="pt-success-popup-icon"><i class="bi" id="iMsgIcon" runat="server"></i></div><div class="pt-success-popup-text" id="divMsg" runat="server"></div><asp:Button ID="btnCloseMsg" runat="server" Text="X" CssClass="pt-success-popup-close" OnClick="BtnCloseMsg_Click" CausesValidation="false" /></div></div></asp:Panel>
 
     <%-- Header --%>
-    <div class="pt-messages-header">
-        <h2><i class="bi bi-chat-dots-fill"></i> <%: T("Messages","Mesej") %></h2>
-        <p><%: T("Chat privately with teachers for learning support.","Berbual secara peribadi dengan guru untuk sokongan pembelajaran.") %></p>
+    <div class="pt-hero">
+        <i class="bi bi-star-fill pt-sparkle" style="top:13%;left:7%;"></i>
+        <i class="bi bi-stars pt-sparkle" style="top:55%;right:8%;animation-delay:1.1s;"></i>
+        <h2 class="pt-hero-title"><i class="bi bi-chat-dots-fill"></i> <%: T("Messages","Mesej") %></h2>
+        <p class="pt-hero-sub"><%: T("Chat privately with teachers for learning support.","Berbual secara peribadi dengan guru untuk sokongan pembelajaran.") %></p>
     </div>
 
     <%-- Tabs --%>

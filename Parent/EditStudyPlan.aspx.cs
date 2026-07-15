@@ -41,7 +41,7 @@ namespace ScienceBuddy.Parent
 
         private void SetLabels()
         {
-            btnSaveTitle.Text = T("Save Title", "Simpan Tajuk");
+            btnSaveTitle.Text = T("Save Changes", "Simpan Perubahan");
             btnShowAddTask.Text = T("+ Add Task", "+ Tambah Tugasan");
             btnShowAddReward.Text = T("+ Add Reward", "+ Tambah Ganjaran");
             btnSaveTask.Text = T("Save Task", "Simpan Tugasan");
@@ -57,7 +57,7 @@ namespace ScienceBuddy.Parent
             string planId = GetActivePlanId();
             if (string.IsNullOrEmpty(planId)) { pnlContent.Visible = true; pnlCreatePlan.Visible = true; litCreatePlanMsg.Text = string.Format(T("{0} does not have a study plan yet.", "{0} belum mempunyai pelan belajar."), _selectedChildName); litEditSub.Text = _selectedChildName; return; }
             _planId = planId; pnlContent.Visible = true; pnlCreatePlan.Visible = false;
-            litEditSub.Text = string.Format(T("Editing plan for {0}", "Mengedit pelan untuk {0}"), _selectedChildName);
+            litEditSub.Text = string.Format(T("Update tasks, rewards, and due date for {0}'s study plan.", "Kemaskini tugasan, ganjaran, dan tarikh akhir untuk pelan belajar {0}."), _selectedChildName);
 
             // Load plan title and due date
             try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT planTitle, endDate FROM dbo.StudyPlan WHERE studyPlanId=@id", c)) { cmd.Parameters.AddWithValue("@id", planId); c.Open(); using (var r = cmd.ExecuteReader()) { if (r.Read()) { txtPlanTitle.Text = r["planTitle"] != DBNull.Value ? r["planTitle"].ToString() : ""; if (r["endDate"] != DBNull.Value) txtDueDate.Text = Convert.ToDateTime(r["endDate"]).ToString("yyyy-MM-dd"); } } } } catch { }
@@ -126,15 +126,11 @@ namespace ScienceBuddy.Parent
                     <div class=""pt-task-card-num"">{2}</div>
                     <div class=""pt-task-card-body""><div class=""pt-task-card-title"">{3}</div><div class=""pt-task-card-action"">{4}</div></div>
                     <div class=""pt-task-card-actions"">
-                        <button type=""button"" class=""pt-btn-icon"" title=""Move Up"" onclick=""document.getElementById('{5}').value='{6}';document.getElementById('{7}').value='up';document.getElementById('{8}').click();return false;"" {9}><i class=""bi bi-arrow-up""></i></button>
-                        <button type=""button"" class=""pt-btn-icon"" title=""Move Down"" onclick=""document.getElementById('{5}').value='{6}';document.getElementById('{7}').value='down';document.getElementById('{8}').click();return false;"" {10}><i class=""bi bi-arrow-down""></i></button>
-                        <button type=""button"" class=""pt-btn-icon"" title=""Edit"" onclick=""document.getElementById('{11}').value='{6}';document.getElementById('{12}').click();return false;""><i class=""bi bi-pencil""></i></button>
-                        <button type=""button"" class=""pt-btn-icon pt-btn-icon-danger"" title=""Delete"" onclick=""showDeleteModal('task','{6}','{13}','{14}');return false;""><i class=""bi bi-trash""></i></button>
+                        <button type=""button"" class=""pt-btn-icon"" title=""Edit"" onclick=""document.getElementById('{5}').value='{6}';document.getElementById('{7}').click();return false;""><i class=""bi bi-pencil""></i></button>
+                        <button type=""button"" class=""pt-btn-icon pt-btn-icon-danger"" title=""Delete"" onclick=""showDeleteModal('task','{6}','{8}','{9}');return false;""><i class=""bi bi-trash""></i></button>
                     </div>
                 </div>", doneClass, t.Id, t.Order, Server.HtmlEncode(t.Title), Server.HtmlEncode(t.Action),
-                    hidMoveTaskId.ClientID, t.Id, hidMoveDir.ClientID, btnMoveTask.ClientID,
-                    i == 0 ? "disabled" : "", i == tasks.Count - 1 ? "disabled" : "",
-                    hidEditTaskIdTrigger.ClientID, btnEditTaskTrigger.ClientID,
+                    hidEditTaskIdTrigger.ClientID, t.Id, btnEditTaskTrigger.ClientID,
                     T("Delete Task?", "Padam Tugasan?"),
                     Server.HtmlEncode(string.Format(T("Are you sure you want to delete \"{0}\"?", "Adakah anda pasti mahu memadam \"{0}\"?"), t.Title)).Replace("'", "\\'"));
             }
@@ -243,10 +239,11 @@ namespace ScienceBuddy.Parent
             int count = 0;
             try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT rewardId, rewardName, requiredProgress, rewardImage FROM dbo.SPReward WHERE studyPlanId=@id ORDER BY requiredProgress", c)) { cmd.Parameters.AddWithValue("@id", _planId); c.Open(); using (var r = cmd.ExecuteReader()) { StringBuilder sb = new StringBuilder();
                 while (r.Read()) { count++; string name = r["rewardName"] != DBNull.Value ? r["rewardName"].ToString() : ""; string img = r["rewardImage"] != DBNull.Value ? r["rewardImage"].ToString() : ""; int pct = r["requiredProgress"] != DBNull.Value ? Convert.ToInt32(r["requiredProgress"]) : 0; string imgUrl = !string.IsNullOrEmpty(img) ? ResolveUrl("~/Images/Rewards/" + img) : "";
-                    sb.AppendFormat(@"<div class=""pt-reward-list-item""><div class=""pt-reward-list-img"">{0}</div><div class=""pt-reward-list-info""><div class=""pt-reward-list-name"">{1}</div><div class=""pt-reward-list-pct"">{2}%</div></div>
-                        <button type=""button"" class=""pt-btn-icon"" onclick=""document.getElementById('{3}').value='{4}';document.getElementById('{5}').click();return false;""><i class=""bi bi-pencil""></i></button>
-                        <button type=""button"" class=""pt-btn-icon pt-btn-icon-danger"" onclick=""showDeleteModal('reward','{4}','{6}','{7}');return false;""><i class=""bi bi-trash""></i></button>
-                    </div>", !string.IsNullOrEmpty(imgUrl) ? "<img src='" + imgUrl + "' alt='" + Server.HtmlEncode(name) + "'/>" : "<i class='bi bi-gift-fill'></i>", Server.HtmlEncode(name), pct,
+                    string pctLabel = string.Format(T("Unlocks at {0}% completion", "Dibuka pada {0}% siap"), pct);
+                    sb.AppendFormat(@"<div class=""pt-reward-list-item""><div class=""pt-reward-list-img"">{0}</div><div class=""pt-reward-list-info""><div class=""pt-reward-list-name"">{1}</div><div class=""pt-reward-list-pct"">{2}</div></div>
+                        <button type=""button"" class=""pt-btn-icon"" onclick=""event.stopPropagation();document.getElementById('{3}').value='{4}';document.getElementById('{5}').click();return false;""><i class=""bi bi-pencil""></i></button>
+                        <button type=""button"" class=""pt-btn-icon pt-btn-icon-danger"" onclick=""event.stopPropagation();showDeleteModal('reward','{4}','{6}','{7}');return false;""><i class=""bi bi-trash""></i></button>
+                    </div>", !string.IsNullOrEmpty(imgUrl) ? "<img src='" + imgUrl + "' alt='" + Server.HtmlEncode(name) + "'/>" : "<i class='bi bi-gift-fill'></i>", Server.HtmlEncode(name), pctLabel,
                         hidEditRewardIdTrigger.ClientID, r["rewardId"].ToString(), btnEditRewardTrigger.ClientID,
                         T("Delete Reward?","Padam Ganjaran?"),
                         Server.HtmlEncode(string.Format(T("Are you sure you want to delete \"{0}\"?", "Adakah anda pasti mahu memadam \"{0}\"?"), name)).Replace("'", "\\'"));

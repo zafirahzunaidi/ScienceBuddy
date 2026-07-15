@@ -60,6 +60,7 @@ namespace ScienceBuddy.Parent
 
             int progressPct = totalTasks > 0 ? (int)Math.Round((double)completedTasks / totalTasks * 100) : 0;
             litProgressPct.Text = progressPct + "%";
+            litProgressSummary.Text = string.Format(T("{0} of {1} tasks completed ({2}%)", "{0} daripada {1} tugasan selesai ({2}%)"), completedTasks, totalTasks, progressPct);
             divProgressFill.Style["width"] = progressPct + "%";
 
             // Rewards
@@ -298,7 +299,7 @@ namespace ScienceBuddy.Parent
                 if (endDate.Value.Date == DateTime.Today)
                 { litRemainingDays.Text = T("Due today", "Tamat hari ini"); pnlRemainingDays.Visible = true; pnlDaysLeftBanner.Visible = true; litDaysLeftBanner.Text = T("This mission is due today! Encourage your child to finish up.", "Misi ini tamat hari ini! Galakkan anak anda untuk menyiapkannya."); }
                 else if (endDate.Value > DateTime.Today)
-                { int days = (endDate.Value - DateTime.Today).Days; litRemainingDays.Text = days + " " + T("days", "hari"); pnlRemainingDays.Visible = true; pnlDaysLeftBanner.Visible = true; litDaysLeftBanner.Text = string.Format(T("Your child has {0} days left to complete this mission!", "Anak anda mempunyai {0} hari lagi untuk menyelesaikan misi ini!"), days); }
+                { int days = (endDate.Value - DateTime.Today).Days; litRemainingDays.Text = days + " " + T("days", "hari"); pnlRemainingDays.Visible = true; pnlDaysLeftBanner.Visible = days <= 3; if (days <= 3) litDaysLeftBanner.Text = string.Format(T("Your child has {0} days left to complete this mission!", "Anak anda mempunyai {0} hari lagi untuk menyelesaikan misi ini!"), days); }
                 else
                 { int overdue = (DateTime.Today - endDate.Value).Days; litRemainingDays.Text = T("Overdue", "Tertunggak"); pnlRemainingDays.Visible = true; pnlDaysLeftBanner.Visible = true; litDaysLeftBanner.Text = string.Format(T("This mission was due {0} days ago. Keep going!", "Misi ini telah tamat {0} hari yang lalu. Teruskan!"), overdue); }
             }

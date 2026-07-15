@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -296,6 +297,58 @@ namespace ScienceBuddy.Parent
 
             // Get activity counts per day
             Dictionary<int, int> activityCounts = GetActivityCountsForMonth(monthStart);
+
+            // ── Monthly Summary ──
+            int activeDays = activityCounts.Count(kv => kv.Value > 0);
+            int totalActivities = activityCounts.Values.Sum();
+            int lessonsCompleted = 0;
+            int quizAttempts = 0;
+            try
+            {
+                DateTime monthEnd = monthStart.AddMonths(1).AddDays(-1);
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.LessonProgress WHERE studentId=@sid AND isCompleted=1 AND completedDate>=@s AND completedDate<=@e", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                        cmd.Parameters.AddWithValue("@s", monthStart);
+                        cmd.Parameters.AddWithValue("@e", monthEnd);
+                        lessonsCompleted = (int)cmd.ExecuteScalar();
+                    }
+                    using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.QuizAttempt WHERE studentId=@sid AND attemptDate>=@s AND attemptDate<=@e", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                        cmd.Parameters.AddWithValue("@s", monthStart);
+                        cmd.Parameters.AddWithValue("@e", monthEnd);
+                        quizAttempts = (int)cmd.ExecuteScalar();
+                    }
+                }
+            }
+            catch { }
+
+            // Calculate streak
+            int streak = 0;
+            try
+            {
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    streak = CalculateStreak(conn);
+                }
+            }
+            catch { }
+
+            litMonthlySummary.Text = string.Format(
+                "<div class='pt-monthly-stat'><div class='pt-monthly-stat-value'>{0}</div><div class='pt-monthly-stat-label'>{1}</div></div>"
+                + "<div class='pt-monthly-stat'><div class='pt-monthly-stat-value'>{2}</div><div class='pt-monthly-stat-label'>{3}</div></div>"
+                + "<div class='pt-monthly-stat'><div class='pt-monthly-stat-value'>{4}</div><div class='pt-monthly-stat-label'>{5}</div></div>"
+                + "<div class='pt-monthly-stat'><div class='pt-monthly-stat-value'>{6}</div><div class='pt-monthly-stat-label'>{7}</div></div>",
+                activeDays, T("Active Days", "Hari Aktif"),
+                streak, T("Day Streak", "Kesinambungan Hari"),
+                lessonsCompleted, T("Lessons Done", "Pelajaran Selesai"),
+                quizAttempts, T("Quiz Attempts", "Percubaan Kuiz")
+            );
 
             // Determine what weekday day 1 falls on (Monday=0 ... Sunday=6)
             int firstDayOfWeek = ((int)monthStart.DayOfWeek + 6) % 7; // Convert Sunday=0 to Monday-based

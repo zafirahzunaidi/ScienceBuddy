@@ -3,7 +3,7 @@
     Title="Notifications" MaintainScrollPositionOnPostback="true" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
-<link href="<%: ResolveUrl("~/Content/Parent.css") %>?v=5" rel="stylesheet" />
+<link href="<%: ResolveUrl("~/Content/Parent.css") %>?v=6" rel="stylesheet" />
 <script type="text/javascript">
 function toggleChildPopover(e){e.stopPropagation();var pop=document.getElementById('divChildPopover');if(!pop)return;if(pop.classList.contains('pt-popover-open')){pop.classList.remove('pt-popover-open');return;}var ddl=document.querySelector('.sb-sidebar-child-ddl');if(!ddl)return;var html='<div class="pt-child-popover-title">Select Child</div>';for(var i=0;i<ddl.options.length;i++){var o=ddl.options[i];var init=o.text.charAt(0).toUpperCase();var ac=o.selected?' pt-popover-active':'';html+='<div class="pt-child-popover-item'+ac+'" onclick="selectChildFromPopover(\''+o.value+'\')"><span class="pt-popover-avatar">'+init+'</span>'+o.text+'</div>';}pop.innerHTML=html;pop.classList.add('pt-popover-open');}
 function selectChildFromPopover(v){var ddl=document.querySelector('.sb-sidebar-child-ddl');if(ddl&&ddl.value!==v){ddl.value=v;__doPostBack(ddl.id.replace(/_/g,'$'),'');}var pop=document.getElementById('divChildPopover');if(pop)pop.classList.remove('pt-popover-open');}
@@ -51,12 +51,12 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
 
     <asp:Panel ID="pnlContent" runat="server" Visible="false">
 
-        <%-- ══ HEADER ══ --%>
-        <div class="pt-progress-hero" style="margin-bottom:20px;">
-            <div class="pt-progress-hero-body">
-                <h2 class="pt-progress-hero-title"><i class="bi bi-bell-fill"></i> <%: T("Notifications","Notifikasi") %></h2>
-                <p class="pt-progress-hero-sub"><%: T("Stay updated on your child's learning journey.","Kekal dikemas kini tentang perjalanan pembelajaran anak anda.") %></p>
-            </div>
+        <%-- ══ PAGE HEADING ══ --%>
+        <div class="pt-hero">
+            <i class="bi bi-star-fill pt-sparkle" style="top:15%;left:10%;"></i>
+            <i class="bi bi-stars pt-sparkle" style="top:55%;right:8%;animation-delay:1s;"></i>
+            <h2 class="pt-hero-title"><i class="bi bi-bell-fill"></i> <%: T("Notifications","Notifikasi") %></h2>
+            <p class="pt-hero-sub"><%: T("Stay updated on your child's learning journey.","Kekal dikemas kini tentang perjalanan pembelajaran anak anda.") %></p>
         </div>
 
         <%-- ══ SINCE YOUR LAST VISIT ══ --%>
@@ -85,7 +85,7 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
         </div>
 
         <%-- Sort --%>
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <div class="pt-notif-sort-row">
             <asp:LinkButton ID="lnkSortLatest" runat="server" CssClass="pt-sort-btn active" OnClick="LnkSortLatest_Click" CausesValidation="false">
                 <i class="bi bi-sort-down"></i> <%: T("Latest","Terkini") %>
             </asp:LinkButton>

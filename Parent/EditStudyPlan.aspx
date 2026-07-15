@@ -3,7 +3,7 @@
     Title="Edit Study Plan" MaintainScrollPositionOnPostback="true" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
-<link href="<%: ResolveUrl("~/Content/Parent.css") %>?v=5" rel="stylesheet" />
+<link href="<%: ResolveUrl("~/Content/Parent.css") %>?v=6" rel="stylesheet" />
 <script type="text/javascript">
 function toggleChildPopover(e){e.stopPropagation();var pop=document.getElementById('divChildPopover');if(!pop)return;if(pop.classList.contains('pt-popover-open')){pop.classList.remove('pt-popover-open');return;}var ddl=document.querySelector('.sb-sidebar-child-ddl');if(!ddl)return;var html='<div class="pt-child-popover-title">Select Child</div>';for(var i=0;i<ddl.options.length;i++){var o=ddl.options[i];var init=o.text.charAt(0).toUpperCase();var ac=o.selected?' pt-popover-active':'';html+='<div class="pt-child-popover-item'+ac+'" onclick="selectChildFromPopover(\''+o.value+'\')"><span class="pt-popover-avatar">'+init+'</span>'+o.text+'</div>';}pop.innerHTML=html;pop.classList.add('pt-popover-open');}
 function selectChildFromPopover(v){var ddl=document.querySelector('.sb-sidebar-child-ddl');if(ddl&&ddl.value!==v){ddl.value=v;__doPostBack(ddl.id.replace(/_/g,'$'),'');}var pop=document.getElementById('divChildPopover');if(pop)pop.classList.remove('pt-popover-open');}
@@ -61,15 +61,17 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
     <asp:Panel ID="pnlContent" runat="server" Visible="false">
 
         <%-- Header --%>
-        <div class="pt-study-plan-header">
-            <div class="pt-study-plan-header-left">
-                <h2 class="pt-study-plan-title"><i class="bi bi-pencil-square"></i> <%: T("Edit Study Plan","Edit Pelan Pembelajaran") %></h2>
-                <p class="pt-study-plan-sub"><asp:Literal ID="litEditSub" runat="server" /></p>
+        <div class="pt-hero">
+            <i class="bi bi-star-fill pt-sparkle" style="top:16%;left:11%;"></i>
+            <i class="bi bi-stars pt-sparkle" style="top:48%;right:9%;animation-delay:1s;"></i>
+            <h2 class="pt-hero-title"><i class="bi bi-pencil-square"></i> <%: T("Edit Study Plan","Edit Pelan Pembelajaran") %></h2>
+            <p class="pt-hero-sub"><asp:Literal ID="litEditSub" runat="server" /></p>
+            <div class="pt-hero-actions">
+                <a href="<%: ResolveUrl("~/Parent/StudyPlan.aspx") %>" class="pt-hero-btn"><i class="bi bi-arrow-left"></i> <%: T("Back to Plan","Kembali ke Pelan") %></a>
             </div>
-            <a href="<%: ResolveUrl("~/Parent/StudyPlan.aspx") %>" class="pt-btn soft"><i class="bi bi-arrow-left"></i> <%: T("Back to Plan","Kembali ke Pelan") %></a>
         </div>
 
-        <%-- ══ PLAN DETAILS EDITOR ══ --%>
+        <%-- ══ ① PLAN DETAILS EDITOR ══ --%>
         <div class="pt-dashboard-card" style="margin-bottom:20px;">
             <div class="pt-dashboard-card-header"><span class="pt-dashboard-card-title"><i class="bi bi-gear-fill"></i> <%: T("Plan Details","Butiran Pelan") %></span></div>
             <div class="pt-dashboard-card-body">
@@ -79,12 +81,12 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
             </div>
         </div>
 
-        <%-- ══ TASKS ══ --%>
+        <%-- ══ ② TASKS ══ --%>
         <div class="pt-dashboard-card" style="margin-bottom:20px;">
             <div class="pt-dashboard-card-header">
                 <div>
                     <span class="pt-dashboard-card-title"><i class="bi bi-list-check"></i> <%: T("Tasks","Tugasan") %></span>
-                    <div style="font-size:0.75rem;color:#94A3B8;font-weight:500;margin-top:2px;"><%: T("Drag to reorder","Seret untuk menyusun semula") %></div>
+                    <div style="font-size:0.8125rem;color:#64748B;font-weight:500;margin-top:3px;"><%: T("Drag tasks to reorder. Use Edit or Delete to manage each task.","Seret tugasan untuk menyusun semula. Gunakan Edit atau Padam untuk mengurus setiap tugasan.") %></div>
                 </div>
                 <asp:Button ID="btnShowAddTask" runat="server" CssClass="pt-btn primary" OnClick="BtnShowAddTask_Click" CausesValidation="false" />
             </div>
@@ -187,12 +189,12 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
         if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initDrag); else initDrag();
         </script>
 
-        <%-- ══ REWARDS ══ --%>
+        <%-- ══ ③ REWARDS ══ --%>
         <div class="pt-dashboard-card" style="margin-bottom:20px;">
             <div class="pt-dashboard-card-header">
                 <div>
                     <span class="pt-dashboard-card-title"><i class="bi bi-gift-fill"></i> <%: T("Rewards","Ganjaran") %> <span class="pt-reward-count">(<asp:Literal ID="litRewardCount" runat="server" /> / 5)</span></span>
-                    <div style="font-size:0.75rem;color:#94A3B8;font-weight:500;margin-top:2px;"><%: T("Add fun rewards for your child.","Tambah ganjaran menarik untuk anak anda.") %></div>
+                    <div style="font-size:0.8125rem;color:#64748B;font-weight:500;margin-top:3px;"><%: T("Add fun rewards for your child.","Tambah ganjaran menarik untuk anak anda.") %></div>
                 </div>
                 <asp:Button ID="btnShowAddReward" runat="server" CssClass="pt-btn primary" OnClick="BtnShowAddReward_Click" CausesValidation="false" />
             </div>
@@ -202,8 +204,9 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
                     <div class="pt-no-data"><%: T("No rewards yet. Add fun rewards to motivate your child!","Belum ada ganjaran. Tambah ganjaran untuk memotivasikan anak!") %></div>
                 </asp:Panel>
 
-                <%-- Reward Milestone Preview --%>
-                <div class="pt-quiz-section-title" style="margin-top:16px;"><i class="bi bi-flag-fill"></i> <%: T("Reward Milestone Preview","Pratonton Pencapaian Ganjaran") %></div>
+                <%-- ④ Reward Milestone Preview --%>
+                <div class="pt-quiz-section-title" style="margin-top:20px;"><i class="bi bi-flag-fill"></i> <%: T("Reward Milestone Preview","Pratonton Pencapaian Ganjaran") %></div>
+                <div style="font-size:0.8125rem;color:#64748B;font-weight:500;margin-bottom:12px;"><%: T("Rewards unlock automatically as your child completes the study plan.","Ganjaran dibuka secara automatik apabila anak anda menyelesaikan pelan belajar.") %></div>
                 <div class="pt-progress-track-wrap pt-reward-preview-wrap">
                     <asp:Panel ID="pnlPreviewMarkers" runat="server" CssClass="pt-reward-markers"></asp:Panel>
                     <div class="pt-progress-track"><div class="pt-progress-fill" style="width:0%;"></div></div>

@@ -3,7 +3,7 @@
     Title="Link Child Account" MaintainScrollPositionOnPostback="true" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
-<link href="<%: ResolveUrl("~/Content/Parent.css") %>?v=5" rel="stylesheet" />
+<link href="<%: ResolveUrl("~/Content/Parent.css") %>?v=6" rel="stylesheet" />
 <script type="text/javascript">
 function toggleChildPopover(e){e.stopPropagation();var pop=document.getElementById('divChildPopover');if(!pop)return;if(pop.classList.contains('pt-popover-open')){pop.classList.remove('pt-popover-open');return;}var ddl=document.querySelector('.sb-sidebar-child-ddl');if(!ddl)return;var html='<div class="pt-child-popover-title">Select Child</div>';for(var i=0;i<ddl.options.length;i++){var o=ddl.options[i];var init=o.text.charAt(0).toUpperCase();var ac=o.selected?' pt-popover-active':'';html+='<div class="pt-child-popover-item'+ac+'" onclick="selectChildFromPopover(\''+o.value+'\')"><span class="pt-popover-avatar">'+init+'</span>'+o.text+'</div>';}pop.innerHTML=html;pop.classList.add('pt-popover-open');}
 function selectChildFromPopover(v){var ddl=document.querySelector('.sb-sidebar-child-ddl');if(ddl&&ddl.value!==v){ddl.value=v;__doPostBack(ddl.id.replace(/_/g,'$'),'');}var pop=document.getElementById('divChildPopover');if(pop)pop.classList.remove('pt-popover-open');}
@@ -95,11 +95,11 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
 <div class="lc-page">
 
     <%-- Hero --%>
-    <div class="pt-page-hero">
-        <div class="pt-page-hero-content">
-            <h1 class="pt-page-hero-title"><i class="bi bi-link-45deg"></i> <%: T("Link Child Account","Paut Akaun Anak") %></h1>
-            <p class="pt-page-hero-subtitle"><%: T("Connect your child's account to monitor their ScienceBuddy progress.","Pautkan akaun anak anda untuk memantau kemajuan ScienceBuddy mereka.") %></p>
-        </div>
+    <div class="pt-hero">
+        <i class="bi bi-star-fill pt-sparkle" style="top:15%;left:9%;"></i>
+        <i class="bi bi-stars pt-sparkle" style="top:52%;right:8%;animation-delay:0.8s;"></i>
+        <h2 class="pt-hero-title"><i class="bi bi-link-45deg"></i> <%: T("Link Child Account","Paut Akaun Anak") %></h2>
+        <p class="pt-hero-sub"><%: T("Connect your child's account to monitor their ScienceBuddy progress.","Pautkan akaun anak anda untuk memantau kemajuan ScienceBuddy mereka.") %></p>
     </div>
 
     <asp:Panel ID="pnlMessage" runat="server" Visible="false">

@@ -13,10 +13,14 @@ namespace ScienceBuddy.Parent
         protected global::System.Web.UI.WebControls.Literal litHeroTitle;
         protected global::System.Web.UI.WebControls.Literal litHeroSub;
         protected global::System.Web.UI.WebControls.DropDownList ddlUnit;
+        protected global::System.Web.UI.WebControls.Panel pnlPerfSummary;
+        protected global::System.Web.UI.WebControls.Literal litPerfSummary;
         protected global::System.Web.UI.WebControls.Literal litAvgScore;
         protected global::System.Web.UI.WebControls.Literal litHighScore;
         protected global::System.Web.UI.WebControls.Literal litPassRate;
         protected global::System.Web.UI.WebControls.Literal litTotalAttempts;
+        protected global::System.Web.UI.WebControls.Panel pnlInsightsSummary;
+        protected global::System.Web.UI.WebControls.Literal litInsightsSummary;
         protected global::System.Web.UI.WebControls.Panel pnlScoreTrend;
         protected global::System.Web.UI.WebControls.Panel pnlNoTrend;
         protected global::System.Web.UI.WebControls.Panel pnlUnitPerformance;
@@ -32,10 +36,13 @@ namespace ScienceBuddy.Parent
         protected global::System.Web.UI.WebControls.Button btnToggleIncorrect;
         protected global::System.Web.UI.WebControls.Panel pnlWeakAreas;
         protected global::System.Web.UI.WebControls.Panel pnlNoWeak;
+        protected global::System.Web.UI.WebControls.Panel pnlWeakAction;
         protected global::System.Web.UI.WebControls.Button btnAddWeakToStudyPlan;
         protected global::System.Web.UI.WebControls.Literal litMostImproved;
         protected global::System.Web.UI.WebControls.Panel pnlStrongAreas;
         protected global::System.Web.UI.WebControls.Panel pnlNoStrong;
+        protected global::System.Web.UI.WebControls.Panel pnlNextStepSummary;
+        protected global::System.Web.UI.WebControls.Literal litNextStepSummary;
         protected global::System.Web.UI.WebControls.Panel pnlTaskModal;
         protected global::System.Web.UI.WebControls.Literal litTaskModalSub;
         protected global::System.Web.UI.WebControls.TextBox txtTaskName;

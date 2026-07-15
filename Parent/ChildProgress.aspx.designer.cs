@@ -18,6 +18,7 @@ namespace ScienceBuddy.Parent
         protected global::System.Web.UI.WebControls.Panel pnlContent;
         protected global::System.Web.UI.WebControls.Literal litHeroTitle;
         protected global::System.Web.UI.WebControls.Literal litHeroSub;
+        protected global::System.Web.UI.WebControls.Literal litMonthlySummary;
         protected global::System.Web.UI.WebControls.Literal litHeatmapTitle;
         protected global::System.Web.UI.WebControls.DropDownList ddlMonth;
         protected global::System.Web.UI.WebControls.Panel pnlHeatmapDays;

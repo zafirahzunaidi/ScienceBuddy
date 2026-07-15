@@ -12,6 +12,7 @@ namespace ScienceBuddy.Parent
         protected global::System.Web.UI.WebControls.Literal litPlanTitle;
         protected global::System.Web.UI.WebControls.Literal litPlanSub;
         protected global::System.Web.UI.WebControls.Literal litProgressPct;
+        protected global::System.Web.UI.WebControls.Literal litProgressSummary;
         protected global::System.Web.UI.WebControls.Panel pnlRewardMarkers;
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl divProgressFill;
         protected global::System.Web.UI.WebControls.Panel pnlRewardPopover;

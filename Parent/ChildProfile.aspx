@@ -3,7 +3,7 @@
     Title="Child Profile" MaintainScrollPositionOnPostback="true" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
-<link href="<%: ResolveUrl("~/Content/Parent.css") %>?v=5" rel="stylesheet" />
+<link href="<%: ResolveUrl("~/Content/Parent.css") %>?v=6" rel="stylesheet" />
 <script type="text/javascript">
 function toggleChildPopover(e){e.stopPropagation();var pop=document.getElementById('divChildPopover');if(!pop)return;if(pop.classList.contains('pt-popover-open')){pop.classList.remove('pt-popover-open');return;}var ddl=document.querySelector('.sb-sidebar-child-ddl');if(!ddl)return;var html='<div class="pt-child-popover-title">Select Child</div>';for(var i=0;i<ddl.options.length;i++){var o=ddl.options[i];var init=o.text.charAt(0).toUpperCase();var ac=o.selected?' pt-popover-active':'';html+='<div class="pt-child-popover-item'+ac+'" onclick="selectChildFromPopover(\''+o.value+'\')"><span class="pt-popover-avatar">'+init+'</span>'+o.text+'</div>';}pop.innerHTML=html;pop.classList.add('pt-popover-open');}
 function selectChildFromPopover(v){var ddl=document.querySelector('.sb-sidebar-child-ddl');if(ddl&&ddl.value!==v){ddl.value=v;__doPostBack(ddl.id.replace(/_/g,'$'),'');}var pop=document.getElementById('divChildPopover');if(pop)pop.classList.remove('pt-popover-open');}
@@ -47,11 +47,11 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
 <div class="cp-page">
 
     <%-- Hero --%>
-    <div class="pt-page-hero">
-        <div class="pt-page-hero-content">
-            <h1 class="pt-page-hero-title"><i class="bi bi-person-badge-fill"></i> <%: T("Child Profile","Profil Anak") %></h1>
-            <p class="pt-page-hero-subtitle"><%: T("View your child's account details and learning information.","Lihat maklumat akaun dan pembelajaran anak anda.") %></p>
-        </div>
+    <div class="pt-hero">
+        <i class="bi bi-star-fill pt-sparkle" style="top:14%;left:10%;"></i>
+        <i class="bi bi-stars pt-sparkle" style="top:52%;right:7%;animation-delay:1s;"></i>
+        <h2 class="pt-hero-title"><i class="bi bi-person-badge-fill"></i> <%: T("Child Profile","Profil Anak") %></h2>
+        <p class="pt-hero-sub"><%: T("View your child's account details and learning information.","Lihat maklumat akaun dan pembelajaran anak anda.") %></p>
     </div>
 
     <%-- No child --%>

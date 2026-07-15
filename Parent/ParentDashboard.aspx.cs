@@ -611,13 +611,13 @@ namespace ScienceBuddy.Parent
                                     ? T("Completed on ", "Selesai pada ") + completedAt.Value.ToString("dd MMM yyyy")
                                     : T("Completed", "Selesai");
 
-                                string html = "<div class='pd-sp-task-row' style='opacity:0.75; border-left-color:#A7F3D0;'>"
-                                    + "<div class='pd-sp-task-icon' style='background:#DCFCE7;color:#15803D;'><i class='bi bi-check-circle-fill'></i></div>"
+                                string html = "<div class='pd-sp-task-row completed'>"
+                                    + "<div class='pd-sp-task-icon'><i class='bi bi-check-circle-fill'></i></div>"
                                     + "<div class='pd-sp-task-body'>"
-                                    + "<div class='pd-sp-task-title' style='text-decoration:line-through;color:#64748B;'>" + Server.HtmlEncode(taskTitle) + "</div>"
+                                    + "<div class='pd-sp-task-title'>" + Server.HtmlEncode(taskTitle) + "</div>"
                                     + (!string.IsNullOrWhiteSpace(suggested) ? "<div class='pd-sp-task-sub'>" + Server.HtmlEncode(suggested) + "</div>" : "")
                                     + "</div>"
-                                    + "<span class='pd-sp-task-badge' style='background:#DCFCE7;color:#065F46;'>" + Server.HtmlEncode(completedDateText) + "</span>"
+                                    + "<span class='pd-sp-task-badge completed'>" + Server.HtmlEncode(completedDateText) + "</span>"
                                     + "</div>";
 
                                 taskHtmlList.Add(html);
@@ -668,24 +668,24 @@ namespace ScienceBuddy.Parent
                     string dueDateStr = planEnd.ToString("dd MMM yyyy");
                     if (daysLeft < 0)
                     {
-                        statusHtml = "<div style='display:flex;align-items:center;gap:6px;padding:8px 12px;margin-bottom:10px;"
-                            + "background:#FEF2F2;border-radius:10px;font-size:0.82rem;font-weight:600;color:#991B1B;'>"
+                        statusHtml = "<div style='display:flex;align-items:center;gap:6px;padding:6px 12px;margin-bottom:8px;"
+                            + "background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;font-size:0.8125rem;font-weight:600;color:#991B1B;'>"
                             + "<i class='bi bi-calendar-x'></i> "
                             + string.Format(T("Due date was {0} (overdue)", "Tarikh akhir {0} (lewat)"), dueDateStr)
                             + "</div>";
                     }
                     else if (daysLeft == 0)
                     {
-                        statusHtml = "<div style='display:flex;align-items:center;gap:6px;padding:8px 12px;margin-bottom:10px;"
-                            + "background:#FEF3C7;border-radius:10px;font-size:0.82rem;font-weight:600;color:#92400E;'>"
+                        statusHtml = "<div style='display:flex;align-items:center;gap:6px;padding:6px 12px;margin-bottom:8px;"
+                            + "background:#FEF3C7;border:1px solid #FDE68A;border-radius:8px;font-size:0.8125rem;font-weight:600;color:#92400E;'>"
                             + "<i class='bi bi-calendar-event'></i> "
                             + T("Due today!", "Tamat hari ini!")
                             + "</div>";
                     }
                     else
                     {
-                        statusHtml = "<div style='display:flex;align-items:center;gap:6px;padding:8px 12px;margin-bottom:10px;"
-                            + "background:#EEF2FF;border-radius:10px;font-size:0.82rem;font-weight:600;color:#4338CA;'>"
+                        statusHtml = "<div style='display:flex;align-items:center;gap:6px;padding:6px 12px;margin-bottom:8px;"
+                            + "background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;font-size:0.8125rem;font-weight:600;color:#4338CA;'>"
                             + "<i class='bi bi-calendar-check'></i> "
                             + string.Format(T("Due on {0} ({1} days left)", "Tarikh akhir {0} ({1} hari lagi)"), dueDateStr, daysLeft)
                             + "</div>";
