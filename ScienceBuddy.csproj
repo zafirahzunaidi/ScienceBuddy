@@ -141,6 +141,7 @@
     <Content Include="Content\bootstrap.rtl.min.css" />
     <Content Include="Content\Site.css" />
     <Content Include="Content\About.css" />
+    <Content Include="Content\Contact.css" />
     <Content Include="Default.aspx" />
     <Content Include="favicon.ico" />
     <Content Include="ForgotPassword.aspx" />
@@ -160,6 +161,7 @@
     <Content Include="Images\About\personality-and-learning-style.png" />
     <Content Include="Images\About\progress.png" />
     <Content Include="Images\About\quiz-assessment.png" />
+    <Content Include="Images\Contact\contact-logo.png" />
     <Content Include="Images\Parent\amazing-progress.png" />
     <Content Include="Images\Parent\good-progress.png" />
     <Content Include="Images\Parent\low-progress.png" />
@@ -222,6 +224,7 @@
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\About.js" />
+    <Content Include="Scripts\Contact.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />
     <Content Include="Scripts\jquery-3.7.0.slim.js" />
     <Content Include="Scripts\jquery-3.7.0.slim.min.js" />

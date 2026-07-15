@@ -16,7 +16,7 @@
                         Learning designed for curious minds.</p>
                 </div>
                 <div class="about-hero__visual">
-                    <img src="<%: ResolveUrl("~/Images/About/heading-about.png") %>" alt="ScienceBuddy platform overview" />
+                    <img src="<%: ResolveUrl("~/Images/About/heading-about.png") %>?v=2" alt="ScienceBuddy platform overview" />
                 </div>
             </div>
             <div class="about-hero__bottom">
