@@ -143,6 +143,20 @@
 .qb-del-btn-confirm:hover{background:#C02050;box-shadow:0 5px 16px rgba(229,62,94,.32);}
 
 /* ── Submit success modal ────────────────────────────── */
+/* ── Unsaved Changes modal ───────────────────────────── */
+.qb-unsaved-overlay{position:fixed;inset:0;background:rgba(30,27,58,.50);z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s;}
+.qb-unsaved-overlay.open{opacity:1;pointer-events:all;}
+.qb-unsaved-modal{background:#fff;border-radius:20px;padding:2rem;width:380px;max-width:90vw;box-shadow:0 20px 60px rgba(109,94,247,.18);transform:translateY(10px) scale(.97);transition:transform .22s;}
+.qb-unsaved-overlay.open .qb-unsaved-modal{transform:translateY(0) scale(1);}
+.qb-unsaved-icon{width:52px;height:52px;border-radius:14px;background:#FEF3C7;border:1.5px solid #FDE68A;display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:#D97706;margin-bottom:1rem;}
+.qb-unsaved-modal h3{font-size:1rem;font-weight:800;color:var(--tc-text);margin:0 0 6px;}
+.qb-unsaved-modal p{font-size:.84rem;color:var(--tc-muted);margin:0 0 1.5rem;line-height:1.6;}
+.qb-unsaved-actions{display:flex;gap:.7rem;}
+.qb-unsaved-cancel{flex:1;padding:.65rem;border-radius:11px;border:1.5px solid var(--tc-border);background:#fff;font-size:.84rem;font-weight:700;color:var(--tc-text);cursor:pointer;transition:all .18s;}
+.qb-unsaved-cancel:hover{border-color:var(--tc-primary);color:var(--tc-primary);}
+.qb-unsaved-confirm{flex:1;padding:.65rem;border-radius:11px;border:none;background:#DC2626;color:#fff;font-size:.84rem;font-weight:700;cursor:pointer;transition:all .18s;box-shadow:0 3px 10px rgba(220,38,38,.22);}
+.qb-unsaved-confirm:hover{background:#B91C1C;box-shadow:0 5px 16px rgba(220,38,38,.32);}
+/* ── Submit success modal ────────────────────────────── */
 .qb-success-overlay{
   position:fixed;inset:0;background:rgba(30,27,58,.55);z-index:9998;
   display:flex;align-items:center;justify-content:center;
@@ -170,6 +184,15 @@
 .qb-center{background:#fff;border:1.5px solid var(--tc-border);border-radius:22px;padding:0;box-shadow:0 6px 32px rgba(109,94,247,.09);display:flex;flex-direction:column;min-height:580px;overflow:hidden;}
 
 .qb-header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 2rem;background:linear-gradient(135deg,#F6F4FF,#EEF2FF);border-bottom:2px solid #EDEAFC;}
+/* ── Compact Toolbar ── */
+.qb-toolbar{display:flex;align-items:center;justify-content:space-between;padding:.85rem 1.75rem;background:linear-gradient(135deg,#F6F4FF,#EEF2FF);border-bottom:none;border-radius:22px 22px 0 0;gap:.75rem;flex-wrap:wrap;}
+.qb-toolbar-nav{display:flex;align-items:center;gap:10px;}
+.qb-toolbar-arrow{width:34px;height:34px;border-radius:10px;border:1.5px solid var(--tc-border);background:#fff;display:flex;align-items:center;justify-content:center;font-size:1rem;color:var(--tc-primary);cursor:pointer;transition:all .18s;}
+.qb-toolbar-arrow:hover:not(:disabled){background:#F0EEFF;border-color:var(--tc-primary);transform:translateY(-1px);box-shadow:0 2px 8px rgba(109,94,247,.12);}
+.qb-toolbar-arrow:disabled{opacity:.35;cursor:not-allowed;}
+.qb-toolbar-label{font-size:.92rem;font-weight:700;color:var(--tc-text);white-space:nowrap;letter-spacing:.01em;}
+/* Language row */
+.qb-toolbar-lang{display:flex;align-items:center;padding:.6rem 1.75rem .75rem;background:#fff;border-bottom:1.5px solid #EDEAFC;}
 .qb-qnum{font-size:.72rem;font-weight:800;color:var(--tc-muted);text-transform:uppercase;letter-spacing:1.4px;display:flex;align-items:center;gap:8px;}
 .qb-qnum::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--tc-primary);box-shadow:0 0 0 3px rgba(109,94,247,.20);}
 
@@ -184,6 +207,25 @@
 
 .qb-question-hero{background:linear-gradient(145deg,#F8F6FF,#F0EEFF);border:2px solid #D8D2F8;border-radius:18px;padding:0;margin-bottom:1.4rem;overflow:hidden;transition:border-color .2s,box-shadow .2s;}
 .qb-question-hero:focus-within{border-color:var(--tc-primary);box-shadow:0 0 0 4px rgba(109,94,247,.10);}
+/* ── Rich Text Editor ─────────────────────────────────── */
+.qb-rte-wrap{border:1.5px solid var(--tc-border);border-radius:14px;overflow:hidden;background:#fff;transition:border-color .2s,box-shadow .2s;}
+.qb-rte-wrap:focus-within{border-color:var(--tc-primary);box-shadow:0 0 0 3px rgba(109,94,247,.10);}
+.qb-rte-toolbar{display:flex;align-items:center;gap:2px;padding:6px 10px;background:#F9F8FF;border-bottom:1.5px solid var(--tc-border);}
+.qb-rte-btn{width:34px;height:34px;border:none;background:transparent;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:var(--tc-muted);cursor:pointer;transition:all .15s;}
+.qb-rte-btn:hover{background:#EDE9FE;color:var(--tc-primary);}
+.qb-rte-sep{width:1px;height:20px;background:var(--tc-border);margin:0 6px;}
+.qb-rte-editor{min-height:110px;padding:.85rem 1rem;font-size:.9rem;line-height:1.7;color:var(--tc-text);outline:none;overflow-y:auto;max-height:300px;word-break:break-word;}
+.qb-rte-editor:empty::before{content:attr(data-placeholder);color:#B8B4CC;font-weight:400;pointer-events:none;display:block;}
+.qb-rte-editor ul,.qb-rte-editor ol{margin:.5rem 0;padding-left:24px;}
+/* Blank chip inside editor */
+.rte-blank-chip{display:inline-block;padding:2px 12px;margin:0 2px;background:#F0EEFF;border:1.5px solid #C8C2F8;border-radius:8px;color:var(--tc-primary);font-weight:700;font-size:.85rem;letter-spacing:2px;vertical-align:baseline;cursor:default;user-select:none;}
+.qb-rte-editor ul{list-style-type:disc!important;}
+.qb-rte-editor ol{list-style-type:decimal!important;}
+.qb-rte-editor li{display:list-item!important;margin:4px 0;list-style:inherit!important;}
+.qb-rte-editor ul ul{list-style-type:circle!important;}
+.qb-rte-editor ul ul ul{list-style-type:square!important;}
+.qb-rte-editor ol ol{list-style-type:lower-alpha!important;}
+.qb-rte-btn.active{background:#EDE9FE;color:var(--tc-primary);}
 .qb-question-hero-header{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1.1rem .55rem;border-bottom:1.5px solid #D8D2F8;}
 .qb-question-hero-label{display:flex;align-items:center;gap:7px;font-size:.73rem;font-weight:800;color:#4A3AAA;text-transform:uppercase;letter-spacing:.8px;}
 .qb-question-hero-label i{font-size:.85rem;color:var(--tc-primary);}
@@ -207,13 +249,13 @@
 /* ── Section divider header ────────────────────────────── */
 .qb-section-header{display:flex;align-items:center;gap:10px;margin-bottom:1rem;margin-top:.25rem;}
 .qb-section-header-icon{width:28px;height:28px;border-radius:8px;background:#F0EEFF;border:1.5px solid #C8C2F8;display:flex;align-items:center;justify-content:center;font-size:.85rem;color:var(--tc-primary);flex-shrink:0;}
-.qb-section-header-text{font-size:.8rem;font-weight:800;color:var(--tc-text);letter-spacing:.3px;}
+.qb-section-header-text{font-size:.92rem;font-weight:800;color:var(--tc-text);letter-spacing:.01em;}
 .qb-section-header-sub{font-size:.71rem;color:var(--tc-muted);font-weight:500;margin-left:auto;}
 .qb-section-divider{flex:1;height:1.5px;background:linear-gradient(90deg,#D8D2F8,transparent);margin-left:6px;}
 
 /* ═══ FIELDS ══════════════════════════════════════════════ */
 .qb-field{margin-bottom:1.4rem;position:relative;}
-.qb-label{font-size:.75rem;font-weight:700;color:var(--tc-text);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;letter-spacing:.02em;text-transform:uppercase;}
+.qb-label{font-size:.88rem;font-weight:800;color:var(--tc-text);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;letter-spacing:.01em;}
 .qb-input{width:100%;border-radius:14px;border:1.5px solid var(--tc-border);padding:.75rem 1rem;font-size:.88rem;transition:all .2s;background:#fff;color:var(--tc-text);}
 .qb-input:focus{border-color:var(--tc-primary);outline:none;box-shadow:0 0 0 3px rgba(109,94,247,.10);}
 .qb-input.invalid{border-color:var(--tc-error);box-shadow:0 0 0 3px rgba(229,62,94,.08);}
@@ -241,9 +283,27 @@
 .qb-opt:nth-child(2):hover{border-color:#F6A623;}
 .qb-opt:nth-child(3):hover{border-color:#6D5EF7;}
 .qb-opt:nth-child(4):hover{border-color:#4F8CFF;}
-.qb-opt.correct{border-color:var(--tc-success)!important;background:#EDFBF4!important;box-shadow:0 6px 20px rgba(34,194,122,.18);}
-.qb-opt.correct .qb-opt-band{filter:brightness(1.1);}
-.qb-opt.correct::after{content:'\2713';position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:.75rem;font-weight:900;color:#fff;background:var(--tc-success);width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(34,194,122,.35);}
+.qb-opt.correct{border-color:inherit;background:inherit;box-shadow:none;}
+.qb-opt.correct .qb-opt-band{filter:none;}
+.qb-opt.correct::after{content:'';display:none;}
+/* Correct-answer circle selector */
+.qb-opt-selector{
+  width:28px;height:28px;border-radius:50%;flex-shrink:0;
+  align-self:center;margin-right:10px;
+  border:2.5px solid #C8C2F8;background:#fff;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .2s ease;
+  opacity:0;pointer-events:none;
+}
+.qb-opt.has-text .qb-opt-selector{opacity:1;pointer-events:auto;}
+.qb-opt-selector:hover{border-color:var(--tc-primary);transform:scale(1.08);}
+.qb-opt.correct .qb-opt-selector{
+  border-color:var(--tc-success);background:var(--tc-success);
+  box-shadow:0 0 0 4px rgba(34,194,122,.18);
+}
+.qb-opt.correct .qb-opt-selector::after{
+  content:'\2713';color:#fff;font-size:.75rem;font-weight:900;
+}
 
 /* ═══ EXPLANATION CONTAINERS ══════════════════════════════ */
 .qb-exp-block{border-radius:16px;overflow:hidden;margin-bottom:1.25rem;}
@@ -284,7 +344,7 @@
 .qb-props-body{padding:1rem 1.1rem 1.1rem;}
 .qb-prop-field{margin-bottom:1.1rem;}
 .qb-prop-field:last-child{margin-bottom:0;}
-.qb-prop-label{display:flex;align-items:center;gap:7px;font-size:.72rem;font-weight:700;color:var(--tc-text);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;}
+.qb-prop-label{display:flex;align-items:center;gap:7px;font-size:.82rem;font-weight:800;color:var(--tc-text);margin-bottom:6px;letter-spacing:.01em;}
 .qb-prop-label-icon{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.72rem;flex-shrink:0;}
 .qb-prop-label-icon.type{background:#EEF2FF;color:var(--tc-primary);}
 .qb-prop-label-icon.diff{background:#FEF0D8;color:#8A5000;}
@@ -313,6 +373,12 @@
 
 /* ═══ FILL IN THE BLANK ═══════════════════════════════════ */
 .fib-add-row{display:flex;align-items:center;gap:12px;margin-bottom:.85rem;}
+/* FIB Instruction Card */
+.fib-instruction-card{display:flex;align-items:flex-start;gap:10px;padding:.75rem 1rem;margin-bottom:1.1rem;background:#FFFBEB;border:1.5px solid #FDE68A;border-left:4px solid #D97706;border-radius:10px;}
+.fib-instruction-icon{flex-shrink:0;width:26px;height:26px;border-radius:7px;background:#FEF3C7;color:#D97706;display:flex;align-items:center;justify-content:center;font-size:.85rem;}
+.fib-instruction-body{flex:1;min-width:0;}
+.fib-instruction-title{font-size:.78rem;font-weight:700;color:#92400E;margin-bottom:2px;}
+.fib-instruction-text{font-size:.74rem;color:#A16207;line-height:1.5;}
 .fib-add-btn{display:inline-flex;align-items:center;gap:6px;padding:.55rem 1.1rem;border-radius:11px;font-size:.81rem;font-weight:700;color:var(--tc-primary);background:#F0EEFF;border:1.5px solid #C8C2F8;cursor:pointer;transition:all .2s;}
 .fib-add-btn:hover{background:#E8E4FC;border-color:var(--tc-primary);transform:translateY(-1px);box-shadow:0 3px 10px rgba(109,94,247,.12);}
 .fib-add-btn.disabled{color:var(--tc-muted);background:#F5F5F5;border-color:var(--tc-border);cursor:not-allowed;opacity:.55;transform:none;box-shadow:none;}
@@ -355,20 +421,20 @@
 .qb-toast{background:linear-gradient(135deg,#6D5EF7,#4F8CFF);color:#fff;padding:.8rem 1.3rem;border-radius:12px;font-size:.85rem;font-weight:700;display:flex;align-items:center;gap:9px;box-shadow:0 8px 28px rgba(109,94,247,.30);animation:qbSlide .3s ease;}
 @keyframes qbSlide{from{opacity:0;transform:translateX(30px);}to{opacity:1;transform:translateX(0);}}
 /* ═══ INLINE FIELD VALIDATION ═════════════════════════════ */
-/* Red border only — no background tint on the invalid control */
-.qb-err{border-color:#DC3545!important;box-shadow:0 0 0 2px rgba(220,53,69,.15)!important;}
-/* Error message — sits OUTSIDE the field/card, below it, with breathing room before next section */
+/* No red border or red line — just show the message */
+.qb-err{border-color:inherit!important;box-shadow:none!important;}
+/* Error message — below the field, outside the editor wrap */
 .qb-err-msg{
   display:flex;align-items:center;gap:6px;
   font-size:13px;font-weight:500;color:#DC3545;
-  margin-top:7px;       /* 6–8px gap from the field/card above  */
-  margin-bottom:18px;   /* 16–20px gap before the next section  */
+  margin-top:6px;
+  margin-bottom:10px;
   padding:0;line-height:1.4;
   animation:qbFadeIn .15s ease;
 }
 /* ═══ RESPONSIVE ══════════════════════════════════════════ */
 @media(max-width:1100px){.qb-layout{grid-template-columns:1fr;}.qb-nav,.qb-props{display:none;}}
-@media(max-width:640px){.qb-opts{grid-template-columns:1fr;}.qb-tf-grid{grid-template-columns:1fr;}.qb-fib-words{grid-template-columns:1fr;}.qb-actions{flex-direction:column;padding:1rem 1.25rem 1.25rem;}.qb-editor-body{padding:1.25rem;}.qb-header{padding:1rem 1.25rem;}}
+@media(max-width:640px){.qb-opts{grid-template-columns:1fr;}.qb-tf-grid{grid-template-columns:1fr;}.qb-fib-words{grid-template-columns:1fr;}.qb-actions{flex-direction:column;padding:1rem 1.25rem 1.25rem;}.qb-editor-body{padding:1.25rem;}.qb-header{padding:1rem 1.25rem;}.qb-toolbar{flex-direction:column;align-items:stretch;gap:.6rem;padding:.7rem 1rem;}.qb-toolbar-nav{justify-content:center;}.qb-toolbar-lang{padding:.5rem 1rem;justify-content:center;}}
 
 /* ═══════════════════════════════════════════════════════════
    HERO — Warm educational premium, ScienceBuddy palette
@@ -553,8 +619,8 @@
     </div>
 </div>
 
-<%-- Progress Bar --%>
-<div class="qb-progress">
+<%-- Progress Bar (hidden) --%>
+<div class="qb-progress" style="display:none;">
     <div class="qb-progress-icon"><i class="bi bi-check2-all"></i></div>
     <div class="qb-progress-bar"><div class="qb-progress-fill" id="progressFill" style="width:0%"></div></div>
     <div class="qb-progress-text" id="progressText">0 / 0 <%: T("Questions Saved","Soalan Disimpan") %></div>
@@ -616,23 +682,50 @@
 
 <%-- Center Editor --%>
 <div class="qb-center">
-    <div class="qb-header">
-        <div class="qb-qnum"><%: T("Question","Soalan") %> <asp:Literal ID="litQNum" runat="server" /></div>
+    <%-- Row 1: Navigation + Submit --%>
+    <div class="qb-toolbar">
+        <div class="qb-toolbar-nav">
+            <button type="button" id="qbNavPrev" class="qb-toolbar-arrow" onclick="navGoTo(window.__CI-1);return false;"><i class="bi bi-chevron-left"></i></button>
+            <span id="qbNavLabel" class="qb-toolbar-label"></span>
+            <button type="button" id="qbNavNext" class="qb-toolbar-arrow" onclick="navGoTo(window.__CI+1);return false;"><i class="bi bi-chevron-right"></i></button>
+        </div>
+        <asp:Button ID="btnSubmitQuiz" runat="server" Text="Submit Quiz" CssClass="qb-btn qb-btn-success" style="margin:0;padding:.55rem 1.2rem;font-size:.82rem;" OnClientClick="return validateFibBlanksAndFlush();" OnClick="btnSubmitQuiz_Click" CausesValidation="false" />
+    </div>
+    <%-- Row 2: Language toggle (no label, white background, inside card) --%>
+    <div class="qb-toolbar-lang">
         <div class="qb-tabs">
             <asp:Button ID="btnTabEN" runat="server" Text="English" CssClass="qb-tab active" OnClientClick="switchTab('EN');return false;" CausesValidation="false" />
             <asp:Button ID="btnTabBM" runat="server" Text="Bahasa Melayu" CssClass="qb-tab" OnClientClick="switchTab('BM');return false;" CausesValidation="false" />
         </div>
     </div>
+    <%-- Hidden literals & buttons for code-behind compatibility --%>
+    <asp:Literal ID="litQNum" runat="server" Visible="false" />
+    <asp:Literal ID="litQTextLabel" runat="server" Visible="false" />
 
     <div class="qb-editor-body">
 
-    <%-- Question Text --%>
-    <div class="qb-question-hero">
-        <div class="qb-question-hero-header">
-            <span class="qb-question-hero-label"><i class="bi bi-pencil-fill"></i><asp:Literal ID="litQTextLabel" runat="server" /></span>
+    <%-- Question Text — Rich Editor style --%>
+    <div class="qb-field" style="margin-bottom:1.2rem;">
+        <div class="qb-label">
+            <span><%: T("Question","Soalan") %> * <span id="qbLangBadge" style="font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:5px;background:#D1FAE5;color:#047857;margin-left:6px;text-transform:none;letter-spacing:0;">EN</span></span>
             <span class="qb-char-count" id="qCharCount">0 / 500</span>
         </div>
-        <asp:TextBox ID="txtQuestionText" runat="server" TextMode="MultiLine" Rows="3" CssClass="qb-input qb-textarea" MaxLength="500" />
+        <div class="qb-rte-wrap">
+            <div class="qb-rte-toolbar">
+                <button type="button" class="qb-rte-btn" onmousedown="event.preventDefault();rteExec('bold')" title="Bold (Ctrl+B)"><i class="bi bi-type-bold"></i></button>
+                <button type="button" class="qb-rte-btn" onmousedown="event.preventDefault();rteExec('italic')" title="Italic (Ctrl+I)"><i class="bi bi-type-italic"></i></button>
+                <button type="button" class="qb-rte-btn" onmousedown="event.preventDefault();rteExec('underline')" title="Underline (Ctrl+U)"><i class="bi bi-type-underline"></i></button>
+                <span class="qb-rte-sep"></span>
+                <button type="button" class="qb-rte-btn" onmousedown="event.preventDefault();rteExec('insertUnorderedList')" title="Bullet List"><i class="bi bi-list-ul"></i></button>
+                <button type="button" class="qb-rte-btn" onmousedown="event.preventDefault();rteExec('insertOrderedList')" title="Numbered List"><i class="bi bi-list-ol"></i></button>
+                <span class="qb-rte-sep qb-fib-only" id="fibToolbarSep" style="display:none;"></span>
+                <span class="fib-counter qb-fib-only" id="blankCounter" style="display:none;margin-left:auto;font-size:.75rem;"><%: T("Blanks","Kosong") %>: <strong id="blankNum">0</strong> / 4</span>
+                <button type="button" class="fib-add-btn qb-fib-only" id="btnAddBlank" onclick="addBlank()" style="display:none;margin-left:6px;padding:.4rem .8rem;font-size:.76rem;"><i class="bi bi-plus-square-dotted"></i> <%: T("Add Blank","Tambah Kosong") %></button>
+            </div>
+            <div id="qbRteEditor" class="qb-rte-editor" contenteditable="true" data-placeholder-en="Type your question here..." data-placeholder-bm="Taip soalan anda di sini..."></div>
+        </div>
+        <%-- Hidden textarea for server sync --%>
+        <asp:TextBox ID="txtQuestionText" runat="server" TextMode="MultiLine" Rows="4" CssClass="qb-input qb-textarea" MaxLength="500" style="display:none;" />
     </div>
 
     <%-- Question Image (1 image per question, client-side only preview) --%>
@@ -664,18 +757,22 @@
             <div class="qb-opt" id="optAWrap" runat="server">
                 <div class="qb-opt-band">A</div>
                 <div class="qb-opt-body"><asp:RadioButton ID="radA" runat="server" GroupName="correct" /><asp:TextBox ID="txtOptA" runat="server" CssClass="qb-opt-input" /></div>
+                <div class="qb-opt-selector" onclick="selectCorrectOpt(this)"></div>
             </div>
             <div class="qb-opt" id="optBWrap" runat="server">
                 <div class="qb-opt-band">B</div>
                 <div class="qb-opt-body"><asp:RadioButton ID="radB" runat="server" GroupName="correct" /><asp:TextBox ID="txtOptB" runat="server" CssClass="qb-opt-input" /></div>
+                <div class="qb-opt-selector" onclick="selectCorrectOpt(this)"></div>
             </div>
             <div class="qb-opt" id="optCWrap" runat="server">
                 <div class="qb-opt-band">C</div>
                 <div class="qb-opt-body"><asp:RadioButton ID="radC" runat="server" GroupName="correct" /><asp:TextBox ID="txtOptC" runat="server" CssClass="qb-opt-input" /></div>
+                <div class="qb-opt-selector" onclick="selectCorrectOpt(this)"></div>
             </div>
             <div class="qb-opt" id="optDWrap" runat="server">
                 <div class="qb-opt-band">D</div>
                 <div class="qb-opt-body"><asp:RadioButton ID="radD" runat="server" GroupName="correct" /><asp:TextBox ID="txtOptD" runat="server" CssClass="qb-opt-input" /></div>
+                <div class="qb-opt-selector" onclick="selectCorrectOpt(this)"></div>
             </div>
         </div>
     </div>
@@ -721,21 +818,11 @@
         </div>
     </div>
 
-    <%-- Answer Section: Fill in the Blank --%>
+    <%-- Answer Section: Drag & Drop --%>
     <div id="sectionFIB" class="qb-answer-section" style="display:none;">
-        <div class="qb-section-header">
-            <div class="qb-section-header-icon"><i class="bi bi-input-cursor-text"></i></div>
-            <span class="qb-section-header-text"><%: T("Fill in the Blank","Isi Tempat Kosong") %></span>
-            <div class="qb-section-divider"></div>
-        </div>
-        <div class="fib-add-row">
-            <button type="button" class="fib-add-btn" id="btnAddBlank" onclick="addBlank()"><i class="bi bi-plus-square-dotted"></i> <%: T("Add Blank","Tambah Kosong") %></button>
-            <span class="fib-counter" id="blankCounter"><%: T("Blanks","Kosong") %>: <strong id="blankNum">0</strong> / 4</span>
-        </div>
-        <div class="fib-warning" id="blankWarning" style="display:none;">
-            <i class="bi bi-exclamation-triangle-fill"></i> <%: T("Maximum of 4 blanks reached. Remove an existing blank before adding another.","Maksimum 4 tempat kosong dicapai. Buang kosong sedia ada sebelum menambah yang lain.") %>
-        </div>
-        <div class="fib-section-label"><i class="bi bi-collection"></i> <%: T("Word Bank","Bank Perkataan") %> * <span class="fib-sub-label">(<%: T("Max 4 words","Maks 4 perkataan") %>)</span></div>
+
+        <%-- Answer Options --%>
+        <div class="fib-section-label" style="font-size:.92rem;font-weight:800;"><%: T("Answer Options","Pilihan Jawapan") %> * <span class="fib-sub-label">(<%: T("Max 4 words","Maks 4 perkataan") %>)</span></div>
         <div class="qb-fib-words" id="fibWordsContainer">
             <div class="qb-fib-word"><span class="qb-fib-num">1</span><input type="text" class="qb-opt-input fib-word-input" placeholder="<%: T("Word 1","Perkataan 1") %>" oninput="onFibWordChange()" /></div>
             <div class="qb-fib-word"><span class="qb-fib-num">2</span><input type="text" class="qb-opt-input fib-word-input" placeholder="<%: T("Word 2","Perkataan 2") %>" oninput="onFibWordChange()" /></div>
@@ -743,7 +830,7 @@
             <div class="qb-fib-word"><span class="qb-fib-num">4</span><input type="text" class="qb-opt-input fib-word-input" placeholder="<%: T("Word 4","Perkataan 4") %>" oninput="onFibWordChange()" /></div>
         </div>
         <div id="fibMappingSection" class="fib-mapping-wrap" style="display:none;">
-            <div class="fib-section-label"><i class="bi bi-arrow-left-right"></i> <%: T("Correct Answer Mapping","Pemetaan Jawapan Betul") %> *</div>
+            <div class="fib-section-label" style="font-size:.92rem;font-weight:800;"><i class="bi bi-arrow-left-right"></i> <%: T("Correct Answer Mapping","Pemetaan Jawapan Betul") %> *</div>
             <div class="qb-fib-mappings" id="fibMappings"></div>
             <div class="fib-warning" id="fibMappingError" style="display:none;margin-top:6px;">
                 <i class="bi bi-exclamation-circle-fill"></i> <%: T("Each blank must map to a unique word.","Setiap kosong mesti dipetakan kepada perkataan unik.") %>
@@ -760,7 +847,6 @@
                 </div>
             </div>
         </div>
-        <div class="qb-fib-hint"><i class="bi bi-lightbulb"></i> <%: T("Click 'Add Blank' to insert blanks into your question text. Then assign each blank to a correct word from the Word Bank above.","Klik 'Tambah Kosong' untuk memasukkan kosong ke dalam teks soalan. Kemudian tetapkan setiap kosong kepada perkataan betul dari Bank Perkataan di atas.") %></div>
     </div>
 
     <%-- Explanations --%>
@@ -788,16 +874,16 @@
         <asp:TextBox ID="txtWrongExp" runat="server" TextMode="MultiLine" Rows="2" CssClass="qb-input qb-textarea" MaxLength="500" />
     </div>
 
-    <%-- Save Status --%>
-    <div class="qb-save-status" id="saveStatus"><i class="bi bi-circle"></i> <span id="saveStatusText"><%: T("Question Incomplete","Soalan Tidak Lengkap") %></span></div>
+    <%-- Save Status (hidden — auto-save handles this) --%>
+    <div class="qb-save-status" id="saveStatus" style="display:none;"><i class="bi bi-circle"></i> <span id="saveStatusText"><%: T("Question Incomplete","Soalan Tidak Lengkap") %></span></div>
 
     </div><%-- /.qb-editor-body --%>
 
-    <div class="qb-actions">
+    <%-- Hidden server buttons for postback compatibility --%>
+    <div style="display:none;">
         <asp:Button ID="btnPrev" runat="server" Text="← Previous" CssClass="qb-btn qb-btn-outline" OnClientClick="return navGoTo(window.__CI-1);" CausesValidation="false" />
         <asp:Button ID="btnNext" runat="server" Text="Next →" CssClass="qb-btn qb-btn-outline" OnClientClick="return navGoTo(window.__CI+1);" CausesValidation="false" />
         <asp:Button ID="btnSaveQ" runat="server" Text="Save Question" CssClass="qb-btn qb-btn-primary" OnClientClick="flushToServer();" OnClick="btnSaveQ_Click" CausesValidation="false" />
-        <asp:Button ID="btnSubmitQuiz" runat="server" Text="Submit Quiz" CssClass="qb-btn qb-btn-success" OnClientClick="return validateFibBlanksAndFlush();" OnClick="btnSubmitQuiz_Click" CausesValidation="false" />
     </div>
 </div><%-- /.qb-center --%>
 
@@ -831,15 +917,9 @@
                 <asp:ListItem Value="Hard" Text="Hard" />
             </asp:DropDownList>
         </div>
-        <div class="qb-prop-field">
-            <div class="qb-prop-label">
-                <span class="qb-prop-label-icon sub"><i class="bi bi-bookmark-fill"></i></span>
-                <%: T("Subtopic","Subtopik") %>
-            </div>
-            <div class="qb-prop-subtopic-val"><asp:Literal ID="litPropSubtopic" runat="server" /></div>
-        </div>
     </div>
 </div>
+<asp:Literal ID="litPropSubtopic" runat="server" Visible="false" />
 
 </div><%-- /.qb-layout --%>
 
@@ -863,6 +943,19 @@
         <a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx") %>" class="qb-btn qb-btn-primary" style="margin-top:.5rem;text-decoration:none;">
             <%: T("Back to Manage Quizzes","Kembali ke Urus Kuiz") %>
         </a>
+    </div>
+</div>
+
+<%-- ── Unsaved Changes Modal ─────────────────────────────── --%>
+<div class="qb-unsaved-overlay" id="qbUnsavedOverlay">
+    <div class="qb-unsaved-modal">
+        <div class="qb-unsaved-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+        <h3><%: T("Unsaved Changes","Perubahan Belum Disimpan") %></h3>
+        <p><%: T("Your unsaved question will be discarded. Are you sure you want to leave this page?","Soalan anda yang belum disimpan akan dibuang. Adakah anda pasti mahu meninggalkan halaman ini?") %></p>
+        <div class="qb-unsaved-actions">
+            <button type="button" class="qb-unsaved-cancel" onclick="closeUnsavedModal()"><%: T("Cancel","Batal") %></button>
+            <button type="button" class="qb-unsaved-confirm" id="qbUnsavedConfirm"><%: T("Confirm","Sahkan") %></button>
+        </div>
     </div>
 </div>
 
@@ -922,8 +1015,61 @@ function emptyQ(){return{
     fibMapEN:[],fibMapBM:[]
 };}
 
+/* ── Rich Text Editor ─────────────────────────────────── */
+function rteExec(cmd){
+    document.execCommand(cmd,false,null);
+    rteSync();rteUpdateToolbar();
+}
+function rteSync(){
+    var ed=document.getElementById('qbRteEditor');
+    var ta=document.getElementById(SRV.txtQ);
+    if(ed&&ta){
+        // Build plain text: replace blank chips with their [Blank X] tag
+        var clone=ed.cloneNode(true);
+        clone.querySelectorAll('.rte-blank-chip').forEach(function(chip){
+            chip.replaceWith(chip.getAttribute('data-blank'));
+        });
+        ta.value=clone.innerText||'';
+    }
+    updateCharCounts();
+}
+function rteSetContent(text){
+    var ed=document.getElementById('qbRteEditor');
+    if(!ed)return;
+    // Convert [Blank X] markers to visual chips
+    if(text&&/\[Blank \d\]/.test(text)){
+        var html=text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        html=html.replace(/\[Blank (\d)\]/g,'<span class="rte-blank-chip" contenteditable="false" data-blank="[Blank $1]">_______</span>');
+        ed.innerHTML=html;
+    } else {
+        ed.innerText=text||'';
+    }
+}
+function rteGetText(){
+    var ed=document.getElementById('qbRteEditor');
+    if(!ed)return'';
+    var clone=ed.cloneNode(true);
+    clone.querySelectorAll('.rte-blank-chip').forEach(function(chip){
+        chip.replaceWith(chip.getAttribute('data-blank'));
+    });
+    return clone.innerText||'';
+}
+function rteUpdateToolbar(){
+    document.querySelectorAll('.qb-rte-btn').forEach(function(btn){btn.classList.remove('active');});
+    if(document.queryCommandState('bold'))document.querySelector('.qb-rte-btn[title*="Bold"]').classList.add('active');
+    if(document.queryCommandState('italic'))document.querySelector('.qb-rte-btn[title*="Italic"]').classList.add('active');
+    if(document.queryCommandState('underline'))document.querySelector('.qb-rte-btn[title*="Underline"]').classList.add('active');
+    if(document.queryCommandState('insertUnorderedList')){var b=document.querySelector('.qb-rte-btn[title*="Bullet"]');if(b)b.classList.add('active');}
+    if(document.queryCommandState('insertOrderedList')){var n=document.querySelector('.qb-rte-btn[title*="Numbered"]');if(n)n.classList.add('active');}
+}
+function rteUpdatePlaceholder(){
+    var ed=document.getElementById('qbRteEditor');
+    if(ed){var isEN=(window.__CT==='EN');ed.setAttribute('data-placeholder',isEN?ed.dataset.placeholderEn:ed.dataset.placeholderBm);}
+}
+
 function captureCurrentFields(){
     if(!window.__QD.length)return;
+    rteSync(); // sync contenteditable → hidden textarea
     var q=window.__QD[window.__CI],tab=window.__CT;
     var g=function(id){var e=$id(id);return e?e.value:'';};
 
@@ -991,6 +1137,7 @@ function populateFields(q,tab){
 
     /* ── MCQ / shared text fields ─────────────────────────── */
     s(SRV.txtQ,isEN?q.qEN:q.qBM);
+    rteSetContent(isEN?q.qEN:q.qBM); // sync RTE editor with stored text
     s(SRV.txtA,isEN?q.aEN:q.aBM);s(SRV.txtB,isEN?q.bEN:q.bBM);
     s(SRV.txtC,isEN?q.cEN:q.cBM);s(SRV.txtD,isEN?q.dEN:q.dBM);
     s(SRV.txtCE,isEN?q.ceEN:q.ceBM);s(SRV.txtWE,isEN?q.weEN:q.weBM);
@@ -1048,14 +1195,37 @@ function populateFields(q,tab){
 
 function updateLabels(tab){
     var isEN=(tab==='EN');
-    var ql=$qs('.qb-question-hero-label');
-    if(ql){var ic=ql.querySelector('i');ql.innerHTML='';if(ic)ql.appendChild(ic);ql.appendChild(document.createTextNode(isEN?' Question (English)':' Question (Bahasa Melayu)'));}
+    // Update language badge
+    var badge=document.getElementById('qbLangBadge');
+    if(badge){badge.textContent=isEN?'EN':'BM';badge.style.background=isEN?'#D1FAE5':'#FEF3C7';badge.style.color=isEN?'#047857':'#92400E';}
     var ol=$qs('#sectionMCQ .qb-section-header-text');
     if(ol)ol.textContent=isEN?'Options (English)':'Options (Bahasa Melayu)';
     var ce=$qs('.qb-exp-correct .qb-exp-block-label');
     if(ce)ce.textContent=(isEN?'Correct Explanation (EN)':'Correct Explanation (BM)')+' *';
     var we=$qs('.qb-exp-wrong .qb-exp-block-label');
     if(we)we.textContent=(isEN?'Wrong Explanation (EN)':'Wrong Explanation (BM)')+' *';
+    // Update placeholders based on language
+    var ph=function(id,en,bm){var el=$id(id);if(el)el.placeholder=isEN?en:bm;};
+    ph(SRV.txtQ,'Type your question here...','Taipkan soalan anda di sini...');
+    rteUpdatePlaceholder();
+    ph(SRV.txtA,'Enter option A...','Masukkan pilihan A...');
+    ph(SRV.txtB,'Enter option B...','Masukkan pilihan B...');
+    ph(SRV.txtC,'Enter option C...','Masukkan pilihan C...');
+    ph(SRV.txtD,'Enter option D...','Masukkan pilihan D...');
+    ph(SRV.txtCE,'Explain why this answer is correct...','Terangkan mengapa jawapan ini betul...');
+    ph(SRV.txtWE,'Explain why the other answers are incorrect...','Terangkan mengapa jawapan lain tidak betul...');
+    // Update navigation label
+    updateNavLabel();
+}
+function updateNavLabel(){
+    var lbl=document.getElementById('qbNavLabel');
+    var prev=document.getElementById('qbNavPrev');
+    var next=document.getElementById('qbNavNext');
+    var total=window.__QD?window.__QD.length:1;
+    var current=(window.__CI||0)+1;
+    if(lbl)lbl.textContent='Question '+current+' of '+total;
+    if(prev){prev.disabled=(current<=1);prev.style.opacity=(current<=1)?'.35':'1';}
+    if(next){next.disabled=(current>=total);next.style.opacity=(current>=total)?'.35':'1';}
 }
 
 function switchTab(tab){
@@ -1072,12 +1242,10 @@ function navGoTo(idx){
     if(idx<0||idx>=window.__QD.length)return false;
     captureCurrentFields();window.__CI=idx;
     var q=window.__QD[idx];populateFields(q,window.__CT);updateLabels(window.__CT);
-    var qn=$qs('[id$="litQNum"]');if(qn)qn.textContent=idx+1;
     document.querySelectorAll('.qb-nav-item').forEach(function(el,i){
         el.className='qb-nav-item'+(i===idx?' active':'')+(window.__QD[i]&&window.__QD[i].saved?' done':'');
     });
-    var bp=$qs('[id$="btnPrev"]'),bn=$qs('[id$="btnNext"]');
-    if(bp)bp.disabled=(idx===0);if(bn)bn.disabled=(idx===window.__QD.length-1);
+    updateNavLabel();
     updateProgress();return false;
 }
 
@@ -1384,10 +1552,32 @@ function switchQuestionType(){
     $id('sectionTF').style.display=(v==='True/False')?'block':'none';
     $id('sectionMS').style.display=(v==='Multiselect')?'block':'none';
     $id('sectionFIB').style.display=(v==='Drag & Drop')?'block':'none';
+    // Show/hide Add Blank in toolbar
+    var isFIB=(v==='Drag & Drop');
+    document.querySelectorAll('.qb-fib-only').forEach(function(el){el.style.display=isFIB?'':'none';});
 }
 function updateAnswerCards(){
-    document.querySelectorAll('#sectionMCQ .qb-opt').forEach(function(o){o.classList.remove('correct');});
-    document.querySelectorAll('#sectionMCQ .qb-opt input[type="radio"]').forEach(function(r){if(r.checked)r.closest('.qb-opt').classList.add('correct');});
+    document.querySelectorAll('#sectionMCQ .qb-opt').forEach(function(o){
+        o.classList.remove('correct');
+        // Toggle has-text based on whether the option input has text
+        var inp=o.querySelector('.qb-opt-input');
+        if(inp&&inp.value.trim())o.classList.add('has-text');
+        else o.classList.remove('has-text');
+    });
+    document.querySelectorAll('#sectionMCQ .qb-opt input[type="radio"]').forEach(function(r){
+        if(r.checked){
+            var card=r.closest('.qb-opt');
+            // Only mark correct if the option has text
+            var inp=card.querySelector('.qb-opt-input');
+            if(inp&&inp.value.trim())card.classList.add('correct');
+        }
+    });
+}
+function selectCorrectOpt(el){
+    var card=el.closest('.qb-opt');
+    var radio=card.querySelector('input[type="radio"]');
+    if(radio){radio.checked=true;updateAnswerCards();}
+    if(window.__QD&&window.__QD[window.__CI]&&radio)window.__QD[window.__CI].correct=radio.value;
 }
 function updateTFCards(){
     document.querySelectorAll('.qb-tf-card').forEach(function(c){c.classList.remove('selected');});
@@ -1400,28 +1590,47 @@ function updateMSCards(){
 }
 function addBlank(){
     var btn=$id('btnAddBlank');if(btn.classList.contains('disabled'))return;
-    var ta=$id(SRV.txtQ);if(!ta)return;
-    var text=ta.value,count=(text.match(/\[Blank \d\]/g)||[]).length;
-    if(count>=4)return;var ins='[Blank '+(count+1)+']';
-    var s=ta.selectionStart,e=ta.selectionEnd;
-    ta.value=text.substring(0,s)+ins+text.substring(e);
-    ta.selectionStart=ta.selectionEnd=s+ins.length;ta.focus();updateFibUI();
+    var ed=document.getElementById('qbRteEditor');if(!ed)return;
+    var text=ed.innerText||'';
+    var count=(text.match(/\[Blank \d\]/g)||[]).length;
+    if(count>=4)return;
+    var blankTag='[Blank '+(count+1)+']';
+    // Insert a styled blank element into contenteditable
+    ed.focus();
+    var sel=window.getSelection();
+    var span=document.createElement('span');
+    span.className='rte-blank-chip';
+    span.contentEditable='false';
+    span.setAttribute('data-blank',blankTag);
+    span.textContent='_______';
+    if(sel.rangeCount){
+        var range=sel.getRangeAt(0);
+        range.deleteContents();
+        range.insertNode(span);
+        // Move cursor after the blank
+        range.setStartAfter(span);range.setEndAfter(span);
+        sel.removeAllRanges();sel.addRange(range);
+    } else {
+        ed.appendChild(span);
+    }
+    rteSync();updateFibUI();
 }
 function onFibWordChange(){updateFibMappings();updateFibPreview();}
 function updateFibUI(){
-    var ta=$id(SRV.txtQ);if(!ta)return;
-    var blanks=(ta.value.match(/\[Blank \d\]/g)||[]),count=blanks.length;
+    var text=rteGetText();
+    var blanks=(text.match(/\[Blank \d\]/g)||[]),count=blanks.length;
     var numEl=$id('blankNum');if(numEl)numEl.textContent=count;
     var ctr=$qs('.fib-counter');if(ctr)ctr.classList.toggle('full',count>=4);
     var btn=$id('btnAddBlank');
-    if(btn){if(count>=4){btn.classList.add('disabled');$id('blankWarning').style.display='flex';}else{btn.classList.remove('disabled');$id('blankWarning').style.display='none';}}
+    var warn=$id('blankWarning');
+    if(btn){if(count>=4){btn.classList.add('disabled');if(warn)warn.style.display='flex';}else{btn.classList.remove('disabled');if(warn)warn.style.display='none';}}
     var ms=$id('fibMappingSection'),ps=$id('fibPreviewSection');
-    if(count>0){ms.style.display='block';ps.style.display='block';updateFibMappings();updateFibPreview();}
-    else{ms.style.display='none';ps.style.display='none';}
+    if(count>0){if(ms)ms.style.display='block';if(ps)ps.style.display='block';updateFibMappings();updateFibPreview();}
+    else{if(ms)ms.style.display='none';if(ps)ps.style.display='none';}
 }
 function updateFibMappings(){
-    var ta=$id(SRV.txtQ);if(!ta)return;
-    var blanks=(ta.value.match(/\[Blank \d\]/g)||[]),words=[];
+    var text=rteGetText();
+    var blanks=(text.match(/\[Blank \d\]/g)||[]),words=[];
     document.querySelectorAll('.fib-word-input').forEach(function(i){if(i.value.trim())words.push(i.value.trim());});
     var container=$id('fibMappings');
     /* Use the stored index map for the current language — not the live DOM — so EN and BM are independent */
@@ -1442,15 +1651,17 @@ function validateFibMapping(){
     $id('fibMappingError').style.display=dup?'flex':'none';
 }
 function updateFibPreview(){
-    var ta=$id(SRV.txtQ);if(!ta)return;
-    var text=ta.value||'',html=text.replace(/\[Blank \d\]/g,'<span class="fib-blank">_____</span>');
+    var text=rteGetText();
+    var html=text.replace(/\[Blank \d\]/g,'<span class="fib-blank">_____</span>');
     $id('fibPreviewText').innerHTML=html||'<em style="color:var(--tc-muted);"><%: T("Type your question with blanks...","Taip soalan anda dengan tempat kosong...") %></em>';
     var words=[];document.querySelectorAll('.fib-word-input').forEach(function(i){if(i.value.trim())words.push(i.value.trim());});
     $id('fibPreviewWords').innerHTML=words.length?words.map(function(w){return'<span class="qb-fib-chip">'+w+'</span>';}).join(''):'<em style="font-size:.78rem;color:var(--tc-muted);"><%: T("Add words to Word Bank above","Tambah perkataan ke Bank Perkataan di atas") %></em>';
 }
 function updateCharCounts(){
-    var q=$id(SRV.txtQ),ce=$id(SRV.txtCE),we=$id(SRV.txtWE);
-    if(q)$id('qCharCount').textContent=q.value.length+' / 500';
+    var ed=document.getElementById('qbRteEditor');
+    var qLen=ed?(ed.innerText||'').length:0;
+    $id('qCharCount').textContent=qLen+' / 500';
+    var ce=$id(SRV.txtCE),we=$id(SRV.txtWE);
     if(ce)$id('ceCharCount').textContent=ce.value.length+' / 500';
     if(we)$id('weCharCount').textContent=we.value.length+' / 500';
 }
@@ -1565,14 +1776,8 @@ function clientAddQuestion(){
     window.__CI=newIdx;
     populateFields(window.__QD[newIdx],window.__CT);
     updateLabels(window.__CT);
-    /* Rebuild the nav list in-place */
     rebuildNavList();
-    /* Update header question number */
-    var qn=$qs('[id$="litQNum"]');if(qn)qn.textContent=newIdx+1;
-    /* Update prev/next states */
-    var bp=$qs('[id$="btnPrev"]'),bn=$qs('[id$="btnNext"]');
-    if(bp)bp.disabled=(newIdx===0);
-    if(bn)bn.disabled=(newIdx>=window.__QD.length-1);
+    updateNavLabel();
     updateProgress();
 }
 
@@ -1655,7 +1860,23 @@ window.addEventListener('load',function(){
         card.style.cursor='pointer';
     });
     document.querySelectorAll('#sectionMCQ .qb-opt input[type="radio"]').forEach(function(r){r.addEventListener('change',updateAnswerCards);});
+    document.querySelectorAll('#sectionMCQ .qb-opt-input').forEach(function(inp){inp.addEventListener('input',updateAnswerCards);});
     document.querySelectorAll('textarea').forEach(function(ta){ta.addEventListener('input',function(){updateCharCounts();updateFibUI();});});
+
+    /* Wire RTE editor events */
+    var rteEd=document.getElementById('qbRteEditor');
+    if(rteEd){
+        rteEd.addEventListener('input',function(){rteSync();updateFibUI();});
+        rteEd.addEventListener('keyup',rteUpdateToolbar);
+        rteEd.addEventListener('mouseup',rteUpdateToolbar);
+        rteEd.addEventListener('keydown',function(e){
+            if(e.ctrlKey||e.metaKey){
+                if(e.key==='b'){e.preventDefault();rteExec('bold');}
+                if(e.key==='i'){e.preventDefault();rteExec('italic');}
+                if(e.key==='u'){e.preventDefault();rteExec('underline');}
+            }
+        });
+    }
 
     var form=document.querySelector('form');
     if(form)form.addEventListener('submit',flushToServer);
@@ -1678,6 +1899,80 @@ window.addEventListener('load',function(){
     if(bp)bp.disabled=(window.__CI===0);
     if(bn)bn.disabled=(window.__CI>=window.__QD.length-1);
 });
+
+/* ═══ UNSAVED CHANGES DETECTION ═══════════════════════════ */
+(function(){
+    var dirty=false;
+    var pendingUrl='';
+    var submitting=false;
+
+    // Mark dirty on any input/change in the editor area
+    var editorBody=document.querySelector('.qb-editor-body');
+    if(editorBody){
+        editorBody.addEventListener('input',function(){dirty=true;},true);
+        editorBody.addEventListener('change',function(){dirty=true;},true);
+    }
+    // Also mark dirty on RTE input
+    var rte=document.getElementById('qbRteEditor');
+    if(rte)rte.addEventListener('input',function(){dirty=true;});
+    // Mark dirty on image upload/remove
+    var imgInput=document.getElementById('qbImgInput');
+    if(imgInput)imgInput.addEventListener('change',function(){dirty=true;});
+    // Mark dirty on question type/difficulty change
+    var propsBody=document.querySelector('.qb-props-body');
+    if(propsBody)propsBody.addEventListener('change',function(){dirty=true;},true);
+    // Mark dirty on add question / delete question
+    var origAdd=window.clientAddQuestion;
+    window.clientAddQuestion=function(){dirty=true;if(origAdd)origAdd();};
+
+    // Clear dirty on successful submit
+    var submitBtn=document.querySelector('[id$="btnSubmitQuiz"]');
+    if(submitBtn)submitBtn.addEventListener('click',function(){submitting=true;});
+
+    // Clear dirty when success overlay shows
+    var obs=new MutationObserver(function(){
+        if(document.getElementById('qbSuccessOverlay')&&document.getElementById('qbSuccessOverlay').classList.contains('open')){
+            dirty=false;submitting=true;
+        }
+    });
+    var successEl=document.getElementById('qbSuccessOverlay');
+    if(successEl)obs.observe(successEl,{attributes:true,attributeFilter:['class']});
+
+    // Browser native beforeunload
+    window.addEventListener('beforeunload',function(e){
+        if(dirty&&!submitting){e.preventDefault();e.returnValue='';}
+    });
+
+    // Intercept sidebar links
+    document.querySelectorAll('.sb-sidebar-item').forEach(function(link){
+        link.addEventListener('click',function(e){
+            if(!dirty||submitting)return; // allow navigation
+            e.preventDefault();
+            e.stopPropagation();
+            pendingUrl=link.getAttribute('href')||link.href;
+            document.getElementById('qbUnsavedOverlay').classList.add('open');
+        });
+    });
+
+    // Modal confirm — navigate away
+    var confirmBtn=document.getElementById('qbUnsavedConfirm');
+    if(confirmBtn)confirmBtn.addEventListener('click',function(){
+        dirty=false;
+        document.getElementById('qbUnsavedOverlay').classList.remove('open');
+        if(pendingUrl)window.location.href=pendingUrl;
+    });
+
+    // Expose close function
+    window.closeUnsavedModal=function(){
+        document.getElementById('qbUnsavedOverlay').classList.remove('open');
+        pendingUrl='';
+    };
+
+    // Close on Escape
+    document.addEventListener('keydown',function(e){
+        if(e.key==='Escape'&&document.getElementById('qbUnsavedOverlay').classList.contains('open'))closeUnsavedModal();
+    });
+})();
 </script>
 </asp:Content>
 

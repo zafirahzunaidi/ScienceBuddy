@@ -43,27 +43,14 @@ namespace ScienceBuddy.Teacher
             var master = (ScienceBuddy.SiteMaster)Master;
             master.LayoutMode = "Sidebar";
 
+            // Always resolve teacher certification status (needed for every request)
+            if (!AuthorizeTeacher()) return;
+
             // Handle edit modal postback
             string eventTarget = Request["__EVENTTARGET"];
             string eventArg = Request["__EVENTARGUMENT"];
             if (eventTarget == "LoadEdit" && !string.IsNullOrEmpty(eventArg))
             {
-                // Re-read certification status for this code path
-                try
-                {
-                    using (var conn = new SqlConnection(ConnStr))
-                    {
-                        conn.Open();
-                        using (var cmd = new SqlCommand("SELECT [status] FROM dbo.[Teacher] WHERE [userId]=@u", conn))
-                        {
-                            cmd.Parameters.AddWithValue("@u", Session["userId"].ToString());
-                            var val = cmd.ExecuteScalar();
-                            _isCertified = val != null && val != DBNull.Value &&
-                                val.ToString().Equals("Certified", StringComparison.OrdinalIgnoreCase);
-                        }
-                    }
-                }
-                catch { _isCertified = false; }
                 LoadEditForm(eventArg, Session["userId"].ToString());
                 if (!IsPostBack) { LoadFilterDropdowns(); LoadMaterials(); }
                 return;
@@ -71,7 +58,6 @@ namespace ScienceBuddy.Teacher
 
             if (!IsPostBack)
             {
-                if (!AuthorizeTeacher()) return;
                 LoadFilterDropdowns();
                 SetTabUI();
                 LoadMaterials();

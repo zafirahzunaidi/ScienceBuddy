@@ -14,23 +14,56 @@ namespace ScienceBuddy.Teacher
         protected string CurrentLanguage { get { string l = Session["preferredLanguage"] as string; return string.IsNullOrEmpty(l) ? "EN" : l; } }
         protected string T(string en, string bm) { return CurrentLanguage == "BM" ? bm : en; }
         private string ConnStr => ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
-        private string ActiveTab { get { return ViewState["Tab"] as string ?? "Upcoming"; } set { ViewState["Tab"] = value; } }
 
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["userId"] == null || Session["role"]?.ToString() != "Teacher")
             { Response.Redirect("~/Login.aspx", false); Context.ApplicationInstance.CompleteRequest(); return; }
             var master = (ScienceBuddy.SiteMaster)Master; master.LayoutMode = "Sidebar";
-            if (!IsPostBack) { btnSchedule.Text = T("Schedule", "Jadualkan"); btnStartLive.Text = T("Start Live", "Mulakan Langsung"); btnTabUpcoming.Text = T("Upcoming", "Akan Datang"); btnTabHistory.Text = T("History", "Sejarah"); LoadPage(); }
+            if (!IsPostBack)
+            {
+                btnSchedule.Text = T("Schedule", "Jadualkan");
+                btnStartLive.Text = T("Start Live", "Mulakan Langsung");
+                hidLicenseStatus.Value = GetTeacherLicenseStatus();
+                LoadPage();
+            }
+        }
+
+        private string GetTeacherLicenseStatus()
+        {
+            try
+            {
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand("SELECT [status] FROM dbo.[Teacher] WHERE [userId]=@u", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@u", Session["userId"].ToString());
+                        var val = cmd.ExecuteScalar();
+                        return val != null && val != DBNull.Value ? val.ToString() : "";
+                    }
+                }
+            }
+            catch { return ""; }
         }
 
         private void LoadPage()
         {
             string teacherId = GetTeacherId();
-            if (string.IsNullOrEmpty(teacherId)) return;
             LoadSubtopics();
-            LoadStats(teacherId);
-            LoadSessions(teacherId);
+            if (!string.IsNullOrEmpty(teacherId))
+            {
+                LoadStats(teacherId);
+                LoadBothTabs(teacherId);
+            }
+            else
+            {
+                // Pending or no teacher record — show empty states for both tabs
+                pnlListUpcoming.Visible = false;
+                pnlUpcomingEmpty.Visible = true;
+                pnlListHistory.Visible = false;
+                pnlHistoryEmpty.Visible = true;
+            }
         }
 
         private string GetTeacherId()
@@ -71,24 +104,50 @@ namespace ScienceBuddy.Teacher
         private string Cnt(SqlConnection conn, string sql, string tid)
         { using (var cmd = new SqlCommand(sql, conn)) { cmd.Parameters.AddWithValue("@t", tid); return Convert.ToInt32(cmd.ExecuteScalar()).ToString(); } }
 
-        private void LoadSessions(string teacherId)
+        private void LoadBothTabs(string teacherId)
         {
-            bool upcoming = ActiveTab == "Upcoming";
-            btnTabUpcoming.CssClass = "ls-tab" + (upcoming ? " active" : "");
-            btnTabHistory.CssClass = "ls-tab" + (!upcoming ? " active" : "");
-
-            string sql = @"SELECT lcs.[sessionId],lcs.[sessionTitle],lcs.[startDateTime],lcs.[endDateTime],lcs.[status],
-                ISNULL(st.[subtopicTitleEN],'') AS topic,
-                (SELECT COUNT(*) FROM dbo.[LiveSessionParticipant] WHERE [sessionId]=lcs.[sessionId]) AS students
-                FROM dbo.[LiveConsultationSession] lcs
-                LEFT JOIN dbo.[Subtopic] st ON st.[subtopicId]=lcs.[subtopicId]
-                WHERE lcs.[teacherId]=@t" + (upcoming ? " AND lcs.[startDateTime]>GETDATE() AND ISNULL(lcs.[status],'Scheduled')<>'Cancelled'" : " AND (lcs.[endDateTime]<GETDATE() OR lcs.[status]='Cancelled')") + " ORDER BY lcs.[startDateTime]" + (upcoming ? " ASC" : " DESC");
-
-            var list = new List<object>();
             using (var conn = new SqlConnection(ConnStr))
             {
                 conn.Open();
-                using (var cmd = new SqlCommand(sql, conn))
+
+                // Upcoming
+                string sqlUp = @"SELECT lcs.[sessionId],lcs.[sessionTitle],lcs.[startDateTime],lcs.[endDateTime],lcs.[status],
+                    ISNULL(st.[subtopicTitleEN],'') AS topic,
+                    (SELECT COUNT(*) FROM dbo.[LiveSessionParticipant] WHERE [sessionId]=lcs.[sessionId]) AS students
+                    FROM dbo.[LiveConsultationSession] lcs
+                    LEFT JOIN dbo.[Subtopic] st ON st.[subtopicId]=lcs.[subtopicId]
+                    WHERE lcs.[teacherId]=@t AND lcs.[startDateTime]>GETDATE() AND ISNULL(lcs.[status],'Scheduled')<>'Cancelled'
+                    ORDER BY lcs.[startDateTime] ASC";
+
+                var upList = new List<object>();
+                using (var cmd = new SqlCommand(sqlUp, conn))
+                {
+                    cmd.Parameters.AddWithValue("@t", teacherId);
+                    using (var r = cmd.ExecuteReader()) while (r.Read())
+                    {
+                        DateTime start = r["startDateTime"] != DBNull.Value ? Convert.ToDateTime(r["startDateTime"]) : DateTime.Now;
+                        DateTime end = r["endDateTime"] != DBNull.Value ? Convert.ToDateTime(r["endDateTime"]) : start;
+                        string status = r["status"]?.ToString() ?? "Scheduled";
+                        string badgeCss, badgeLabel;
+                        if (status.Equals("Live", StringComparison.OrdinalIgnoreCase)) { badgeCss = "ls-badge-live"; badgeLabel = "🔴 " + T("LIVE NOW", "LANGSUNG"); }
+                        else { badgeCss = "ls-badge-upcoming"; badgeLabel = T("Upcoming", "Akan Datang"); }
+                        upList.Add(new { sessionId = r["sessionId"].ToString(), title = r["sessionTitle"]?.ToString() ?? "", day = start.Day.ToString(), month = start.ToString("MMM").ToUpper(), timeRange = start.ToString("h:mm tt") + " – " + end.ToString("h:mm tt"), topic = r["topic"]?.ToString() ?? "", students = Convert.ToInt32(r["students"]), duration = "", badgeCss, badgeLabel, rawStart = start.ToString("yyyy-MM-dd HH:mm"), rawEnd = end.ToString("yyyy-MM-dd HH:mm") });
+                    }
+                }
+                if (upList.Count > 0) { pnlListUpcoming.Visible = true; pnlUpcomingEmpty.Visible = false; rptUpcoming.DataSource = upList; rptUpcoming.DataBind(); }
+                else { pnlListUpcoming.Visible = false; pnlUpcomingEmpty.Visible = true; }
+
+                // History
+                string sqlHist = @"SELECT lcs.[sessionId],lcs.[sessionTitle],lcs.[startDateTime],lcs.[endDateTime],lcs.[status],
+                    ISNULL(st.[subtopicTitleEN],'') AS topic,
+                    (SELECT COUNT(*) FROM dbo.[LiveSessionParticipant] WHERE [sessionId]=lcs.[sessionId]) AS students
+                    FROM dbo.[LiveConsultationSession] lcs
+                    LEFT JOIN dbo.[Subtopic] st ON st.[subtopicId]=lcs.[subtopicId]
+                    WHERE lcs.[teacherId]=@t AND (lcs.[endDateTime]<GETDATE() OR lcs.[status]='Cancelled')
+                    ORDER BY lcs.[startDateTime] DESC";
+
+                var histList = new List<object>();
+                using (var cmd = new SqlCommand(sqlHist, conn))
                 {
                     cmd.Parameters.AddWithValue("@t", teacherId);
                     using (var r = cmd.ExecuteReader()) while (r.Read())
@@ -98,25 +157,15 @@ namespace ScienceBuddy.Teacher
                         int mins = (int)(end - start).TotalMinutes;
                         string status = r["status"]?.ToString() ?? "Scheduled";
                         string badgeCss, badgeLabel;
-                        if (status.Equals("Live", StringComparison.OrdinalIgnoreCase)) { badgeCss = "ls-badge-live"; badgeLabel = "🔴 " + T("LIVE NOW", "LANGSUNG"); }
-                        else if (upcoming) { badgeCss = "ls-badge-upcoming"; badgeLabel = T("Upcoming", "Akan Datang"); }
-                        else if (status.Equals("Cancelled", StringComparison.OrdinalIgnoreCase)) { badgeCss = "ls-badge-cancelled"; badgeLabel = T("Cancelled", "Dibatalkan"); }
+                        if (status.Equals("Cancelled", StringComparison.OrdinalIgnoreCase)) { badgeCss = "ls-badge-cancelled"; badgeLabel = T("Cancelled", "Dibatalkan"); }
                         else { badgeCss = "ls-badge-completed"; badgeLabel = T("Completed", "Selesai"); }
-                        list.Add(new { sessionId = r["sessionId"].ToString(), title = r["sessionTitle"]?.ToString() ?? "", day = start.Day.ToString(), month = start.ToString("MMM").ToUpper(), timeRange = start.ToString("h:mm tt") + " – " + end.ToString("h:mm tt"), topic = r["topic"]?.ToString() ?? "", students = Convert.ToInt32(r["students"]), duration = !upcoming ? mins + " min" : "", badgeCss, badgeLabel, isUpcoming = upcoming, rawStart = start.ToString("yyyy-MM-dd HH:mm"), rawEnd = end.ToString("yyyy-MM-dd HH:mm") });
+                        histList.Add(new { sessionId = r["sessionId"].ToString(), title = r["sessionTitle"]?.ToString() ?? "", day = start.Day.ToString(), month = start.ToString("MMM").ToUpper(), timeRange = start.ToString("h:mm tt") + " – " + end.ToString("h:mm tt"), topic = r["topic"]?.ToString() ?? "", students = Convert.ToInt32(r["students"]), duration = mins + " min", badgeCss, badgeLabel });
                     }
                 }
-            }
-
-            if (list.Count > 0) { pnlList.Visible = true; pnlEmpty.Visible = false; rptSessions.DataSource = list; rptSessions.DataBind(); }
-            else
-            {
-                pnlList.Visible = false; pnlEmpty.Visible = true;
-                litEmptyTitle.Text = upcoming ? T("No Upcoming Live Sessions", "Tiada Kelas Langsung Akan Datang") : T("No completed sessions yet.", "Tiada sesi selesai lagi.");
-                litEmptySub.Text = upcoming ? T("You haven't scheduled any live classes yet.", "Anda belum menjadualkan kelas langsung.") : T("Completed live classes will appear here.", "Kelas langsung yang selesai akan terpapar di sini.");
+                if (histList.Count > 0) { pnlListHistory.Visible = true; pnlHistoryEmpty.Visible = false; rptHistory.DataSource = histList; rptHistory.DataBind(); }
+                else { pnlListHistory.Visible = false; pnlHistoryEmpty.Visible = true; }
             }
         }
-
-        protected void btnTab_Click(object sender, EventArgs e) { ActiveTab = ((Button)sender).CommandArgument; LoadPage(); }
 
         protected void rptSessions_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
@@ -222,8 +271,10 @@ namespace ScienceBuddy.Teacher
             hidLiveDisplayName.Value = HttpUtility.HtmlEncode(teacherName);
             litLiveRoomTitle.Text = HttpUtility.HtmlEncode(title);
 
-            pnlList.Visible = false;
-            pnlEmpty.Visible = false;
+            pnlListUpcoming.Visible = false;
+            pnlUpcomingEmpty.Visible = false;
+            pnlListHistory.Visible = false;
+            pnlHistoryEmpty.Visible = false;
             pnlLiveRoom.Visible = true;
 
             hidToast.Value = T("Instant live session started successfully!", "Sesi langsung segera berjaya dimulakan!");

@@ -84,8 +84,6 @@
                         <%-- Default guest links --%>
                         <li role="listitem"><a runat="server" href="~/" class="nav-link">
                             <i class="bi bi-house nav-icon"></i> Home</a></li>
-                        <li role="listitem"><a runat="server" href="~/About" class="nav-link">
-                            <i class="bi bi-info-circle nav-icon"></i> About</a></li>
                         <li role="listitem"><a runat="server" href="~/Contact" class="nav-link">
                             <i class="bi bi-envelope nav-icon"></i> Contact</a></li>
                     </asp:ContentPlaceHolder>
@@ -129,7 +127,6 @@
                     &copy; <%: DateTime.Now.Year %> ScienceBuddy &mdash; Inspiring young scientists across Malaysia 🔬
                 </span>
                 <ul class="sb-footer-links">
-                    <li><a runat="server" href="~/About">About</a></li>
                     <li><a runat="server" href="~/Contact">Contact</a></li>
                     <li><a href="#">Privacy</a></li>
                     <li><a href="#">Terms</a></li>
@@ -293,7 +290,6 @@
                         &copy; <%: DateTime.Now.Year %> ScienceBuddy
                     </span>
                     <ul class="sb-footer-links">
-                        <li><a runat="server" href="~/About">About</a></li>
                         <li><a runat="server" href="~/Contact">Contact</a></li>
                         <li><a href="#">Help</a></li>
                     </ul>

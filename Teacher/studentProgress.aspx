@@ -80,6 +80,18 @@
 <asp:Content ID="cPageTitle" ContentPlaceHolderID="PageTitle" runat="server"><%: T("Student Progress","Prestasi Pelajar") %></asp:Content>
 
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
+
+<%-- Pending Verification State --%>
+<asp:Panel ID="pnlPending" runat="server" Visible="false">
+    <div style="display:flex;flex-direction:column;align-items:center;padding:3.5rem 2rem;text-align:center;">
+        <div style="font-size:3.5rem;margin-bottom:1rem;opacity:.85;">⏳</div>
+        <h2 style="font-size:1.15rem;font-weight:800;color:var(--sp-t);margin:0 0 .6rem;"><%: T("Verification Pending","Pengesahan Sedang Diproses") %></h2>
+        <p style="font-size:.88rem;color:var(--sp-m);max-width:480px;line-height:1.65;margin:0;"><%: T("Your Teaching License is still under review. You will be able to view student progress once your verification has been approved.","Lesen Mengajar anda masih dalam semakan. Anda akan dapat melihat prestasi pelajar setelah pengesahan anda diluluskan.") %></p>
+    </div>
+</asp:Panel>
+
+<%-- Main Content (hidden for Pending teachers) --%>
+<asp:Panel ID="pnlContent" runat="server">
 <div class="sp-header"><h1><i class="bi bi-bar-chart"></i> <%: T("Student Progress","Prestasi Pelajar") %></h1>
 <p><%: T("Monitor lesson completion and quiz performance across all students.","Pantau penyelesaian pelajaran dan prestasi kuiz semua pelajar.") %></p></div>
 
@@ -148,6 +160,7 @@
     <div class="sp-note"><%: T("Ranked by quiz performance. Only students with quiz attempts receive a rank. Practice quizzes excluded.","Dikedudukan mengikut prestasi kuiz. Hanya pelajar dengan cubaan kuiz menerima kedudukan. Kuiz latihan dikecualikan.") %></div>
     </asp:Panel>
 </div>
+</asp:Panel>
 </asp:Content>
 
 <asp:Content ID="cScripts" ContentPlaceHolderID="ScriptsContent" runat="server">

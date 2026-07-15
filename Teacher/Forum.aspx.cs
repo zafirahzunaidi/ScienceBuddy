@@ -45,8 +45,30 @@ namespace ScienceBuddy.Teacher
                 btnPost.Text   = T("Post Discussion", "Hantar Perbincangan");
                 btnReset.Text  = T("↺ Reset search", "↺ Set semula carian");
                 IsSearch       = false;
+
+                // Check Teaching License status
+                hidLicenseStatus.Value = GetTeacherLicenseStatus();
+
                 LoadPosts(searchTerm: "");
             }
+        }
+
+        private string GetTeacherLicenseStatus()
+        {
+            try
+            {
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand("SELECT [status] FROM dbo.[Teacher] WHERE [userId]=@u", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@u", Session["userId"].ToString());
+                        var val = cmd.ExecuteScalar();
+                        return val != null && val != DBNull.Value ? val.ToString() : "";
+                    }
+                }
+            }
+            catch { return ""; }
         }
 
         // ════════════════════════════════════════════════════════════

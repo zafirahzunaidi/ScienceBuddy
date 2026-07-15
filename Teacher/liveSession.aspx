@@ -93,6 +93,13 @@
 .ls-toast{background:var(--ts);color:#fff;padding:.65rem 1.1rem;border-radius:10px;font-size:.82rem;font-weight:600;display:flex;align-items:center;gap:6px;box-shadow:0 6px 18px rgba(16,185,129,.25);animation:lsFade .3s ease;}
 @media(max-width:900px){.ls-stats{grid-template-columns:repeat(2,1fr);}.ls-toolbar{flex-direction:column;align-items:stretch;}.ls-search{width:100%;}.ls-action-row{flex-wrap:wrap;}.ls-action-card{width:100%;height:auto;min-height:150px;}}
 @media(max-width:640px){.ls-stats{grid-template-columns:1fr;}.ls-card{flex-direction:column;}}
+/* Pending License Notice */
+.ls-pending-notice{display:flex;align-items:flex-start;gap:.75rem;padding:.85rem 1.1rem;margin-bottom:1.25rem;background:#FEF2F2;border:1.5px solid #FECACA;border-left:4px solid #DC2626;border-radius:10px;}
+.ls-pending-notice-icon{flex-shrink:0;width:32px;height:32px;border-radius:8px;background:#FEE2E2;color:#DC2626;display:flex;align-items:center;justify-content:center;font-size:1rem;}
+.ls-pending-notice-content{flex:1;min-width:0;}
+.ls-pending-notice-title{font-size:.84rem;font-weight:700;color:#991B1B;margin-bottom:2px;}
+.ls-pending-notice-msg{font-size:.78rem;color:#B91C1C;line-height:1.45;}
+.ls-action-card.ls-disabled{opacity:.5;cursor:not-allowed;pointer-events:none;filter:grayscale(.3);}
 </style>
 </asp:Content>
 
@@ -113,10 +120,20 @@
 </asp:Content>
 <asp:Content ID="cPageTitle" ContentPlaceHolderID="PageTitle" runat="server"><%: T("Live Sessions","Kelas Langsung") %></asp:Content>
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
+<asp:HiddenField ID="hidLicenseStatus" runat="server" Value="" />
 
 <%-- Header --%>
 <div class="ls-page-header">
     <div><h1><%: T("Live Sessions","Kelas Langsung") %></h1><p><%: T("Manage all your online classes, schedules, and previous sessions.","Urus semua kelas dalam talian, jadual, dan sesi terdahulu anda.") %></p></div>
+</div>
+
+<%-- Pending License Notice --%>
+<div id="lsPendingNotice" class="ls-pending-notice" style="display:none;">
+    <div class="ls-pending-notice-icon"><i class="bi bi-shield-exclamation"></i></div>
+    <div class="ls-pending-notice-content">
+        <div class="ls-pending-notice-title"><%: T("Verification Pending","Pengesahan Menunggu") %></div>
+        <div class="ls-pending-notice-msg"><%: T("Your Teaching License is still under review. Scheduling or starting live classes is temporarily unavailable until your verification has been approved.","Lesen Mengajar anda masih dalam semakan. Penjadualan atau permulaan kelas langsung tidak tersedia buat sementara waktu sehingga pengesahan anda diluluskan.") %></div>
+    </div>
 </div>
 
 <%-- Action Cards --%>
@@ -147,16 +164,17 @@
     <div class="ls-stat stat-students"><div class="ls-stat-icon" style="background:#E0E7FF;color:#4338CA;"><i class="bi bi-people"></i></div><div class="ls-stat-val"><asp:Literal ID="litStudentsJoined" runat="server" Text="0" /></div><div class="ls-stat-label"><%: T("Students Joined","Pelajar Menyertai") %></div></div>
 </div>
 
-<%-- Tabs --%>
+<%-- Tabs (client-side switching, no postback) --%>
 <div class="ls-tabs">
-    <asp:Button ID="btnTabUpcoming" runat="server" CssClass="ls-tab active" OnClick="btnTab_Click" CommandArgument="Upcoming" CausesValidation="false" />
-    <asp:Button ID="btnTabHistory" runat="server" CssClass="ls-tab" OnClick="btnTab_Click" CommandArgument="History" CausesValidation="false" />
+    <button type="button" class="ls-tab active" id="btnTabUpcoming" onclick="switchLsTab('upcoming')"><%: T("Upcoming","Akan Datang") %></button>
+    <button type="button" class="ls-tab" id="btnTabHistory" onclick="switchLsTab('history')"><%: T("History","Sejarah") %></button>
 </div>
 
-<%-- Session List --%>
-<asp:Panel ID="pnlList" runat="server" Visible="false">
+<%-- Upcoming Session List --%>
+<div id="lsTabUpcoming">
+<asp:Panel ID="pnlListUpcoming" runat="server" Visible="false">
     <div class="ls-cards">
-        <asp:Repeater ID="rptSessions" runat="server" OnItemCommand="rptSessions_ItemCommand">
+        <asp:Repeater ID="rptUpcoming" runat="server" OnItemCommand="rptSessions_ItemCommand">
             <ItemTemplate>
                 <div class="ls-card">
                     <div class="ls-card-date"><span class="ls-card-day"><%# Eval("day") %></span><span class="ls-card-month"><%# Eval("month") %></span></div>
@@ -165,16 +183,14 @@
                         <div class="ls-card-meta">
                             <span><i class="bi bi-clock"></i> <%# Eval("timeRange") %></span>
                             <span><i class="bi bi-bookmark"></i> <%# HttpUtility.HtmlEncode(Eval("topic")) %></span>
-                            <%# !Convert.ToBoolean(Eval("isUpcoming")) && Convert.ToInt32(Eval("students")) > 0 ? "<span><i class='bi bi-people'></i> " + Eval("students") + " " + T("students","pelajar") + "</span>" : "" %>
-                            <%# Eval("duration").ToString()!="" ? "<span><i class='bi bi-hourglass-split'></i> " + Eval("duration") + "</span>" : "" %>
                         </div>
                         <span class='ls-badge <%# Eval("badgeCss") %>'><%# Eval("badgeLabel") %></span>
                     </div>
                     <div class="ls-card-actions">
-                        <asp:LinkButton ID="btnReschedule" runat="server" CommandName="Reschedule" CommandArgument='<%# Eval("sessionId") + "|" + Eval("rawStart") + "|" + Eval("rawEnd") + "|" + HttpUtility.HtmlEncode(Eval("title")) %>' CssClass="ls-act ls-act-edit" CausesValidation="false" Visible='<%# Eval("isUpcoming").ToString()=="True" %>'>
+                        <asp:LinkButton ID="btnReschedule" runat="server" CommandName="Reschedule" CommandArgument='<%# Eval("sessionId") + "|" + Eval("rawStart") + "|" + Eval("rawEnd") + "|" + HttpUtility.HtmlEncode(Eval("title")) %>' CssClass="ls-act ls-act-edit" CausesValidation="false">
                             <i class="bi bi-calendar2-plus"></i> <%: T("Reschedule","Jadual Semula") %>
                         </asp:LinkButton>
-                        <asp:LinkButton ID="btnDel" runat="server" CommandName="Cancel" CommandArgument='<%# Eval("sessionId") + "|" + HttpUtility.HtmlEncode(Eval("title")) + "|" + Eval("timeRange") %>' CssClass="ls-act ls-act-cancel" CausesValidation="false" Visible='<%# Eval("isUpcoming").ToString()=="True" %>'>
+                        <asp:LinkButton ID="btnDel" runat="server" CommandName="Cancel" CommandArgument='<%# Eval("sessionId") + "|" + HttpUtility.HtmlEncode(Eval("title")) + "|" + Eval("timeRange") %>' CssClass="ls-act ls-act-cancel" CausesValidation="false">
                             <i class="bi bi-x-lg"></i> <%: T("Cancel","Batal") %>
                         </asp:LinkButton>
                     </div>
@@ -183,15 +199,46 @@
         </asp:Repeater>
     </div>
 </asp:Panel>
-
-<asp:Panel ID="pnlEmpty" runat="server" Visible="false">
+<asp:Panel ID="pnlUpcomingEmpty" runat="server" Visible="false">
     <div class="ls-empty">
         <i class="bi bi-calendar2-x"></i>
-        <div class="ls-empty-title"><asp:Literal ID="litEmptyTitle" runat="server" /></div>
-        <div class="ls-empty-sub"><asp:Literal ID="litEmptySub" runat="server" /></div>
-        <a href="#" class="ls-empty-btn" onclick="document.getElementById('scheduleModal').style.display='flex';return false;"><i class="bi bi-plus-lg"></i> <%: T("Schedule Live Class","Jadualkan Kelas Langsung") %></a>
+        <div class="ls-empty-title"><%: T("No Upcoming Sessions","Tiada Sesi Akan Datang") %></div>
+        <div class="ls-empty-sub"><%: T("You do not have any upcoming live classes scheduled.","Anda tidak mempunyai kelas langsung yang dijadualkan.") %></div>
     </div>
 </asp:Panel>
+</div>
+
+<%-- History Session List --%>
+<div id="lsTabHistory" style="display:none;">
+<asp:Panel ID="pnlListHistory" runat="server" Visible="false">
+    <div class="ls-cards">
+        <asp:Repeater ID="rptHistory" runat="server">
+            <ItemTemplate>
+                <div class="ls-card">
+                    <div class="ls-card-date"><span class="ls-card-day"><%# Eval("day") %></span><span class="ls-card-month"><%# Eval("month") %></span></div>
+                    <div class="ls-card-body">
+                        <div class="ls-card-title"><%# HttpUtility.HtmlEncode(Eval("title")) %></div>
+                        <div class="ls-card-meta">
+                            <span><i class="bi bi-clock"></i> <%# Eval("timeRange") %></span>
+                            <span><i class="bi bi-bookmark"></i> <%# HttpUtility.HtmlEncode(Eval("topic")) %></span>
+                            <%# Convert.ToInt32(Eval("students")) > 0 ? "<span><i class='bi bi-people'></i> " + Eval("students") + " students</span>" : "" %>
+                            <%# Eval("duration").ToString()!="" ? "<span><i class='bi bi-hourglass-split'></i> " + Eval("duration") + "</span>" : "" %>
+                        </div>
+                        <span class='ls-badge <%# Eval("badgeCss") %>'><%# Eval("badgeLabel") %></span>
+                    </div>
+                </div>
+            </ItemTemplate>
+        </asp:Repeater>
+    </div>
+</asp:Panel>
+<asp:Panel ID="pnlHistoryEmpty" runat="server" Visible="false">
+    <div class="ls-empty">
+        <i class="bi bi-clock-history"></i>
+        <div class="ls-empty-title"><%: T("No Session History","Tiada Sejarah Sesi") %></div>
+        <div class="ls-empty-sub"><%: T("Your completed and cancelled live classes will appear here.","Kelas langsung yang selesai dan dibatalkan akan terpapar di sini.") %></div>
+    </div>
+</asp:Panel>
+</div>
 
 <%-- Start Instant Class Modal --%>
 <div id="instantModal" class="ls-modal-overlay" style="display:none;">
@@ -312,6 +359,23 @@
 <asp:Content ID="cScripts" ContentPlaceHolderID="ScriptsContent" runat="server">
 <script src="https://meet.jit.si/external_api.js"></script>  <%-- embedded live session --%>
 <script>
+function switchLsTab(tab){
+    var up=document.getElementById('lsTabUpcoming');
+    var hi=document.getElementById('lsTabHistory');
+    var btnU=document.getElementById('btnTabUpcoming');
+    var btnH=document.getElementById('btnTabHistory');
+    if(tab==='history'){
+        if(up)up.style.display='none';
+        if(hi)hi.style.display='';
+        if(btnU)btnU.className='ls-tab';
+        if(btnH)btnH.className='ls-tab active';
+    }else{
+        if(up)up.style.display='';
+        if(hi)hi.style.display='none';
+        if(btnU)btnU.className='ls-tab active';
+        if(btnH)btnH.className='ls-tab';
+    }
+}
 window.addEventListener('load',function(){
     var h=document.getElementById('<%=hidToast.ClientID%>');
     if(h&&h.value){var w=document.getElementById('lsToast'),t=document.createElement('div');t.className='ls-toast';t.innerHTML='<i class="bi bi-check-circle-fill"></i> '+h.value;w.appendChild(t);h.value='';setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .3s';},2500);setTimeout(function(){t.remove();},3e3);}
@@ -323,6 +387,14 @@ window.addEventListener('load',function(){
     if(cm&&cm.value==='1'){document.getElementById('cancelModal').style.display='flex';cm.value='';}
     var im=document.getElementById('<%=hidShowInstantModal.ClientID%>');
     if (im && im.value === '1') { document.getElementById('instantModal').style.display = 'flex'; im.value = ''; }
+
+    // Pending License: show notice + disable action cards
+    var lic=document.getElementById('<%=hidLicenseStatus.ClientID%>');
+    if(lic&&lic.value==='Pending'){
+        var notice=document.getElementById('lsPendingNotice');if(notice)notice.style.display='flex';
+        var cards=document.querySelectorAll('.ls-action-card');
+        for(var i=0;i<cards.length;i++){cards[i].classList.add('ls-disabled');cards[i].removeAttribute('onclick');}
+    }
 
     var jc = document.getElementById('jitsi-container-teacher');  <%-- embedded live session --%>
     if (jc) {

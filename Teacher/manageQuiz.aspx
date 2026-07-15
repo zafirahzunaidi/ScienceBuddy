@@ -59,9 +59,38 @@
 .mq-dcard-actions{padding:.75rem 1.2rem;border-top:1px solid #F3F4F6;}
 .mq-dcard-view{display:flex;align-items:center;justify-content:center;gap:5px;width:100%;padding:.55rem 0;border-radius:10px;background:#F0F7FF;color:var(--tc-info);font-size:.82rem;font-weight:700;text-decoration:none;border:1.5px solid #DBEAFE;transition:background .15s,border-color .15s;}
 .mq-dcard-view:hover{background:#DBEAFE;border-color:#93C5FD;text-decoration:none;color:var(--tc-info);}
+/* Practice Quiz card extras (metadata + edit/delete inside mq-dcard-body) */
+.pqm-meta{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-top:6px;}
+.pqm-diff,.pqm-lang,.pqm-count{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:6px;font-size:.72rem;font-weight:600;}
+.pqm-diff-easy{background:#D1FAE5;color:#047857;}
+.pqm-diff-medium{background:#FEF3C7;color:#B45309;}
+.pqm-diff-hard{background:#FEE2E2;color:#B91C1C;}
+.pqm-lang{background:#EFF6FF;color:#1D4ED8;}
+.pqm-count{background:#F3F4F6;color:#374151;}
+.pqm-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-top:8px;}
+.pqm-btn{font-size:.75rem;font-weight:600;text-decoration:none;padding:4px 10px;border-radius:7px;border:1.5px solid;cursor:pointer;background:transparent;display:inline-flex;align-items:center;gap:3px;transition:background .15s;}
+.pqm-btn-edit{color:#6C63FF;border-color:#EDE9FE;background:#F5F3FF;}.pqm-btn-edit:hover{background:#EDE9FE;text-decoration:none;color:#6C63FF;}
+.pqm-btn-delete{color:#EF4444;border-color:#FEE2E2;background:#FEF2F2;}.pqm-btn-delete:hover{background:#FEE2E2;}
+/* Pending License Notice (Unit/Level tab — soft red) */
+.mq-pending-notice{display:flex;align-items:flex-start;gap:.75rem;padding:.85rem 1.1rem;margin-bottom:1.25rem;background:#FEF2F2;border:1.5px solid #FECACA;border-left:4px solid #DC2626;border-radius:10px;}
+.mq-pending-notice-icon{flex-shrink:0;width:32px;height:32px;border-radius:8px;background:#FEE2E2;color:#DC2626;display:flex;align-items:center;justify-content:center;font-size:1rem;}
+.mq-pending-notice-content{flex:1;min-width:0;}
+.mq-pending-notice-title{font-size:.84rem;font-weight:700;color:#991B1B;margin-bottom:2px;}
+.mq-pending-notice-msg{font-size:.78rem;color:#B91C1C;line-height:1.45;}
+/* Disabled Add button */
+.mq-ulq-btn-add.mq-btn-disabled{opacity:.5;cursor:not-allowed;pointer-events:none;background:#D1D5DB;border-color:#D1D5DB;color:#6B7280;box-shadow:none;}
+.mq-ulq-btn-add.mq-btn-disabled:hover{background:#D1D5DB;border-color:#D1D5DB;transform:none;box-shadow:none;}
+/* Disabled Create button */
+.mq-btn-create.mq-btn-disabled{opacity:.5;cursor:not-allowed;pointer-events:none;background:#9CA3AF;box-shadow:none;}
+/* View Quiz button — new class, replaces mq-dcard-view on both card types */
+.pq-btn-view{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:.55rem 0;border-radius:10px;background:#F0F7FF;color:var(--tc-info);font-size:.82rem;font-weight:700;text-decoration:none;border:1.5px solid #DBEAFE;transition:background .15s,border-color .15s;box-sizing:border-box;}
+.pq-btn-view:hover{background:#DBEAFE;border-color:#93C5FD;text-decoration:none;color:var(--tc-info);}
 /* Card Grid (My Quizzes) */
-.mq-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;padding:.25rem 0;}
-/* Status chips */
+.mq-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.1rem;padding:.25rem 0;}
+@media(max-width:1200px){.mq-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:900px){.mq-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:600px){.mq-grid{grid-template-columns:1fr;}}
+/* Status chips (filter bar) */
 .mq-chips{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap;}
 .mq-chip{display:inline-flex;align-items:center;padding:.4rem .9rem;border-radius:999px;font-size:.82rem;font-weight:600;cursor:pointer;border:1.5px solid var(--tc-border);background:var(--tc-card-bg);color:var(--tc-muted);transition:all .15s;text-decoration:none;}
 .mq-chip:hover{background:#F3F4F6;text-decoration:none;}
@@ -70,37 +99,12 @@
 .mq-chip[data-s="approved"].active{background:#D1FAE5;color:#047857;border-color:#6EE7B7;}
 .mq-chip[data-s="pending"].active{background:#FEF3C7;color:#B45309;border-color:#FCD34D;}
 .mq-chip[data-s="rejected"].active{background:#FEE2E2;color:#B91C1C;border-color:#FCA5A5;}
-/* Card accent top line */
-.mq-card{position:relative;overflow:hidden;}
-.mq-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
-.mq-card.accent-approved::before{background:#10B981;}
-.mq-card.accent-pending::before{background:#F59E0B;}
-.mq-card.accent-rejected::before{background:#EF4444;}
-.mq-card.accent-discover::before{background:var(--tc-primary);}
-@media(max-width:1200px){.mq-grid{grid-template-columns:repeat(3,1fr);}}
-@media(max-width:900px){.mq-grid{grid-template-columns:repeat(2,1fr);}}
-@media(max-width:600px){.mq-grid{grid-template-columns:1fr;}}
-.mq-card{min-width:0;max-width:none;background:var(--tc-card-bg);border:1.5px solid var(--tc-border);border-radius:16px;display:flex;flex-direction:column;box-shadow:0 2px 8px rgba(0,0,0,.03);transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden;}
-.mq-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
-.mq-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(108,99,255,.1);}
-.mq-card-header{padding:1rem 1.25rem .5rem;display:flex;justify-content:flex-end;}
-.mq-card-body{padding:0 1.25rem 1rem;flex:1;display:flex;flex-direction:column;gap:6px;}
-.mq-card-icon{width:44px;height:44px;border-radius:12px;background:#EDE9FE;color:var(--tc-primary);display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:4px;}
-.mq-card-title{font-size:1rem;font-weight:800;color:var(--tc-text);line-height:1.3;}
-.mq-card-category{font-size:.78rem;color:var(--tc-muted);font-weight:600;}
-.mq-card-meta{display:flex;flex-wrap:wrap;gap:8px;font-size:.76rem;color:var(--tc-muted);margin-top:6px;}
-.mq-card-meta span{display:inline-flex;align-items:center;gap:3px;}
-.mq-card-actions{display:flex;gap:6px;padding:.75rem 1.25rem;border-top:1px solid #F0EDFF;}
-.mq-act{font-size:.78rem;font-weight:600;text-decoration:none;padding:6px 11px;border-radius:8px;border:1.5px solid;cursor:pointer;background:transparent;display:inline-flex;align-items:center;gap:4px;transition:background .15s;}
-.mq-act-view{color:var(--tc-info);border-color:#DBEAFE;background:#F0F7FF;}.mq-act-view:hover{background:#DBEAFE;}
-.mq-act-edit{color:var(--tc-primary);border-color:#EDE9FE;background:#F5F3FF;}.mq-act-edit:hover{background:#EDE9FE;}
-.mq-act-delete{color:var(--tc-error);border-color:#FEE2E2;background:#FEF2F2;}.mq-act-delete:hover{background:#FEE2E2;}
-/* Badges */
+/* Shared badges used by other sections */
 .mq-badge{padding:3px 10px;border-radius:50px;font-size:.7rem;font-weight:700;}
 .mq-badge-pending{background:#FEF3C7;color:#B45309;}.mq-badge-approved{background:#D1FAE5;color:#047857;}.mq-badge-rejected{background:#FEE2E2;color:#B91C1C;}.mq-badge-active{background:#D1FAE5;color:#047857;}
 .mq-diff{padding:2px 8px;border-radius:6px;font-size:.7rem;font-weight:700;}
 .mq-diff-easy{background:#D1FAE5;color:#047857;}.mq-diff-medium{background:#FEF3C7;color:#B45309;}.mq-diff-hard{background:#FEE2E2;color:#B91C1C;}
-/* Empty */
+/* Empty state */
 .mq-empty{display:flex;flex-direction:column;align-items:center;padding:3.5rem;text-align:center;}
 .mq-empty-title{font-size:1rem;font-weight:700;color:var(--tc-text);}
 /* Table */
@@ -108,41 +112,220 @@
 .mq-tbl th{background:#F9FAFB;font-weight:700;color:var(--tc-text);padding:.75rem .85rem;text-align:left;border-bottom:2px solid var(--tc-border);font-size:.8rem;text-transform:uppercase;letter-spacing:.3px;}
 .mq-tbl td{padding:.75rem .85rem;border-bottom:1px solid #F3F4F6;color:var(--tc-text);vertical-align:middle;}
 .mq-tbl tr:hover td{background:#FAFAFA;}
+/* ── Practice Quiz Card ── */
+.pq-card{
+    background:#fff;border-radius:16px;border:1.5px solid #E5E7EB;
+    box-shadow:0 2px 10px rgba(0,0,0,.05);
+    display:flex;flex-direction:column;
+    overflow:hidden;min-width:0;
+    transition:transform .2s ease,box-shadow .2s ease;
+    position:relative;
+}
+.pq-card:hover{transform:translateY(-4px);box-shadow:0 10px 28px rgba(13,148,136,.13);}
+/* teal accent top bar — varies by status */
+.pq-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:#0D9488;}
+.pq-card.pq-accent-approved::before{background:#0D9488;}
+.pq-card.pq-accent-pending::before{background:#F59E0B;}
+.pq-card.pq-accent-rejected::before{background:#EF4444;}
+/* card top: icon left + status badge right */
+.pq-card-top{
+    padding:1.1rem 1.2rem .4rem;
+    display:flex;align-items:flex-start;justify-content:space-between;
+    gap:.5rem;
+}
+.pq-card-icon{
+    width:42px;height:42px;border-radius:12px;flex-shrink:0;
+    background:linear-gradient(135deg,#CCFBF1,#99F6E4);
+    color:#0D9488;
+    display:flex;align-items:center;justify-content:center;
+    font-size:1.25rem;
+}
+/* status badge */
+.pq-badge{padding:3px 10px;border-radius:50px;font-size:.7rem;font-weight:700;white-space:nowrap;}
+.pq-badge-approved{background:#D1FAE5;color:#047857;}
+.pq-badge-pending{background:#FEF3C7;color:#B45309;}
+.pq-badge-rejected{background:#FEE2E2;color:#B91C1C;}
+/* card body */
+.pq-card-body{padding:.3rem 1.2rem .9rem;flex:1;display:flex;flex-direction:column;gap:4px;}
+.pq-card-title{font-size:.98rem;font-weight:800;color:#1F2937;line-height:1.35;margin-bottom:2px;}
+.pq-card-category{font-size:.75rem;color:#6B7280;font-weight:600;letter-spacing:.2px;}
+/* metadata row */
+.pq-card-meta{
+    display:flex;flex-wrap:wrap;align-items:center;gap:6px;
+    margin-top:6px;
+}
+.pq-meta-chip{
+    display:inline-flex;align-items:center;gap:4px;
+    padding:3px 9px;border-radius:7px;
+    font-size:.74rem;font-weight:600;
+}
+.pq-meta-diff-easy{background:#D1FAE5;color:#047857;}
+.pq-meta-diff-medium{background:#FEF3C7;color:#B45309;}
+.pq-meta-diff-hard{background:#FEE2E2;color:#B91C1C;}
+.pq-meta-lang{background:#EFF6FF;color:#1D4ED8;}
+.pq-meta-count{background:#F3F4F6;color:#374151;}
+/* divider */
+.pq-card-divider{height:1px;background:#F3F4F6;margin:0 1.2rem;}
+/* edit / delete row */
+.pq-card-actions{
+    display:flex;align-items:center;justify-content:flex-end;
+    gap:6px;padding:.65rem 1.2rem .5rem;
+}
+.pq-act{
+    font-size:.77rem;font-weight:600;
+    text-decoration:none;padding:5px 11px;
+    border-radius:8px;border:1.5px solid;cursor:pointer;
+    background:transparent;
+    display:inline-flex;align-items:center;gap:4px;
+    transition:background .15s;
+}
+.pq-act-edit{color:#6C63FF;border-color:#EDE9FE;background:#F5F3FF;}
+.pq-act-edit:hover{background:#EDE9FE;text-decoration:none;color:#6C63FF;}
+.pq-act-delete{color:#EF4444;border-color:#FEE2E2;background:#FEF2F2;}
+.pq-act-delete:hover{background:#FEE2E2;}
+/* View Quiz button */
+.pq-view-btn{
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    margin:.1rem 1.2rem .9rem;
+    padding:.6rem 0;border-radius:10px;
+    background:linear-gradient(135deg,#0D9488,#14B8A6);
+    color:#fff;font-size:.84rem;font-weight:700;
+    text-decoration:none;border:none;cursor:pointer;
+    transition:opacity .15s,box-shadow .15s;
+    box-shadow:0 2px 8px rgba(13,148,136,.25);
+}
+.pq-view-btn:hover{opacity:.9;box-shadow:0 4px 14px rgba(13,148,136,.35);text-decoration:none;color:#fff;}
 /* Unit/Level Cards - Grid layout */
-.mq-ulq-card{display:grid;grid-template-columns:minmax(180px,1.8fr) minmax(120px,1fr) minmax(80px,.7fr) minmax(80px,.7fr) minmax(80px,.7fr) minmax(120px,.9fr) minmax(180px,auto);align-items:center;gap:14px;padding:1.4rem 1.5rem;border-radius:14px;border:1.5px solid #F0F0F0;background:#fff;margin-bottom:.75rem;box-shadow:0 2px 8px rgba(0,0,0,.04);transition:box-shadow .2s,transform .15s;width:100%;max-width:100%;box-sizing:border-box;min-width:0;}
-.mq-ulq-card:hover{box-shadow:0 6px 20px rgba(0,0,0,.07);transform:translateY(-1px);}
-.mq-ulq-left{display:flex;align-items:center;gap:10px;min-width:0;overflow:hidden;}
-.mq-ulq-icon{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
-.mq-ulq-icon-unit{background:#EFF6FF;color:#2563EB;}
-.mq-ulq-icon-level{background:#FEF3C7;color:#D97706;}
+.mq-ulq-card{
+    display:grid;
+    grid-template-columns:minmax(180px,1.8fr) minmax(110px,.9fr) minmax(110px,.9fr) minmax(90px,.75fr) minmax(90px,.75fr) minmax(90px,.75fr) minmax(0,auto);
+    align-items:center;gap:0;
+    padding:1.5rem 1.75rem;
+    border-radius:18px;
+    border:1.5px solid #E5E7EB;
+    background:#fff;
+    margin-bottom:.9rem;
+    box-shadow:0 2px 10px rgba(0,0,0,.04),0 1px 2px rgba(0,0,0,.03);
+    transition:box-shadow .25s ease,transform .25s ease;
+    width:100%;max-width:100%;box-sizing:border-box;min-width:0;
+    overflow:hidden;
+}
+.mq-ulq-card:hover{
+    box-shadow:0 10px 32px rgba(0,0,0,.09),0 2px 6px rgba(0,0,0,.04);
+    transform:translateY(-2px);
+}
+.mq-ulq-left{display:flex;align-items:center;gap:12px;min-width:0;overflow:hidden;padding-right:1.25rem;}
+.mq-ulq-icon{
+    width:48px;height:48px;border-radius:14px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:1.2rem;flex-shrink:0;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+.mq-ulq-icon-unit{background:linear-gradient(135deg,#EFF6FF,#DBEAFE);color:#2563EB;}
+.mq-ulq-icon-level{background:linear-gradient(135deg,#FFFBEB,#FEF3C7);color:#D97706;}
 .mq-ulq-info{min-width:0;overflow:hidden;}
-.mq-ulq-title{font-size:1.1rem;font-weight:800;color:var(--tc-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mq-ulq-title{font-size:1.05rem;font-weight:800;color:var(--tc-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .mq-ulq-labels{display:none;}
-.mq-ulq-col{text-align:center;min-width:0;}
-.mq-ulq-col-label{font-size:.82rem;font-weight:700;color:var(--tc-muted);margin-bottom:3px;line-height:1.2;}
-.mq-ulq-col-val{font-size:1.5rem;font-weight:800;color:var(--tc-text);}
+
+/* stat columns — each separated by a vertical divider */
+.mq-ulq-col{
+    text-align:center;min-width:0;
+    padding:0 1.15rem;
+    border-left:1.5px solid #E5E7EB;
+}
+.mq-ulq-col-label{
+    font-size:.72rem;font-weight:600;color:var(--tc-muted);
+    margin-bottom:3px;line-height:1.25;
+    display:flex;align-items:center;justify-content:center;gap:4px;
+    white-space:nowrap;
+}
+.mq-ulq-col-val{font-size:1.65rem;font-weight:900;color:var(--tc-text);line-height:1.1;}
 .mq-ulq-badge{display:inline-block;padding:3px 10px;border-radius:7px;font-size:.74rem;font-weight:700;text-align:center;white-space:nowrap;}
 .mq-ulq-badge-green{background:#D1FAE5;color:#047857;}
 .mq-ulq-badge-amber{background:#FEF3C7;color:#B45309;}
 .mq-ulq-badge-red{background:#FEE2E2;color:#B91C1C;}
-.mq-ulq-badge-count{font-size:1.5rem;font-weight:800;margin-top:3px;text-align:center;}
+.mq-ulq-badge-count{font-size:1.65rem;font-weight:900;margin-top:3px;text-align:center;line-height:1.1;}
 .mq-ulq-badge-count-green{color:#047857;}
 .mq-ulq-badge-count-amber{color:#B45309;}
 .mq-ulq-badge-count-red{color:#B91C1C;}
-.mq-ulq-date{text-align:center;min-width:0;}
-.mq-ulq-date-label{font-size:.82rem;font-weight:700;color:var(--tc-muted);margin-bottom:3px;}
-.mq-ulq-date-val{font-size:.92rem;font-weight:600;color:var(--tc-text);}
-.mq-ulq-btn-col{text-align:center;min-width:0;display:flex;gap:6px;align-items:center;justify-content:flex-end;}
-.mq-ulq-btn{display:inline-flex;align-items:center;gap:4px;padding:.5rem .85rem;border-radius:9px;border:1.5px solid #DBEAFE;background:#F0F7FF;color:var(--tc-info);font-size:.82rem;font-weight:700;cursor:pointer;transition:background .15s,border-color .15s;white-space:nowrap;text-decoration:none;}
-.mq-ulq-btn:hover{background:#DBEAFE;border-color:#93C5FD;text-decoration:none;color:var(--tc-info);}
-.mq-ulq-btn-add{border-color:#C7D2FE;background:#EEF2FF;color:var(--tc-primary);}
-.mq-ulq-btn-add:hover{background:#E0E7FF;border-color:#A5B4FC;color:var(--tc-primary);}
+
+/* button column — fixed width, never overflows */
+.mq-ulq-btn-col{
+    display:flex;flex-direction:column;gap:8px;
+    align-items:stretch;justify-content:center;
+    padding-left:1.25rem;
+    border-left:1.5px solid #E5E7EB;
+    min-width:0;width:152px;flex-shrink:0;
+}
+.mq-ulq-btn{
+    display:inline-flex;align-items:center;justify-content:center;
+    gap:5px;padding:.55rem .75rem;
+    border-radius:10px;border:1.5px solid #DBEAFE;
+    background:#F0F7FF;color:var(--tc-info);
+    font-size:.8rem;font-weight:700;
+    cursor:pointer;white-space:nowrap;text-decoration:none;
+    transition:background .18s,border-color .18s,transform .18s,box-shadow .18s;
+    width:100%;box-sizing:border-box;
+}
+.mq-ulq-btn:hover{
+    background:#DBEAFE;border-color:#93C5FD;
+    text-decoration:none;color:var(--tc-info);
+    transform:translateY(-1px);box-shadow:0 3px 10px rgba(37,99,235,.14);
+}
+.mq-ulq-btn-add{
+    border-color:#0D9488;background:#0D9488;color:#fff;
+}
+.mq-ulq-btn-add:hover{
+    background:#0F766E;border-color:#0F766E;color:#fff;
+    box-shadow:0 4px 14px rgba(13,148,136,.30);
+    transform:translateY(-1px);
+}
 .mq-ul-empty{text-align:center;padding:2rem;font-size:.9rem;color:var(--tc-muted);background:#FAFAFA;border-radius:12px;border:1.5px dashed #E5E7EB;}
 .mq-unit-group{margin-bottom:1.5rem;}
 .mq-unit-group-hd{margin-bottom:.6rem;padding-bottom:.4rem;border-bottom:1.5px solid #EEF2FF;}
 .mq-unit-group-num{display:none;}
 .mq-unit-group-label{font-size:1.3rem;font-weight:800;color:#1E3A8A;}
-@media(max-width:1000px){.mq-ulq-card{grid-template-columns:1fr 1fr 1fr;gap:.6rem;padding:1rem;}.mq-ulq-left{grid-column:1/-1;}.mq-ulq-btn-col{grid-column:1/-1;text-align:left;margin-top:.4rem;}}
+
+/* Mid — compress stat column padding */
+@media(max-width:1200px){
+    .mq-ulq-card{padding:1.5rem 1.25rem;}
+    .mq-ulq-col{padding:0 .85rem;}
+    .mq-ulq-btn-col{width:140px;padding-left:1rem;}
+}
+/* Wrap — title spans full width, stats + buttons on second row */
+@media(max-width:900px){
+    .mq-ulq-card{
+        grid-template-columns:repeat(5,1fr) minmax(0,auto);
+        grid-template-rows:auto auto;
+        padding:1rem 1.1rem;
+        gap:.65rem 0;
+        overflow:visible;
+    }
+    .mq-ulq-left{grid-column:1/-1;padding-right:0;border-bottom:1.5px solid #F3F4F6;padding-bottom:.75rem;}
+    .mq-ulq-col{padding:0 .65rem;}
+    .mq-ulq-btn-col{
+        grid-column:6;grid-row:2;
+        padding-left:.75rem;
+        width:130px;
+    }
+}
+/* Full collapse — flex column, buttons right-aligned */
+@media(max-width:600px){
+    .mq-ulq-card{
+        display:flex;flex-direction:column;
+        gap:.85rem;padding:1rem;
+        overflow:visible;
+    }
+    .mq-ulq-left{padding-right:0;border-bottom:1.5px solid #F3F4F6;padding-bottom:.75rem;}
+    .mq-ulq-col{border-left:none;padding:0 .4rem;}
+    .mq-ulq-btn-col{
+        display:flex;flex-direction:row;gap:8px;
+        align-items:center;justify-content:flex-end;
+        border-left:none;padding-left:0;
+        width:100%;
+    }
+    .mq-ulq-btn{width:auto;flex:1;max-width:140px;}
+}
 /* Modal */
 .mq-modal-overlay{position:fixed;inset:0;background:rgba(17,24,39,.5);z-index:9000;display:flex;align-items:center;justify-content:center;padding:1rem;}
 .mq-modal{background:#fff;border-radius:16px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:mqFade .2s ease;}
@@ -159,6 +342,67 @@
 .vq-header-title{font-size:.92rem;font-weight:700;color:#1F2937;}
 .vq-header-sub{font-size:.84rem;color:#6B7280;margin-top:2px;}
 .vq-header-meta{font-size:.78rem;color:#6B7280;padding-top:6px;border-top:1px solid #E5E7EB;}
+/* Practice Quiz View Modal */
+.pq-overlay{
+    position:fixed;inset:0;background:rgba(17,24,39,.55);
+    z-index:9200;display:none;align-items:flex-start;justify-content:center;
+    padding:2rem 1rem;overflow-y:auto;
+}
+.pq-overlay.open{display:flex;}
+.pq-modal{
+    background:#fff;border-radius:18px;width:100%;max-width:720px;
+    display:flex;flex-direction:column;max-height:calc(100vh - 4rem);
+    box-shadow:0 24px 64px rgba(0,0,0,.22);
+    animation:pqFadeIn .22s ease;
+    margin:auto;
+}
+@keyframes pqFadeIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.pq-modal-header{
+    display:flex;align-items:flex-start;gap:1rem;
+    padding:1.25rem 1.5rem;
+    border-bottom:1.5px solid #E5E7EB;
+    background:linear-gradient(135deg,#F5F3FF,#EEF2FF);
+    border-radius:18px 18px 0 0;
+    flex-shrink:0;
+}
+.pq-header-main{flex:1;min-width:0;}
+.pq-header-title{
+    font-size:1.05rem;font-weight:800;color:var(--tc-text);
+    margin-bottom:.35rem;word-break:break-word;
+    display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;
+}
+/* status badge inside popup header */
+.pq-header-status{padding:3px 10px;border-radius:50px;font-size:.7rem;font-weight:700;white-space:nowrap;flex-shrink:0;}
+.pq-header-status-approved{background:#D1FAE5;color:#047857;}
+.pq-header-status-pending{background:#FEF3C7;color:#B45309;}
+.pq-header-status-rejected{background:#FEE2E2;color:#B91C1C;}
+.pq-header-meta{
+    display:flex;flex-wrap:wrap;gap:.5rem .9rem;
+    font-size:.8rem;font-weight:600;color:var(--tc-muted);
+}
+.pq-header-meta span{display:inline-flex;align-items:center;gap:4px;}
+.pq-close-btn{
+    flex-shrink:0;width:34px;height:34px;border-radius:8px;border:1.5px solid #D1D5DB;
+    background:#fff;display:flex;align-items:center;justify-content:center;
+    font-size:.9rem;color:var(--tc-muted);cursor:pointer;
+    transition:background .15s,border-color .15s,color .15s;
+}
+.pq-close-btn:hover{background:#FEF2F2;border-color:#FCA5A5;color:#B91C1C;}
+.pq-modal-body{flex:1;overflow-y:auto;padding:1.25rem 1.5rem;}
+/* Single-language question card header: Q# left, difficulty badge right */
+.pq-card-hd{display:flex;align-items:center;padding:.8rem 1rem;cursor:pointer;user-select:none;transition:background .12s;}
+.pq-card-hd:hover{background:#F9FAFB;}
+.pq-card-hd .vq-card-num{flex:1;font-size:.92rem;font-weight:800;color:#1F2937;}
+.pq-card-hd .pq-diff-badge{margin-left:auto;flex-shrink:0;}
+.pq-card-hd .vq-chevron{margin-left:10px;flex-shrink:0;}
+/* Single-language content — full width, no two-column grid */
+.pq-single-col{width:100%;}
+@media(max-width:600px){
+    .pq-overlay{padding:.5rem;}
+    .pq-modal{border-radius:14px;max-height:calc(100vh - 1rem);}
+    .pq-modal-header{padding:1rem;}
+    .pq-modal-body{padding:1rem;}
+}
 .vq-card{border:1.5px solid #E5E7EB;border-radius:12px;margin-bottom:.7rem;background:#fff;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.03);}
 .vq-card-hd{display:flex;align-items:center;gap:8px;padding:.8rem 1rem;cursor:pointer;user-select:none;transition:background .12s;}
 .vq-card-hd:hover{background:#F9FAFB;}
@@ -219,6 +463,89 @@
 @keyframes mqSlideIn{from{opacity:0;transform:translateX(30px);}to{opacity:1;transform:translateX(0);}}
 @keyframes mqSlideOut{from{opacity:1;}to{opacity:0;transform:translateX(30px);}}
 .mq-val-msg{font-size:.72rem;color:var(--tc-error);margin-top:3px;min-height:14px;}
+/* ── Discover Quiz View Modal ───────────────────────── */
+.dq-overlay{
+    position:fixed;inset:0;background:rgba(17,24,39,.55);
+    z-index:9100;display:none;align-items:flex-start;justify-content:center;
+    padding:2rem 1rem;overflow-y:auto;
+}
+.dq-overlay.open{display:flex;}
+.dq-modal{
+    background:#fff;border-radius:18px;width:100%;max-width:860px;
+    display:flex;flex-direction:column;max-height:calc(100vh - 4rem);
+    box-shadow:0 24px 64px rgba(0,0,0,.22);
+    animation:dqFadeIn .22s ease;
+    margin:auto;
+}
+@keyframes dqFadeIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.dq-modal-header{
+    display:flex;align-items:flex-start;gap:1rem;
+    padding:1.25rem 1.5rem;
+    border-bottom:1.5px solid #E5E7EB;
+    background:linear-gradient(135deg,#F0F7FF,#EEF2FF);
+    border-radius:18px 18px 0 0;
+    flex-shrink:0;
+}
+.dq-header-main{flex:1;min-width:0;}
+.dq-header-title{
+    font-size:1.05rem;font-weight:800;color:var(--tc-text);
+    margin-bottom:.35rem;word-break:break-word;
+}
+.dq-header-meta{
+    display:flex;flex-wrap:wrap;gap:.5rem .9rem;
+    font-size:.8rem;font-weight:600;color:var(--tc-muted);
+}
+.dq-header-meta span{display:inline-flex;align-items:center;gap:4px;}
+.dq-close-btn{
+    flex-shrink:0;width:34px;height:34px;border-radius:8px;border:1.5px solid #D1D5DB;
+    background:#fff;display:flex;align-items:center;justify-content:center;
+    font-size:.9rem;color:var(--tc-muted);cursor:pointer;
+    transition:background .15s,border-color .15s,color .15s;
+}
+.dq-close-btn:hover{background:#FEF2F2;border-color:#FCA5A5;color:#B91C1C;}
+.dq-modal-body{
+    flex:1;overflow-y:auto;padding:1.25rem 1.5rem;
+    /* keep page behind fixed when modal is open */
+}
+@media(max-width:600px){
+    .dq-overlay{padding:.5rem;}
+    .dq-modal{border-radius:14px;max-height:calc(100vh - 1rem);}
+    .dq-modal-header{padding:1rem;}
+    .dq-modal-body{padding:1rem;}
+}
+/* Overall Approved value — teal colour */
+.mq-val-overall{color:#0D9488 !important;}
+/* Info icon — outlined circle, pointer cursor, white-bg tooltip */
+.mq-info-icon{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:15px;height:15px;border-radius:50%;
+    border:1.5px solid #9CA3AF;color:#9CA3AF;
+    font-size:.6rem;cursor:pointer;
+    position:relative;vertical-align:middle;margin-left:3px;flex-shrink:0;
+    transition:border-color .15s,color .15s;
+}
+.mq-info-icon:hover,.mq-info-icon:focus{border-color:#374151;color:#374151;outline:none;}
+.mq-info-icon::after{
+    content:attr(data-tip);
+    position:absolute;bottom:calc(100% + 9px);left:50%;transform:translateX(-50%);
+    background:#fff;color:#374151;
+    font-size:.75rem;font-weight:500;line-height:1.5;
+    padding:7px 11px;border-radius:9px;
+    border:1px solid #E5E7EB;
+    white-space:normal;width:190px;text-align:center;
+    pointer-events:none;opacity:0;transition:opacity .2s ease;
+    z-index:200;
+    box-shadow:0 4px 16px rgba(0,0,0,.10);
+}
+.mq-info-icon::before{
+    content:'';position:absolute;bottom:calc(100% + 4px);left:50%;
+    transform:translateX(-50%);
+    border:5px solid transparent;border-top-color:#E5E7EB;
+    pointer-events:none;opacity:0;transition:opacity .2s ease;z-index:200;
+}
+/* second arrow layer for white fill */
+.mq-info-icon:hover::before,.mq-info-icon:focus::before{opacity:1;}
+.mq-info-icon:hover::after,.mq-info-icon:focus::after{opacity:1;}
 @media(max-width:900px){.mq-filter-bar{flex-wrap:wrap;}.mq-search-wrap{width:100%;}.mq-select{flex:1;min-width:120px;width:auto;}.mq-btn-search{flex:0;}}
 @media(max-width:640px){.mq-filter-bar{flex-direction:column;align-items:stretch;}.mq-select{width:100%;}.mq-btn-search{width:100%;}.mq-card{min-width:260px;max-width:260px;}}
 </style>
@@ -305,24 +632,35 @@
     <div class="mq-grid">
         <asp:Repeater ID="rptQuizzes" runat="server">
             <ItemTemplate>
-                <div class='mq-card accent-<%# (Eval("status")?.ToString()??"pending").ToLower() %>'>
-                    <div class="mq-card-header">
-                        <span class='mq-badge <%# GetStatusCss(Eval("status").ToString()) %>'><%# GetStatusLabel(Eval("status").ToString()) %></span>
+                <div class="mq-dcard">
+                    <%-- Green cover image — identical to Discover cards --%>
+                    <div class="mq-dcard-img-wrap">
+                        <div class="mq-dcard-cover"></div>
+                        <span class="mq-dcard-badge mq-dcard-badge-left"><i class="bi bi-list-check"></i> <%# Eval("questionCount") %> Qs</span>
+                        <span class="mq-dcard-badge mq-dcard-badge-right"><%# HttpUtility.HtmlEncode(Eval("language")?.ToString() ?? "") %></span>
                     </div>
-                    <div class="mq-card-body">
-                        <div class="mq-card-icon"><i class="bi bi-patch-question-fill"></i></div>
-                        <div class="mq-card-title"><%# HttpUtility.HtmlEncode(Eval("quizTitle")) %></div>
-                        <div class="mq-card-category"><%: T("Practice Quiz","Kuiz Latihan") %></div>
-                        <div class="mq-card-meta">
-                            <span class='mq-diff <%# GetDiffCss(Eval("difficulty").ToString()) %>'><%# HttpUtility.HtmlEncode(Eval("difficulty")) %></span>
-                            <span><i class="bi bi-translate"></i> <%# HttpUtility.HtmlEncode(Eval("language")) %></span>
-                            <span><i class="bi bi-list-check"></i> <%# Eval("questionCount") %> <%: T("Q","S") %></span>
+                    <%-- Body: title + edit/delete (clean, no status/metadata badges) --%>
+                    <div class="mq-dcard-body">
+                        <div class="mq-dcard-title"><%# HttpUtility.HtmlEncode(Eval("quizTitle")) %></div>
+                        <div class="mq-dcard-teacher" style="margin-top:auto;">
+                            <div class="mq-dcard-teacher-avatar">Practice</div>
+                            <span class="mq-dcard-teacher-name">Practice Quiz</span>
+                        </div>
+                        <%-- Edit / Delete row --%>
+                        <div class="pqm-actions">
+                            <a href="#" class="pqm-btn pqm-btn-edit"><i class="bi bi-pencil"></i> Edit</a>
+                            <button type="button" class="pqm-btn pqm-btn-delete" onclick="openDeleteModal('<%# Eval("quizId") %>')"><i class="bi bi-trash"></i></button>
                         </div>
                     </div>
-                    <div class="mq-card-actions">
-                        <a href="#" class="mq-act mq-act-view"><i class="bi bi-eye"></i> <%: T("View","Lihat") %></a>
-                        <a href="#" class="mq-act mq-act-edit"><i class="bi bi-pencil"></i> <%: T("Edit","Edit") %></a>
-                        <button type="button" class="mq-act mq-act-delete" onclick="openDeleteModal('<%# Eval("quizId") %>')"><i class="bi bi-trash"></i></button>
+                    <%-- Full-width View Quiz button --%>
+                    <div style="padding:.6rem 1.2rem .8rem;">
+                        <span class="pq-hidden-data" style="display:none;"
+                              data-qid='<%# Eval("quizId") %>'
+                              data-title='<%# HttpUtility.HtmlAttributeEncode((Eval("quizTitle") ?? "").ToString()) %>'
+                              data-lang='<%# HttpUtility.HtmlAttributeEncode((Eval("language") ?? "").ToString()) %>'
+                              data-count='<%# Eval("questionCount") %>'
+                              data-status='<%# HttpUtility.HtmlAttributeEncode((Eval("status") ?? "").ToString()) %>'></span>
+                        <a href="#" class="pq-btn-view" onclick="openPracticeViewModal(this.previousElementSibling);return false;"><i class="bi bi-eye"></i> View Quiz</a>
                     </div>
                 </div>
             </ItemTemplate>
@@ -340,8 +678,26 @@
     </div>
 </asp:Panel>
 
+<%-- Practice Quiz Pending State (shown when teacher has Pending license — mirrors manageMaterials.aspx style) --%>
+<div id="pqPendingState" style="display:none;">
+    <div style="display:flex;flex-direction:column;align-items:center;padding:3.5rem 2rem;text-align:center;">
+        <div style="font-size:3.5rem;margin-bottom:1rem;opacity:.85;">⏳</div>
+        <h2 style="font-size:1.15rem;font-weight:800;color:var(--tc-text);margin:0 0 .6rem;"><%: T("Verification Pending","Pengesahan Sedang Diproses") %></h2>
+        <p style="font-size:.88rem;color:var(--tc-muted);max-width:480px;line-height:1.65;margin:0;"><%: T("Your Teaching License is still under review. You will be able to create and manage Practice Quizzes once your verification has been approved.","Lesen Mengajar anda masih dalam semakan. Anda akan dapat mencipta dan mengurus Kuiz Latihan setelah pengesahan anda diluluskan.") %></p>
+    </div>
+</div>
+
 <%-- ═══ UNIT / LEVEL QUESTIONS ═══ --%>
 <asp:Panel ID="pnlUnitLevel" runat="server" Visible="false">
+
+<%-- Pending License Notice (Unit/Level only) --%>
+<div id="pendingNoticeUL" class="mq-pending-notice" style="display:none;">
+    <div class="mq-pending-notice-icon"><i class="bi bi-shield-exclamation"></i></div>
+    <div class="mq-pending-notice-content">
+        <div class="mq-pending-notice-title"><%: T("Verification Pending","Pengesahan Menunggu") %></div>
+        <div class="mq-pending-notice-msg"><%: T("Your Teaching License is still under review. Adding questions to Unit & Level Quizzes is temporarily unavailable until your verification has been approved.","Lesen Mengajar anda masih dalam semakan. Penambahan soalan ke Kuiz Unit & Tahap tidak tersedia buat sementara waktu sehingga pengesahan anda diluluskan.") %></div>
+    </div>
+</div>
 
 <%-- Unit Quiz Section --%>
 <div id="ulSectionUnit" style="margin-bottom:2.5rem;">
@@ -362,16 +718,16 @@
                     </div>
                 </div>
                 <div class="mq-ulq-col">
-                    <div class="mq-ulq-col-label"><%: T("Total Submitted Questions","Jumlah Soalan Dihantar") %></div>
-                    <div class="mq-ulq-col-val"><%# Eval("totalCount") %></div>
+                    <div class="mq-ulq-col-label"><%: T("Overall Approved","Diluluskan Semua") %> <span class="mq-info-icon" tabindex="0" data-tip="<%: T("Total approved questions available for this quiz from all teachers.","Jumlah soalan yang diluluskan tersedia untuk kuiz ini daripada semua guru.") %>"><i class="bi bi-info-circle"></i></span></div>
+                    <div class="mq-ulq-col-val mq-val-overall"><%# Eval("overallApproved") %></div>
+                </div>
+                <div class="mq-ulq-col">
+                    <div class="mq-ulq-col-label"><%: T("Your Submitted","Hantar Anda") %> <span class="mq-info-icon" tabindex="0" data-tip="<%: T("Total questions you have submitted for this quiz, including approved, pending and rejected questions.","Jumlah soalan yang telah anda hantar untuk kuiz ini, termasuk yang diluluskan, menunggu dan ditolak.") %>"><i class="bi bi-info-circle"></i></span></div>
+                    <div class="mq-ulq-col-val"><%# Eval("yourCount") %></div>
                 </div>
                 <div class="mq-ulq-col"><span class="mq-ulq-badge mq-ulq-badge-green"><%: T("Approved","Diluluskan") %></span><div class="mq-ulq-badge-count mq-ulq-badge-count-green"><%# Eval("approvedCount") %></div></div>
                 <div class="mq-ulq-col"><span class="mq-ulq-badge mq-ulq-badge-amber"><%: T("Pending","Menunggu") %></span><div class="mq-ulq-badge-count mq-ulq-badge-count-amber"><%# Eval("pendingCount") %></div></div>
                 <div class="mq-ulq-col"><span class="mq-ulq-badge mq-ulq-badge-red"><%: T("Rejected","Ditolak") %></span><div class="mq-ulq-badge-count mq-ulq-badge-count-red"><%# Eval("rejectedCount") %></div></div>
-                <div class="mq-ulq-date">
-                    <div class="mq-ulq-date-label"><%: T("Last Submitted","Terakhir Dihantar") %></div>
-                    <div class="mq-ulq-date-val"><%# Eval("lastDate") %></div>
-                </div>
                 <div class="mq-ulq-btn-col">
                     <a href="#" class="mq-ulq-btn mq-ulq-btn-add" onclick='openSubtopicModal("<%# Eval("quizId") %>");return false;'><i class="bi bi-plus-lg"></i> <%: T("Add","Tambah") %></a>
                     <button type="button" class="mq-ulq-btn" onclick='openULModal("<%# Eval("quizId") %>")'><i class="bi bi-eye"></i> <%: T("View","Lihat") %></button>
@@ -445,7 +801,7 @@
                         <div class="mq-dcard-img-wrap">
                             <div class="mq-dcard-cover"></div>
                             <span class="mq-dcard-badge mq-dcard-badge-left"><i class="bi bi-list-check"></i> <%# Eval("questionCount") %> Qs</span>
-                            <span class="mq-dcard-badge mq-dcard-badge-right"><%# Eval("language") %></span>
+                            <span class="mq-dcard-badge mq-dcard-badge-right"><%# HttpUtility.HtmlEncode(Eval("language")?.ToString() ?? "") %></span>
                         </div>
                         <div class="mq-dcard-body">
                             <div class="mq-dcard-title"><%# HttpUtility.HtmlEncode(Eval("quizTitle")) %></div>
@@ -454,8 +810,14 @@
                                 <span class="mq-dcard-teacher-name"><%# HttpUtility.HtmlEncode(Eval("teacherName")) %></span>
                             </div>
                         </div>
-                        <div class="mq-dcard-actions">
-                            <a href="#" class="mq-dcard-view"><i class="bi bi-eye"></i> <%: T("View Quiz","Lihat Kuiz") %></a>
+                        <div style="padding:.6rem 1.2rem .8rem;">
+                            <span class="dq-hidden-data" style="display:none;"
+                                  data-qid='<%# Eval("quizId") %>'
+                                  data-title='<%# HttpUtility.HtmlAttributeEncode(Eval("quizTitle").ToString()) %>'
+                                  data-teacher='<%# HttpUtility.HtmlAttributeEncode(Eval("teacherName").ToString()) %>'
+                                  data-lang='<%# HttpUtility.HtmlAttributeEncode(Eval("language")?.ToString() ?? "") %>'
+                                  data-count='<%# Eval("questionCount") %>'></span>
+                            <a href="#" class="pq-btn-view" onclick="openDiscoverModal(this.previousElementSibling);return false;"><i class="bi bi-eye"></i> View Quiz</a>
                         </div>
                     </div>
                 </ItemTemplate>
@@ -473,7 +835,42 @@
 </asp:Panel>
 
 <asp:HiddenField ID="hidActiveTab" runat="server" Value="mine" />
+<asp:HiddenField ID="hidTeacherLicenseStatus" runat="server" Value="" />
 
+<%-- ═══ PRACTICE QUIZ VIEW MODAL ═══ --%>
+<div id="pqViewModal" class="pq-overlay" onclick="if(event.target===this)closePracticeViewModal()">
+    <div class="pq-modal">
+        <div class="pq-modal-header">
+            <div class="pq-header-main">
+                <div class="pq-header-title" id="pqViewTitle"></div>
+                <div class="pq-header-meta" id="pqViewMeta"></div>
+            </div>
+            <button type="button" class="pq-close-btn" onclick="closePracticeViewModal()" title="Close">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="pq-modal-body" id="pqViewBody">
+            <div class="mq-empty"><div style="font-size:2rem;opacity:.4;">⏳</div><div class="mq-empty-title" style="margin-top:.5rem;"><%: T("Loading...","Memuatkan...") %></div></div>
+        </div>
+    </div>
+</div>
+<%-- ═══ DISCOVER QUIZ VIEW MODAL ═══ --%>
+<div id="dqModal" class="dq-overlay" onclick="if(event.target===this)closeDiscoverModal()">
+    <div class="dq-modal">
+        <div class="dq-modal-header" id="dqHeader">
+            <div class="dq-header-main">
+                <div class="dq-header-title" id="dqTitle"></div>
+                <div class="dq-header-meta" id="dqMeta"></div>
+            </div>
+            <button type="button" class="dq-close-btn" onclick="closeDiscoverModal()" title="Close">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="dq-modal-body" id="dqBody">
+            <div class="mq-empty"><div style="font-size:2rem;opacity:.4;">⏳</div><div class="mq-empty-title" style="margin-top:.5rem;"><%: T("Loading...","Memuatkan...") %></div></div>
+        </div>
+    </div>
+</div>
 <%-- Practice Quiz Selection Modal --%>
 <div id="practiceModal" class="mq-modal-overlay" style="display:none;" onclick="if(event.target===this)closePracticeModal()">
     <div class="mq-modal" style="max-width:460px;">
@@ -765,6 +1162,202 @@ function filterUL(mode,btn){
     btn.classList.add('mq-seg-active');
 }
 function showToast(msg){var c=document.getElementById('mqToast'),t=document.createElement('div');t.className='mq-toast';t.innerHTML='<i class="bi bi-check-circle-fill"></i> '+msg;c.appendChild(t);setTimeout(function(){t.classList.add('mq-toast-out');},3e3);setTimeout(function(){t.remove();},3500);}
+/* ── Discover Quiz View Modal ─────────────────────────── */
+function openDiscoverModal(el){
+    var quizId  = el.dataset.qid;
+    var title   = el.dataset.title;
+    var teacher = el.dataset.teacher;
+    var lang    = el.dataset.lang;
+    var count   = parseInt(el.dataset.count, 10) || 0;
+    var overlay = document.getElementById('dqModal');
+    var body    = document.getElementById('dqBody');
+    var titleEl = document.getElementById('dqTitle');
+    var metaEl  = document.getElementById('dqMeta');
+
+    var langLabel = lang === 'BM' ? 'Bahasa Melayu' : 'English';
+    // Populate header
+    titleEl.textContent = title;
+    metaEl.innerHTML =
+        '<span><i class="bi bi-person-fill"></i> ' + escHtml(teacher) + '</span>' +
+        '<span><i class="bi bi-translate"></i> ' + escHtml(langLabel) + '</span>' +
+        '<span><i class="bi bi-list-check"></i> ' + count + ' question' + (count === 1 ? '' : 's') + '</span>';
+
+    // Show loading state
+    body.innerHTML = '<div class="mq-empty"><div style="font-size:2rem;opacity:.4;">⏳</div><div class="mq-empty-title" style="margin-top:.5rem;">Loading questions...</div></div>';
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    // Fetch questions and apply single-language transform
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'manageQuiz.aspx?handler=discoverquiz&quizId=' + encodeURIComponent(quizId), true);
+    xhr.onreadystatechange = function(){
+        if(xhr.readyState === 4){
+            body.innerHTML = xhr.status === 200
+                ? transformToSingleLang(xhr.responseText, lang)
+                : '<div class="mq-empty"><div class="mq-empty-title">Could not load questions. Please try again.</div></div>';
+        }
+    };
+    xhr.send();
+}
+function closeDiscoverModal(){
+    var overlay = document.getElementById('dqModal');
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+}
+function escHtml(str){
+    var d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+}
+/* ── Practice Quiz View Modal ─────────────────────────── */
+function openPracticeViewModal(el) {
+    var quizId  = el.dataset.qid;
+    var title   = el.dataset.title;
+    var lang    = el.dataset.lang;
+    var count   = parseInt(el.dataset.count, 10) || 0;
+    var status  = (el.dataset.status || '').toLowerCase();
+    var overlay = document.getElementById('pqViewModal');
+    var body    = document.getElementById('pqViewBody');
+    var titleEl = document.getElementById('pqViewTitle');
+    var metaEl  = document.getElementById('pqViewMeta');
+
+    // Status badge beside title
+    var statusLabel = status === 'approved' ? 'Approved' : status === 'rejected' ? 'Rejected' : 'Pending';
+    var statusCls   = status === 'approved' ? 'pq-header-status-approved' : status === 'rejected' ? 'pq-header-status-rejected' : 'pq-header-status-pending';
+    titleEl.innerHTML = escHtml(title) + '<span class="pq-header-status ' + statusCls + '">' + statusLabel + '</span>';
+
+    var langLabel = lang === 'BM' ? 'Bahasa Melayu' : 'English';
+    metaEl.innerHTML =
+        '<span><i class="bi bi-translate"></i> ' + escHtml(langLabel) + '</span>' +
+        '<span><i class="bi bi-list-check"></i> ' + count + ' question' + (count === 1 ? '' : 's') + '</span>';
+
+    body.innerHTML = '<div class="mq-empty"><div style="font-size:2rem;opacity:.4;">⏳</div><div class="mq-empty-title" style="margin-top:.5rem;">Loading questions...</div></div>';
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'manageQuiz.aspx?handler=discoverquiz&quizId=' + encodeURIComponent(quizId), true);
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            body.innerHTML = xhr.status === 200
+                ? transformToSingleLang(xhr.responseText, lang)
+                : '<div class="mq-empty"><div class="mq-empty-title">Could not load questions. Please try again.</div></div>';
+        }
+    };
+    xhr.send();
+}
+
+function closePracticeViewModal() {
+    var overlay = document.getElementById('pqViewModal');
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+/**
+ * Transform bilingual two-column HTML from handler=discoverquiz into
+ * single-language layout.
+ *
+ * Input per card:
+ *   vq-card-hd:  Q# | diffBadge | chevron
+ *   vq-card-body:
+ *     vq-format-row
+ *     vq-cols > [vq-col(EN), vq-col(BM)]    ← col contains: question, options, explanations
+ *     vq-img-row  (outside vq-cols, at end of body)
+ *
+ * Output per card:
+ *   pq-card-hd:  Q#  [flex-1]  diffBadge[ml-auto]  chevron
+ *   vq-card-body:
+ *     vq-format-row
+ *     question text   (full width)
+ *     vq-img-row      (image right after question, if present)
+ *     options         (full width)
+ *     correct expl    (full width)
+ *     wrong expl      (full width)
+ */
+function transformToSingleLang(html, quizLang) {
+    var isBM = (quizLang === 'BM');
+
+    // Use a temporary container to parse the HTML safely
+    var tmp = document.createElement('div');
+    tmp.innerHTML = html;
+
+    var cards = tmp.querySelectorAll('.vq-card');
+    if (!cards.length) return html; // nothing to transform
+
+    cards.forEach(function(card) {
+        /* ── 1. Rebuild card header ── */
+        var oldHd = card.querySelector('.vq-card-hd');
+        if (oldHd) {
+            var numEl    = oldHd.querySelector('.vq-card-num');
+            var badges   = oldHd.querySelectorAll('.vq-badge');
+            var chevron  = oldHd.querySelector('.vq-chevron');
+            var numText  = numEl ? numEl.textContent : '';
+            var diffBadgeClass = '';
+            var diffBadgeText  = '';
+            if (badges.length > 0) {
+                diffBadgeClass = badges[0].className;
+                diffBadgeText  = badges[0].textContent.trim();
+            }
+            var chevronClass = chevron ? chevron.className : 'bi bi-chevron-down vq-chevron';
+
+            var newHd = document.createElement('div');
+            newHd.className = 'pq-card-hd';
+            newHd.setAttribute('onclick', 'toggleVQ(this)');
+            newHd.innerHTML =
+                '<span class="vq-card-num">' + escHtml(numText) + '</span>' +
+                (diffBadgeText ? '<span class="' + escHtml(diffBadgeClass) + ' pq-diff-badge">' + escHtml(diffBadgeText) + '</span>' : '') +
+                '<i class="' + escHtml(chevronClass) + '"></i>';
+
+            oldHd.parentNode.replaceChild(newHd, oldHd);
+        }
+
+        /* ── 2. Extract content from the matching language column ── */
+        var body = card.querySelector('.vq-card-body');
+        if (!body) return;
+
+        var formatRow = body.querySelector('.vq-format-row');
+        var cols      = body.querySelector('.vq-cols');
+        var imgRow    = body.querySelector('.vq-img-row');  // sits outside vq-cols
+
+        if (!cols) return; // nothing to transform
+
+        var colDivs = cols.querySelectorAll('.vq-col');
+        var keepIndex = isBM ? 1 : 0;
+        if (colDivs.length <= keepIndex) keepIndex = 0;
+        var targetCol = colDivs[keepIndex];
+        if (!targetCol) return;
+
+        // Remove language heading inside the column
+        var colHd = targetCol.querySelector('.vq-col-hd');
+        if (colHd) colHd.remove();
+
+        // Collect ordered content: question, options/dd, correct-expl, wrong-expl
+        var questionEl  = targetCol.querySelector('.vq-question');
+        var optionsEl   = targetCol.querySelector('.vq-options');         // MCQ/TF/MS
+        var ddSection   = targetCol.querySelector('.vq-dd-section');      // Drag & Drop
+        var ddOrder     = targetCol.querySelector('.vq-dd-order');
+        var explCorrect = targetCol.querySelector('.vq-expl-correct');
+        var explWrong   = targetCol.querySelector('.vq-expl-wrong');
+
+        // Build new body content in order:
+        // format-row → question → image → options → correct-expl → wrong-expl
+        var newBody = document.createElement('div');
+        newBody.className = 'vq-card-body';
+
+        if (formatRow) newBody.appendChild(formatRow.cloneNode(true));
+        if (questionEl) newBody.appendChild(questionEl.cloneNode(true));
+        if (imgRow)     newBody.appendChild(imgRow.cloneNode(true));    // image after question
+        if (optionsEl)  newBody.appendChild(optionsEl.cloneNode(true));
+        if (ddSection)  newBody.appendChild(ddSection.cloneNode(true));
+        if (ddOrder)    newBody.appendChild(ddOrder.cloneNode(true));
+        if (explCorrect) newBody.appendChild(explCorrect.cloneNode(true));
+        if (explWrong)   newBody.appendChild(explWrong.cloneNode(true));
+
+        body.parentNode.replaceChild(newBody, body);
+    });
+
+    return tmp.innerHTML;
+}
 window.addEventListener('load',function(){var h=document.getElementById('<%=hidToast.ClientID%>');if(h&&h.value){showToast(h.value);h.value='';}
 var cm=document.getElementById('<%=hidShowCreateModal.ClientID%>');if(cm&&cm.value==='1'){document.getElementById('createModal').style.display='flex';cm.value='';}
 // Show/hide segmented filter and search bar based on active tab
@@ -772,6 +1365,37 @@ var activeTab=document.getElementById('<%=hidActiveTab.ClientID%>');
 var seg=document.getElementById('ulSegFilter');var fb=document.getElementById('mqFilterBar');
 if(activeTab&&activeTab.value==='unitlevel'){if(seg)seg.style.display='';if(fb)fb.style.display='none';}
 else{if(seg)seg.style.display='none';if(fb)fb.style.display='';}
+// Pending License restrictions
+var licStatus=document.getElementById('<%=hidTeacherLicenseStatus.ClientID%>');
+if(licStatus&&licStatus.value==='Pending'){
+    var tipText='<%: T("Adding questions is unavailable while your Teaching License verification is pending.","Penambahan soalan tidak tersedia semasa pengesahan Lesen Mengajar anda masih menunggu.") %>';
+    // 1. Unit/Level tab: show notice + disable Add buttons
+    var noticeUL=document.getElementById('pendingNoticeUL');if(noticeUL)noticeUL.style.display='flex';
+    var addBtns=document.querySelectorAll('.mq-ulq-btn-add');
+    for(var i=0;i<addBtns.length;i++){
+        addBtns[i].classList.add('mq-btn-disabled');
+        addBtns[i].removeAttribute('onclick');
+        addBtns[i].setAttribute('title',tipText);
+        addBtns[i].href='javascript:void(0)';
+    }
+    // 2. Practice Quizzes tab: hide cards, show pending state, disable Create button
+    var pqGrid=document.querySelector('#<%=pnlQuizzes.ClientID%>');if(pqGrid)pqGrid.style.display='none';
+    var pqEmpty=document.querySelector('#<%=pnlEmpty.ClientID%>');if(pqEmpty)pqEmpty.style.display='none';
+    var pqPending=document.getElementById('pqPendingState');
+    if(pqPending){
+        if(activeTab&&activeTab.value==='mine')pqPending.style.display='block';
+        else pqPending.style.display='none';
+    }
+    // Hide filter bar and status chips on Practice tab for Pending teachers
+    if(activeTab&&activeTab.value==='mine'){
+        if(fb)fb.style.display='none';
+        var chips=document.querySelector('#<%=pnlStatusChips.ClientID%>');if(chips)chips.style.display='none';
+    }
+    // Disable Create Quiz button at top
+    var createBtns=document.querySelectorAll('#<%=pnlCreateBtn.ClientID%> .mq-btn-create');
+    for(var j=0;j<createBtns.length;j++){createBtns[j].classList.add('mq-btn-disabled');createBtns[j].removeAttribute('onclick');createBtns[j].setAttribute('title',tipText);}
+    // 3. Discover tab: no restrictions — fully accessible
+}
 });
 </script>
 </asp:Content>

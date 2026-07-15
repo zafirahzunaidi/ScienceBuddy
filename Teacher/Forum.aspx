@@ -252,6 +252,14 @@
     .fr-card-footer { flex-direction: column; align-items: flex-start; }
     .fr-view-btn { width: 100%; justify-content: center; }
 }
+/* ── Pending License Notice ── */
+.fr-pending-notice{display:flex;align-items:flex-start;gap:.75rem;padding:.85rem 1.1rem;margin-bottom:1.25rem;background:#FEF2F2;border:1.5px solid #FECACA;border-left:4px solid #DC2626;border-radius:10px;}
+.fr-pending-notice-icon{flex-shrink:0;width:32px;height:32px;border-radius:8px;background:#FEE2E2;color:#DC2626;display:flex;align-items:center;justify-content:center;font-size:1rem;}
+.fr-pending-notice-content{flex:1;min-width:0;}
+.fr-pending-notice-title{font-size:.84rem;font-weight:700;color:#991B1B;margin-bottom:2px;}
+.fr-pending-notice-msg{font-size:.78rem;color:#B91C1C;line-height:1.45;}
+.fr-new-btn.fr-btn-disabled{opacity:.5;cursor:not-allowed;pointer-events:none;background:#9CA3AF;box-shadow:none;}
+.fr-new-btn.fr-btn-disabled:hover{background:#9CA3AF;box-shadow:none;}
 </style>
 </asp:Content>
 
@@ -276,6 +284,7 @@
 
 <%-- ════ MAIN CONTENT ════ --%>
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
+<asp:HiddenField ID="hidLicenseStatus" runat="server" Value="" />
 
 <%-- Page header with New Post button on right --%>
 <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem;">
@@ -283,9 +292,18 @@
         <h1><i class="bi bi-chat-dots" style="color:var(--tp);font-size:1.3rem;vertical-align:middle;margin-right:.4rem;"></i><%: T("Forum","Forum") %></h1>
         <p><%: T("Join public discussions, answer student questions, and support the ScienceBuddy community.","Sertai perbincangan awam, jawab soalan pelajar, dan sokong komuniti ScienceBuddy.") %></p>
     </div>
-    <button type="button" class="fr-new-btn" onclick="openModal()">
+    <button type="button" class="fr-new-btn" id="btnNewPost" onclick="openModal()">
         <i class="bi bi-plus-lg"></i> <%: T("New Post","Catatan Baharu") %>
     </button>
+</div>
+
+<%-- Pending License Notice (shown only for Pending teachers) --%>
+<div id="frPendingNotice" class="fr-pending-notice" style="display:none;">
+    <div class="fr-pending-notice-icon"><i class="bi bi-shield-exclamation"></i></div>
+    <div class="fr-pending-notice-content">
+        <div class="fr-pending-notice-title"><%: T("Verification Pending","Pengesahan Menunggu") %></div>
+        <div class="fr-pending-notice-msg"><%: T("Your Teaching License is still under review. Creating new forum posts is temporarily unavailable until your verification has been approved.","Lesen Mengajar anda masih dalam semakan. Mencipta catatan forum baharu tidak tersedia buat sementara waktu sehingga pengesahan anda diluluskan.") %></div>
+    </div>
 </div>
 
 <%-- Toolbar: [Search input]  [Search button] --%>
@@ -421,6 +439,14 @@ window.addEventListener('load', function () {
     // Re-open modal after validation failure
     var sm = document.getElementById('<%=hidShowModal.ClientID%>');
     if (sm && sm.value === '1') { openModal(); sm.value = ''; }
+    // Pending License: show notice + disable New Post button
+    var lic = document.getElementById('<%=hidLicenseStatus.ClientID%>');
+    if (lic && lic.value === 'Pending') {
+        var notice = document.getElementById('frPendingNotice');
+        if (notice) notice.style.display = 'flex';
+        var btn = document.getElementById('btnNewPost');
+        if (btn) { btn.classList.add('fr-btn-disabled'); btn.removeAttribute('onclick'); btn.setAttribute('title','<%: T("Creating new posts is unavailable while your Teaching License verification is pending.","Mencipta catatan baharu tidak tersedia semasa pengesahan Lesen Mengajar anda masih menunggu.") %>'); }
+    }
 });
 </script>
 </asp:Content>
