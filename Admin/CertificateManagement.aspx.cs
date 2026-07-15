@@ -6,6 +6,8 @@ using System.Data.SqlClient;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
 
 namespace ScienceBuddy.Admin
 {
@@ -149,7 +151,7 @@ namespace ScienceBuddy.Admin
                 
                 string descEN = "Awarded to " + studentName + " for successfully completing the " + levelName + " level in ScienceBuddy.";
                 string descBM = "Dianugerahkan kepada " + studentName + " kerana berjaya menamatkan tahap " + levelName + " dalam ScienceBuddy.";
-                string fileName = "cert_" + studentId.ToLower() + "_" + levelId.ToLower() + ".html";
+                string fileName = "cert_" + studentId.ToLower() + "_" + levelId.ToLower() + ".pdf";
                 string url = "Images/Certificate/" + fileName;
 
                 // Generate physical certificate file
@@ -172,8 +174,7 @@ namespace ScienceBuddy.Admin
         }
 
         /// <summary>
-        /// Generates a self-contained HTML certificate file that can be printed to PDF.
-        /// The file is saved to Images/Certificate/ and serves as the permanent certificate document.
+        /// Generates a self-contained HTML certificate file.
         /// </summary>
         private void GenerateCertificateFile(string studentName, string levelName, string description, string code, DateTime issueDate, string fileName, string certTitle)
         {
@@ -184,105 +185,209 @@ namespace ScienceBuddy.Admin
                     System.IO.Directory.CreateDirectory(dirPath);
 
                 string filePath = System.IO.Path.Combine(dirPath, fileName);
-                string html = BuildCertificateHtml(studentName, levelName, description, code, issueDate, certTitle);
-                System.IO.File.WriteAllText(filePath, html, System.Text.Encoding.UTF8);
+                string adminName = GetAdminSignatureName();
+                BuildCertificatePdf(filePath, studentName, levelName, description, code, issueDate, certTitle, adminName);
             }
-            catch { /* File generation failure should not block DB record creation */ }
+            catch { }
         }
 
-        private string BuildCertificateHtml(string studentName, string levelName, string description, string code, DateTime issueDate, string certTitle)
+        private string GetAdminSignatureName()
         {
-            // Level-specific theming
-            string borderColor, accentColor, sealBg, ribbonBg, ribbonText;
-            if (levelName.ToLower().Contains("advanced"))
-            { borderColor = "#B8860B"; accentColor = "#1E3A5F"; sealBg = "linear-gradient(135deg,#1E3A5F,#2C5282)"; ribbonBg = "linear-gradient(135deg,#B8860B,#D4A843)"; ribbonText = "#fff"; }
-            else if (levelName.ToLower().Contains("intermediate"))
-            { borderColor = "#94A3B8"; accentColor = "#475569"; sealBg = "linear-gradient(135deg,#475569,#64748B)"; ribbonBg = "linear-gradient(135deg,#94A3B8,#CBD5E1)"; ribbonText = "#1E293B"; }
-            else
-            { borderColor = "#2563EB"; accentColor = "#1D4ED8"; sealBg = "linear-gradient(135deg,#1D4ED8,#3B82F6)"; ribbonBg = "linear-gradient(135deg,#2563EB,#60A5FA)"; ribbonText = "#fff"; }
+            try
+            {
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand("SELECT [username] FROM dbo.[User] WHERE [userId]=@uid", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@uid", Session["userId"].ToString());
+                        var v = cmd.ExecuteScalar();
+                        string username = (v != null && v != DBNull.Value) ? v.ToString() : "Admin";
+                        string clean = System.Text.RegularExpressions.Regex.Replace(username, @"\d+$", "");
+                        if (string.IsNullOrWhiteSpace(clean)) clean = username;
+                        return char.ToUpper(clean[0]) + clean.Substring(1).ToLower();
+                    }
+                }
+            }
+            catch { return "Administrator"; }
+        }
 
-            string logoUrl = VirtualPathUtility.ToAbsolute("~/Images/Logo/sciencebuddy-logo.png");
+        private void BuildCertificatePdf(string filePath, string studentName, string levelName, string description, string code, DateTime issueDate, string certTitle, string adminName)
+        {
+            var pageSize = new Rectangle(PageSize.A4.Height, PageSize.A4.Width);
+            using (var fs = new System.IO.FileStream(filePath, System.IO.FileMode.Create))
+            {
+                var doc = new Document(pageSize, 0, 0, 0, 0);
+                var writer = PdfWriter.GetInstance(doc, fs);
+                doc.Open();
 
-            string html = @"<!DOCTYPE html><html><head><meta charset='utf-8'/>
-<title>ScienceBuddy Certificate - " + HttpUtility.HtmlEncode(studentName) + @"</title>
-<link href='https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Playfair+Display:wght@700;800;900&family=Poppins:wght@400;600;700&display=swap' rel='stylesheet'/>
-<style>
-@page{size:297mm 210mm;margin:0;}
-@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
-*{margin:0;padding:0;box-sizing:border-box;}
-html,body{width:100%;height:100%;overflow:hidden;background:#EDE8E0;}
-body{display:flex;align-items:center;justify-content:center;padding:8px;}
-.page{width:calc(100% - 16px);height:calc(100% - 16px);position:relative;background:linear-gradient(170deg,#FFFDF9 0%,#FBF8F2 40%,#F9F5ED 100%);box-shadow:0 8px 40px rgba(0,0,0,.12);}
-@media print{html,body{width:297mm;height:210mm;}.page{width:285mm;height:198mm;}}
-/* Borders */
-.bdr-out{position:absolute;inset:5mm;border:2.5px solid " + borderColor + @";}
-.bdr-in{position:absolute;inset:8mm;border:1px solid " + borderColor + @";opacity:.5;}
-/* Corner ornaments */
-.corner{position:absolute;width:28px;height:28px;z-index:2;}
-.corner svg{width:100%;height:100%;}
-.c-tl{top:5mm;left:5mm;}.c-tr{top:5mm;right:5mm;transform:scaleX(-1);}.c-bl{bottom:5mm;left:5mm;transform:scaleY(-1);}.c-br{bottom:5mm;right:5mm;transform:scale(-1);}
-/* Watermark */
-.wm{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Cinzel',serif;font-size:72px;font-weight:900;color:rgba(0,0,0,.03);letter-spacing:12px;white-space:nowrap;pointer-events:none;}
-/* Content */
-.content{position:relative;z-index:1;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14mm 24mm 18mm;text-align:center;}
-/* Header */
-.logo{height:72px;margin-bottom:6px;}
-.brand{font-family:'Poppins',sans-serif;font-size:20px;font-weight:700;letter-spacing:1.5px;color:#333;margin-bottom:14px;}
-.brand-s{color:#2563EB;}.brand-b{color:#FF6B2C;}
-/* Title */
-.title{font-family:'Cinzel',serif;font-size:36px;font-weight:800;color:" + accentColor + @";letter-spacing:5px;text-transform:uppercase;margin-bottom:8px;}
-.ornament{width:240px;height:12px;margin:0 auto 14px;background:url(""data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='12'%3E%3Cpath d='M0 6 Q60 0 120 6 Q180 12 240 6' stroke='%23C9A84C' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='120' cy='6' r='3' fill='%23C9A84C'/%3E%3C/svg%3E"") no-repeat center;}
-/* Body */
-.presented{font-family:'Cormorant Garamond',serif;font-size:17px;color:#6B7280;font-style:italic;margin-bottom:16px;}
-.student-name{font-family:'Playfair Display',serif;font-size:42px;font-weight:800;color:#111827;margin-bottom:6px;}
-.gold-line{width:180px;height:2px;background:linear-gradient(90deg,transparent," + borderColor + @" 20%," + borderColor + @" 80%,transparent);margin:6px auto 14px;}
-.for-text{font-family:'Cormorant Garamond',serif;font-size:16px;color:#6B7280;margin-bottom:8px;}
-/* Ribbon */
-.ribbon{display:inline-block;padding:9px 36px;border-radius:5px;font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;letter-spacing:4px;text-transform:uppercase;background:" + ribbonBg + @";color:" + ribbonText + @";box-shadow:0 3px 10px rgba(0,0,0,.1);margin-bottom:16px;}
-.desc{font-family:'Cormorant Garamond',serif;font-size:15px;color:#4B5563;max-width:480px;line-height:1.7;margin-bottom:0;}
-/* Footer */
-.footer{width:100%;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;align-items:end;padding-top:16px;border-top:1.5px solid #E5DDD0;margin-top:auto;}
-.fcol{text-align:center;}
-.fval{font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:#1F2937;margin-bottom:3px;}
-.flbl{font-family:'Poppins',sans-serif;font-size:8px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.8px;}
-/* Seal */
-.seal{width:58px;height:58px;border-radius:50%;background:" + sealBg + @";border:3px solid " + borderColor + @";display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;margin:0 auto 4px;box-shadow:0 0 0 2.5px #FFFDF9,0 0 0 5px " + borderColor + @",0 4px 14px rgba(0,0,0,.12);}
-.seal-top{font-size:4.5px;text-transform:uppercase;letter-spacing:1.2px;opacity:.8;}
-.seal-mid{font-size:14px;font-weight:900;line-height:1;}
-.seal-bot{font-size:4.5px;text-transform:uppercase;letter-spacing:1.2px;opacity:.8;}
-/* Signature */
-.sig{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;color:#1E293B;border-top:1px solid #94A3B8;padding-top:3px;display:inline-block;}
-/* Page footer */
-.page-foot{position:absolute;bottom:8px;left:0;right:0;text-align:center;font-family:'Poppins',sans-serif;font-size:6.5px;color:#CBD5E1;letter-spacing:.5px;}
-</style></head><body>
-<div class='page'>
-<div class='bdr-out'></div><div class='bdr-in'></div>
-<div class='corner c-tl'><svg viewBox='0 0 28 28'><path d='M0 0 L0 20 Q0 0 20 0 Z' fill='" + borderColor + @"' opacity='0.6'/></svg></div>
-<div class='corner c-tr'><svg viewBox='0 0 28 28'><path d='M0 0 L0 20 Q0 0 20 0 Z' fill='" + borderColor + @"' opacity='0.6'/></svg></div>
-<div class='corner c-bl'><svg viewBox='0 0 28 28'><path d='M0 0 L0 20 Q0 0 20 0 Z' fill='" + borderColor + @"' opacity='0.6'/></svg></div>
-<div class='corner c-br'><svg viewBox='0 0 28 28'><path d='M0 0 L0 20 Q0 0 20 0 Z' fill='" + borderColor + @"' opacity='0.6'/></svg></div>
-<div class='wm'>SCIENCEBUDDY</div>
-<div class='content'>
-<img src='" + logoUrl + @"' alt='ScienceBuddy' class='logo' onerror=""this.style.display='none'""/>
-<div class='brand'><span class='brand-s'>Science</span><span class='brand-b'>Buddy</span></div>
-<div class='title'>" + HttpUtility.HtmlEncode(certTitle) + @"</div>
-<div class='ornament'></div>
-<div class='presented'>This certificate is proudly presented to</div>
-<div class='student-name'>" + HttpUtility.HtmlEncode(studentName) + @"</div>
-<div class='gold-line'></div>
-<div class='for-text'>For successfully completing</div>
-<div class='ribbon'>" + HttpUtility.HtmlEncode(levelName.ToUpper()) + @"</div>
-<div class='desc'>" + HttpUtility.HtmlEncode(description) + @"</div>
-<div class='footer'>
-<div class='fcol'><div class='fval'>" + HttpUtility.HtmlEncode(code) + @"</div><div class='flbl'>Certificate No.</div></div>
-<div class='fcol'><div class='fval'>" + issueDate.ToString("d MMMM yyyy") + @"</div><div class='flbl'>Issue Date</div></div>
-<div class='fcol'><div class='seal'><div class='seal-top'>Official</div><div class='seal-mid'>SB</div><div class='seal-bot'>Certificate</div></div><div class='flbl'>Verified</div></div>
-<div class='fcol'><div class='sig'>ScienceBuddy</div><div class='flbl'>Administrator</div></div>
-</div>
-</div>
-<div class='page-foot'>ScienceBuddy &copy; 2026 &bull; www.sciencebuddy.com &bull; Electronically Generated &amp; Verified Certificate</div>
-</div></body></html>";
-            return html;
+                BaseColor borderColor, accentColor, ribbonColor;
+                string lvl = levelName.ToLower();
+                if (lvl.Contains("advanced") || lvl.Contains("lanjutan"))
+                { borderColor = new BaseColor(184, 134, 11); accentColor = new BaseColor(30, 58, 95); ribbonColor = new BaseColor(184, 134, 11); }
+                else if (lvl.Contains("intermediate") || lvl.Contains("pertengahan"))
+                { borderColor = new BaseColor(100, 116, 139); accentColor = new BaseColor(51, 65, 85); ribbonColor = new BaseColor(71, 85, 105); }
+                else
+                { borderColor = new BaseColor(37, 99, 235); accentColor = new BaseColor(29, 78, 216); ribbonColor = new BaseColor(37, 99, 235); }
+
+                float w = pageSize.Width, h = pageSize.Height;
+                var cb = writer.DirectContent;
+
+                // ── Clean white background ──
+                cb.SetColorFill(BaseColor.WHITE);
+                cb.Rectangle(0, 0, w, h); cb.Fill();
+
+                // ── Elegant double border ──
+                cb.SetColorStroke(borderColor); cb.SetLineWidth(2.5f);
+                cb.Rectangle(22, 22, w - 44, h - 44); cb.Stroke();
+                cb.SetLineWidth(0.7f);
+                cb.Rectangle(28, 28, w - 56, h - 56); cb.Stroke();
+
+                // ── Subtle watermark ──
+                cb.SaveState();
+                cb.SetGState(new PdfGState { FillOpacity = 0.02f });
+                cb.SetColorFill(BaseColor.BLACK);
+                cb.BeginText();
+                cb.SetFontAndSize(BaseFont.CreateFont(BaseFont.HELVETICA_BOLD, BaseFont.CP1252, false), 55);
+                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, "SCIENCEBUDDY", w / 2, h / 2 - 20, 0);
+                cb.EndText();
+                cb.RestoreState();
+
+                // ── Logo ──
+                try
+                {
+                    string logoPath = Server.MapPath("~/Images/Logo/sciencebuddy-logo.png");
+                    if (System.IO.File.Exists(logoPath))
+                    {
+                        var logo = iTextSharp.text.Image.GetInstance(logoPath);
+                        logo.ScaleToFit(55, 55);
+                        logo.SetAbsolutePosition(w / 2 - 27, h - 110);
+                        cb.AddImage(logo);
+                    }
+                }
+                catch { }
+
+                // ── Brand ──
+                var bfBold = BaseFont.CreateFont(BaseFont.HELVETICA_BOLD, BaseFont.CP1252, false);
+                var bfItalic = BaseFont.CreateFont(BaseFont.TIMES_ITALIC, BaseFont.CP1252, false);
+                var bfTimesBold = BaseFont.CreateFont(BaseFont.TIMES_BOLD, BaseFont.CP1252, false);
+                var bfHelv = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, false);
+
+                cb.BeginText();
+                cb.SetFontAndSize(bfBold, 15);
+                cb.SetColorFill(new BaseColor(37, 99, 235));
+                cb.ShowTextAligned(PdfContentByte.ALIGN_RIGHT, "Science", w / 2 + 1, h - 125, 0);
+                cb.SetColorFill(new BaseColor(255, 107, 44));
+                cb.ShowTextAligned(PdfContentByte.ALIGN_LEFT, "Buddy", w / 2 + 3, h - 125, 0);
+                cb.EndText();
+
+                // ── Certificate Title (elegant, not all caps) ──
+                cb.BeginText();
+                cb.SetFontAndSize(bfTimesBold, 24);
+                cb.SetColorFill(accentColor);
+                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, certTitle, w / 2, h - 160, 0);
+                cb.EndText();
+
+                // ── Ornamental line with dot ──
+                float ornY = h - 175;
+                cb.SetColorStroke(new BaseColor(201, 168, 76)); cb.SetLineWidth(0.8f);
+                cb.MoveTo(w / 2 - 80, ornY); cb.LineTo(w / 2 - 4, ornY); cb.Stroke();
+                cb.MoveTo(w / 2 + 4, ornY); cb.LineTo(w / 2 + 80, ornY); cb.Stroke();
+                cb.SetColorFill(new BaseColor(201, 168, 76));
+                cb.Circle(w / 2, ornY, 2); cb.Fill();
+
+                // ── "This certificate is proudly presented to" ──
+                cb.BeginText();
+                cb.SetFontAndSize(bfItalic, 12);
+                cb.SetColorFill(new BaseColor(107, 114, 128));
+                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, "This certificate is proudly presented to", w / 2, h - 210, 0);
+                cb.EndText();
+
+                // ── Student Name ──
+                float nameSize = studentName.Length > 22 ? 28 : 34;
+                cb.BeginText();
+                cb.SetFontAndSize(bfTimesBold, nameSize);
+                cb.SetColorFill(new BaseColor(17, 24, 39));
+                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, studentName, w / 2, h - 250, 0);
+                cb.EndText();
+
+                // ── Line under name ──
+                cb.SetColorStroke(borderColor); cb.SetLineWidth(1.2f);
+                cb.MoveTo(w / 2 - 70, h - 262); cb.LineTo(w / 2 + 70, h - 262); cb.Stroke();
+
+                // ── "For successfully completing" ──
+                cb.BeginText();
+                cb.SetFontAndSize(bfItalic, 11);
+                cb.SetColorFill(new BaseColor(107, 114, 128));
+                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, "For successfully completing", w / 2, h - 290, 0);
+                cb.EndText();
+
+                // ── Level Ribbon ──
+                float rW = 140, rH = 24, rX = w / 2 - rW / 2, rY = h - 325;
+                cb.SetColorFill(ribbonColor);
+                cb.RoundRectangle(rX, rY, rW, rH, 4); cb.Fill();
+                cb.BeginText();
+                cb.SetFontAndSize(bfBold, 11);
+                cb.SetColorFill(BaseColor.WHITE);
+                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, levelName.ToUpper(), w / 2, rY + 7, 0);
+                cb.EndText();
+
+                // ── Description ──
+                string desc = description;
+                cb.BeginText();
+                cb.SetFontAndSize(bfItalic, 9);
+                cb.SetColorFill(new BaseColor(75, 85, 99));
+                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, desc, w / 2, h - 358, 0);
+                cb.EndText();
+
+                // ══ FOOTER SECTION ══
+                float footY = 140;
+                // Separator line
+                cb.SetColorStroke(new BaseColor(229, 221, 208)); cb.SetLineWidth(0.8f);
+                cb.MoveTo(60, footY + 30); cb.LineTo(w - 60, footY + 30); cb.Stroke();
+
+                // Col 1: Certificate No
+                cb.BeginText(); cb.SetFontAndSize(bfBold, 7.5f); cb.SetColorFill(new BaseColor(31, 41, 55));
+                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, code, 155, footY, 0); cb.EndText();
+                cb.BeginText(); cb.SetFontAndSize(bfHelv, 5.5f); cb.SetColorFill(new BaseColor(156, 163, 175));
+                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, "CERTIFICATE NO.", 155, footY - 10, 0); cb.EndText();
+
+                // Col 2: Issue Date
+                cb.BeginText(); cb.SetFontAndSize(bfBold, 7.5f); cb.SetColorFill(new BaseColor(31, 41, 55));
+                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, issueDate.ToString("d MMMM yyyy"), 330, footY, 0); cb.EndText();
+                cb.BeginText(); cb.SetFontAndSize(bfHelv, 5.5f); cb.SetColorFill(new BaseColor(156, 163, 175));
+                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, "ISSUE DATE", 330, footY - 10, 0); cb.EndText();
+
+                // Col 3: Seal
+                float sX = 520, sY = footY + 2, sR = 18;
+                cb.SetColorFill(accentColor); cb.Circle(sX, sY, sR); cb.Fill();
+                cb.SetColorStroke(borderColor); cb.SetLineWidth(2f); cb.Circle(sX, sY, sR); cb.Stroke();
+                cb.SetColorStroke(BaseColor.WHITE); cb.SetLineWidth(1f); cb.Circle(sX, sY, sR - 3.5f); cb.Stroke();
+                cb.BeginText(); cb.SetFontAndSize(bfBold, 12); cb.SetColorFill(BaseColor.WHITE);
+                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, "SB", sX, sY - 4, 0); cb.EndText();
+                cb.BeginText(); cb.SetFontAndSize(bfHelv, 5.5f); cb.SetColorFill(new BaseColor(156, 163, 175));
+                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, "VERIFIED", sX, footY - 22, 0); cb.EndText();
+
+                // Col 4: Signature (clean script name)
+                float sigCX = 690;
+                // Just use elegant italic text - looks much cleaner than drawn curves
+                var bfTimesBI = BaseFont.CreateFont(BaseFont.TIMES_BOLDITALIC, BaseFont.CP1252, false);
+                cb.BeginText();
+                cb.SetFontAndSize(bfTimesBI, 14);
+                cb.SetColorFill(new BaseColor(20, 20, 60));
+                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, adminName, sigCX, footY + 5, 0);
+                cb.EndText();
+                // Label
+                cb.BeginText(); cb.SetFontAndSize(bfHelv, 5.5f); cb.SetColorFill(new BaseColor(156, 163, 175));
+                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, "ADMINISTRATOR", sigCX, footY - 12, 0); cb.EndText();
+
+                // ── Page footer text (well inside border) ──
+                cb.BeginText(); cb.SetFontAndSize(bfHelv, 5f); cb.SetColorFill(new BaseColor(210, 215, 220));
+                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, "ScienceBuddy \u00a9 2026  \u2022  www.sciencebuddy.com  \u2022  Electronically Generated & Verified Certificate", w / 2, 38, 0);
+                cb.EndText();
+
+                doc.Close();
+            }
         }
 
         // ── Send Certificate ─────────────────────────────────────────
@@ -329,15 +434,12 @@ body{display:flex;align-items:center;justify-content:center;padding:8px;}
                 using (var cmd = new SqlCommand(sql, conn)) { cmd.Parameters.AddWithValue("@id", certId);
                     using (var rd = cmd.ExecuteReader()) { if (!rd.Read()) return;
                         string certUrl = NS(rd["certificateUrl"]);
-                        
-                        // Fix old .pdf URLs — we generate .html files
-                        if (!string.IsNullOrEmpty(certUrl) && certUrl.EndsWith(".pdf"))
-                            certUrl = certUrl.Replace(".pdf", ".html");
 
-                        string physicalPath = string.IsNullOrEmpty(certUrl) ? "" : Server.MapPath("~/" + certUrl);
-                        bool fileExists = !string.IsNullOrEmpty(physicalPath) && System.IO.File.Exists(physicalPath);
+                        // Ensure URL points to PDF
+                        if (!string.IsNullOrEmpty(certUrl) && certUrl.EndsWith(".html"))
+                            certUrl = certUrl.Replace(".html", ".pdf");
 
-                        // Always regenerate with latest template for consistent look
+                        // Get certificate data for regeneration
                         string studentNameVal = NS(rd["studentName"]);
                         string levelNameVal = NS(rd["levelName"]);
                         string descVal = NS(rd["descr"]);
@@ -345,17 +447,19 @@ body{display:flex;align-items:center;justify-content:center;padding:8px;}
                         DateTime issuedDt = rd["issuedDate"] == DBNull.Value ? DateTime.Today : Convert.ToDateTime(rd["issuedDate"]);
                         string certTitleVal = CurrentLanguage == "BM" ? NS(rd["certificateTitleBM"]) : NS(rd["certificateTitleEN"]);
                         if (string.IsNullOrWhiteSpace(certTitleVal)) certTitleVal = NS(rd["certificateTitleEN"]);
-                        
-                        // Ensure file exists with latest design
-                        string fileName = !string.IsNullOrEmpty(certUrl) ? System.IO.Path.GetFileName(certUrl) : "cert_preview.html";
-                        if (string.IsNullOrEmpty(certUrl)) certUrl = "Images/Certificate/" + fileName;
+
+                        // Ensure PDF file exists
+                        string fileName = !string.IsNullOrEmpty(certUrl) ? System.IO.Path.GetFileName(certUrl) : "cert_preview.pdf";
+                        if (!fileName.EndsWith(".pdf")) fileName = System.IO.Path.GetFileNameWithoutExtension(fileName) + ".pdf";
+                        certUrl = "Images/Certificate/" + fileName;
+
                         GenerateCertificateFile(studentNameVal, levelNameVal, descVal, codeVal, issuedDt, fileName, certTitleVal);
 
                         hfCertUrl.Value = certUrl;
-                        string iframeSrc = ResolveUrl("~/" + certUrl);
+                        string pdfSrc = ResolveUrl("~/" + certUrl) + "?v=" + DateTime.Now.Ticks;
                         litIframe.Text = string.Format(
-                            "<iframe src=\"{0}?v={1}\" style=\"width:100%;height:100%;min-height:700px;border:none;display:block;\" title=\"Certificate Preview\"></iframe>",
-                            iframeSrc, DateTime.Now.Ticks);
+                            "<iframe src=\"{0}\" style=\"width:100%;height:100%;min-height:700px;border:none;display:block;\" title=\"Certificate Preview\"></iframe>",
+                            pdfSrc);
                         pnlIframe.Visible = true;
                         pnlInlineCert.Visible = false;
                         lnkDownload.NavigateUrl = ResolveUrl("~/" + certUrl);

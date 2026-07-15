@@ -158,10 +158,10 @@
 <%-- CERTIFICATE PREVIEW MODAL --%>
 <asp:Panel ID="pnlModal" runat="server" Visible="false" Cssclass="ad-certificate-management-modal-wrap">
 <div class="sb-modal-overlay active" style="display:flex;">
-    <div class="sb-modal" style="max-width:94vw;width:94vw;height:94vh;overflow:hidden;padding:var(--space-xs);display:flex;flex-direction:column;">
+    <div class="sb-modal" style="max-width:820px;width:90vw;height:auto;max-height:90vh;overflow:hidden;padding:var(--space-md);display:flex;flex-direction:column;">
 
         <%-- Embedded certificate preview --%>
-        <div style="border-radius:var(--border-radius-lg);overflow:auto;border:1.5px solid var(--border-color);flex:1;min-height:0;background:#EDE8E0;">
+        <div style="border-radius:var(--border-radius-lg);overflow:hidden;border:1.5px solid var(--border-color);background:#f5f5f0;aspect-ratio:1.414/1;max-height:70vh;">
             <asp:Panel ID="pnlIframe" runat="server" Visible="false" style="width:100%;height:100%;">
                 <asp:Literal ID="litIframe" runat="server" />
             </asp:Panel>
