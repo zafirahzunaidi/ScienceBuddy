@@ -248,3 +248,7 @@
     .about-reveal { opacity: 1; transform: none; transition: none; }
     .about-reviews__track { animation: none; }
 }
+
+
+/* Hide language toggle on guest pages */
+.sb-lang-toggle { display: none !important; }

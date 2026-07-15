@@ -173,3 +173,7 @@
     .reg-role-page__cards { flex-direction: column; align-items: center; }
     .reg-role-card { width: 200px; }
 }
+
+
+/* Hide language toggle on registration pages */
+.sb-lang-toggle { display: none !important; }

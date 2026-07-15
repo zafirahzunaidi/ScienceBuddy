@@ -739,5 +739,18 @@ SELECT COUNT(*) AS TablesCreated
 FROM sys.tables
 WHERE schema_id = SCHEMA_ID(N'dbo');
 GO
+
+CREATE TABLE dbo.[PasswordResetToken] (
+    [tokenId]    NVARCHAR(10)  NOT NULL,
+    [userId]     NVARCHAR(10)  NOT NULL,
+    [tokenHash]  NVARCHAR(64)  NOT NULL,
+    [createdAt]  DATETIME2     NOT NULL,
+    [expiresAt]  DATETIME2     NOT NULL,
+    [usedAt]     DATETIME2     NULL,
+    CONSTRAINT PK_PasswordResetToken PRIMARY KEY ([tokenId]),
+    CONSTRAINT FK_PasswordResetToken_User FOREIGN KEY ([userId]) REFERENCES dbo.[User]([userId])
+);
+GO
+
 PRINT N'CreateTables.sql completed successfully.';
 GO

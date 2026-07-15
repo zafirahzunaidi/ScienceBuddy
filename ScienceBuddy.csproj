@@ -83,6 +83,9 @@
     <Reference Include="itextsharp">
       <HintPath>packages\iTextSharp.5.5.13.4\lib\net461\itextsharp.dll</HintPath>
     </Reference>
+    <Reference Include="BCrypt.Net-Next">
+      <HintPath>packages\BCrypt.Net-Next.4.0.3\lib\net48\BCrypt.Net-Next.dll</HintPath>
+    </Reference>
     <Reference Include="BouncyCastle.Cryptography">
       <HintPath>packages\BouncyCastle.Cryptography.2.4.0\lib\net461\BouncyCastle.Cryptography.dll</HintPath>
     </Reference>
@@ -105,6 +108,7 @@
   <ItemGroup>
     <Content Include="About.aspx" />
     <Content Include="Admin\Dashboard.aspx" />
+    <Content Include="Admin\MigratePasswords.aspx" />
     <Content Include="Admin\Notifications.aspx" />
     <Content Include="Admin\Profile.aspx" />
     <Content Include="Admin\Settings.aspx" />
@@ -169,6 +173,7 @@
     <Content Include="Images\About\progress.png" />
     <Content Include="Images\About\quiz-assessment.png" />
     <Content Include="Images\Contact\contact-logo.png" />
+    <Content Include="Images\Login\login-fox.png" />
     <Content Include="Images\Parent\amazing-progress.png" />
     <Content Include="Images\Parent\good-progress.png" />
     <Content Include="Images\Parent\low-progress.png" />
@@ -196,6 +201,7 @@
     <Content Include="Parent\EditDiscussion.aspx" />
     <Content Include="Parent\ParentTeacherCommunication.aspx" />
     <Content Include="Register.aspx" />
+    <Content Include="ResetPassword.aspx" />
     <Content Include="StudentRegistration.aspx" />
     <Content Include="ParentRegistration.aspx" />
     <Content Include="TeacherRegistration.aspx" />
@@ -319,6 +325,14 @@
       <DependentUpon>Dashboard.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="Admin\MigratePasswords.aspx.cs">
+      <DependentUpon>MigratePasswords.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\MigratePasswords.aspx.designer.cs">
+      <DependentUpon>MigratePasswords.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="App_Code\PasswordHelper.cs" />
     <Compile Include="Admin\Dashboard.aspx.designer.cs">
       <DependentUpon>Dashboard.aspx</DependentUpon>
     </Compile>
@@ -512,6 +526,13 @@
     </Compile>
     <Compile Include="ForgotPassword.aspx.designer.cs">
       <DependentUpon>ForgotPassword.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ResetPassword.aspx.cs">
+      <DependentUpon>ResetPassword.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ResetPassword.aspx.designer.cs">
+      <DependentUpon>ResetPassword.aspx</DependentUpon>
     </Compile>
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>

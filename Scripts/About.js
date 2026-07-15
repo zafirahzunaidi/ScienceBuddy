@@ -66,13 +66,11 @@
         });
     }
 
-    // ── Role Selection (placeholder) ──
+    // ── Role Selection (navigate to registration pages) ──
     var roleCards = document.querySelectorAll('.about-modal__role');
     roleCards.forEach(function (card) {
-        card.addEventListener('click', function (e) {
-            e.preventDefault();
-            // TODO: Wire to actual registration pages when ready
-            alert('Registration page coming soon!');
+        card.addEventListener('click', function () {
+            // Allow default navigation — href already points to correct registration page
             closeModal();
         });
     });

@@ -280,7 +280,7 @@ namespace ScienceBuddy.Admin
 
                         // 1. Insert User
                         using (var cmd = new SqlCommand("INSERT INTO dbo.[User]([userId],[username],[password],[email],[role],[preferredLanguage],[status]) VALUES(@uid,@un,@pw,@em,'Teacher',@lg,'Active')", conn, txn))
-                        { cmd.Parameters.AddWithValue("@uid", userId); cmd.Parameters.AddWithValue("@un", username); cmd.Parameters.AddWithValue("@pw", password); cmd.Parameters.AddWithValue("@em", email); cmd.Parameters.AddWithValue("@lg", lang); cmd.ExecuteNonQuery(); }
+                        { cmd.Parameters.AddWithValue("@uid", userId); cmd.Parameters.AddWithValue("@un", username); cmd.Parameters.AddWithValue("@pw", PasswordHelper.HashPassword(password)); cmd.Parameters.AddWithValue("@em", email); cmd.Parameters.AddWithValue("@lg", lang); cmd.ExecuteNonQuery(); }
 
                         // 2. Insert Teacher (status=Pending, approvedDate=NULL)
                         using (var cmd = new SqlCommand("INSERT INTO dbo.[Teacher]([teacherId],[userId],[name],[phoneNumber],[academicQualification],[bio],[licenseCert],[status],[approvedDate]) VALUES(@tid,@uid,@name,@ph,@qual,@bio,@cert,'Pending',NULL)", conn, txn))

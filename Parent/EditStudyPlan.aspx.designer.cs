@@ -20,7 +20,7 @@ namespace ScienceBuddy.Parent
         protected global::System.Web.UI.WebControls.Panel pnlTaskForm;
         protected global::System.Web.UI.WebControls.Literal litTaskFormTitle;
         protected global::System.Web.UI.WebControls.TextBox txtTaskTitle;
-        protected global::System.Web.UI.WebControls.DropDownList ddlSuggestedAction;
+        protected global::System.Web.UI.WebControls.TextBox txtSuggestedAction;
         protected global::System.Web.UI.WebControls.Button btnSaveTask;
         protected global::System.Web.UI.WebControls.Button btnCancelTask;
         protected global::System.Web.UI.WebControls.HiddenField hidEditTaskId;

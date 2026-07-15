@@ -1,7 +1,7 @@
 ﻿<%@ Page Title="Contact" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Contact.aspx.cs" Inherits="ScienceBuddy.Contact" %>
 
 <asp:Content ID="HeadContent" ContentPlaceHolderID="HeadContent" runat="server">
-    <link href="<%: ResolveUrl("~/Content/About.css") %>" rel="stylesheet" />
+    <link href="<%: ResolveUrl("~/Content/About.css") %>?v=2" rel="stylesheet" />
     <link href="<%: ResolveUrl("~/Content/Contact.css") %>" rel="stylesheet" />
 </asp:Content>
 
@@ -29,7 +29,7 @@
             <p class="contact-info__text">Whether you are a student, parent, teacher or visitor, we would love to hear from you. Complete the form and your message will be sent directly to the ScienceBuddy administrator.</p>
             <div class="contact-info__card">
                 <div class="contact-info__card-icon"><i class="bi bi-envelope-fill"></i></div>
-                <div><div class="contact-info__card-label">Email</div><div class="contact-info__card-value">tp07734@mail.apu.edu.my</div></div>
+                <div><div class="contact-info__card-label">Email</div><div class="contact-info__card-value">najihahazmi26@gmail.com</div></div>
             </div>
             <div class="contact-info__card">
                 <div class="contact-info__card-icon"><i class="bi bi-geo-alt-fill"></i></div>

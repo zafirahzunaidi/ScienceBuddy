@@ -64,7 +64,7 @@ namespace ScienceBuddy
                             string lang = ddlLanguage.SelectedValue;
 
                             using (var cmd = new SqlCommand("INSERT INTO dbo.[User](userId,username,password,email,role,preferredLanguage,status) VALUES(@id,@u,@p,@e,'Parent',@l,'Active')", conn, txn))
-                            { cmd.Parameters.AddWithValue("@id", userId); cmd.Parameters.AddWithValue("@u", username); cmd.Parameters.AddWithValue("@p", password); cmd.Parameters.AddWithValue("@e", email); cmd.Parameters.AddWithValue("@l", lang); cmd.ExecuteNonQuery(); }
+                            { cmd.Parameters.AddWithValue("@id", userId); cmd.Parameters.AddWithValue("@u", username); cmd.Parameters.AddWithValue("@p", PasswordHelper.HashPassword(password)); cmd.Parameters.AddWithValue("@e", email); cmd.Parameters.AddWithValue("@l", lang); cmd.ExecuteNonQuery(); }
 
                             using (var cmd = new SqlCommand("INSERT INTO dbo.[Parent](parentId,userId,name,phoneNumber) VALUES(@id,@uid,@n,@ph)", conn, txn))
                             { cmd.Parameters.AddWithValue("@id", parentId); cmd.Parameters.AddWithValue("@uid", userId); cmd.Parameters.AddWithValue("@n", name); cmd.Parameters.AddWithValue("@ph", phone); cmd.ExecuteNonQuery(); }

@@ -1,6 +1,6 @@
 <%@ Page Title="Parent Registration" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="ParentRegistration.aspx.cs" Inherits="ScienceBuddy.ParentRegistration" %>
 <asp:Content ID="HeadContent" ContentPlaceHolderID="HeadContent" runat="server">
-    <link href="<%: ResolveUrl("~/Content/Registration.css") %>" rel="stylesheet" />
+    <link href="<%: ResolveUrl("~/Content/Registration.css") %>?v=2" rel="stylesheet" />
 </asp:Content>
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
 <div class="reg-page">

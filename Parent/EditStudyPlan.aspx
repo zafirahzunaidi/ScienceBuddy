@@ -102,16 +102,20 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
                 <div class="pt-dashboard-card-header"><span class="pt-dashboard-card-title"><i class="bi bi-plus-circle"></i> <asp:Literal ID="litTaskFormTitle" runat="server" /></span></div>
                 <div class="pt-dashboard-card-body">
                     <div class="pt-field"><label class="pt-label"><%: T("Task Title","Tajuk Tugasan") %></label><asp:TextBox ID="txtTaskTitle" runat="server" CssClass="pt-input" MaxLength="200" /></div>
-                    <div class="pt-field"><label class="pt-label"><%: T("Suggested Action","Cadangan Tindakan") %></label>
-                        <asp:DropDownList ID="ddlSuggestedAction" runat="server" CssClass="pt-select">
-                            <asp:ListItem Value="View Lesson" />
-                            <asp:ListItem Value="Attempt Quiz" />
-                            <asp:ListItem Value="Revise Notes" />
-                            <asp:ListItem Value="Watch Video" />
-                            <asp:ListItem Value="Practise Weak Topic" />
-                            <asp:ListItem Value="Complete Activity" />
-                            <asp:ListItem Value="Parent Reminder" />
-                        </asp:DropDownList>
+                    <div class="pt-field"><label class="pt-label"><%: T("What should your child do? (optional)","Apakah yang perlu dilakukan oleh anak anda? (Pilihan)") %></label>
+                        <asp:TextBox ID="txtSuggestedAction" runat="server" CssClass="pt-input" MaxLength="200" autocomplete="off" list="suggestedActions" placeholder="e.g. Watch the lesson video on photosynthesis" />
+                        <datalist id="suggestedActions">
+                            <option value="View Lesson" />
+                            <option value="Attempt Quiz" />
+                            <option value="Revise Notes" />
+                            <option value="Watch Video" />
+                            <option value="Practise Weak Topic" />
+                            <option value="Complete Activity" />
+                            <option value="Read Module" />
+                            <option value="Discuss with Teacher" />
+                            <option value="Review Mistakes" />
+                            <option value="Parent Reminder" />
+                        </datalist>
                     </div>
                     <div style="display:flex;gap:10px;">
                         <asp:Button ID="btnSaveTask" runat="server" CssClass="pt-btn primary" OnClick="BtnSaveTask_Click" CausesValidation="false" />

@@ -47,7 +47,7 @@ namespace ScienceBuddy
                             string lang = ddlLanguage.SelectedValue;
 
                             using (var cmd = new SqlCommand("INSERT INTO dbo.[User](userId,username,password,email,role,preferredLanguage,status) VALUES(@id,@u,@p,@e,'Student',@l,'Active')", conn, txn))
-                            { cmd.Parameters.AddWithValue("@id", userId); cmd.Parameters.AddWithValue("@u", username); cmd.Parameters.AddWithValue("@p", password); cmd.Parameters.AddWithValue("@e", email); cmd.Parameters.AddWithValue("@l", lang); cmd.ExecuteNonQuery(); }
+                            { cmd.Parameters.AddWithValue("@id", userId); cmd.Parameters.AddWithValue("@u", username); cmd.Parameters.AddWithValue("@p", PasswordHelper.HashPassword(password)); cmd.Parameters.AddWithValue("@e", email); cmd.Parameters.AddWithValue("@l", lang); cmd.ExecuteNonQuery(); }
 
                             using (var cmd = new SqlCommand("INSERT INTO dbo.[Student](studentId,userId,name,phoneNumber,nickname,currentLevelId,XP,personalityId,parentCode) VALUES(@id,@uid,@n,@ph,@nick,'LV001',0,NULL,@pc)", conn, txn))
                             { cmd.Parameters.AddWithValue("@id", studentId); cmd.Parameters.AddWithValue("@uid", userId); cmd.Parameters.AddWithValue("@n", name); cmd.Parameters.AddWithValue("@ph", phone); cmd.Parameters.AddWithValue("@nick", nickname); cmd.Parameters.AddWithValue("@pc", parentCode); cmd.ExecuteNonQuery(); }

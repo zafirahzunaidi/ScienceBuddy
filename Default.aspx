@@ -1,7 +1,7 @@
 ﻿<%@ Page Title="ScienceBuddy" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="ScienceBuddy._Default" %>
 
 <asp:Content ID="HeadContent" ContentPlaceHolderID="HeadContent" runat="server">
-    <link href="<%: ResolveUrl("~/Content/About.css") %>" rel="stylesheet" />
+    <link href="<%: ResolveUrl("~/Content/About.css") %>?v=2" rel="stylesheet" />
 </asp:Content>
 
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">

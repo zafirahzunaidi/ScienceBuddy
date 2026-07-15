@@ -101,7 +101,7 @@ namespace ScienceBuddy
                             {
                                 cmd.Parameters.AddWithValue("@id", userId);
                                 cmd.Parameters.AddWithValue("@u", username);
-                                cmd.Parameters.AddWithValue("@p", password);
+                                cmd.Parameters.AddWithValue("@p", PasswordHelper.HashPassword(password));
                                 cmd.Parameters.AddWithValue("@e", email);
                                 cmd.Parameters.AddWithValue("@l", lang);
                                 cmd.ExecuteNonQuery();

@@ -141,13 +141,13 @@ namespace ScienceBuddy.Parent
             pnlTaskList.Controls.Add(new LiteralControl(sb.ToString()));
         }
 
-        protected void BtnShowAddTask_Click(object sender, EventArgs e) { litTaskFormTitle.Text = T("Add Task", "Tambah Tugasan"); hidEditTaskId.Value = ""; txtTaskTitle.Text = ""; ddlSuggestedAction.SelectedIndex = 0; pnlTaskForm.Visible = true; LoadTaskList(); LoadRewardList(); BuildPreviewMarkers(); MaintainScrollPositionOnPostBack = false; ScriptManager.RegisterStartupScript(this, GetType(), "ScrollToAddTask", "setTimeout(function(){ var el=document.getElementById('" + pnlTaskForm.ClientID + "'); if(el){el.scrollIntoView({behavior:'smooth',block:'start'});} },120);", true); }
+        protected void BtnShowAddTask_Click(object sender, EventArgs e) { litTaskFormTitle.Text = T("Add Task", "Tambah Tugasan"); hidEditTaskId.Value = ""; txtTaskTitle.Text = ""; txtSuggestedAction.Text = ""; pnlTaskForm.Visible = true; LoadTaskList(); LoadRewardList(); BuildPreviewMarkers(); MaintainScrollPositionOnPostBack = false; ScriptManager.RegisterStartupScript(this, GetType(), "ScrollToAddTask", "setTimeout(function(){ var el=document.getElementById('" + pnlTaskForm.ClientID + "'); if(el){el.scrollIntoView({behavior:'smooth',block:'start'});} },120);", true); }
         protected void BtnCancelTask_Click(object sender, EventArgs e) { pnlTaskForm.Visible = false; LoadTaskList(); LoadRewardList(); BuildPreviewMarkers(); }
 
         protected void BtnEditTaskTrigger_Click(object sender, EventArgs e)
         {
             string taskId = hidEditTaskIdTrigger.Value;
-            try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT taskTitle, suggestedAction FROM dbo.SPTask WHERE spTaskId=@id AND studyPlanId=@pid", c)) { cmd.Parameters.AddWithValue("@id", taskId); cmd.Parameters.AddWithValue("@pid", _planId); c.Open(); using (var r = cmd.ExecuteReader()) { if (r.Read()) { txtTaskTitle.Text = r["taskTitle"].ToString(); var li = ddlSuggestedAction.Items.FindByValue(r["suggestedAction"] != DBNull.Value ? r["suggestedAction"].ToString() : ""); if (li != null) li.Selected = true; } } } } catch { }
+            try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT taskTitle, suggestedAction FROM dbo.SPTask WHERE spTaskId=@id AND studyPlanId=@pid", c)) { cmd.Parameters.AddWithValue("@id", taskId); cmd.Parameters.AddWithValue("@pid", _planId); c.Open(); using (var r = cmd.ExecuteReader()) { if (r.Read()) { txtTaskTitle.Text = r["taskTitle"].ToString(); txtSuggestedAction.Text = r["suggestedAction"] != DBNull.Value ? r["suggestedAction"].ToString() : ""; } } } } catch { }
             hidEditTaskId.Value = taskId; litTaskFormTitle.Text = T("Edit Task", "Edit Tugasan"); pnlTaskForm.Visible = true; LoadTaskList(); LoadRewardList(); BuildPreviewMarkers(); MaintainScrollPositionOnPostBack = false; ScriptManager.RegisterStartupScript(this, GetType(), "ScrollToEditTask", "setTimeout(function(){ var el=document.getElementById('" + pnlTaskForm.ClientID + "'); if(el){el.scrollIntoView({behavior:'smooth',block:'start'});} },120);", true);
         }
 
@@ -164,7 +164,7 @@ namespace ScienceBuddy.Parent
                         int maxOrder = 0; using (var cmd = new SqlCommand("SELECT ISNULL(MAX(orderNo),0) FROM dbo.SPTask WHERE studyPlanId=@id", c, txn)) { cmd.Parameters.AddWithValue("@id", _planId); maxOrder = (int)cmd.ExecuteScalar(); }
                         string newId = GenId(c, txn, "SPTask", "spTaskId", "SPT");
                         using (var cmd = new SqlCommand("INSERT INTO dbo.SPTask(spTaskId,studyPlanId,taskTitle,suggestedAction,orderNo,isCompleted,completedAt) VALUES(@id,@pid,@t,@a,@o,0,NULL)", c, txn))
-                        { cmd.Parameters.AddWithValue("@id", newId); cmd.Parameters.AddWithValue("@pid", _planId); cmd.Parameters.AddWithValue("@t", taskTitle); cmd.Parameters.AddWithValue("@a", ddlSuggestedAction.SelectedValue); cmd.Parameters.AddWithValue("@o", maxOrder + 1); cmd.ExecuteNonQuery(); }
+                        { cmd.Parameters.AddWithValue("@id", newId); cmd.Parameters.AddWithValue("@pid", _planId); cmd.Parameters.AddWithValue("@t", taskTitle); cmd.Parameters.AddWithValue("@a", txtSuggestedAction.Text.Trim()); cmd.Parameters.AddWithValue("@o", maxOrder + 1); cmd.ExecuteNonQuery(); }
                         // Notify child: new task added
                         string childUid = GetChildUserId(c, txn);
                         if (!string.IsNullOrEmpty(childUid))
@@ -174,7 +174,7 @@ namespace ScienceBuddy.Parent
                     else
                     {
                         using (var cmd = new SqlCommand("UPDATE dbo.SPTask SET taskTitle=@t, suggestedAction=@a WHERE spTaskId=@id AND studyPlanId=@pid", c, txn))
-                        { cmd.Parameters.AddWithValue("@t", taskTitle); cmd.Parameters.AddWithValue("@a", ddlSuggestedAction.SelectedValue); cmd.Parameters.AddWithValue("@id", editId); cmd.Parameters.AddWithValue("@pid", _planId); cmd.ExecuteNonQuery(); }
+                        { cmd.Parameters.AddWithValue("@t", taskTitle); cmd.Parameters.AddWithValue("@a", txtSuggestedAction.Text.Trim()); cmd.Parameters.AddWithValue("@id", editId); cmd.Parameters.AddWithValue("@pid", _planId); cmd.ExecuteNonQuery(); }
                         // Notify child: task updated
                         string childUid = GetChildUserId(c, txn);
                         if (!string.IsNullOrEmpty(childUid))
