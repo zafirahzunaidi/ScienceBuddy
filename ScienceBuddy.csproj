@@ -148,6 +148,7 @@
     <Content Include="Content\Site.css" />
     <Content Include="Content\About.css" />
     <Content Include="Content\Contact.css" />
+    <Content Include="Content\Registration.css" />
     <Content Include="Default.aspx" />
     <Content Include="favicon.ico" />
     <Content Include="ForgotPassword.aspx" />
@@ -195,6 +196,10 @@
     <Content Include="Parent\EditDiscussion.aspx" />
     <Content Include="Parent\ParentTeacherCommunication.aspx" />
     <Content Include="Register.aspx" />
+    <Content Include="StudentRegistration.aspx" />
+    <Content Include="ParentRegistration.aspx" />
+    <Content Include="TeacherRegistration.aspx" />
+    <Content Include="TeacherRegistrationStatus.aspx" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
     <Content Include="Scripts\bootstrap.esm.js" />
@@ -637,6 +642,34 @@
     </Compile>
     <Compile Include="Register.aspx.designer.cs">
       <DependentUpon>Register.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="StudentRegistration.aspx.cs">
+      <DependentUpon>StudentRegistration.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="StudentRegistration.aspx.designer.cs">
+      <DependentUpon>StudentRegistration.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ParentRegistration.aspx.cs">
+      <DependentUpon>ParentRegistration.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ParentRegistration.aspx.designer.cs">
+      <DependentUpon>ParentRegistration.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherRegistration.aspx.cs">
+      <DependentUpon>TeacherRegistration.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherRegistration.aspx.designer.cs">
+      <DependentUpon>TeacherRegistration.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="TeacherRegistrationStatus.aspx.cs">
+      <DependentUpon>TeacherRegistrationStatus.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="TeacherRegistrationStatus.aspx.designer.cs">
+      <DependentUpon>TeacherRegistrationStatus.aspx</DependentUpon>
     </Compile>
     <Compile Include="Services\StudentLearningAnalysisService.cs" />
     <Compile Include="Site.Master.cs">

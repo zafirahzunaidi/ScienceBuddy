@@ -255,17 +255,17 @@ namespace ScienceBuddy.Admin
                 { chk.Parameters.AddWithValue("@p", phone);
                   if (Convert.ToInt32(chk.ExecuteScalar()) > 0) { Response.Write("{\"success\":false,\"msg\":\"Phone number already exists.\"}"); return; } }
 
-                // Save certificate file to ~/Images/Teacher/ before starting transaction
+                // Save certificate file to ~/Uploads/TeacherCertificates/ before starting transaction
                 string certPath = "";
                 try
                 {
-                    string folder = HttpContext.Current.Server.MapPath("~/Images/Teacher/");
+                    string folder = HttpContext.Current.Server.MapPath("~/Uploads/TeacherCertificates/");
                     if (!System.IO.Directory.Exists(folder))
                         System.IO.Directory.CreateDirectory(folder);
                     string safeName = System.IO.Path.GetFileNameWithoutExtension(certFile.FileName).Replace(" ", "_");
                     string fileName = "cert_" + safeName + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".pdf";
                     certFile.SaveAs(System.IO.Path.Combine(folder, fileName));
-                    certPath = "~/Images/Teacher/" + fileName;
+                    certPath = "Uploads/TeacherCertificates/" + fileName;
                 }
                 catch (Exception ex)
                 { Response.Write("{\"success\":false,\"msg\":\"Failed to save certificate: " + EscJ(ex.Message) + "\"}"); return; }

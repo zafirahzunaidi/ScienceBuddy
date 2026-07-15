@@ -1,0 +1,175 @@
+/* ============================================================
+   SCIENCEBUDDY — REGISTRATION PAGES (reg-*)
+   ============================================================ */
+.reg-page {
+    --reg-navy: #292652;
+    --reg-purple: #7A4DFF;
+    --reg-font: 'Poppins', 'Nunito', 'Segoe UI', Arial, sans-serif;
+    font-family: var(--reg-font);
+    color: var(--reg-navy);
+    display: flex;
+    min-height: calc(100vh - 68px);
+}
+
+/* ── Left Visual Panel ── */
+.reg-visual {
+    flex: 0 0 42%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 36px;
+    position: relative;
+    overflow: hidden;
+}
+.reg-visual--student { background: linear-gradient(135deg, #1e1b4b 0%, #4338CA 50%, #6366F1 100%); }
+.reg-visual--parent { background: linear-gradient(135deg, #064E3B 0%, #059669 50%, #34D399 100%); }
+.reg-visual--teacher { background: linear-gradient(135deg, #78350F 0%, #D97706 50%, #FBBF24 100%); }
+.reg-visual__mascot { width: 160px; height: auto; object-fit: contain; margin-bottom: 24px; opacity: 0.9; }
+.reg-visual__title { font-size: 1.8rem; font-weight: 800; color: #fff; text-align: center; margin: 0 0 10px; }
+.reg-visual__sub { font-size: 0.95rem; color: rgba(255,255,255,0.85); text-align: center; max-width: 320px; line-height: 1.6; }
+
+/* ── Right Form Panel ── */
+.reg-form-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 48px 52px;
+    overflow-y: auto;
+}
+.reg-form-panel__heading { font-size: 1.5rem; font-weight: 800; color: var(--reg-navy); margin: 0 0 6px; }
+.reg-form-panel__sub { font-size: 0.88rem; color: #64748B; margin: 0 0 24px; line-height: 1.5; }
+
+/* Form fields */
+.reg-field { margin-bottom: 14px; }
+.reg-field label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--reg-navy); margin-bottom: 4px; }
+.reg-field input[type="text"],
+.reg-field input[type="email"],
+.reg-field input[type="password"],
+.reg-field input[type="file"],
+.reg-field select,
+.reg-field textarea {
+    width: 100%; border: 1.5px solid #E2E8F0; border-radius: 10px;
+    padding: 10px 14px; font-size: 0.88rem; font-family: var(--reg-font);
+    color: var(--reg-navy); transition: border-color 0.2s;
+}
+.reg-field input:focus, .reg-field select:focus, .reg-field textarea:focus {
+    border-color: var(--reg-purple); outline: none;
+    box-shadow: 0 0 0 3px rgba(122,77,255,0.08);
+}
+.reg-field textarea { min-height: 80px; resize: vertical; }
+.reg-field .field-validation-error { display: block; font-size: 0.72rem; color: #DC2626; margin-top: 3px; }
+
+/* Section titles and helpers */
+.reg-section-title { font-size: 0.9rem; font-weight: 800; color: var(--reg-navy, #292652); margin: 20px 0 8px; padding-top: 12px; border-top: 1px solid #F1F5F9; }
+.reg-section-title:first-of-type { border-top: none; padding-top: 0; }
+.reg-section-helper { font-size: 0.8rem; color: #64748B; margin: 0 0 12px; line-height: 1.5; }
+.reg-field__note { display: block; font-size: 0.72rem; color: #64748B; margin-top: 4px; }
+
+/* Two-column row */
+.reg-row { display: flex; gap: 14px; }
+.reg-row .reg-field { flex: 1; min-width: 0; }
+@media (max-width: 600px) { .reg-row { flex-direction: column; gap: 0; } }
+
+/* Submit button */
+.reg-btn { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, var(--reg-purple), #6366F1); color: #fff; border: none; border-radius: 99px; padding: 13px 30px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; width: 100%; justify-content: center; margin-top: 8px; }
+.reg-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(122,77,255,0.2); }
+.reg-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+/* Sign-in link */
+.reg-signin-link { text-align: center; margin-top: 16px; font-size: 0.84rem; color: #64748B; }
+.reg-signin-link a { color: var(--reg-purple); font-weight: 700; text-decoration: none; }
+.reg-signin-link a:hover { text-decoration: underline; }
+
+/* Status panels */
+.reg-status { border-radius: 12px; padding: 14px 18px; margin-bottom: 16px; font-size: 0.85rem; font-weight: 600; }
+.reg-status--success { background: #DCFCE7; color: #065F46; border: 1px solid #A7F3D0; }
+.reg-status--error { background: #FEF2F2; color: #991B1B; border: 1px solid #FECACA; }
+
+/* Success state */
+.reg-success { text-align: center; padding: 40px 24px; }
+.reg-success__icon { font-size: 3rem; color: #059669; margin-bottom: 16px; }
+.reg-success__title { font-size: 1.4rem; font-weight: 800; color: var(--reg-navy); margin: 0 0 10px; }
+.reg-success__msg { font-size: 0.92rem; color: #475569; line-height: 1.6; margin: 0 0 24px; }
+.reg-success__btn { display: inline-flex; align-items: center; gap: 6px; background: var(--reg-purple); color: #fff; border-radius: 99px; padding: 12px 28px; font-size: 0.88rem; font-weight: 700; text-decoration: none; transition: transform 0.2s; margin: 0 6px; }
+.reg-success__btn:hover { transform: translateY(-2px); color: #fff; text-decoration: none; }
+.reg-success__btn--outline { background: transparent; border: 2px solid #E2E8F0; color: var(--reg-navy); }
+.reg-success__btn--outline:hover { border-color: var(--reg-purple); color: var(--reg-purple); }
+
+/* Teacher status page */
+.reg-teacher-status { max-width: 700px; margin: 60px auto; padding: 40px; background: #fff; border-radius: 20px; border: 1.5px solid #E2E8F0; box-shadow: 0 4px 20px rgba(0,0,0,0.04); text-align: center; }
+.reg-teacher-status__icon { font-size: 3rem; margin-bottom: 16px; }
+.reg-teacher-status__title { font-size: 1.4rem; font-weight: 800; color: var(--reg-navy); margin: 0 0 12px; }
+.reg-teacher-status__msg { font-size: 0.92rem; color: #475569; line-height: 1.6; margin: 0 0 20px; max-width: 500px; margin-left: auto; margin-right: auto; }
+.reg-teacher-status__badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 16px; border-radius: 99px; font-size: 0.8rem; font-weight: 700; margin-bottom: 20px; }
+.reg-teacher-status__badge--pending { background: #FEF3C7; color: #92400E; }
+.reg-teacher-status__badge--certified { background: #DCFCE7; color: #065F46; }
+.reg-teacher-status__badge--rejected { background: #FEE2E2; color: #991B1B; }
+.reg-teacher-status__badge--blocked { background: #F1F5F9; color: #64748B; }
+
+/* Validation summary */
+.reg-validation-summary { background: #FEF2F2; border: 1px solid #FECACA; border-radius: 10px; padding: 10px 16px; margin-bottom: 14px; font-size: 0.8rem; color: #991B1B; }
+.reg-validation-summary ul { margin: 4px 0 0; padding-left: 16px; }
+
+/* Responsive */
+@media (max-width: 900px) {
+    .reg-page { flex-direction: column; }
+    .reg-visual { flex: none; padding: 36px 24px; min-height: 200px; }
+    .reg-form-panel { padding: 32px 20px; }
+}
+
+
+/* ── Role Selection Page ── */
+.reg-role-page {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; min-height: calc(100vh - 140px);
+    padding: 60px 24px; text-align: center;
+}
+.reg-role-page__title {
+    font-size: clamp(1.6rem, 3.5vw, 2.4rem); font-weight: 800;
+    color: var(--reg-navy, #292652); margin: 0 0 36px;
+}
+.reg-role-page__cards {
+    display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; margin-bottom: 32px;
+}
+.reg-role-card {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 14px;
+    width: 180px; height: 200px;
+    background: #fff; border: 2px solid #E2E8F0; border-radius: 22px;
+    text-decoration: none; color: inherit;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+    transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+}
+.reg-role-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    text-decoration: none;
+}
+.reg-role-card:focus-visible { outline: 3px solid #7A4DFF; outline-offset: 3px; }
+.reg-role-card__icon {
+    width: 56px; height: 56px; border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+}
+.reg-role-card--student .reg-role-card__icon { background: #DBEAFE; color: #1D4ED8; }
+.reg-role-card--student:hover { border-color: #1D4ED8; }
+.reg-role-card--parent .reg-role-card__icon { background: #D1FAE5; color: #059669; }
+.reg-role-card--parent:hover { border-color: #059669; }
+.reg-role-card--teacher .reg-role-card__icon { background: #FEF3C7; color: #D97706; }
+.reg-role-card--teacher:hover { border-color: #D97706; }
+.reg-role-card__name { font-size: 1rem; font-weight: 800; color: #292652; }
+.reg-role-card__arrow {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: #F8FAFC; border: 1.5px solid #E2E8F0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; color: #64748B;
+    transition: background 0.2s, color 0.2s;
+}
+.reg-role-card:hover .reg-role-card__arrow { background: #292652; color: #fff; border-color: #292652; }
+
+@media (max-width: 600px) {
+    .reg-role-page__cards { flex-direction: column; align-items: center; }
+    .reg-role-card { width: 200px; }
+}

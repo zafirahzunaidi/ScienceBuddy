@@ -161,9 +161,9 @@ namespace ScienceBuddy.Admin
                         if (!string.IsNullOrWhiteSpace(certFile))
                         {
                             if (certFile.Contains("/") || certFile.Contains("\\"))
-                                certUrl = certFile.Replace("\\", "/");
+                                certUrl = certFile.Replace("\\", "/").Replace("~/", "");
                             else
-                                certUrl = "Uploads/Certificates/" + certFile;
+                                certUrl = "Uploads/TeacherCertificates/" + certFile;
                         }
 
                         list.Add(new

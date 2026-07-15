@@ -123,15 +123,15 @@
             <button type="button" class="about-modal__close" aria-label="Close">&times;</button>
             <h3 id="contactModalTitle">How would you like to continue?</h3>
             <div class="about-modal__roles">
-                <a href="<%: ResolveUrl("~/Register") %>" class="about-modal__role" data-role="student">
+                <a href="<%: ResolveUrl("~/StudentRegistration.aspx") %>" class="about-modal__role" data-role="student">
                     <div class="about-modal__role-icon about-modal__role-icon--student"><i class="bi bi-mortarboard-fill"></i></div>
                     <div class="about-modal__role-info"><h4>Student</h4><p>Learn and explore</p></div>
                 </a>
-                <a href="<%: ResolveUrl("~/Register") %>" class="about-modal__role" data-role="parent">
+                <a href="<%: ResolveUrl("~/ParentRegistration.aspx") %>" class="about-modal__role" data-role="parent">
                     <div class="about-modal__role-icon about-modal__role-icon--parent"><i class="bi bi-heart-fill"></i></div>
                     <div class="about-modal__role-info"><h4>Parent</h4><p>Support and encourage</p></div>
                 </a>
-                <a href="<%: ResolveUrl("~/Register") %>" class="about-modal__role" data-role="teacher">
+                <a href="<%: ResolveUrl("~/TeacherRegistration.aspx") %>" class="about-modal__role" data-role="teacher">
                     <div class="about-modal__role-icon about-modal__role-icon--teacher"><i class="bi bi-journal-bookmark-fill"></i></div>
                     <div class="about-modal__role-info"><h4>Teacher</h4><p>Guide and inspire</p></div>
                 </a>

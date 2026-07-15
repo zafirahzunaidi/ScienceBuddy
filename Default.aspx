@@ -23,7 +23,7 @@
                 <p class="about-hero__cta-label">
                     Get started as a...</p>
                 <div class="about-hero__cards">
-                    <a href="<%: ResolveUrl("~/Register") %>" class="about-hero__card" data-role="student">
+                    <a href="<%: ResolveUrl("~/StudentRegistration.aspx") %>" class="about-hero__card" data-role="student">
                     <div class="about-hero__card-icon about-hero__card-icon--student">
                         <i class="bi bi-mortarboard-fill"></i>
                     </div>
@@ -31,7 +31,7 @@
                         Student</div>
                     <div class="about-hero__card-desc">
                         Learn, practise, and grow.</div>
-                    </a><a href="<%: ResolveUrl("~/Register") %>" class="about-hero__card" data-role="parent">
+                    </a><a href="<%: ResolveUrl("~/ParentRegistration.aspx") %>" class="about-hero__card" data-role="parent">
                     <div class="about-hero__card-icon about-hero__card-icon--parent">
                         <i class="bi bi-heart-fill"></i>
                     </div>
@@ -39,7 +39,7 @@
                         Parent</div>
                     <div class="about-hero__card-desc">
                         Support every learning step.</div>
-                    </a><a href="<%: ResolveUrl("~/Register") %>" class="about-hero__card" data-role="teacher">
+                    </a><a href="<%: ResolveUrl("~/TeacherRegistration.aspx") %>" class="about-hero__card" data-role="teacher">
                     <div class="about-hero__card-icon about-hero__card-icon--teacher">
                         <i class="bi bi-journal-bookmark-fill"></i>
                     </div>
@@ -313,7 +313,7 @@
                 </button>
                 <h3 id="aboutModalTitle">How would you like to continue?</h3>
                 <div class="about-modal__roles">
-                    <a href="#" class="about-modal__role" data-role="student">
+                    <a href="<%: ResolveUrl("~/StudentRegistration.aspx") %>" class="about-modal__role" data-role="student">
                     <div class="about-modal__role-icon about-modal__role-icon--student">
                         <i class="bi bi-mortarboard-fill"></i>
                     </div>
@@ -322,7 +322,7 @@
                         <p>
                             Learn and explore</p>
                     </div>
-                    </a><a href="#" class="about-modal__role" data-role="parent">
+                    </a><a href="<%: ResolveUrl("~/ParentRegistration.aspx") %>" class="about-modal__role" data-role="parent">
                     <div class="about-modal__role-icon about-modal__role-icon--parent">
                         <i class="bi bi-heart-fill"></i>
                     </div>
@@ -331,7 +331,7 @@
                         <p>
                             Support and encourage</p>
                     </div>
-                    </a><a href="#" class="about-modal__role" data-role="teacher">
+                    </a><a href="<%: ResolveUrl("~/TeacherRegistration.aspx") %>" class="about-modal__role" data-role="teacher">
                     <div class="about-modal__role-icon about-modal__role-icon--teacher">
                         <i class="bi bi-journal-bookmark-fill"></i>
                     </div>
