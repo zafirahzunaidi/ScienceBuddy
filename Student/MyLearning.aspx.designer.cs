@@ -11,7 +11,7 @@ namespace ScienceBuddy.Student
 {
 
 
-    public partial class MyLearning1
+    public partial class MyLearning
     {
 
         /// <summary>

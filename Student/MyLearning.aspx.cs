@@ -8,7 +8,7 @@ using System.Web.UI;
 
 namespace ScienceBuddy.Student
 {
-    public partial class MyLearning1 : Page
+    public partial class MyLearning : Page
     {
         private string ConnStr
         {
@@ -336,16 +336,12 @@ namespace ScienceBuddy.Student
             bool isBM = CurrentLanguage == "BM";
             litUnitsTitle.Text = T("Units", "Unit");
 
-            const string sql = @"
-                SELECT u.unitId, u.unitNameEN, u.unitNameBM,
-                       u.unitDescriptionEN, u.unitDescriptionBM, u.orderNo,
+            const string sql = @"SELECT u.unitId, u.unitNameEN, u.unitNameBM,u.unitDescriptionEN, u.unitDescriptionBM, u.orderNo,
                        (SELECT COUNT(*) FROM Subtopic WHERE unitId = u.unitId) AS subtopicCount,
-                       (SELECT COUNT(*) FROM Lesson ls
-                        JOIN Subtopic st ON st.subtopicId = ls.subtopicId
-                        WHERE st.unitId = u.unitId) AS lessonCount
-                FROM Unit u
-                WHERE u.levelId = @levelId
-                ORDER BY u.orderNo";
+                       (SELECT COUNT(*) FROM Lesson ls JOIN Subtopic st ON st.subtopicId = ls.subtopicId WHERE st.unitId = u.unitId) AS lessonCount
+                        FROM Unit u
+                        WHERE u.levelId = @levelId
+                        ORDER BY u.orderNo";
 
             DataTable dataTable = new DataTable();
             using (SqlCommand command = new SqlCommand(sql, connection))
@@ -364,13 +360,13 @@ namespace ScienceBuddy.Student
             Dictionary<string, int> completedMap = new Dictionary<string, int>();
             if (!string.IsNullOrEmpty(studentId) && TableExists("LessonProgress"))
             {
-                const string pSql = @"
-                    SELECT st.unitId, COUNT(*) AS cnt
+                const string pSql = @"SELECT st.unitId, COUNT(*) AS cnt
                     FROM LessonProgress lp
                     JOIN Lesson ls ON ls.lessonId = lp.lessonId
                     JOIN Subtopic st ON st.subtopicId = ls.subtopicId
                     WHERE lp.studentId = @studentId AND lp.isCompleted = 1
                     GROUP BY st.unitId";
+
                 using (SqlCommand cmd2 = new SqlCommand(pSql, connection))
                 {
                     cmd2.Parameters.AddWithValue("@studentId", studentId);
@@ -469,8 +465,7 @@ namespace ScienceBuddy.Student
             }
 
             bool isBM = CurrentLanguage == "BM";
-            const string sql = @"
-                SELECT TOP 1 quizId, quizTitleEN, quizTitleBM
+            const string sql = @"SELECT quizId, quizTitleEN, quizTitleBM
                 FROM Quiz
                 WHERE levelId = @levelId AND quizType = 'Level'
                 ORDER BY createdAt DESC";
