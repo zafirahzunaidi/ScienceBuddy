@@ -58,7 +58,7 @@
         <div class="ad-question-bank-hdr-title"><i class="bi bi-database" style="color:var(--ad-question-bank);"></i> <%= T("Question Bank", "Bank Soalan") %></div>
         <div class="ad-question-bank-hdr-sub"><%= T("Manage all questions available in the ScienceBuddy system.", "Urus semua soalan yang tersedia dalam sistem ScienceBuddy.") %></div>
     </div>
-    <a href="javascript:;" class="ad-question-bank-abtn qb-abtn-view" onclick="location.reload();" style="padding:8px 16px;"><i class="bi bi-arrow-clockwise"></i> <%= T("Refresh", "Muat Semula") %></a>
+    <a href="javascript:;" class="ad-question-bank-abtn ad-question-bank-abtn-view" onclick="location.reload();" style="padding:8px 16px;"><i class="bi bi-arrow-clockwise"></i> <%= T("Refresh", "Muat Semula") %></a>
 </div>
 
 <!-- STATS -->
@@ -95,9 +95,8 @@
                 <span><i class="bi bi-translate"></i> <%# Eval("language") %></span>
             </div>
             <div class="ad-question-bank-card-actions">
-                <a href="javascript:;" class="ad-question-bank-abtn qb-abtn-view" data-json='<%# HttpUtility.HtmlAttributeEncode(Eval("jsonData").ToString()) %>' onclick="viewQ(JSON.parse(this.getAttribute('data-json')))"><i class="bi bi-eye"></i> <%= T("View","Lihat") %></a>
-                <a href="javascript:;" class="ad-question-bank-abtn qb-abtn-edit" onclick="editQ('<%# Eval("questionId") %>')"><i class="bi bi-pencil"></i> <%= T("Edit","Sunting") %></a>
-                <a href="javascript:;" class="ad-question-bank-abtn qb-abtn-disable" onclick="disableQ('<%# Eval("questionId") %>')"><i class="bi bi-slash-circle"></i> <%= T("Disable","Nyahaktif") %></a>
+                <a href="javascript:;" class="ad-question-bank-abtn ad-question-bank-abtn-view" data-json='<%# HttpUtility.HtmlAttributeEncode(Eval("jsonData").ToString()) %>' onclick="viewQ(JSON.parse(this.getAttribute('data-json')))"><i class="bi bi-eye"></i> <%= T("View","Lihat") %></a>
+                <a href="javascript:;" class="ad-question-bank-abtn ad-question-bank-abtn-edit" onclick="editQ('<%# Eval("questionId") %>')"><i class="bi bi-pencil"></i> <%= T("Edit","Sunting") %></a>
             </div>
         </div>
     </ItemTemplate></asp:Repeater>

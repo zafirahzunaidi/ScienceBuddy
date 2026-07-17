@@ -10,6 +10,10 @@ namespace ScienceBuddy
     {
         public static void RegisterRoutes(RouteCollection routes)
         {
+            // Allow static files in Images folder to be served directly
+            routes.Ignore("Images/{*pathInfo}");
+            routes.Ignore("Uploads/{*pathInfo}");
+
             var settings = new FriendlyUrlSettings();
             settings.AutoRedirectMode = RedirectMode.Off;
             routes.EnableFriendlyUrls(settings);

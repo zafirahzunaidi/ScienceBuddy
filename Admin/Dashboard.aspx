@@ -64,7 +64,7 @@
             <div class="ad-dashboard-mascot-circle"></div>
             <div class="ad-dashboard-hero-mascot-wrap">
                 <div class="ad-dashboard-hero-mascot-breathe">
-                    <img src="<%: ResolveUrl("~/Images/Personality/chill-learner.png") %>" alt="ScienceBuddy Assistant" class="ad-dashboard-hero-mascot" />
+                    <img src="<%: ResolveUrl("~/Images/Personality/admin.png") %>" alt="ScienceBuddy Assistant" class="ad-dashboard-hero-mascot" />
                 </div>
             </div>
         </div>

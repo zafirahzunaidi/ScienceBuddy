@@ -117,6 +117,7 @@ namespace ScienceBuddy.Admin
                         string title = row["materialTitle"] != DBNull.Value ? row["materialTitle"].ToString() : "";
                         string type = row["materialType"] != DBNull.Value ? row["materialType"].ToString() : "";
                         string fileUrl = row["fileUrl"] != DBNull.Value ? row["fileUrl"].ToString() : "";
+                        string resolvedFileUrl = GetMaterialPath(fileUrl);
                         string status = row["status"] != DBNull.Value ? row["status"].ToString() : "";
                         string lang = row["language"] != DBNull.Value ? row["language"].ToString() : "";
                         string teacher = row["teacherName"] != DBNull.Value ? row["teacherName"].ToString() : "-";
@@ -131,7 +132,7 @@ namespace ScienceBuddy.Admin
                             "\"id\":\"" + EscapeJson(matId) + "\"," +
                             "\"title\":\"" + EscapeJson(title) + "\"," +
                             "\"type\":\"" + EscapeJson(type) + "\"," +
-                            "\"fileUrl\":\"" + EscapeJson(ResolveUrl("~/" + fileUrl)) + "\"," +
+                            "\"fileUrl\":\"" + EscapeJson(resolvedFileUrl) + "\"," +
                             "\"status\":\"" + EscapeJson(status) + "\"," +
                             "\"lang\":\"" + EscapeJson(lang) + "\"," +
                             "\"teacher\":\"" + EscapeJson(teacher) + "\"," +
@@ -366,6 +367,20 @@ namespace ScienceBuddy.Admin
         {
             if (string.IsNullOrEmpty(s)) return "";
             return s.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "");
+        }
+
+        /// <summary>
+        /// Resolves the full URL path for a material file.
+        /// Handles both cases: filename only (humansense.pdf) or full path (Images/Material/humansense.pdf)
+        /// </summary>
+        private string GetMaterialPath(string fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName)) return "";
+            // If it already contains the path, use it directly
+            if (fileName.StartsWith("Images/") || fileName.StartsWith("~/"))
+                return ResolveUrl("~/" + fileName.TrimStart('~', '/'));
+            // Otherwise, prepend the standard material folder
+            return ResolveUrl("~/Images/Material/" + fileName);
         }
     }
 }

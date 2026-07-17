@@ -68,6 +68,7 @@ namespace ScienceBuddy.Admin
 
                         hfStudentId.Value = studentId;
                         hfUserId.Value = userId;
+                        hfStatus.Value = status;
                         litInitials.Text = name.Length >= 2 ? name.Substring(0, 2).ToUpper() : "S";
                         litName.Text = HttpUtility.HtmlEncode(name);
                         litStudentId.Text = studentId;
@@ -198,13 +199,15 @@ namespace ScienceBuddy.Admin
                             string csId = Request.QueryString["studentId"] ?? "";
                             string csStatus = Request.QueryString["newStatus"] ?? "";
                             string csReason = Request.QueryString["reason"] ?? "";
-                            string csUid = ""; using (var cmd = new SqlCommand("SELECT [userId] FROM dbo.[Student] WHERE [studentId]=@s", conn)) { cmd.Parameters.AddWithValue("@s", csId); var v = cmd.ExecuteScalar(); csUid = v?.ToString() ?? ""; }
+                            string csUid = ""; string csEmail = ""; string csName = "";
+                            using (var cmd = new SqlCommand("SELECT s.[userId], u.[email], s.[name] FROM dbo.[Student] s LEFT JOIN dbo.[User] u ON u.[userId]=s.[userId] WHERE s.[studentId]=@s", conn)) { cmd.Parameters.AddWithValue("@s", csId); using (var rd = cmd.ExecuteReader()) { if (rd.Read()) { csUid = rd["userId"]?.ToString() ?? ""; csEmail = rd["email"]?.ToString() ?? ""; csName = rd["name"]?.ToString() ?? "Student"; } } }
                             using (var cmd = new SqlCommand("UPDATE dbo.[User] SET [status]=@st WHERE [userId]=@u", conn)) { cmd.Parameters.AddWithValue("@st", csStatus); cmd.Parameters.AddWithValue("@u", csUid); cmd.ExecuteNonQuery(); }
                             string aId = GID(conn, "UserStatusAction", "actionId", "USA");
                             using (var cmd = new SqlCommand("INSERT INTO dbo.[UserStatusAction]([actionId],[userId],[actionType],[reason],[actionDate],[performedBy]) VALUES(@a,@u,@t,@r,@d,@p)", conn))
                             { cmd.Parameters.AddWithValue("@a", aId); cmd.Parameters.AddWithValue("@u", csUid); cmd.Parameters.AddWithValue("@t", csStatus); cmd.Parameters.AddWithValue("@r", string.IsNullOrEmpty(csReason) ? "Changed by admin." : csReason); cmd.Parameters.AddWithValue("@d", DateTime.Today); cmd.Parameters.AddWithValue("@p", adminId); cmd.ExecuteNonQuery(); }
-                            ILog(conn, adminId, "Status Changed", csId + " -> " + csStatus);
-                            Response.Write("{\"success\":true}");
+                            ILog(conn, adminId, csStatus == "Blocked" ? "Account Blocked" : "Account Activated", csStatus == "Blocked" ? "Administrator blocked the account." : "Administrator reactivated the account.");
+                            SendStatusEmail(csEmail, csName, csStatus, csReason);
+                            Response.Write("{\"success\":true,\"emailSent\":\"" + EJ(csEmail) + "\",\"emailName\":\"" + EJ(csName) + "\",\"emailStatus\":\"" + EJ(csStatus) + "\"}");
                             break;
                         case "archive":
                             string arId = Request.QueryString["studentId"] ?? "";
@@ -237,5 +240,40 @@ namespace ScienceBuddy.Admin
 
         private static string NS(object v) { return (v == null || v == DBNull.Value) ? "" : v.ToString(); }
         private static string EJ(object v) { string s = NS(v); return s.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", ""); }
+
+        private void SendStatusEmail(string toEmail, string userName, string newStatus, string reason)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(toEmail)) return;
+                string smtpHost = System.Configuration.ConfigurationManager.AppSettings["SmtpHost"] ?? "smtp.gmail.com";
+                int smtpPort = int.Parse(System.Configuration.ConfigurationManager.AppSettings["SmtpPort"] ?? "587");
+                string smtpUser = System.Configuration.ConfigurationManager.AppSettings["SmtpUsername"] ?? "";
+                string smtpPass = System.Configuration.ConfigurationManager.AppSettings["SmtpPassword"] ?? "";
+                bool smtpSsl = bool.Parse(System.Configuration.ConfigurationManager.AppSettings["SmtpEnableSsl"] ?? "true");
+                string subject, body;
+                if (newStatus == "Blocked")
+                {
+                    subject = "ScienceBuddy Account Blocked";
+                    body = "Dear " + userName + ",\n\nYour ScienceBuddy account has been blocked by an administrator.\n\nReason:\n" + (string.IsNullOrWhiteSpace(reason) ? "No reason provided." : reason) + "\n\nWhile your account is blocked, you will not be able to log in to ScienceBuddy.\n\nIf you believe this was done in error, please contact the ScienceBuddy administrator.\n\nRegards,\nScienceBuddy Administration";
+                }
+                else
+                {
+                    subject = "ScienceBuddy Account Reactivated";
+                    body = "Dear " + userName + ",\n\nYour ScienceBuddy account has been reactivated.\n\nYou may now log in and continue using ScienceBuddy.\n\nWelcome back!\n\nRegards,\nScienceBuddy Administration";
+                }
+                using (var mail = new System.Net.Mail.MailMessage(smtpUser, toEmail, subject, body))
+                {
+                    mail.IsBodyHtml = false;
+                    using (var smtp = new System.Net.Mail.SmtpClient(smtpHost, smtpPort))
+                    {
+                        smtp.Credentials = new System.Net.NetworkCredential(smtpUser, smtpPass);
+                        smtp.EnableSsl = smtpSsl;
+                        smtp.Send(mail);
+                    }
+                }
+            }
+            catch { /* Email failure should not block the status change */ }
+        }
     }
 }

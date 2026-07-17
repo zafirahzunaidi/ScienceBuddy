@@ -59,9 +59,9 @@ namespace ScienceBuddy.Admin
         private void LoadQuizzes(string search, string typeF, string levelF, string statusF)
         {
             using (var conn = new SqlConnection(ConnStr)) { conn.Open();
-                string tCol = CurrentLanguage == "BM" ? "q.[quizTitleBM]" : "q.[quizTitleEN]";
+                string tCol = CurrentLanguage == "BM" ? "ISNULL(q.[quizTitleBM],q.[quizTitleEN])" : "ISNULL(q.[quizTitleEN],q.[quizTitleBM])";
                 string lvCol = CurrentLanguage == "BM" ? "lv.[levelNameBM]" : "lv.[levelNameEN]";
-                string sql = string.Format(@"SELECT q.[quizId], ISNULL({0},q.[quizTitleEN]) AS title, q.[quizType], q.[status],
+                string sql = string.Format(@"SELECT q.[quizId], {0} AS title, q.[quizType], q.[status],
                     ISNULL({1},'-') AS level,
                     (SELECT COUNT(*) FROM dbo.[Question] qn WHERE qn.[quizId]=q.[quizId]) AS questionCount,
                     (SELECT COUNT(*) FROM dbo.[QuizResult] qr WHERE qr.[quizId]=q.[quizId]) AS attemptCount
@@ -100,9 +100,9 @@ namespace ScienceBuddy.Admin
             string quizId = e.CommandArgument.ToString();
             using (var conn = new SqlConnection(ConnStr)) { conn.Open();
                 // Quiz info
-                string tCol = CurrentLanguage == "BM" ? "q.[quizTitleBM]" : "q.[quizTitleEN]";
+                string tCol = CurrentLanguage == "BM" ? "ISNULL(q.[quizTitleBM],q.[quizTitleEN])" : "ISNULL(q.[quizTitleEN],q.[quizTitleBM])";
                 string lvCol = CurrentLanguage == "BM" ? "lv.[levelNameBM]" : "lv.[levelNameEN]";
-                using (var cmd = new SqlCommand(string.Format(@"SELECT ISNULL({0},q.[quizTitleEN]) AS title, q.[quizType], q.[status], q.[language],
+                using (var cmd = new SqlCommand(string.Format(@"SELECT {0} AS title, q.[quizType], q.[status], q.[language],
                     ISNULL({1},'-') AS level, ISNULL(u.[username],'Admin') AS creator
                     FROM dbo.[Quiz] q LEFT JOIN dbo.[Level] lv ON lv.[levelId]=q.[levelId]
                     LEFT JOIN dbo.[User] u ON u.[userId]=q.[createdByUserId] WHERE q.[quizId]=@id", tCol, lvCol), conn))
