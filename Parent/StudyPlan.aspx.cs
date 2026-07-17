@@ -25,13 +25,153 @@ namespace ScienceBuddy.Parent
             else { _selectedChildId = ddlSidebarChild.SelectedValue; _selectedChildName = ddlSidebarChild.SelectedItem != null ? ddlSidebarChild.SelectedItem.Text : ""; LoadSPId(); }
         }
 
-        private bool EnsureAuth() { if (Session["userId"] == null || Session["role"] == null || Session["role"].ToString() != "Parent") { Response.Redirect("~/Login.aspx", false); Context.ApplicationInstance.CompleteRequest(); return false; } return true; }
-        private void LoadLang() { string l = Session["preferredLanguage"] as string; if (!string.IsNullOrEmpty(l)) { CurrentLanguage = l; return; } try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT preferredLanguage FROM dbo.[User] WHERE userId=@u", c)) { cmd.Parameters.AddWithValue("@u", Session["userId"].ToString()); c.Open(); var r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) { CurrentLanguage = r.ToString(); Session["preferredLanguage"] = CurrentLanguage; } } } catch { } }
-        private void LoadParent() { try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT parentId FROM dbo.[Parent] WHERE userId=@u", c)) { cmd.Parameters.AddWithValue("@u", _parentUserId); c.Open(); var r = cmd.ExecuteScalar(); if (r != null) _parentId = r.ToString(); } } catch { } }
-        private void LoadChildren() { ddlSidebarChild.Items.Clear(); try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT s.studentId, ISNULL(s.nickname,s.name) AS n FROM dbo.StudentParent sp INNER JOIN dbo.Student s ON sp.studentId=s.studentId WHERE sp.parentId=@p ORDER BY s.name", c)) { cmd.Parameters.AddWithValue("@p", _parentId); c.Open(); using (var r = cmd.ExecuteReader()) { while (r.Read()) ddlSidebarChild.Items.Add(new ListItem(r["n"].ToString(), r["studentId"].ToString())); } } } catch { } if (ddlSidebarChild.Items.Count > 0) { string saved = Session["selectedChildId"] as string; if (!string.IsNullOrEmpty(saved) && ddlSidebarChild.Items.FindByValue(saved) != null) ddlSidebarChild.SelectedValue = saved; else Session["selectedChildId"] = ddlSidebarChild.Items[0].Value; _selectedChildId = ddlSidebarChild.SelectedValue; _selectedChildName = ddlSidebarChild.SelectedItem.Text; LoadSPId(); } }
-        private void LoadSPId() { try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT studentParentId FROM dbo.StudentParent WHERE parentId=@p AND studentId=@s", c)) { cmd.Parameters.AddWithValue("@p", _parentId); cmd.Parameters.AddWithValue("@s", _selectedChildId); c.Open(); var r = cmd.ExecuteScalar(); if (r != null) _studentParentId = r.ToString(); } } catch { } }
-        protected void SidebarChildChanged(object sender, EventArgs e) { Session["selectedChildId"] = ddlSidebarChild.SelectedValue; _selectedChildId = ddlSidebarChild.SelectedValue; _selectedChildName = ddlSidebarChild.SelectedItem.Text; LoadSPId(); LoadPage(); }
-        private void ShowNoChild() { pnlNoChild.Visible = true; pnlContent.Visible = false; pnlNoPlan.Visible = false; litNoChildMsg.Text = T("No linked child found. Please link a child account first.", "Tiada anak dipautkan. Sila pautkan akaun anak terlebih dahulu."); }
+        /// <summary>
+        /// Ensures the current user is a logged-in Parent. Redirects to login if not.
+        /// </summary>
+        private bool EnsureAuth()
+        {
+            if (Session["userId"] == null || Session["role"] == null || Session["role"].ToString() != "Parent")
+            {
+                Response.Redirect("~/Login.aspx", false);
+                Context.ApplicationInstance.CompleteRequest();
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Loads the user's preferred language from session or database.
+        /// </summary>
+        private void LoadLang()
+        {
+            string savedLang = Session["preferredLanguage"] as string;
+            if (!string.IsNullOrEmpty(savedLang))
+            {
+                CurrentLanguage = savedLang;
+                return;
+            }
+
+            try
+            {
+                using (var conn = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand("SELECT preferredLanguage FROM dbo.[User] WHERE userId = @userId", conn))
+                {
+                    cmd.Parameters.AddWithValue("@userId", Session["userId"].ToString());
+                    conn.Open();
+                    object result = cmd.ExecuteScalar();
+                    if (result != null && result != DBNull.Value)
+                    {
+                        CurrentLanguage = result.ToString();
+                        Session["preferredLanguage"] = CurrentLanguage;
+                    }
+                }
+            }
+            catch { }
+        }
+
+        /// <summary>
+        /// Loads the parentId for the current user from the Parent table.
+        /// </summary>
+        private void LoadParent()
+        {
+            try
+            {
+                using (var conn = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand("SELECT parentId FROM dbo.[Parent] WHERE userId = @userId", conn))
+                {
+                    cmd.Parameters.AddWithValue("@userId", _parentUserId);
+                    conn.Open();
+                    object result = cmd.ExecuteScalar();
+                    if (result != null && result != DBNull.Value)
+                        _parentId = result.ToString();
+                }
+            }
+            catch { }
+        }
+
+        /// <summary>
+        /// Populates the sidebar child dropdown with linked children.
+        /// Restores the previously selected child from session if available.
+        /// </summary>
+        private void LoadChildren()
+        {
+            ddlSidebarChild.Items.Clear();
+
+            try
+            {
+                string sql = @"SELECT s.studentId, ISNULL(s.nickname, s.name) AS displayName
+                    FROM dbo.StudentParent sp
+                    INNER JOIN dbo.Student s ON sp.studentId = s.studentId
+                    WHERE sp.parentId = @parentId
+                    ORDER BY s.name";
+
+                using (var conn = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@parentId", _parentId);
+                    conn.Open();
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                            ddlSidebarChild.Items.Add(new ListItem(reader["displayName"].ToString(), reader["studentId"].ToString()));
+                    }
+                }
+            }
+            catch { }
+
+            if (ddlSidebarChild.Items.Count > 0)
+            {
+                // Restore previously selected child if still valid
+                string savedChildId = Session["selectedChildId"] as string;
+                if (!string.IsNullOrEmpty(savedChildId) && ddlSidebarChild.Items.FindByValue(savedChildId) != null)
+                    ddlSidebarChild.SelectedValue = savedChildId;
+                else
+                    Session["selectedChildId"] = ddlSidebarChild.Items[0].Value;
+
+                _selectedChildId = ddlSidebarChild.SelectedValue;
+                _selectedChildName = ddlSidebarChild.SelectedItem.Text;
+                LoadSPId();
+            }
+        }
+
+        /// <summary>
+        /// Loads the StudentParent link ID for the currently selected child.
+        /// </summary>
+        private void LoadSPId()
+        {
+            try
+            {
+                using (var conn = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand("SELECT studentParentId FROM dbo.StudentParent WHERE parentId = @parentId AND studentId = @studentId", conn))
+                {
+                    cmd.Parameters.AddWithValue("@parentId", _parentId);
+                    cmd.Parameters.AddWithValue("@studentId", _selectedChildId);
+                    conn.Open();
+                    object result = cmd.ExecuteScalar();
+                    if (result != null && result != DBNull.Value)
+                        _studentParentId = result.ToString();
+                }
+            }
+            catch { }
+        }
+
+        protected void SidebarChildChanged(object sender, EventArgs e)
+        {
+            Session["selectedChildId"] = ddlSidebarChild.SelectedValue;
+            _selectedChildId = ddlSidebarChild.SelectedValue;
+            _selectedChildName = ddlSidebarChild.SelectedItem.Text;
+            LoadSPId();
+            LoadPage();
+        }
+
+        private void ShowNoChild()
+        {
+            pnlNoChild.Visible = true;
+            pnlContent.Visible = false;
+            pnlNoPlan.Visible = false;
+            litNoChildMsg.Text = T("No linked child found. Please link a child account first.",
+                                   "Tiada anak dipautkan. Sila pautkan akaun anak terlebih dahulu.");
+        }
 
         private void LoadPage()
         {

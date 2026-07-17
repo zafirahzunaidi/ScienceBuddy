@@ -18,14 +18,10 @@
             padding: 48px 36px; position: relative; overflow: hidden;
             background: linear-gradient(160deg, #1e1b4b 0%, #312e81 25%, #4338ca 50%, #6366f1 75%, #7c3aed 95%);
         }
-        /* Large soft glow behind mascot */
-        .login-left::before { content: ''; position: absolute; width: 280px; height: 280px; border-radius: 50%; background: radial-gradient(circle, rgba(99,102,241,0.25) 0%, transparent 70%); bottom: 10%; left: 50%; transform: translateX(-50%); pointer-events: none; }
-        /* Faint orbit ring */
-        .login-left::after { content: ''; position: absolute; width: 320px; height: 320px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.06); bottom: 5%; left: 50%; transform: translateX(-50%); pointer-events: none; }
+        .login-left::before { content: ''; position: absolute; width: 300px; height: 300px; border-radius: 50%; background: radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%); top: -80px; right: -60px; pointer-events: none; }
+        .login-left::after { content: ''; position: absolute; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%); bottom: -40px; left: -30px; pointer-events: none; }
 
         /* Decorative elements */
-        .login-left-glow { position: absolute; width: 160px; height: 160px; border-radius: 50%; background: rgba(129,140,248,0.15); filter: blur(50px); top: 35%; left: 50%; transform: translateX(-50%); pointer-events: none; }
-        .login-left-orbit { position: absolute; width: 400px; height: 400px; border-radius: 50%; border: 1px dashed rgba(255,255,255,0.05); bottom: 0%; left: 50%; transform: translateX(-50%) translateY(30%); pointer-events: none; }
         .login-left-bubble1 { position: absolute; width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.04); top: 12%; left: 18%; pointer-events: none; }
         .login-left-bubble2 { position: absolute; width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.05); top: 25%; right: 14%; pointer-events: none; }
         .login-left-bubble3 { position: absolute; width: 18px; height: 18px; border-radius: 50%; background: rgba(255,255,255,0.06); bottom: 28%; left: 12%; pointer-events: none; }
@@ -33,18 +29,87 @@
         .login-left-star2 { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: rgba(255,255,255,0.35); top: 42%; left: 22%; pointer-events: none; }
         .login-left-star3 { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.3); bottom: 35%; right: 20%; pointer-events: none; }
         .login-left-star4 { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: rgba(255,255,255,0.25); top: 65%; left: 30%; pointer-events: none; }
-        .login-left-atom { position: absolute; width: 60px; height: 60px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.05); top: 55%; right: 10%; pointer-events: none; }
-        .login-left-atom::before { content: ''; position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 1px solid rgba(255,255,255,0.04); transform: rotate(60deg); }
-        .login-left-atom::after { content: ''; position: absolute; width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.12); top: 50%; left: 50%; transform: translate(-50%,-50%); }
 
-        @media (max-width: 767px) {
-            .login-left-orbit, .login-left-atom, .login-left-bubble1, .login-left-bubble3 { display: none; }
+        /* ── Visual Stage ── */
+        .login-visual-stage { position: relative; display: flex; align-items: center; justify-content: center; flex-direction: column; width: 100%; }
+
+        /* Brand content (wordmark + slogan above, mascot below) */
+        .login-brand-content { position: relative; z-index: 5; display: flex; flex-direction: column; align-items: center; text-align: center; }
+
+        /* Wordmark */
+        .login-wordmark { font-family: 'Poppins', sans-serif; font-size: clamp(2.8rem, 4.5vw, 5.2rem); font-weight: 800; color: #fff; margin: 0 0 8px; line-height: 1.1; letter-spacing: -0.5px; }
+        .login-wordmark span { color: #FCD34D; }
+
+        /* Slogan */
+        .login-slogan { font-size: clamp(0.85rem, 1.2vw, 1.05rem); color: rgba(255,255,255,0.75); max-width: 300px; line-height: 1.5; margin-bottom: 20px; }
+
+        /* Mascot wrapper with glow — orbit surrounds this */
+        .login-mascot-wrap { position: relative; display: flex; align-items: center; justify-content: center; width: 380px; height: 380px; }
+        .login-mascot-wrap::before { content: ''; position: absolute; inset: 15% 12%; background: radial-gradient(circle, rgba(255,238,148,0.70) 0%, rgba(255,200,95,0.30) 28%, rgba(168,105,255,0.16) 52%, transparent 72%); filter: blur(26px); transform: scale(1.15); z-index: 0; border-radius: 50%; pointer-events: none; }
+        .login-mascot-wrap::after { content: ''; position: absolute; inset: -8%; background: radial-gradient(circle, rgba(99,102,241,0.10) 0%, transparent 60%); filter: blur(35px); z-index: 0; pointer-events: none; }
+        .login-mascot { width: 240px; max-width: 65%; height: auto; object-fit: contain; position: relative; z-index: 4; margin-top: 20px; }
+
+        /* ── Fox-centred Orbit (bigger, fits fox inside) ── */
+        .login-orbit { position: absolute; width: 360px; height: 360px; border: 2px solid rgba(255,255,255,0.38); border-radius: 50%; box-shadow: 0 0 8px rgba(255,255,255,0.35), 0 0 18px rgba(170,140,255,0.30), 0 0 32px rgba(117,90,255,0.18), inset 0 0 10px rgba(255,255,255,0.08); pointer-events: none; z-index: 1; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
+        /* ── Rocket on fox orbit ── */
+        .login-rocket-wrap { position: absolute; width: 360px; height: 360px; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; z-index: 3; }
+        .login-rocket { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .login-rocket span { position: absolute; font-size: clamp(1.8rem, 2.5vw, 2.8rem); offset-path: ellipse(50% 50% at 50% 50%); offset-distance: 0%; offset-rotate: auto 90deg; animation: loginRocketPath 16s linear infinite; filter: drop-shadow(0 0 6px rgba(255,230,130,0.90)) drop-shadow(0 0 14px rgba(255,140,70,0.50)); }
+        .login-rocket span::after { content: ''; position: absolute; top: 50%; right: 100%; width: 16px; height: 5px; background: linear-gradient(90deg, transparent, rgba(255,180,60,0.6), rgba(255,120,40,0.75)); border-radius: 0 4px 4px 0; transform: translateY(-50%); filter: blur(2px); }
+        @keyframes loginRocketPath { from { offset-distance: 0%; } to { offset-distance: 100%; } }
+
+        /* ── Planets OUTSIDE the orbit ── */
+        .login-planet { position: absolute; border-radius: 50%; pointer-events: none; z-index: 2; }
+        .login-planet-1 { width: 26px; height: 26px; background: radial-gradient(circle at 30% 30%, #93C5FD, #2563EB); top: 50%; left: -18%; box-shadow: 0 0 12px rgba(37,99,235,0.5), 0 0 24px rgba(37,99,235,0.2); animation: loginBreathe1 4s ease-in-out infinite alternate; }
+        .login-planet-2 { width: 22px; height: 22px; background: radial-gradient(circle at 30% 30%, #F9A8D4, #EC4899); top: 8%; right: -12%; box-shadow: 0 0 12px rgba(236,72,153,0.5), 0 0 24px rgba(236,72,153,0.2); animation: loginBreathe2 5s ease-in-out infinite alternate; animation-delay: 0.8s; }
+        .login-planet-3 { width: 20px; height: 20px; background: radial-gradient(circle at 30% 30%, #FDE68A, #A855F7); bottom: 5%; right: -10%; box-shadow: 0 0 12px rgba(168,85,247,0.5), 0 0 24px rgba(168,85,247,0.2); animation: loginBreathe3 3.5s ease-in-out infinite alternate; animation-delay: 1.5s; }
+        @keyframes loginBreathe1 { from { transform: scale(1); } to { transform: scale(1.10); } }
+        @keyframes loginBreathe2 { from { transform: scale(0.95); } to { transform: scale(1.08); } }
+        @keyframes loginBreathe3 { from { transform: scale(1); } to { transform: scale(1.12); } }
+
+        /* ── Glowing Yellow Stars ── */
+        .login-star { position: absolute; border-radius: 50%; background: #FCD34D; pointer-events: none; z-index: 0; box-shadow: 0 0 4px rgba(252,211,77,0.6), 0 0 8px rgba(252,211,77,0.3); animation: loginTwinkle 3s ease-in-out infinite alternate; }
+        .login-star-1 { width: 4px; height: 4px; top: 15%; left: 12%; animation-duration: 2.5s; }
+        .login-star-2 { width: 5px; height: 5px; top: 30%; right: 10%; animation-duration: 3.2s; animation-delay: 0.4s; }
+        .login-star-3 { width: 3px; height: 3px; top: 55%; left: 8%; animation-duration: 4s; animation-delay: 1s; }
+        .login-star-4 { width: 4px; height: 4px; bottom: 18%; right: 15%; animation-duration: 2.8s; animation-delay: 0.7s; }
+        .login-star-5 { width: 3px; height: 3px; top: 22%; left: 32%; animation-duration: 3.5s; animation-delay: 1.2s; }
+        .login-star-6 { width: 5px; height: 5px; bottom: 35%; left: 6%; animation-duration: 3s; animation-delay: 0.3s; }
+        .login-star-7 { width: 3px; height: 3px; top: 42%; right: 6%; animation-duration: 4.2s; animation-delay: 2s; }
+        .login-star-8 { width: 4px; height: 4px; bottom: 12%; left: 25%; animation-duration: 3.8s; animation-delay: 0.9s; }
+        .login-star-9 { width: 3px; height: 3px; top: 70%; right: 25%; animation-duration: 2.6s; animation-delay: 1.6s; }
+        .login-star-10 { width: 5px; height: 5px; top: 8%; right: 30%; animation-duration: 3.4s; animation-delay: 0.5s; }
+        @keyframes loginTwinkle { from { opacity: 0.4; transform: scale(0.8); } to { opacity: 1; transform: scale(1.3); } }
+
+        /* Reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            .login-rocket span { animation: none; offset-distance: 12%; }
+            .login-planet { animation: none !important; }
+            .login-star { animation: none !important; opacity: 0.6 !important; }
         }
 
-        .login-brand { font-family: 'Poppins', sans-serif; font-size: 1.8rem; font-weight: 800; color: #fff; margin-bottom: 8px; position: relative; z-index: 1; }
-        .login-brand span { color: #FCD34D; }
-        .login-slogan { font-size: 0.95rem; color: rgba(255,255,255,0.75); max-width: 260px; line-height: 1.5; position: relative; z-index: 1; margin-bottom: 32px; }
-        .login-mascot { width: 280px; max-width: 85%; height: auto; object-fit: contain; position: relative; z-index: 1; }
+        @media (max-width: 900px) {
+            .login-mascot-wrap { width: 300px; height: 300px; }
+            .login-orbit, .login-rocket-wrap { width: 290px; height: 290px; }
+            .login-mascot { width: 200px; }
+            .login-planet-1 { width: 20px; height: 20px; }
+            .login-planet-2 { width: 16px; height: 16px; }
+            .login-planet-3 { width: 14px; height: 14px; }
+        }
+
+        @media (max-width: 767px) {
+            .login-left-bubble1, .login-left-bubble3 { display: none; }
+            .login-orbit { width: 200px; height: 200px; }
+            .login-rocket-wrap { display: none; }
+            .login-mascot-wrap { width: 200px; height: 200px; }
+            .login-mascot { width: 140px; margin-top: 10px; }
+            .login-wordmark { font-size: clamp(1.8rem, 6vw, 2.4rem); }
+            .login-slogan { margin-bottom: 12px; }
+            .login-planet-2, .login-planet-3 { display: none; }
+            .login-planet-1 { width: 16px; height: 16px; }
+            .login-star-3, .login-star-5, .login-star-7, .login-star-9 { display: none; }
+        }
 
         /* ── Right Panel ── */
         .login-right {
@@ -102,8 +167,6 @@
         @media (max-width: 767px) {
             .login-page { flex-direction: column; }
             .login-left { flex: none; padding: 32px 24px; min-height: auto; }
-            .login-mascot { width: 100px; margin-bottom: 0; }
-            .login-slogan { margin-bottom: 16px; font-size: 0.85rem; }
             .login-right { padding: 28px 16px; }
             .login-card { padding: 32px 22px; max-width: none; }
         }
@@ -119,8 +182,6 @@
 
     <%-- ═══ LEFT PANEL ═══ --%>
     <div class="login-left" aria-hidden="true">
-        <div class="login-left-glow"></div>
-        <div class="login-left-orbit"></div>
         <div class="login-left-bubble1"></div>
         <div class="login-left-bubble2"></div>
         <div class="login-left-bubble3"></div>
@@ -128,10 +189,40 @@
         <div class="login-left-star2"></div>
         <div class="login-left-star3"></div>
         <div class="login-left-star4"></div>
-        <div class="login-left-atom"></div>
-        <div class="login-brand">Science<span>Buddy</span></div>
-        <p class="login-slogan">Your next science adventure starts here.</p>
-        <img src="<%: ResolveUrl("~/Images/Login/login-fox.png") %>" alt="" class="login-mascot" />
+
+        <%-- Visual Stage --%>
+        <div class="login-visual-stage">
+            <%-- Glowing stars --%>
+            <div class="login-star login-star-1" aria-hidden="true"></div>
+            <div class="login-star login-star-2" aria-hidden="true"></div>
+            <div class="login-star login-star-3" aria-hidden="true"></div>
+            <div class="login-star login-star-4" aria-hidden="true"></div>
+            <div class="login-star login-star-5" aria-hidden="true"></div>
+            <div class="login-star login-star-6" aria-hidden="true"></div>
+            <div class="login-star login-star-7" aria-hidden="true"></div>
+            <div class="login-star login-star-8" aria-hidden="true"></div>
+            <div class="login-star login-star-9" aria-hidden="true"></div>
+            <div class="login-star login-star-10" aria-hidden="true"></div>
+            <%-- Brand content --%>
+            <div class="login-brand-content">
+                <h1 class="login-wordmark">Science<span>Buddy</span></h1>
+                <p class="login-slogan">Your next science adventure starts here.</p>
+                <div class="login-mascot-wrap">
+                    <%-- Orbit around fox --%>
+                    <div class="login-orbit" aria-hidden="true"></div>
+                    <%-- Rocket on fox orbit --%>
+                    <div class="login-rocket-wrap" aria-hidden="true">
+                        <div class="login-rocket"><span>&#x1F680;</span></div>
+                    </div>
+                    <%-- Planets --%>
+                    <div class="login-planet login-planet-1" aria-hidden="true"></div>
+                    <div class="login-planet login-planet-2" aria-hidden="true"></div>
+                    <div class="login-planet login-planet-3" aria-hidden="true"></div>
+                    <%-- Fox --%>
+                    <img src="<%: ResolveUrl("~/Images/Login/login-fox.png") %>" alt="" class="login-mascot" />
+                </div>
+            </div>
+        </div>
     </div>
 
     <%-- ═══ RIGHT PANEL ═══ --%>
@@ -155,12 +246,12 @@
 
             <div class="login-form">
                 <div class="login-field">
-                    <label for="<%: txtUsername.ClientID %>">Username or Email <span class="required">*</span></label>
+                    <label for="<%: txtUsername.ClientID %>">Username <span class="required">*</span></label>
                     <div class="login-input-wrap">
                         <i class="bi bi-person icon-left"></i>
-                        <asp:TextBox ID="txtUsername" runat="server" MaxLength="150" AutoComplete="username" placeholder="Enter your username or email" aria-required="true" />
+                        <asp:TextBox ID="txtUsername" runat="server" MaxLength="150" AutoComplete="username" placeholder="Enter your username" aria-required="true" />
                     </div>
-                    <asp:RequiredFieldValidator ID="rfvUsername" runat="server" ControlToValidate="txtUsername" ErrorMessage="Username or email is required." CssClass="sb-field-error" Display="Dynamic" SetFocusOnError="true" ValidationGroup="LoginGroup" />
+                    <asp:RequiredFieldValidator ID="rfvUsername" runat="server" ControlToValidate="txtUsername" ErrorMessage="Username is required." CssClass="sb-field-error" Display="Dynamic" SetFocusOnError="true" ValidationGroup="LoginGroup" />
                 </div>
 
                 <div class="login-field">

@@ -105,17 +105,29 @@ namespace ScienceBuddy
                     {
                         try
                         {
-                            // Update password
-                            using (var cmd = new SqlCommand("UPDATE dbo.[User] SET [password]=@pwd WHERE userId=@uid", conn, txn))
-                            { cmd.Parameters.AddWithValue("@pwd", hashedPassword); cmd.Parameters.AddWithValue("@uid", userId); cmd.ExecuteNonQuery(); }
+                            // Update the user's password with the new BCrypt hash
+                            using (var cmd = new SqlCommand("UPDATE dbo.[User] SET [password] = @pwd WHERE userId = @uid", conn, txn))
+                            {
+                                cmd.Parameters.AddWithValue("@pwd", hashedPassword);
+                                cmd.Parameters.AddWithValue("@uid", userId);
+                                cmd.ExecuteNonQuery();
+                            }
 
-                            // Mark token as used
-                            using (var cmd = new SqlCommand("UPDATE dbo.[PasswordResetToken] SET usedAt=@now WHERE tokenHash=@hash", conn, txn))
-                            { cmd.Parameters.AddWithValue("@now", DateTime.Now); cmd.Parameters.AddWithValue("@hash", tokenHash); cmd.ExecuteNonQuery(); }
+                            // Mark this token as used so it cannot be reused
+                            using (var cmd = new SqlCommand("UPDATE dbo.[PasswordResetToken] SET usedAt = @now WHERE tokenHash = @hash", conn, txn))
+                            {
+                                cmd.Parameters.AddWithValue("@now", DateTime.Now);
+                                cmd.Parameters.AddWithValue("@hash", tokenHash);
+                                cmd.ExecuteNonQuery();
+                            }
 
-                            // Invalidate other unused tokens for this user
-                            using (var cmd = new SqlCommand("UPDATE dbo.[PasswordResetToken] SET usedAt=@now WHERE userId=@uid AND usedAt IS NULL", conn, txn))
-                            { cmd.Parameters.AddWithValue("@now", DateTime.Now); cmd.Parameters.AddWithValue("@uid", userId); cmd.ExecuteNonQuery(); }
+                            // Invalidate any other unused tokens for this user (security: one reset at a time)
+                            using (var cmd = new SqlCommand("UPDATE dbo.[PasswordResetToken] SET usedAt = @now WHERE userId = @uid AND usedAt IS NULL", conn, txn))
+                            {
+                                cmd.Parameters.AddWithValue("@now", DateTime.Now);
+                                cmd.Parameters.AddWithValue("@uid", userId);
+                                cmd.ExecuteNonQuery();
+                            }
 
                             txn.Commit();
                             pnlForm.Visible = false;
@@ -132,12 +144,18 @@ namespace ScienceBuddy
         {
             try
             {
-                using (var c = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand("SELECT configValue FROM dbo.[ConfigurationSetting] WHERE configKey='Password Minimum Length'", c))
-                { c.Open(); var r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value && int.TryParse(r.ToString(), out int v)) return v; }
+                using (var conn = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand("SELECT configValue FROM dbo.[ConfigurationSetting] WHERE configKey = 'Password Minimum Length'", conn))
+                {
+                    conn.Open();
+                    object result = cmd.ExecuteScalar();
+                    if (result != null && result != DBNull.Value && int.TryParse(result.ToString(), out int length))
+                        return length;
+                }
             }
             catch { }
-            return 8;
+
+            return 8; // default if setting not found
         }
 
         private static string ComputeSHA256(string input)

@@ -94,9 +94,8 @@
 <div class="ad-student-details-panel" id="tab-account">
     <asp:Literal ID="litAccountFields" runat="server" />
     <div class="ad-student-details-actions">
-        <a href="javascript:;" class="ad-student-details-btn ad-student-details-btn-success" onclick="changeStatus('Active')"><i class="bi bi-check-circle"></i> <%= T("Activate","Aktifkan") %></a>
-        <a href="javascript:;" class="ad-student-details-btn ad-student-details-btn-warning" onclick="changeStatus('Blocked')"><i class="bi bi-slash-circle"></i> <%= T("Block","Sekat") %></a>
-        <a href="javascript:;" class="ad-student-details-btn ad-student-details-btn-danger" onclick="archiveUser()"><i class="bi bi-archive"></i> <%= T("Archive","Arkib") %></a>
+        <a href="javascript:;" class="ad-student-details-btn ad-student-details-btn-success" id="btnActivate" onclick="changeStatus('Active')"><i class="bi bi-check-circle"></i> <%= T("Activate","Aktifkan") %></a>
+        <a href="javascript:;" class="ad-student-details-btn ad-student-details-btn-warning" id="btnBlock" onclick="changeStatus('Blocked')"><i class="bi bi-slash-circle"></i> <%= T("Block","Sekat") %></a>
         <a href="javascript:;" class="ad-student-details-btn" onclick="resetPassword()"><i class="bi bi-key"></i> <%= T("Reset Password","Tetapkan Semula Kata Laluan") %></a>
     </div>
 </div>
@@ -113,11 +112,13 @@
 
 <asp:HiddenField ID="hfStudentId" runat="server" />
 <asp:HiddenField ID="hfUserId" runat="server" />
+<asp:HiddenField ID="hfStatus" runat="server" />
 
 <script>
 var studentId = document.getElementById('<%= hfStudentId.ClientID %>').value;
 var userId = document.getElementById('<%= hfUserId.ClientID %>').value;
 var basePath = window.location.pathname;
+var currentStatus = document.getElementById('<%= hfStatus.ClientID %>').value;
 
 function switchTab(tab){
     document.querySelectorAll('.ad-student-details-tab').forEach(function(t,i){t.classList.remove('active');});
@@ -135,17 +136,16 @@ function editProfile(){
     });
 }
 
+// Disable button based on current status
+if(currentStatus==='Active'){document.getElementById('btnActivate').classList.add('ad-details-btn-disabled');}
+if(currentStatus==='Blocked'){document.getElementById('btnBlock').classList.add('ad-details-btn-disabled');}
+
 function changeStatus(newStatus){
+    if(newStatus==='Active'&&currentStatus==='Active')return;
+    if(newStatus==='Blocked'&&currentStatus==='Blocked')return;
     Swal.fire({title:'<%= T("Change Status?","Tukar Status?") %>',input:'textarea',inputPlaceholder:'<%= T("Reason...","Alasan...") %>',showCancelButton:true,confirmButtonText:newStatus,confirmButtonColor:newStatus==='Active'?'#059669':'#D97706'}).then(function(r){
         if(!r.isConfirmed)return;
-        fetch(basePath+'?handler=StudentCRUD&action=changeStatus&studentId='+studentId+'&newStatus='+newStatus+'&reason='+encodeURIComponent(r.value||''),{method:'POST'}).then(function(r){return r.json();}).then(function(d){if(d.success){Swal.fire({icon:'success',title:'<%= T("Status Changed!","Status Ditukar!") %>',timer:2000,timerProgressBar:true}).then(function(){location.reload();});}else{Swal.fire({icon:'error',title:'Error',text:d.msg});}});
-    });
-}
-
-function archiveUser(){
-    Swal.fire({title:'<%= T("Archive this account?","Arkibkan akaun ini?") %>',text:'<%= T("This account will be deactivated.","Akaun ini akan dinyahaktifkan.") %>',icon:'warning',showCancelButton:true,confirmButtonText:'<%= T("Archive","Arkib") %>',confirmButtonColor:'#DC2626'}).then(function(r){
-        if(!r.isConfirmed)return;
-        fetch(basePath+'?handler=StudentCRUD&action=archive&studentId='+studentId,{method:'POST'}).then(function(r){return r.json();}).then(function(d){if(d.success){Swal.fire({icon:'success',title:'<%= T("Archived!","Diarkibkan!") %>',timer:2000,timerProgressBar:true}).then(function(){window.location.href='<%: ResolveUrl("~/Admin/StudentManagement.aspx") %>';});}else{Swal.fire({icon:'error',title:'Error',text:d.msg});}});
+        fetch(basePath+'?handler=StudentCRUD&action=changeStatus&studentId='+studentId+'&newStatus='+newStatus+'&reason='+encodeURIComponent(r.value||''),{method:'POST'}).then(function(r){return r.json();}).then(function(d){if(d.success){Swal.fire({icon:'success',title:'<%= T("Status Changed!","Status Ditukar!") %>',html:'<div style="text-align:left;font-size:.85rem;margin-top:12px;"><p style="margin-bottom:8px;"><strong><%= T("Email sent to:","E-mel dihantar ke:") %></strong></p><p style="color:#2563EB;font-weight:600;">'+d.emailSent+'</p><p style="margin-top:8px;color:#64748B;"><%= T("Subject:","Subjek:") %> '+(d.emailStatus==='Blocked'?'ScienceBuddy Account Blocked':'ScienceBuddy Account Reactivated')+'</p></div>',confirmButtonColor:'#2563EB'}).then(function(){location.reload();});}else{Swal.fire({icon:'error',title:'Error',text:d.msg});}});
     });
 }
 

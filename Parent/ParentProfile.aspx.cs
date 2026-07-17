@@ -207,40 +207,75 @@ namespace ScienceBuddy.Parent
         // ══════════════════════════════════════════════════════════════
         protected void BtnChangePwd_Click(object sender, EventArgs e)
         {
-            string current = txtCurrentPwd.Text;
-            string newPwd = txtNewPwd.Text;
-            string confirm = txtConfirmPwd.Text;
+            string currentPassword = txtCurrentPwd.Text;
+            string newPassword = txtNewPwd.Text;
+            string confirmPassword = txtConfirmPwd.Text;
 
-            if (string.IsNullOrEmpty(current)) { ShowMsg(T("Please enter your current password.", "Sila masukkan kata laluan semasa anda."), false); return; }
-            if (string.IsNullOrEmpty(newPwd)) { ShowMsg(T("Please enter a new password.", "Sila masukkan kata laluan baharu."), false); return; }
-            if (newPwd.Length < 6) { ShowMsg(T("New password must be at least 6 characters.", "Kata laluan baharu mesti sekurang-kurangnya 6 aksara."), false); return; }
-            if (newPwd != confirm) { ShowMsg(T("New passwords do not match.", "Kata laluan baharu tidak sepadan."), false); return; }
+            // ── Validation (early returns) ──
+            if (string.IsNullOrEmpty(currentPassword))
+            {
+                ShowMsg(T("Please enter your current password.", "Sila masukkan kata laluan semasa anda."), false);
+                return;
+            }
+            if (string.IsNullOrEmpty(newPassword))
+            {
+                ShowMsg(T("Please enter a new password.", "Sila masukkan kata laluan baharu."), false);
+                return;
+            }
+            if (newPassword.Length < 6)
+            {
+                ShowMsg(T("New password must be at least 6 characters.", "Kata laluan baharu mesti sekurang-kurangnya 6 aksara."), false);
+                return;
+            }
+            if (newPassword != confirmPassword)
+            {
+                ShowMsg(T("New passwords do not match.", "Kata laluan baharu tidak sepadan."), false);
+                return;
+            }
 
             try
             {
-                using (var c = new SqlConnection(ConnStr))
+                using (SqlConnection conn = new SqlConnection(ConnStr))
                 {
-                    c.Open();
+                    conn.Open();
 
-                    // Verify current password
-                    string storedPwd = "";
-                    using (var cmd = new SqlCommand("SELECT password FROM dbo.[User] WHERE userId=@u", c))
-                    { cmd.Parameters.AddWithValue("@u", _parentUserId); var r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) storedPwd = r.ToString(); }
+                    // Retrieve the stored password hash for verification
+                    string storedHash = "";
+                    using (SqlCommand cmd = new SqlCommand("SELECT password FROM dbo.[User] WHERE userId = @userId", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@userId", _parentUserId);
+                        object result = cmd.ExecuteScalar();
+                        if (result != null && result != DBNull.Value)
+                            storedHash = result.ToString();
+                    }
 
-                    if (storedPwd != current)
-                    { ShowMsg(T("Current password is incorrect.", "Kata laluan semasa tidak betul."), false); return; }
+                    // Verify the current password before allowing a change
+                    if (!PasswordHelper.VerifyPassword(currentPassword, storedHash))
+                    {
+                        ShowMsg(T("Current password is incorrect.", "Kata laluan semasa tidak betul."), false);
+                        return;
+                    }
 
-                    // Update password
-                    using (var cmd = new SqlCommand("UPDATE dbo.[User] SET password=@p WHERE userId=@u", c))
-                    { cmd.Parameters.AddWithValue("@p", newPwd); cmd.Parameters.AddWithValue("@u", _parentUserId); cmd.ExecuteNonQuery(); }
+                    // Hash the new password before storing
+                    string newHash = PasswordHelper.HashPassword(newPassword);
+                    using (SqlCommand cmd = new SqlCommand("UPDATE dbo.[User] SET password = @newHash WHERE userId = @userId", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@newHash", newHash);
+                        cmd.Parameters.AddWithValue("@userId", _parentUserId);
+                        cmd.ExecuteNonQuery();
+                    }
                 }
 
+                // Clear the form fields after success
                 txtCurrentPwd.Text = "";
                 txtNewPwd.Text = "";
                 txtConfirmPwd.Text = "";
                 ShowMsg(T("Password changed successfully!", "Kata laluan berjaya ditukar!"), true);
             }
-            catch { ShowMsg(T("An error occurred while changing password.", "Ralat berlaku semasa menukar kata laluan."), false); }
+            catch
+            {
+                ShowMsg(T("An error occurred while changing password.", "Ralat berlaku semasa menukar kata laluan."), false);
+            }
         }
 
         private void ShowMsg(string msg, bool ok) { pnlMessage.Visible = true; divMsg.InnerHtml = msg; iMsgIcon.Attributes["class"] = ok ? "bi bi-check-circle-fill" : "bi bi-exclamation-circle-fill"; }

@@ -27,10 +27,83 @@ namespace ScienceBuddy.Parent
             else { LoadPage(); }
         }
 
-        private bool EnsureAuth() { if (Session["userId"] == null || Session["role"] == null || Session["role"].ToString() != "Parent") { Response.Redirect("~/Login.aspx", false); Context.ApplicationInstance.CompleteRequest(); return false; } return true; }
-        private void LoadLang() { string l = Session["preferredLanguage"] as string; if (!string.IsNullOrEmpty(l)) { CurrentLanguage = l; return; } try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT preferredLanguage FROM dbo.[User] WHERE userId=@u", c)) { cmd.Parameters.AddWithValue("@u", Session["userId"].ToString()); c.Open(); var r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) { CurrentLanguage = r.ToString(); Session["preferredLanguage"] = CurrentLanguage; } } } catch { } }
-        private void LoadParent() { try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT parentId FROM dbo.[Parent] WHERE userId=@u", c)) { cmd.Parameters.AddWithValue("@u", _parentUserId); c.Open(); var r = cmd.ExecuteScalar(); if (r != null) _parentId = r.ToString(); } } catch { } }
-        private void LoadLinkedChildUserIds() { try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT u.userId FROM dbo.StudentParent sp INNER JOIN dbo.Student s ON sp.studentId=s.studentId INNER JOIN dbo.[User] u ON s.userId=u.userId WHERE sp.parentId=@p", c)) { cmd.Parameters.AddWithValue("@p", _parentId); c.Open(); using (var r = cmd.ExecuteReader()) { while (r.Read()) _linkedChildUserIds.Add(r["userId"].ToString()); } } } catch { } }
+        private bool EnsureAuth()
+        {
+            if (Session["userId"] == null || Session["role"] == null || Session["role"].ToString() != "Parent")
+            {
+                Response.Redirect("~/Login.aspx", false);
+                Context.ApplicationInstance.CompleteRequest();
+                return false;
+            }
+            return true;
+        }
+        private void LoadLang()
+        {
+            string savedLang = Session["preferredLanguage"] as string;
+            if (!string.IsNullOrEmpty(savedLang))
+            {
+                CurrentLanguage = savedLang;
+                return;
+            }
+
+            try
+            {
+                using (var conn = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand("SELECT preferredLanguage FROM dbo.[User] WHERE userId = @userId", conn))
+                {
+                    cmd.Parameters.AddWithValue("@userId", Session["userId"].ToString());
+                    conn.Open();
+                    object result = cmd.ExecuteScalar();
+                    if (result != null && result != DBNull.Value)
+                    {
+                        CurrentLanguage = result.ToString();
+                        Session["preferredLanguage"] = CurrentLanguage;
+                    }
+                }
+            }
+            catch { }
+        }
+
+        private void LoadParent()
+        {
+            try
+            {
+                using (var conn = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand("SELECT parentId FROM dbo.[Parent] WHERE userId = @userId", conn))
+                {
+                    cmd.Parameters.AddWithValue("@userId", _parentUserId);
+                    conn.Open();
+                    object result = cmd.ExecuteScalar();
+                    if (result != null && result != DBNull.Value)
+                        _parentId = result.ToString();
+                }
+            }
+            catch { }
+        }
+        private void LoadLinkedChildUserIds()
+        {
+            try
+            {
+                string sql = @"SELECT u.userId
+                    FROM dbo.StudentParent sp
+                    INNER JOIN dbo.Student s ON sp.studentId = s.studentId
+                    INNER JOIN dbo.[User] u ON s.userId = u.userId
+                    WHERE sp.parentId = @parentId";
+
+                using (var conn = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@parentId", _parentId);
+                    conn.Open();
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                            _linkedChildUserIds.Add(reader["userId"].ToString());
+                    }
+                }
+            }
+            catch { }
+        }
         private void LoadSidebarChildren() { ddlSidebarChild.Items.Clear(); try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT s.studentId, ISNULL(s.nickname,s.name) AS n FROM dbo.StudentParent sp INNER JOIN dbo.Student s ON sp.studentId=s.studentId WHERE sp.parentId=@p ORDER BY s.name", c)) { cmd.Parameters.AddWithValue("@p", _parentId); c.Open(); using (var r = cmd.ExecuteReader()) { while (r.Read()) ddlSidebarChild.Items.Add(new ListItem(r["n"].ToString(), r["studentId"].ToString())); } } } catch { } if (ddlSidebarChild.Items.Count > 0) { string saved = Session["selectedChildId"] as string; if (!string.IsNullOrEmpty(saved) && ddlSidebarChild.Items.FindByValue(saved) != null) ddlSidebarChild.SelectedValue = saved; else Session["selectedChildId"] = ddlSidebarChild.Items[0].Value; } }
         protected void SidebarChildChanged(object sender, EventArgs e) { Session["selectedChildId"] = ddlSidebarChild.SelectedValue; }
 

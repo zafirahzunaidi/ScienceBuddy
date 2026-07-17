@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -14,12 +14,15 @@ namespace ScienceBuddy.Admin
         private string ConnStr => ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
         protected string CurrentLanguage => ((ScienceBuddy.SiteMaster)Master).CurrentLanguage;
         protected string T(string en, string bm) => CurrentLanguage == "BM" ? bm : en;
+        private bool _isAjax = false;
+
+        protected override void Render(HtmlTextWriter writer) { if (!_isAjax) base.Render(writer); }
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Request.QueryString["handler"] == "GetQuestion" && Request.HttpMethod == "POST") { HandleGetQuestion(); return; }
-            if (Request.QueryString["handler"] == "SaveQuestion" && Request.HttpMethod == "POST") { HandleSaveQuestion(); return; }
-            if (Request.QueryString["handler"] == "DisableQuestion" && Request.HttpMethod == "POST") { HandleDisable(); return; }
+            if (Request.QueryString["handler"] == "GetQuestion" && Request.HttpMethod == "POST") { _isAjax = true; HandleGetQuestion(); return; }
+            if (Request.QueryString["handler"] == "SaveQuestion" && Request.HttpMethod == "POST") { _isAjax = true; HandleSaveQuestion(); return; }
+            if (Request.QueryString["handler"] == "DisableQuestion" && Request.HttpMethod == "POST") { _isAjax = true; HandleDisable(); return; }
 
             if (Session["userId"] == null || Session["role"]?.ToString() != "Admin")
             { Response.Redirect("~/Login.aspx", false); return; }
@@ -126,13 +129,13 @@ namespace ScienceBuddy.Admin
         {
             Response.ContentType = "application/json";
             try {
-                if (Session["userId"] == null) { Response.Write("{\"success\":false,\"msg\":\"Unauthorized\"}"); Response.End(); return; }
+                if (Session["userId"] == null) { Response.Write("{\"success\":false,\"msg\":\"Unauthorized\"}");  return; }
                 string qId = Request.QueryString["qId"] ?? "";
                 using (var conn = new SqlConnection(ConnStr)) { conn.Open();
                     using (var cmd = new SqlCommand("SELECT [questionId],[questionTextEN],[questionTextBM],[optionA_EN],[optionB_EN],[optionC_EN],[optionD_EN],[correctAnswer],[difficulty],[status] FROM dbo.[Question] WHERE [questionId]=@id", conn))
                     { cmd.Parameters.AddWithValue("@id", qId);
                         using (var rd = cmd.ExecuteReader()) {
-                            if (!rd.Read()) { Response.Write("{\"success\":false,\"msg\":\"Not found\"}"); Response.End(); return; }
+                            if (!rd.Read()) { Response.Write("{\"success\":false,\"msg\":\"Not found\"}");  return; }
                             string json = "{\"success\":true,\"data\":{" +
                                 "\"id\":\"" + EJ(rd["questionId"]) + "\"," +
                                 "\"textEN\":\"" + EJ(rd["questionTextEN"]) + "\"," +
@@ -149,15 +152,16 @@ namespace ScienceBuddy.Admin
                     }
                 }
             } catch (Exception ex) { Response.Write("{\"success\":false,\"msg\":\"" + EJ(ex.Message) + "\"}"); }
-            Response.End();
+            
         }
 
         // AJAX: Save question edit
         private void HandleSaveQuestion()
         {
+            Response.Clear();
             Response.ContentType = "application/json";
             try {
-                if (Session["userId"] == null) { Response.Write("{\"success\":false,\"msg\":\"Unauthorized\"}"); Response.End(); return; }
+                if (Session["userId"] == null) { Response.Write("{\"success\":false,\"msg\":\"Unauthorized\"}"); return; }
                 string qId = Request.QueryString["qId"] ?? "";
                 string textEN = Request.QueryString["textEN"] ?? "";
                 string textBM = Request.QueryString["textBM"] ?? "";
@@ -183,7 +187,6 @@ namespace ScienceBuddy.Admin
                 }
                 Response.Write("{\"success\":true}");
             } catch (Exception ex) { Response.Write("{\"success\":false,\"msg\":\"" + EJ(ex.Message) + "\"}"); }
-            Response.End();
         }
 
         // AJAX: Disable question
@@ -191,7 +194,7 @@ namespace ScienceBuddy.Admin
         {
             Response.ContentType = "application/json";
             try {
-                if (Session["userId"] == null) { Response.Write("{\"success\":false,\"msg\":\"Unauthorized\"}"); Response.End(); return; }
+                if (Session["userId"] == null) { Response.Write("{\"success\":false,\"msg\":\"Unauthorized\"}");  return; }
                 string qId = Request.QueryString["qId"] ?? "";
                 using (var conn = new SqlConnection(ConnStr)) { conn.Open();
                     using (var cmd = new SqlCommand("UPDATE dbo.[Question] SET [status]='Disabled' WHERE [questionId]=@id", conn))
@@ -200,7 +203,7 @@ namespace ScienceBuddy.Admin
                 }
                 Response.Write("{\"success\":true}");
             } catch (Exception ex) { Response.Write("{\"success\":false,\"msg\":\"" + EJ(ex.Message) + "\"}"); }
-            Response.End();
+            
         }
 
         private void InsertLog(SqlConnection c, string uid, string action, string desc, string status)

@@ -3981,3 +3981,6 @@
     .ad-certificate-viewer { width: 100%; height: 100%; overflow: auto; }
     .ad-certificate-signature { display: flex; flex-direction: column; align-items: center; gap: 2px; }
     .ad-certificate-signature-line { width: 120px; height: 1px; background: #94A3B8; margin-top: 4px; }
+
+    /* Disabled state for account action buttons */
+    .ad-details-btn-disabled { opacity: 0.4; pointer-events: none; cursor: not-allowed; }

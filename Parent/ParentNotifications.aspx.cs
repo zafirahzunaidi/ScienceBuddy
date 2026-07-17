@@ -29,9 +29,58 @@ namespace ScienceBuddy.Parent
             else { _selectedChildId = ddlSidebarChild.SelectedValue; _selectedChildName = ddlSidebarChild.SelectedItem != null ? ddlSidebarChild.SelectedItem.Text : ""; LoadLinkedChildIds(); }
         }
 
-        private bool EnsureAuth() { if (Session["userId"] == null || Session["role"] == null || Session["role"].ToString() != "Parent") { Response.Redirect("~/Login.aspx", false); Context.ApplicationInstance.CompleteRequest(); return false; } return true; }
-        private void LoadLang() { string l = Session["preferredLanguage"] as string; if (!string.IsNullOrEmpty(l)) { CurrentLanguage = l; return; } try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT preferredLanguage FROM dbo.[User] WHERE userId=@u", c)) { cmd.Parameters.AddWithValue("@u", Session["userId"].ToString()); c.Open(); var r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) { CurrentLanguage = r.ToString(); Session["preferredLanguage"] = CurrentLanguage; } } } catch { } }
-        private void LoadParent() { try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT parentId FROM dbo.[Parent] WHERE userId=@u", c)) { cmd.Parameters.AddWithValue("@u", _parentUserId); c.Open(); var r = cmd.ExecuteScalar(); if (r != null) _parentId = r.ToString(); } } catch { } }
+        private bool EnsureAuth()
+        {
+            if (Session["userId"] == null || Session["role"] == null || Session["role"].ToString() != "Parent")
+            {
+                Response.Redirect("~/Login.aspx", false);
+                Context.ApplicationInstance.CompleteRequest();
+                return false;
+            }
+            return true;
+        }
+        private void LoadLang()
+        {
+            string savedLang = Session["preferredLanguage"] as string;
+            if (!string.IsNullOrEmpty(savedLang))
+            {
+                CurrentLanguage = savedLang;
+                return;
+            }
+
+            try
+            {
+                using (var conn = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand("SELECT preferredLanguage FROM dbo.[User] WHERE userId = @userId", conn))
+                {
+                    cmd.Parameters.AddWithValue("@userId", Session["userId"].ToString());
+                    conn.Open();
+                    object result = cmd.ExecuteScalar();
+                    if (result != null && result != DBNull.Value)
+                    {
+                        CurrentLanguage = result.ToString();
+                        Session["preferredLanguage"] = CurrentLanguage;
+                    }
+                }
+            }
+            catch { }
+        }
+        private void LoadParent()
+        {
+            try
+            {
+                using (var conn = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand("SELECT parentId FROM dbo.[Parent] WHERE userId = @userId", conn))
+                {
+                    cmd.Parameters.AddWithValue("@userId", _parentUserId);
+                    conn.Open();
+                    object result = cmd.ExecuteScalar();
+                    if (result != null && result != DBNull.Value)
+                        _parentId = result.ToString();
+                }
+            }
+            catch { }
+        }
 
         private void LoadChildren()
         {

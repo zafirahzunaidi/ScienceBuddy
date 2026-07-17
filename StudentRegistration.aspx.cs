@@ -7,90 +7,274 @@ namespace ScienceBuddy
 {
     public partial class StudentRegistration : Page
     {
-        private string ConnStr => ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+        private string ConnectionString
+        {
+            get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
+        }
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            // If already logged in, redirect to home
             if (Session["userId"] != null && Session["role"] != null)
-            { Response.Redirect("~/", false); Context.ApplicationInstance.CompleteRequest(); return; }
+            {
+                Response.Redirect("~/", false);
+                Context.ApplicationInstance.CompleteRequest();
+                return;
+            }
+
             ((SiteMaster)Master).LayoutMode = "TopNav";
         }
 
         protected void BtnRegister_Click(object sender, EventArgs e)
         {
             if (!Page.IsValid) return;
-            string name = txtName.Text.Trim();
+
+            // Collect form values
+            string fullName = txtName.Text.Trim();
             string nickname = txtNickname.Text.Trim();
             string username = txtUsername.Text.Trim();
             string email = txtEmail.Text.Trim().ToLower();
             string phone = txtPhone.Text.Trim();
             string password = txtPassword.Text;
+            string preferredLanguage = ddlLanguage.SelectedValue;
 
-            int minLen = GetMinPasswordLength();
-            if (password.Length < minLen) { ShowError("Password must be at least " + minLen + " characters."); return; }
+            // Server-side password length check (minimum from database settings)
+            int minimumLength = GetMinimumPasswordLength();
+            if (password.Length < minimumLength)
+            {
+                ShowError("Password must be at least " + minimumLength + " characters.");
+                return;
+            }
 
             try
             {
-                using (var conn = new SqlConnection(ConnStr))
+                using (SqlConnection conn = new SqlConnection(ConnectionString))
                 {
                     conn.Open();
-                    if (Exists(conn, "SELECT COUNT(*) FROM dbo.[User] WHERE username=@v", username)) { ShowError("Username already exists."); return; }
-                    if (Exists(conn, "SELECT COUNT(*) FROM dbo.[User] WHERE email=@v", email)) { ShowError("Email already exists."); return; }
 
-                    using (var txn = conn.BeginTransaction())
+                    // Check for duplicate username or email before proceeding
+                    if (IsValueTaken(conn, "username", username))
+                    {
+                        ShowError("Username already exists.");
+                        return;
+                    }
+                    if (IsValueTaken(conn, "email", email))
+                    {
+                        ShowError("Email already exists.");
+                        return;
+                    }
+
+                    // Use a transaction so that both User and Student rows are created together
+                    using (SqlTransaction txn = conn.BeginTransaction())
                     {
                         try
                         {
-                            string userId = GenId(conn, txn, "User", "userId", "U");
-                            string studentId = GenId(conn, txn, "Student", "studentId", "S");
-                            string parentCode = GenerateParentCode(conn, txn);
-                            string lang = ddlLanguage.SelectedValue;
+                            string newUserId = GenerateNextId(conn, txn, "User", "userId", "U");
+                            string newStudentId = GenerateNextId(conn, txn, "Student", "studentId", "S");
+                            string parentCode = GenerateUniqueParentCode(conn, txn);
+                            string hashedPassword = PasswordHelper.HashPassword(password);
 
-                            using (var cmd = new SqlCommand("INSERT INTO dbo.[User](userId,username,password,email,role,preferredLanguage,status) VALUES(@id,@u,@p,@e,'Student',@l,'Active')", conn, txn))
-                            { cmd.Parameters.AddWithValue("@id", userId); cmd.Parameters.AddWithValue("@u", username); cmd.Parameters.AddWithValue("@p", PasswordHelper.HashPassword(password)); cmd.Parameters.AddWithValue("@e", email); cmd.Parameters.AddWithValue("@l", lang); cmd.ExecuteNonQuery(); }
-
-                            using (var cmd = new SqlCommand("INSERT INTO dbo.[Student](studentId,userId,name,phoneNumber,nickname,currentLevelId,XP,personalityId,parentCode) VALUES(@id,@uid,@n,@ph,@nick,'LV001',0,NULL,@pc)", conn, txn))
-                            { cmd.Parameters.AddWithValue("@id", studentId); cmd.Parameters.AddWithValue("@uid", userId); cmd.Parameters.AddWithValue("@n", name); cmd.Parameters.AddWithValue("@ph", phone); cmd.Parameters.AddWithValue("@nick", nickname); cmd.Parameters.AddWithValue("@pc", parentCode); cmd.ExecuteNonQuery(); }
-
-                            // Welcome notification
-                            string nid = GenId(conn, txn, "Notification", "notificationId", "N");
-                            using (var cmd = new SqlCommand("INSERT INTO dbo.[Notification](notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt) VALUES(@id,@uid,'Welcome to ScienceBuddy','Selamat Datang ke ScienceBuddy','Start your first science lesson and begin exploring.','Mulakan pelajaran Sains pertama anda dan mula meneroka.',0,@now)", conn, txn))
-                            { cmd.Parameters.AddWithValue("@id", nid); cmd.Parameters.AddWithValue("@uid", userId); cmd.Parameters.AddWithValue("@now", DateTime.Now); cmd.ExecuteNonQuery(); }
+                            InsertUserRow(conn, txn, newUserId, username, hashedPassword, email, preferredLanguage);
+                            InsertStudentRow(conn, txn, newStudentId, newUserId, fullName, phone, nickname, parentCode);
+                            SendWelcomeNotification(conn, txn, newUserId);
 
                             txn.Commit();
-                            pnlForm.Visible = false; pnlSuccess.Visible = true;
+
+                            // Show success and hide the form
+                            pnlForm.Visible = false;
+                            pnlSuccess.Visible = true;
                         }
-                        catch { txn.Rollback(); throw; }
+                        catch
+                        {
+                            txn.Rollback();
+                            throw;
+                        }
                     }
                 }
             }
-            catch (Exception) { ShowError("Registration failed. Please try again."); }
+            catch (Exception)
+            {
+                ShowError("Registration failed. Please try again.");
+            }
         }
 
-        private string GenerateParentCode(SqlConnection conn, SqlTransaction txn)
+        // ────────────────────────────────────────────────────────
+        //  DATABASE INSERT METHODS
+        // ────────────────────────────────────────────────────────
+
+        private void InsertUserRow(SqlConnection conn, SqlTransaction txn,
+            string userId, string username, string hashedPassword, string email, string language)
         {
-            const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-            var rng = new Random();
+            string sql = @"INSERT INTO dbo.[User]
+                (userId, username, password, email, role, preferredLanguage, status)
+                VALUES (@userId, @username, @password, @email, 'Student', @lang, 'Active')";
+
+            using (SqlCommand cmd = new SqlCommand(sql, conn, txn))
+            {
+                cmd.Parameters.AddWithValue("@userId", userId);
+                cmd.Parameters.AddWithValue("@username", username);
+                cmd.Parameters.AddWithValue("@password", hashedPassword);
+                cmd.Parameters.AddWithValue("@email", email);
+                cmd.Parameters.AddWithValue("@lang", language);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        private void InsertStudentRow(SqlConnection conn, SqlTransaction txn,
+            string studentId, string userId, string name, string phone, string nickname, string parentCode)
+        {
+            string sql = @"INSERT INTO dbo.[Student]
+                (studentId, userId, name, phoneNumber, nickname, currentLevelId, XP, personalityId, parentCode)
+                VALUES (@studentId, @userId, @name, @phone, @nickname, 'LV001', 0, NULL, @parentCode)";
+
+            using (SqlCommand cmd = new SqlCommand(sql, conn, txn))
+            {
+                cmd.Parameters.AddWithValue("@studentId", studentId);
+                cmd.Parameters.AddWithValue("@userId", userId);
+                cmd.Parameters.AddWithValue("@name", name);
+                cmd.Parameters.AddWithValue("@phone", phone);
+                cmd.Parameters.AddWithValue("@nickname", nickname);
+                cmd.Parameters.AddWithValue("@parentCode", parentCode);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        private void SendWelcomeNotification(SqlConnection conn, SqlTransaction txn, string userId)
+        {
+            string notifId = GenerateNextId(conn, txn, "Notification", "notificationId", "N");
+
+            string sql = @"INSERT INTO dbo.[Notification]
+                (notificationId, toUserId, titleEN, titleBM, messageEN, messageBM, isRead, createdAt)
+                VALUES (@id, @userId,
+                    'Welcome to ScienceBuddy', 'Selamat Datang ke ScienceBuddy',
+                    'Start your first science lesson and begin exploring.',
+                    'Mulakan pelajaran Sains pertama anda dan mula meneroka.',
+                    0, @createdAt)";
+
+            using (SqlCommand cmd = new SqlCommand(sql, conn, txn))
+            {
+                cmd.Parameters.AddWithValue("@id", notifId);
+                cmd.Parameters.AddWithValue("@userId", userId);
+                cmd.Parameters.AddWithValue("@createdAt", DateTime.Now);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        // ────────────────────────────────────────────────────────
+        //  VALIDATION HELPERS
+        // ────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Checks if a username or email is already registered.
+        /// </summary>
+        private bool IsValueTaken(SqlConnection conn, string columnName, string value)
+        {
+            // columnName is always a trusted string from our own code, not from user input
+            string sql = "SELECT COUNT(*) FROM dbo.[User] WHERE " + columnName + " = @value";
+
+            using (SqlCommand cmd = new SqlCommand(sql, conn))
+            {
+                cmd.Parameters.AddWithValue("@value", value);
+                return (int)cmd.ExecuteScalar() > 0;
+            }
+        }
+
+        /// <summary>
+        /// Reads the minimum password length from the ConfigurationSetting table.
+        /// Falls back to 8 if the setting is missing or unreadable.
+        /// </summary>
+        private int GetMinimumPasswordLength()
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConnectionString))
+                {
+                    string sql = "SELECT configValue FROM dbo.[ConfigurationSetting] WHERE configKey = 'Password Minimum Length'";
+                    using (SqlCommand cmd = new SqlCommand(sql, conn))
+                    {
+                        conn.Open();
+                        object result = cmd.ExecuteScalar();
+
+                        if (result != null && result != DBNull.Value && int.TryParse(result.ToString(), out int length))
+                            return length;
+                    }
+                }
+            }
+            catch { }
+
+            return 8; // sensible default
+        }
+
+        // ────────────────────────────────────────────────────────
+        //  ID GENERATION
+        // ────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Generates the next sequential ID for a table (e.g. U001, U002, S001, S002).
+        /// Reads the highest existing ID and increments the numeric portion by 1.
+        /// </summary>
+        private string GenerateNextId(SqlConnection conn, SqlTransaction txn, string tableName, string idColumn, string prefix)
+        {
+            int nextNumber = 1;
+
+            string sql = "SELECT TOP 1 [" + idColumn + "] FROM dbo.[" + tableName + "] ORDER BY [" + idColumn + "] DESC";
+
+            using (SqlCommand cmd = new SqlCommand(sql, conn, txn))
+            {
+                object result = cmd.ExecuteScalar();
+
+                if (result != null && result != DBNull.Value)
+                {
+                    string lastId = result.ToString();
+                    string numericPart = lastId.Substring(prefix.Length);
+
+                    if (int.TryParse(numericPart, out int lastNumber))
+                        nextNumber = lastNumber + 1;
+                }
+            }
+
+            return prefix + nextNumber.ToString("D3");
+        }
+
+        /// <summary>
+        /// Creates a random 6-character alphanumeric code for linking parent accounts.
+        /// Avoids ambiguous characters (0, O, 1, I, L) so parents can read it easily.
+        /// Retries up to 20 times to ensure uniqueness.
+        /// </summary>
+        private string GenerateUniqueParentCode(SqlConnection conn, SqlTransaction txn)
+        {
+            const string allowedCharacters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+            Random random = new Random();
+
             for (int attempt = 0; attempt < 20; attempt++)
             {
-                var code = new char[6];
-                for (int i = 0; i < 6; i++) code[i] = chars[rng.Next(chars.Length)];
-                string result = new string(code);
-                using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.[Student] WHERE parentCode=@c", conn, txn))
-                { cmd.Parameters.AddWithValue("@c", result); if ((int)cmd.ExecuteScalar() == 0) return result; }
+                char[] codeChars = new char[6];
+                for (int i = 0; i < 6; i++)
+                    codeChars[i] = allowedCharacters[random.Next(allowedCharacters.Length)];
+
+                string candidateCode = new string(codeChars);
+
+                // Make sure no other student already has this code
+                using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.[Student] WHERE parentCode = @code", conn, txn))
+                {
+                    cmd.Parameters.AddWithValue("@code", candidateCode);
+                    if ((int)cmd.ExecuteScalar() == 0)
+                        return candidateCode;
+                }
             }
+
+            // Extremely unlikely fallback
             return Guid.NewGuid().ToString("N").Substring(0, 6).ToUpper();
         }
 
-        private string GenId(SqlConnection c, SqlTransaction t, string table, string col, string prefix)
-        { int n = 1; using (var cmd = new SqlCommand($"SELECT TOP 1 [{col}] FROM dbo.[{table}] ORDER BY [{col}] DESC", c, t)) { var r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) { string last = r.ToString(); if (last.Length > prefix.Length && int.TryParse(last.Substring(prefix.Length), out int num)) n = num + 1; } } return prefix + n.ToString("D3"); }
+        // ────────────────────────────────────────────────────────
+        //  UI FEEDBACK
+        // ────────────────────────────────────────────────────────
 
-        private bool Exists(SqlConnection c, string sql, string val)
-        { using (var cmd = new SqlCommand(sql, c)) { cmd.Parameters.AddWithValue("@v", val); return (int)cmd.ExecuteScalar() > 0; } }
-
-        private int GetMinPasswordLength()
-        { try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT configValue FROM dbo.[ConfigurationSetting] WHERE configKey='Password Minimum Length'", c)) { c.Open(); var r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value && int.TryParse(r.ToString(), out int v)) return v; } } catch { } return 8; }
-
-        private void ShowError(string msg) { pnlError.Visible = true; litError.Text = System.Web.HttpUtility.HtmlEncode(msg); }
+        private void ShowError(string message)
+        {
+            pnlError.Visible = true;
+            litError.Text = Server.HtmlEncode(message);
+        }
     }
 }

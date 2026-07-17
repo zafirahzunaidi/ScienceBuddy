@@ -133,7 +133,7 @@ namespace ScienceBuddy.Admin
                         string att = NS(rd["attachmentUrl"]);
                         if (!string.IsNullOrEmpty(att))
                         {
-                            string resolvedUrl = ResolveUrl("~/" + att);
+                            string resolvedUrl = GetLessonAttachmentPath(att);
                             if (att.EndsWith(".mp4"))
                                 litMMedia.Text = string.Format("<video controls style=\"width:100%;max-height:360px;border-radius:12px;background:#000;\"><source src=\"{0}\" type=\"video/mp4\"/>Your browser does not support video.</video>", resolvedUrl);
                             else if (att.EndsWith(".png") || att.EndsWith(".jpg") || att.EndsWith(".jpeg"))
@@ -159,5 +159,14 @@ namespace ScienceBuddy.Admin
 
         private string SS(SqlConnection c, string sql) { try { using (var cmd = new SqlCommand(sql, c)) { var v = cmd.ExecuteScalar(); return v != null && v != DBNull.Value ? Convert.ToInt32(v).ToString() : "0"; } } catch { return "0"; } }
         private static string NS(object v) { return (v == null || v == DBNull.Value) ? "" : v.ToString(); }
+
+        /// <summary>Resolves lesson attachment path. Files are stored in ~/Images/Lesson/</summary>
+        private string GetLessonAttachmentPath(string fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName)) return "";
+            if (fileName.StartsWith("Images/") || fileName.StartsWith("~/"))
+                return ResolveUrl("~/" + fileName.TrimStart('~', '/'));
+            return ResolveUrl("~/Images/Lesson/" + fileName);
+        }
     }
 }
