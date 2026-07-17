@@ -138,11 +138,15 @@
         </div>
     </asp:Panel>
 
-    <%-- Tag (Optional) --%>
+    <%-- Tags (Optional - Multiple) --%>
     <div class="st-createpost-form-group">
-        <label class="st-createpost-form-label"><asp:Literal ID="litTagLbl" runat="server" Text="Tag (Optional)" /></label>
-        <asp:DropDownList ID="ddlTag" runat="server" CssClass="st-createpost-form-input st-createpost-form-select">
-        </asp:DropDownList>
+        <label class="st-createpost-form-label"><asp:Literal ID="litTagLbl" runat="server" Text="Tags (Optional)" /></label>
+        <div class="st-forum-tags-card">
+            <div class="st-forum-tags-help"><i class="bi bi-tag"></i> Choose one or more tags that match your discussion.</div>
+            <div class="st-forum-tags-grid">
+                <asp:CheckBoxList ID="cblTags" runat="server" CssClass="st-forum-tags-checklist" RepeatLayout="UnorderedList" />
+            </div>
+        </div>
     </div>
 
     <%-- Message --%>

@@ -94,6 +94,9 @@
     <asp:LinkButton ID="btnTabPrivate" runat="server" CssClass="st-forum-cat-tab" OnClick="btnTabPrivate_Click">
         <asp:Literal ID="litTabPrivate" runat="server" />
     </asp:LinkButton>
+    <asp:LinkButton ID="btnTabMy" runat="server" CssClass="st-forum-cat-tab" OnClick="btnTabMy_Click">
+        <asp:Literal ID="litTabMy" runat="server" />
+    </asp:LinkButton>
     <asp:HiddenField ID="hfCategory" runat="server" Value="public" />
 </div>
 
@@ -126,15 +129,14 @@
                     <div class="st-forum-disc-top">
                         <div class="st-forum-disc-avatar"><%# Eval("CreatorInitial") %></div>
                         <div class="st-forum-disc-meta">
-                            <div class="st-forum-disc-title"><%# Server.HtmlEncode(Eval("Title").ToString()) %></div>
                             <div class="st-forum-disc-creator">
                                 <span><%# Server.HtmlEncode(Eval("CreatorName").ToString()) %></span>
-                                <span class="st-forum-meta-sep">&bull;</span>
-                                <span><%# Eval("Date") %></span>
                                 <span class='<%# Eval("BadgeCss") %>'><%# Eval("DiscussionType") %></span>
                             </div>
+                            <div class="st-forum-disc-date"><i class="bi bi-clock"></i> <%# Eval("Date") %></div>
                         </div>
                     </div>
+                    <div class="st-forum-disc-title"><%# Server.HtmlEncode(Eval("Title").ToString()) %></div>
                     <div class="st-forum-disc-preview"><%# Server.HtmlEncode(Eval("MessagePreview").ToString()) %></div>
                     <div class="st-forum-disc-tags">
                         <%# !string.IsNullOrEmpty(Eval("Tags").ToString()) ?
@@ -142,15 +144,23 @@
                                 t => "<span class='st-forum-disc-tag'>" + Server.HtmlEncode(t.Trim()) + "</span>")) : "" %>
                     </div>
                     <div class="st-forum-disc-footer">
-                        <span class="st-forum-disc-stat"><i class="bi bi-chat-left-text"></i> <%# Eval("ReplyCount") %> <asp:Literal runat="server" Text='<%# T("replies","balasan") %>' /></span>
-                        <span class="st-forum-disc-stat"><i class="bi bi-heart-fill"></i> <%# Eval("LikeCount") %></span>
+                        <a href='<%# ResolveUrl("~/Student/ForumThread.aspx?forumId=" + Eval("ForumId")) %>' class="st-forum-disc-stat st-forum-disc-stat-link" title="Reply">
+                            <i class="bi bi-chat-left-text"></i> <%# Eval("ReplyCount") %>
+                        </a>
                         <asp:LinkButton runat="server" CommandName="Like" CommandArgument='<%# Eval("ForumId") %>'
-                            CssClass='<%# Convert.ToBoolean(Eval("IsLiked")) ? "st-forum-like-btn liked" : "st-forum-like-btn" %>'>
-                            <i class='<%# Convert.ToBoolean(Eval("IsLiked")) ? "bi bi-heart-fill" : "bi bi-heart" %>'></i>
-                            <%# Convert.ToBoolean(Eval("IsLiked")) ? T("Liked","Disukai") : T("Like","Suka") %>
+                            CssClass='<%# Convert.ToBoolean(Eval("IsLiked")) ? "st-forum-disc-stat st-forum-disc-like liked" : "st-forum-disc-stat st-forum-disc-like" %>'
+                            ToolTip="Like">
+                            <i class='<%# Convert.ToBoolean(Eval("IsLiked")) ? "bi bi-heart-fill" : "bi bi-heart" %>'></i> <%# Eval("LikeCount") %>
+                        </asp:LinkButton>
+                        <%# Convert.ToBoolean(Eval("IsOwner")) ? "<a href='" + ResolveUrl("~/Student/CreateForumPost.aspx?forumId=" + Eval("ForumId")) + "' class='st-forum-action-btn st-forum-action-edit'><i class='bi bi-pencil-square'></i></a>" : "" %>
+                        <asp:LinkButton runat="server" CommandName="Delete" CommandArgument='<%# Eval("ForumId") %>'
+                            CssClass="st-forum-action-btn st-forum-action-delete"
+                            Visible='<%# Convert.ToBoolean(Eval("IsOwner")) %>'
+                            OnClientClick="return confirm('Are you sure you want to delete this forum post?');">
+                            <i class="bi bi-trash"></i>
                         </asp:LinkButton>
                         <a href='<%# ResolveUrl("~/Student/ForumThread.aspx?forumId=" + Eval("ForumId")) %>' class="st-forum-open-btn">
-                            <i class="bi bi-arrow-right-circle"></i> <asp:Literal runat="server" Text='<%# T("Open Thread","Buka Perbincangan") %>' />
+                            <asp:Literal runat="server" Text='<%# T("View Discussion","Lihat Perbincangan") %>' /> <i class="bi bi-arrow-right"></i>
                         </a>
                     </div>
                 </div>

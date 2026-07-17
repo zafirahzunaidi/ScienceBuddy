@@ -277,10 +277,12 @@ namespace ScienceBuddy.Student
 
                 litThreadTitle.Text = HttpUtility.HtmlEncode(title);
                 litCreatorName.Text = HttpUtility.HtmlEncode(creatorName);
+                litCreatorInitial.Text = !string.IsNullOrWhiteSpace(creatorName) ? HttpUtility.HtmlEncode(creatorName.Substring(0, 1).ToUpper() + (creatorName.Contains(" ") ? creatorName.Substring(creatorName.LastIndexOf(' ') + 1, 1).ToUpper() : "")) : "U";
                 litCreatorDate.Text = T("Posted on ", "Dihantar pada ") + createdAt.ToString("d MMM yyyy, h:mm tt");
                 litTags.Text = tagsHtml;
                 litLikeCount.Text = likeCount.ToString();
                 litReplyCount.Text = replyCount.ToString();
+                litReplyCountFooter.Text = replyCount.ToString();
                 litOrigMessage.Text = HttpUtility.HtmlEncode(message);
 
                 // Discussion type badge
@@ -301,12 +303,25 @@ namespace ScienceBuddy.Student
                 if (isLiked)
                 {
                     btnLike.CssClass = "st-forumthread-like-btn liked";
+                    btnLike.Text = "<i class=\"bi bi-heart-fill\"></i> " + T("Liked", "Disukai");
                     litLikeText.Text = T("Liked", "Disukai");
                 }
                 else
                 {
                     btnLike.CssClass = "st-forumthread-like-btn";
+                    btnLike.Text = "<i class=\"bi bi-heart\"></i> " + T("Like", "Suka");
                     litLikeText.Text = T("Like", "Suka");
+                }
+
+                // Owner actions (Edit/Delete) — only show if current user is the creator
+                if (createdBy == userId)
+                {
+                    pnlOwnerActions.Visible = true;
+                    lnkEditPost.HRef = ResolveUrl("~/Student/CreateForumPost.aspx?forumId=" + forumId);
+                }
+                else
+                {
+                    pnlOwnerActions.Visible = false;
                 }
 
                 // ── Load replies ──
@@ -355,7 +370,7 @@ namespace ScienceBuddy.Student
             {
                 case "private":
                     badgeClass += "private";
-                    badgeText = "<i class=\"bi bi-lock-fill\"></i> " + T("Private", "Peribadi");
+                    badgeText = "<i class=\"bi bi-lock-fill\"></i> " + T("Parent-Child", "Ibu Bapa-Anak");
                     break;
                 case "question":
                     badgeClass += "question";
@@ -371,7 +386,7 @@ namespace ScienceBuddy.Student
                     break;
                 default:
                     badgeClass += "public";
-                    badgeText = "<i class=\"bi bi-globe\"></i> " + T("Public", "Awam");
+                    badgeText = "<i class=\"bi bi-people-fill\"></i> " + T("Public", "Awam");
                     break;
             }
 
@@ -564,6 +579,56 @@ namespace ScienceBuddy.Student
 
             // Reload thread
             LoadThread();
+        }
+
+        // ── Delete Post (from thread page) ────────────────────────────
+        protected void btnDeletePost_Click(object sender, EventArgs e)
+        {
+            string forumId = Request.QueryString["forumId"];
+            string userId = Session["userId"].ToString();
+
+            if (string.IsNullOrEmpty(forumId)) return;
+
+            using (SqlConnection connection = new SqlConnection(ConnStr))
+            {
+                connection.Open();
+
+                // Verify ownership
+                const string ownerSql = "SELECT createdBy FROM Forum WHERE forumId = @fid";
+                using (SqlCommand ownerCmd = new SqlCommand(ownerSql, connection))
+                {
+                    ownerCmd.Parameters.AddWithValue("@fid", forumId);
+                    object result = ownerCmd.ExecuteScalar();
+                    if (result == null || result == DBNull.Value || result.ToString() != userId)
+                        return;
+                }
+
+                // Delete related records
+                if (Tbl(connection, "ForumTag"))
+                {
+                    using (SqlCommand cmd = new SqlCommand("DELETE FROM ForumTag WHERE forumId = @fid", connection))
+                    { cmd.Parameters.AddWithValue("@fid", forumId); cmd.ExecuteNonQuery(); }
+                }
+                if (Tbl(connection, "ForumLike"))
+                {
+                    using (SqlCommand cmd = new SqlCommand("DELETE FROM ForumLike WHERE forumId = @fid", connection))
+                    { cmd.Parameters.AddWithValue("@fid", forumId); cmd.ExecuteNonQuery(); }
+                }
+                if (Tbl(connection, "ForumChat"))
+                {
+                    using (SqlCommand cmd = new SqlCommand("DELETE FROM ForumChat WHERE forumId = @fid", connection))
+                    { cmd.Parameters.AddWithValue("@fid", forumId); cmd.ExecuteNonQuery(); }
+                }
+
+                using (SqlCommand cmd = new SqlCommand("DELETE FROM Forum WHERE forumId = @fid AND createdBy = @uid", connection))
+                {
+                    cmd.Parameters.AddWithValue("@fid", forumId);
+                    cmd.Parameters.AddWithValue("@uid", userId);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+
+            Response.Redirect("~/Student/Forum.aspx", false);
         }
 
         // ── Post Reply ────────────────────────────────────────────────

@@ -99,7 +99,7 @@ namespace ScienceBuddy.Student
                 DataRow studentData = GetStudentData(connection, userId);
                 if (studentData == null)
                 {
-                    SetHero("Student", "Student", "Beginner", "🔬", null, null, null, "EN");
+                    SetHero("Student", "Student", "Beginner", "Learner", null, null, null, "EN");
                     SetStats("Beginner", 0, 0, 0);
                     ShowContinueEmpty();
                     ShowNotificationsEmpty();
@@ -227,7 +227,7 @@ namespace ScienceBuddy.Student
             litSecQuick.Text = T("Quick Actions", "Tindakan Pantas");
             litSecNotif.Text = T("Recent Notifications", "Pemberitahuan Terkini");
             litSecSocial.Text = T("Learn Together", "Belajar Bersama");
-            litRecLabel.Text = T("✨ Recommended for your learning style", "✨ Disyorkan untuk gaya pembelajaran anda");
+            litRecLabel.Text = T("Recommended for your learning style", "Disyorkan untuk gaya pembelajaran anda");
 
             // Quick action labels
             litQALearn.Text = T("My Learning", "Pembelajaran Saya");
@@ -555,7 +555,7 @@ namespace ScienceBuddy.Student
                 displayName = nickname;
             }
 
-            litGreeting.Text = T("Hi, ", "Hai, ") + System.Web.HttpUtility.HtmlEncode(displayName) + "! 👋";
+            litGreeting.Text = T("Hi, ", "Hai, ") + System.Web.HttpUtility.HtmlEncode(displayName) + "!";
             litMotivation.Text = GetMotivation(personalityId);
             litHeroLevel.Text = T("Level: ", "Tahap: ") + System.Web.HttpUtility.HtmlEncode(levelEN);
             litHeroPersonality.Text = System.Web.HttpUtility.HtmlEncode(personalityEN);
@@ -781,13 +781,13 @@ namespace ScienceBuddy.Student
         {
             switch (personalityId)
             {
-                case "P001": return T("Ready to earn your next badge? 🏅", "Bersedia untuk memperoleh lencana seterusnya? 🏅");
-                case "P002": return T("Explore science in your own colourful way! 🎨", "Terokai Sains dengan cara kreatif anda sendiri! 🎨");
-                case "P003": return T("Let's understand the why behind science. 🔍", "Jom fahami sebab di sebalik konsep Sains. 🔍");
-                case "P004": return T("Challenge yourself today! ⚡", "Cabar diri anda hari ini! ⚡");
-                case "P005": return T("Take it step by step. You're doing great! 😊", "Belajar langkah demi langkah. Anda sedang melakukan yang terbaik! 😊");
-                case "P006": return T("Learn together with friends and teachers! 🤝", "Belajar bersama rakan dan guru! 🤝");
-                default: return T("Ready to explore science today? 🚀", "Bersedia untuk meneroka Sains hari ini? 🚀");
+                case "P001": return T("Ready to earn your next badge?", "Bersedia untuk memperoleh lencana seterusnya?");
+                case "P002": return T("Explore science in your own colourful way!", "Terokai Sains dengan cara kreatif anda sendiri!");
+                case "P003": return T("Let's understand the why behind science.", "Jom fahami sebab di sebalik konsep Sains.");
+                case "P004": return T("Challenge yourself today!", "Cabar diri anda hari ini!");
+                case "P005": return T("Take it step by step. You're doing great!", "Belajar langkah demi langkah. Anda sedang melakukan yang terbaik!");
+                case "P006": return T("Learn together with friends and teachers!", "Belajar bersama rakan dan guru!");
+                default: return T("Ready to explore science today?", "Bersedia untuk meneroka Sains hari ini?");
             }
         }
 

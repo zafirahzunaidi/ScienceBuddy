@@ -119,9 +119,9 @@ namespace ScienceBuddy.Student
         protected global::System.Web.UI.WebControls.Literal litTagLbl;
 
         /// <summary>
-        /// ddlTag control.
+        /// cblTags control.
         /// </summary>
-        protected global::System.Web.UI.WebControls.DropDownList ddlTag;
+        protected global::System.Web.UI.WebControls.CheckBoxList cblTags;
 
         /// <summary>
         /// litMsgLbl control.

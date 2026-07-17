@@ -1,9 +1,20 @@
 <%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="MyLearning.aspx.cs" Inherits="ScienceBuddy.Student.MyLearning1" %>
-<asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
+
+<asp:Content ID="HeadStyle" ContentPlaceHolderID="HeadContent" runat="server">
     <link href="<%: ResolveUrl("~/Content/Student.css") %>" rel="stylesheet" />
 </asp:Content>
 
-<asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
+<asp:Content ID="TopNavigationLinks" ContentPlaceHolderID="TopNavLinks" runat="server">
+</asp:Content>
+
+<asp:Content ID="TopNavActions" ContentPlaceHolderID="TopNavActions" runat="server">
+</asp:Content>
+
+<asp:Content ID="TopNavigationMainContent" ContentPlaceHolderID="MainContent" runat="server">
+</asp:Content>
+
+<%-- Student Sidebar --%>
+<asp:Content ID="StudentSidebarMenu" ContentPlaceHolderID="SidebarMenu" runat="server">
     <div class="sb-nav-section">
         <div class="sb-nav-section-label">Main</div>
         <a href="<%: ResolveUrl("~/Student/Dashboard.aspx") %>" class="sb-sidebar-item">
@@ -63,104 +74,115 @@
     </div>
 </asp:Content>
 
-<asp:Content ID="cPageTitle" ContentPlaceHolderID="PageTitle" runat="server">
+<asp:Content ID="StudentSidebarFooter" ContentPlaceHolderID="SidebarFooter" runat="server">
+</asp:Content>
+
+<asp:Content ID="MyLearningPageTitle" ContentPlaceHolderID="PageTitle" runat="server">
     <asp:Literal ID="litPageTitle" runat="server" Text="My Learning" />
 </asp:Content>
 
-<asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
+<asp:Content ID="StudentUserDropdownMenu" ContentPlaceHolderID="UserDropdownMenu" runat="server">
+</asp:Content>
 
-<div class="st-mylearning-header">
-    <div class="st-mylearning-title"><asp:Literal ID="litTitle" runat="server" /></div>
-    <div class="st-mylearning-subtitle"><asp:Literal ID="litSubtitle" runat="server" /></div>
-</div>
+<asp:Content ID="MyLearningBreadcrumb" ContentPlaceHolderID="BreadcrumbContent" runat="server">
+</asp:Content>
 
-<%-- Level Cards --%>
-<div class="st-mylearning-levels">
-    <asp:Repeater ID="rptLevels" runat="server">
-        <ItemTemplate>
-            <div class="st-mylearning-level-card <%# Eval("CssClass") %>">
-                <div class="st-mylearning-level-icon" style="background:<%# Eval("IconBg") %>;color:<%# Eval("IconColor") %>;">
-                    <%# Eval("Icon") %>
-                </div>
-                <div class="st-mylearning-level-name"><%# Eval("Name") %></div>
-                <div class="st-mylearning-level-desc"><%# Eval("Description") %></div>
-                <span class="st-mylearning-level-badge <%# Eval("BadgeClass") %>"><%# Eval("BadgeText") %></span>
-                <asp:HyperLink runat="server"
-                    NavigateUrl='<%# Eval("LinkUrl") %>'
-                    CssClass='<%# Eval("BtnClass") %>'
-                    Enabled='<%# !(bool)Eval("IsLocked") %>'>
-                    <i class="bi <%# (bool)Eval("IsLocked") ? "bi-lock-fill" : "bi-arrow-right" %>"></i>
-                    <%# Eval("BtnText") %>
-                </asp:HyperLink>
-            </div>
-        </ItemTemplate>
-    </asp:Repeater>
-</div>
+<%-- MyLearning Main Content --%>
+<asp:Content ID="MyLearningMainContent" ContentPlaceHolderID="MainContentSidebar" runat="server">
 
-<%-- Current Level Section --%>
-<asp:Panel ID="pnlUnits" runat="server">
-    <div class="st-mylearning-section-hd">
-        <div class="st-mylearning-section-title">
-            <i class="bi bi-collection-fill" style="color:var(--student)"></i>
-            <asp:Literal ID="litUnitsTitle" runat="server" />
-        </div>
+    <div class="st-mylearning-header">
+        <div class="st-mylearning-title"><asp:Literal ID="litTitle" runat="server" /></div>
+        <div class="st-mylearning-subtitle"><asp:Literal ID="litSubtitle" runat="server" /></div>
     </div>
-    <div class="st-mylearning-units">
-        <asp:Repeater ID="rptUnits" runat="server">
+
+    <%-- Level Cards --%>
+    <div class="st-mylearning-levels">
+        <asp:Repeater ID="rptLevels" runat="server" OnItemCommand="rptLevels_ItemCommand">
             <ItemTemplate>
-                <div class="st-mylearning-unit-card">
-                    <div class="st-mylearning-unit-name"><%# Eval("Name") %></div>
-                    <div class="st-mylearning-unit-desc"><%# Eval("Description") %></div>
-                    <div class="st-mylearning-unit-meta">
-                        <span><i class="bi bi-layers"></i> <%# Eval("SubtopicCount") %> <%# Eval("SubtopicLabel") %></span>
-                        <span><i class="bi bi-journal-text"></i> <%# Eval("LessonCount") %> <%# Eval("LessonLabel") %></span>
+                <asp:LinkButton runat="server" CommandName="SelectLevel" CommandArgument='<%# Eval("LevelId") %>'
+                    CssClass='<%# "st-mylearning-level-card " + Eval("CssClass") %>'
+                    Enabled='<%# !(bool)Eval("IsLocked") %>'>
+                    <div class="st-mylearning-level-icon" style="background:<%# Eval("IconBg") %>;color:<%# Eval("IconColor") %>;">
+                        <%# Eval("Icon") %>
                     </div>
-                    <div class="st-mylearning-unit-progress">
-                        <div class="st-mylearning-unit-progress-bar">
-                            <div class="st-mylearning-unit-progress-fill" style="width:<%# Eval("ProgressPct") %>%"></div>
-                        </div>
-                        <div class="st-mylearning-unit-progress-lbl">
-                            <span><%# Eval("ProgressText") %></span>
-                            <span><%# Eval("ProgressPct") %>%</span>
-                        </div>
-                    </div>
-                    <a href="<%# Eval("LinkUrl") %>" class="sb-btn sb-btn-orange sb-btn-sm" style="margin-top:var(--space-sm);">
-                        <i class="bi bi-arrow-right"></i> <%# Eval("BtnText") %>
-                    </a>
-                </div>
+                    <div class="st-mylearning-level-name"><%# Eval("Name") %></div>
+                    <div class="st-mylearning-level-desc"><%# Eval("Description") %></div>
+                    <span class="st-mylearning-level-badge <%# Eval("BadgeClass") %>"><%# Eval("BadgeText") %></span>
+                    <span class='<%# (bool)Eval("IsLocked") ? "st-mylearning-level-lock" : "st-mylearning-level-selected" %>'>
+                        <i class='bi <%# (bool)Eval("IsLocked") ? "bi-lock-fill" : ((bool)Eval("IsSelected") ? "bi-check-circle-fill" : "") %>'></i>
+                    </span>
+                </asp:LinkButton>
             </ItemTemplate>
         </asp:Repeater>
     </div>
-</asp:Panel>
 
-<%-- Level Quiz --%>
-<asp:Panel ID="pnlQuiz" runat="server" Visible="false">
-    <div class="st-mylearning-quiz-card">
-        <div class="st-mylearning-quiz-icon"><i class="bi bi-patch-check-fill"></i></div>
-        <div class="st-mylearning-quiz-body">
-            <div class="st-mylearning-quiz-title"><asp:Literal ID="litQuizTitle" runat="server" /></div>
-            <div class="st-mylearning-quiz-sub"><asp:Literal ID="litQuizSub" runat="server" /></div>
+    <%-- Current Level Section --%>
+    <asp:Panel ID="pnlUnits" runat="server">
+        <div class="st-mylearning-section-hd">
+            <div class="st-mylearning-section-title">
+                <i class="bi bi-collection-fill" style="color:var(--student)"></i>
+                <asp:Literal ID="litUnitsTitle" runat="server" />
+            </div>
         </div>
-        <a href="#" class="sb-btn sb-btn-white sb-btn-sm">
-            <i class="bi bi-play-fill"></i> <asp:Literal ID="litQuizBtn" runat="server" Text="Start" />
-        </a>
-    </div>
-</asp:Panel>
+        <div class="st-mylearning-units">
+            <asp:Repeater ID="rptUnits" runat="server">
+                <ItemTemplate>
+                    <div class="st-mylearning-unit-card">
+                        <div class="st-mylearning-unit-name"><%# Eval("Name") %></div>
+                        <div class="st-mylearning-unit-desc"><%# Eval("Description") %></div>
+                        <div class="st-mylearning-unit-meta">
+                            <span><i class="bi bi-layers"></i> <%# Eval("SubtopicCount") %> <%# Eval("SubtopicLabel") %></span>
+                            <span><i class="bi bi-journal-text"></i> <%# Eval("LessonCount") %> <%# Eval("LessonLabel") %></span>
+                        </div>
+                        <div class="st-mylearning-unit-progress">
+                            <div class="st-mylearning-unit-progress-bar">
+                                <div class="st-mylearning-unit-progress-fill" style="width:<%# Eval("ProgressPct") %>%"></div>
+                            </div>
+                            <div class="st-mylearning-unit-progress-lbl">
+                                <span><%# Eval("ProgressText") %></span>
+                                <span><%# Eval("ProgressPct") %>%</span>
+                            </div>
+                        </div>
+                        <a href="<%# Eval("LinkUrl") %>" class="sb-btn sb-btn-orange sb-btn-sm" style="margin-top:var(--space-sm);">
+                            <i class="bi bi-arrow-right"></i> <%# Eval("BtnText") %>
+                        </a>
+                    </div>
+                </ItemTemplate>
+            </asp:Repeater>
+        </div>
+    </asp:Panel>
 
-<asp:Panel ID="pnlQuizEmpty" runat="server" Visible="false">
-    <div class="sb-alert sb-alert-info" style="margin-bottom:var(--space-xl);">
-        <i class="bi bi-info-circle-fill alert-icon"></i>
-        <div class="alert-content"><asp:Literal ID="litQuizEmpty" runat="server" /></div>
-    </div>
-</asp:Panel>
+    <%-- Level Quiz --%>
+    <asp:Panel ID="pnlQuiz" runat="server" Visible="false">
+        <div class="st-mylearning-quiz-card">
+            <div class="st-mylearning-quiz-icon"><i class="bi bi-patch-check-fill"></i></div>
+            <div class="st-mylearning-quiz-body">
+                <div class="st-mylearning-quiz-title"><asp:Literal ID="litQuizTitle" runat="server" /></div>
+                <div class="st-mylearning-quiz-sub"><asp:Literal ID="litQuizSub" runat="server" /></div>
+            </div>
+            <a href="#" class="sb-btn sb-btn-white sb-btn-sm">
+                <i class="bi bi-play-fill"></i> <asp:Literal ID="litQuizBtn" runat="server" Text="Start" />
+            </a>
+        </div>
+    </asp:Panel>
 
-<%-- Empty state if no levels --%>
-<asp:Panel ID="pnlEmpty" runat="server" Visible="false">
-    <div class="sb-empty-state" style="padding:var(--space-3xl) 0;">
-        <div class="empty-icon" style="font-size:3.5rem;"><i class="bi bi-book"></i></div>
-        <div class="empty-title"><asp:Literal ID="litEmptyTitle" runat="server" /></div>
-        <div class="empty-desc"><asp:Literal ID="litEmptyDesc" runat="server" /></div>
-    </div>
-</asp:Panel>
+    <asp:Panel ID="pnlQuizEmpty" runat="server" Visible="false">
+        <div class="sb-alert sb-alert-info" style="margin-bottom:var(--space-xl);">
+            <i class="bi bi-info-circle-fill alert-icon"></i>
+            <div class="alert-content"><asp:Literal ID="litQuizEmpty" runat="server" /></div>
+        </div>
+    </asp:Panel>
 
+    <%-- Empty state if no levels --%>
+    <asp:Panel ID="pnlEmpty" runat="server" Visible="false">
+        <div class="sb-empty-state" style="padding:var(--space-3xl) 0;">
+            <div class="empty-icon" style="font-size:3.5rem;"><i class="bi bi-book"></i></div>
+            <div class="empty-title"><asp:Literal ID="litEmptyTitle" runat="server" /></div>
+            <div class="empty-desc"><asp:Literal ID="litEmptyDesc" runat="server" /></div>
+        </div>
+    </asp:Panel>
+
+</asp:Content>
+
+<asp:Content ID="MyLearningScripts" ContentPlaceHolderID="ScriptsContent" runat="server">
 </asp:Content>

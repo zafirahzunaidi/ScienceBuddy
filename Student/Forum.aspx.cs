@@ -106,6 +106,7 @@ namespace ScienceBuddy.Student
             // Tab labels (include icon HTML so it persists on postback)
             litTabPublic.Text = "<i class=\"bi bi-globe\"></i> " + T("Public", "Awam");
             litTabPrivate.Text = "<i class=\"bi bi-people-fill\"></i> " + T("Student-Parent", "Murid-Ibu Bapa");
+            litTabMy.Text = "<i class=\"bi bi-person-fill\"></i> " + T("My Forum", "Forum Saya");
 
             // Summary card labels based on selected tab
             if (isPrivate)
@@ -131,6 +132,15 @@ namespace ScienceBuddy.Student
                 litCTAText.Text = T("Want to chat with your parent privately?", "Ingin berbual dengan ibu bapa anda secara peribadi?");
                 litCTABtn.Text = T("Create Private Discussion", "Cipta Perbincangan Peribadi");
             }
+            else if (hfCategory.Value == "my")
+            {
+                litEmptyTitle.Text = T("You haven't created any discussions yet.",
+                                        "Anda belum mencipta sebarang perbincangan lagi.");
+                litEmptyDesc.Text = T("Create your first discussion and start learning together!",
+                                        "Cipta perbincangan pertama anda dan mula belajar bersama!");
+                litCTAText.Text = T("Ready to start a discussion?", "Bersedia untuk memulakan perbincangan?");
+                litCTABtn.Text = T("Create Discussion", "Cipta Perbincangan");
+            }
             else
             {
                 litEmptyTitle.Text = T("No public discussions yet.",
@@ -152,16 +162,16 @@ namespace ScienceBuddy.Student
             btnFilter.Text = T("Filter", "Tapis");
 
             // Highlight active tab CSS
-            if (isPrivate)
-            {
-                btnTabPublic.CssClass = "st-forum-cat-tab";
+            btnTabPublic.CssClass = "st-forum-cat-tab";
+            btnTabPrivate.CssClass = "st-forum-cat-tab";
+            btnTabMy.CssClass = "st-forum-cat-tab";
+
+            if (hfCategory.Value == "private")
                 btnTabPrivate.CssClass = "st-forum-cat-tab active";
-            }
+            else if (hfCategory.Value == "my")
+                btnTabMy.CssClass = "st-forum-cat-tab active";
             else
-            {
                 btnTabPublic.CssClass = "st-forum-cat-tab active";
-                btnTabPrivate.CssClass = "st-forum-cat-tab";
-            }
         }
 
         // ── Tab click handlers ────────────────────────────────────────
@@ -175,6 +185,13 @@ namespace ScienceBuddy.Student
         protected void btnTabPrivate_Click(object sender, EventArgs e)
         {
             hfCategory.Value = "private";
+            SetLabels();
+            LoadDiscussions();
+        }
+
+        protected void btnTabMy_Click(object sender, EventArgs e)
+        {
+            hfCategory.Value = "my";
             SetLabels();
             LoadDiscussions();
         }
@@ -213,6 +230,7 @@ namespace ScienceBuddy.Student
             string sortVal = ddlSort.SelectedValue;
             string search = txtSearch.Text.Trim();
             bool isPrivate = hfCategory.Value == "private";
+            bool isMy = hfCategory.Value == "my";
 
             using (SqlConnection connection = new SqlConnection(ConnStr))
             {
@@ -228,7 +246,11 @@ namespace ScienceBuddy.Student
                 string categoryWhere;
                 List<SqlParameter> extraParams = new List<SqlParameter>();
 
-                if (isPrivate)
+                if (isMy)
+                {
+                    categoryWhere = "f.createdBy = @userId";
+                }
+                else if (isPrivate)
                 {
                     // Get linked parent userIds
                     List<string> allowedUserIds = new List<string> { userId };
@@ -452,7 +474,8 @@ namespace ScienceBuddy.Student
                             ReplyCount = replyCount,
                             LikeCount = likeCount,
                             IsLiked = isLiked,
-                            Tags = tags
+                            Tags = tags,
+                            IsOwner = (createdBy == userId)
                         });
                     }
 
@@ -514,6 +537,12 @@ namespace ScienceBuddy.Student
         // ── Like / Unlike ─────────────────────────────────────────────
         protected void rptDiscussions_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
+            if (e.CommandName == "Delete")
+            {
+                HandleDelete(e.CommandArgument.ToString());
+                return;
+            }
+
             if (e.CommandName != "Like")
             {
                 return;
@@ -583,6 +612,68 @@ namespace ScienceBuddy.Student
             }
 
             // Reload
+            LoadDiscussions();
+        }
+
+        // ── Delete forum post (with ownership check) ───────────────
+        private void HandleDelete(string forumId)
+        {
+            string userId = Session["userId"].ToString();
+
+            using (SqlConnection connection = new SqlConnection(ConnStr))
+            {
+                connection.Open();
+
+                // Verify ownership
+                const string ownerSql = "SELECT createdBy FROM Forum WHERE forumId = @fid";
+                using (SqlCommand ownerCmd = new SqlCommand(ownerSql, connection))
+                {
+                    ownerCmd.Parameters.AddWithValue("@fid", forumId);
+                    object result = ownerCmd.ExecuteScalar();
+                    if (result == null || result == DBNull.Value || result.ToString() != userId)
+                    {
+                        // Not owner — do nothing
+                        LoadDiscussions();
+                        return;
+                    }
+                }
+
+                // Delete related records first (ForumTag, ForumLike, ForumChat), then Forum
+                if (Tbl(connection, "ForumTag"))
+                {
+                    using (SqlCommand cmd = new SqlCommand("DELETE FROM ForumTag WHERE forumId = @fid", connection))
+                    {
+                        cmd.Parameters.AddWithValue("@fid", forumId);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                if (Tbl(connection, "ForumLike"))
+                {
+                    using (SqlCommand cmd = new SqlCommand("DELETE FROM ForumLike WHERE forumId = @fid", connection))
+                    {
+                        cmd.Parameters.AddWithValue("@fid", forumId);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                if (Tbl(connection, "ForumChat"))
+                {
+                    using (SqlCommand cmd = new SqlCommand("DELETE FROM ForumChat WHERE forumId = @fid", connection))
+                    {
+                        cmd.Parameters.AddWithValue("@fid", forumId);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                using (SqlCommand cmd = new SqlCommand("DELETE FROM Forum WHERE forumId = @fid AND createdBy = @uid", connection))
+                {
+                    cmd.Parameters.AddWithValue("@fid", forumId);
+                    cmd.Parameters.AddWithValue("@uid", userId);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+
             LoadDiscussions();
         }
 
