@@ -7,128 +7,262 @@ namespace ScienceBuddy.Parent
 {
     public partial class ChildProfile : Page
     {
-        private string ConnStr => ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+        private string DatabaseConnectionString =>
+            ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+
         protected string CurrentLanguage = "EN";
-        protected string T(string en, string bm) { return CurrentLanguage == "BM" ? bm : en; }
 
-        private string _userId = "";
-        private string _parentId = "";
-        private string _studentId = "";
+        protected string T(string en, string bm)
+        {
+            return CurrentLanguage == "BM" ? bm : en;
+        }
 
+        private string _authenticatedUserId = "";
+        private string _parentRecordId = "";
+        private string _viewedStudentId = "";
+
+        // ═══════════════════════════════════════════════════
+        //  PAGE LIFECYCLE
+        // ═══════════════════════════════════════════════════
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["userId"] == null || Session["role"] == null || Session["role"].ToString() != "Parent")
-            { Response.Redirect("~/Login.aspx", false); Context.ApplicationInstance.CompleteRequest(); return; }
+            if (!ValidateParentSession())
+            {
+                return;
+            }
 
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
-            _userId = Session["userId"].ToString();
-            LoadLanguage();
-            LoadParentId();
-            ResolveChild();
-            SetLabels();
+            _authenticatedUserId = Session["userId"].ToString();
+            LoadLanguagePreference();
+            LoadParentRecordId();
+            ResolveActiveChild();
+            ApplyPageLabels();
 
             if (!IsPostBack)
             {
-                PopulateSidebarChild();
-                if (!string.IsNullOrEmpty(_studentId))
-                { pnlProfile.Visible = true; pnlNoChild.Visible = false; LoadAll(); }
-                else
-                { pnlProfile.Visible = false; pnlNoChild.Visible = true; }
+                PopulateSidebarChildDropdown();
+                RenderChildProfileOrPlaceholder();
             }
         }
 
-        private void PopulateSidebarChild()
+        /// <summary>
+        /// Validates that the current session belongs to an authenticated parent user.
+        /// Redirects to login if session is missing or role mismatch.
+        /// </summary>
+        private bool ValidateParentSession()
+        {
+            if (Session["userId"] == null || Session["role"] == null ||
+                Session["role"].ToString() != "Parent")
+            {
+                Response.Redirect("~/Login.aspx", false);
+                Context.ApplicationInstance.CompleteRequest();
+                return false;
+            }
+            return true;
+        }
+
+        private void RenderChildProfileOrPlaceholder()
+        {
+            if (!string.IsNullOrEmpty(_viewedStudentId))
+            {
+                pnlProfile.Visible = true;
+                pnlNoChild.Visible = false;
+                LoadAllProfileSections();
+            }
+            else
+            {
+                pnlProfile.Visible = false;
+                pnlNoChild.Visible = true;
+            }
+        }
+
+        // ═══════════════════════════════════════════════════
+        //  SIDEBAR CHILD SELECTOR
+        // ═══════════════════════════════════════════════════
+        private void PopulateSidebarChildDropdown()
         {
             ddlSidebarChild.Items.Clear();
-            if (string.IsNullOrEmpty(_parentId)) return;
+            if (string.IsNullOrEmpty(_parentRecordId))
+            {
+                return;
+            }
+
             try
             {
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand("SELECT sp.studentId, s.name, s.nickname FROM dbo.[StudentParent] sp INNER JOIN dbo.[Student] s ON s.studentId=sp.studentId WHERE sp.parentId=@p", conn))
+                const string childListQuery = @"SELECT sp.studentId, s.name, s.nickname 
+                    FROM dbo.[StudentParent] sp 
+                    INNER JOIN dbo.[Student] s ON s.studentId = sp.studentId 
+                    WHERE sp.parentId = @parentId";
+
+                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var command = new SqlCommand(childListQuery, connection))
                 {
-                    cmd.Parameters.AddWithValue("@p", _parentId); conn.Open();
-                    using (var r = cmd.ExecuteReader())
+                    command.Parameters.AddWithValue("@parentId", _parentRecordId);
+                    connection.Open();
+
+                    using (var reader = command.ExecuteReader())
                     {
-                        while (r.Read())
+                        while (reader.Read())
                         {
-                            string sid = r["studentId"]?.ToString() ?? "";
-                            string nm = r["nickname"]?.ToString() ?? "";
-                            string n = r["name"]?.ToString() ?? "";
-                            ddlSidebarChild.Items.Add(new System.Web.UI.WebControls.ListItem(!string.IsNullOrWhiteSpace(nm) ? nm : n, sid));
+                            string studentId = reader["studentId"]?.ToString() ?? "";
+                            string nickname = reader["nickname"]?.ToString() ?? "";
+                            string fullName = reader["name"]?.ToString() ?? "";
+
+                            string displayLabel = !string.IsNullOrWhiteSpace(nickname)
+                                ? nickname
+                                : fullName;
+
+                            ddlSidebarChild.Items.Add(
+                                new System.Web.UI.WebControls.ListItem(displayLabel, studentId));
                         }
                     }
                 }
-                if (!string.IsNullOrEmpty(_studentId) && ddlSidebarChild.Items.FindByValue(_studentId) != null)
-                    ddlSidebarChild.SelectedValue = _studentId;
+
+                if (!string.IsNullOrEmpty(_viewedStudentId) &&
+                    ddlSidebarChild.Items.FindByValue(_viewedStudentId) != null)
+                {
+                    ddlSidebarChild.SelectedValue = _viewedStudentId;
+                }
             }
             catch (SqlException) { }
         }
 
         protected void SidebarChildChanged(object sender, EventArgs e)
         {
-            string sel = ddlSidebarChild.SelectedValue;
-            if (!string.IsNullOrEmpty(sel) && IsLinked(sel))
+            string selectedStudentId = ddlSidebarChild.SelectedValue;
+            if (!string.IsNullOrEmpty(selectedStudentId) && IsChildLinkedToParent(selectedStudentId))
             {
-                Session["selectedChildId"] = sel;
-                _studentId = sel;
-                if (!string.IsNullOrEmpty(_studentId))
-                { pnlProfile.Visible = true; pnlNoChild.Visible = false; LoadAll(); }
-                else
-                { pnlProfile.Visible = false; pnlNoChild.Visible = true; }
+                Session["selectedChildId"] = selectedStudentId;
+                _viewedStudentId = selectedStudentId;
+                RenderChildProfileOrPlaceholder();
             }
         }
 
-        private void LoadLanguage()
+        // ═══════════════════════════════════════════════════
+        //  LANGUAGE & PARENT RESOLUTION
+        // ═══════════════════════════════════════════════════
+        private void LoadLanguagePreference()
         {
-            string lang = Session["preferredLanguage"] as string;
-            if (!string.IsNullOrEmpty(lang)) { CurrentLanguage = lang; return; }
+            string cachedLanguage = Session["preferredLanguage"] as string;
+            if (!string.IsNullOrEmpty(cachedLanguage))
+            {
+                CurrentLanguage = cachedLanguage;
+                return;
+            }
+
             try
             {
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand("SELECT preferredLanguage FROM dbo.[User] WHERE userId=@u", conn))
-                { cmd.Parameters.AddWithValue("@u", _userId); conn.Open(); object r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) { CurrentLanguage = r.ToString(); Session["preferredLanguage"] = CurrentLanguage; } }
+                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var command = new SqlCommand(
+                    "SELECT preferredLanguage FROM dbo.[User] WHERE userId = @userId", connection))
+                {
+                    command.Parameters.AddWithValue("@userId", _authenticatedUserId);
+                    connection.Open();
+                    object result = command.ExecuteScalar();
+
+                    if (result != null && result != DBNull.Value)
+                    {
+                        CurrentLanguage = result.ToString();
+                        Session["preferredLanguage"] = CurrentLanguage;
+                    }
+                }
             }
             catch (SqlException) { }
         }
 
-        private void LoadParentId()
+        private void LoadParentRecordId()
         {
             try
             {
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand("SELECT parentId FROM dbo.[Parent] WHERE userId=@u", conn))
-                { cmd.Parameters.AddWithValue("@u", _userId); conn.Open(); object r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) _parentId = r.ToString(); }
+                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var command = new SqlCommand(
+                    "SELECT parentId FROM dbo.[Parent] WHERE userId = @userId", connection))
+                {
+                    command.Parameters.AddWithValue("@userId", _authenticatedUserId);
+                    connection.Open();
+                    object result = command.ExecuteScalar();
+
+                    if (result != null && result != DBNull.Value)
+                    {
+                        _parentRecordId = result.ToString();
+                    }
+                }
             }
             catch (SqlException) { }
         }
 
-        private void ResolveChild()
+        /// <summary>
+        /// Resolves which child to display: checks session cache first, then falls back
+        /// to the first linked child from the StudentParent relationship table.
+        /// </summary>
+        private void ResolveActiveChild()
         {
-            string saved = Session["selectedChildId"] as string;
-            if (!string.IsNullOrEmpty(saved) && IsLinked(saved)) { _studentId = saved; return; }
-            if (string.IsNullOrEmpty(_parentId)) return;
+            string savedChildId = Session["selectedChildId"] as string;
+            if (!string.IsNullOrEmpty(savedChildId) && IsChildLinkedToParent(savedChildId))
+            {
+                _viewedStudentId = savedChildId;
+                return;
+            }
+
+            if (string.IsNullOrEmpty(_parentRecordId))
+            {
+                return;
+            }
+
             try
             {
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand("SELECT TOP 1 studentId FROM dbo.[StudentParent] WHERE parentId=@p", conn))
-                { cmd.Parameters.AddWithValue("@p", _parentId); conn.Open(); object r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) { _studentId = r.ToString(); Session["selectedChildId"] = _studentId; } }
+                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var command = new SqlCommand(
+                    "SELECT TOP 1 studentId FROM dbo.[StudentParent] WHERE parentId = @parentId", connection))
+                {
+                    command.Parameters.AddWithValue("@parentId", _parentRecordId);
+                    connection.Open();
+                    object result = command.ExecuteScalar();
+
+                    if (result != null && result != DBNull.Value)
+                    {
+                        _viewedStudentId = result.ToString();
+                        Session["selectedChildId"] = _viewedStudentId;
+                    }
+                }
             }
             catch (SqlException) { }
         }
 
-        private bool IsLinked(string sid)
+        /// <summary>
+        /// Verifies parent-child relationship exists in StudentParent table
+        /// to prevent unauthorized access to unlinked student profiles.
+        /// </summary>
+        private bool IsChildLinkedToParent(string studentId)
         {
-            if (string.IsNullOrEmpty(_parentId) || string.IsNullOrEmpty(sid)) return false;
+            if (string.IsNullOrEmpty(_parentRecordId) || string.IsNullOrEmpty(studentId))
+            {
+                return false;
+            }
+
             try
             {
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.[StudentParent] WHERE parentId=@p AND studentId=@s", conn))
-                { cmd.Parameters.AddWithValue("@p", _parentId); cmd.Parameters.AddWithValue("@s", sid); conn.Open(); return Convert.ToInt32(cmd.ExecuteScalar()) > 0; }
+                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var command = new SqlCommand(
+                    "SELECT COUNT(*) FROM dbo.[StudentParent] WHERE parentId = @parentId AND studentId = @studentId",
+                    connection))
+                {
+                    command.Parameters.AddWithValue("@parentId", _parentRecordId);
+                    command.Parameters.AddWithValue("@studentId", studentId);
+                    connection.Open();
+                    return Convert.ToInt32(command.ExecuteScalar()) > 0;
+                }
             }
-            catch (SqlException) { return false; }
+            catch (SqlException)
+            {
+                return false;
+            }
         }
 
-        private void SetLabels()
+        // ═══════════════════════════════════════════════════
+        //  PAGE LABELS
+        // ═══════════════════════════════════════════════════
+        private void ApplyPageLabels()
         {
             litNoChildMsg.Text = T("No linked child found.", "Tiada anak dipautkan.");
             litNoChildLink.Text = T("Link Child Account", "Paut Akaun Anak");
@@ -137,59 +271,85 @@ namespace ScienceBuddy.Parent
             litBadgeCountLabel.Text = T("Badges Earned", "Lencana Diperoleh");
         }
 
-        private void LoadAll()
+        // ═══════════════════════════════════════════════════
+        //  PROFILE SECTION ORCHESTRATOR
+        // ═══════════════════════════════════════════════════
+        private void LoadAllProfileSections()
         {
-            LoadIdentity();
+            LoadStudentIdentity();
             LoadPersonalityCard();
             LoadLevelCard();
-            LoadAchievements();
+            LoadAchievementSnapshot();
             LoadBadgeCollection();
         }
 
         // ═══════════════════════════════════════════════════
-        //  IDENTITY
+        //  IDENTITY SECTION
         // ═══════════════════════════════════════════════════
-        private void LoadIdentity()
+        private void LoadStudentIdentity()
         {
             try
             {
-                const string sql = @"SELECT s.name, s.nickname, s.currentLevelId, s.XP,
+                const string identityQuery = @"SELECT s.name, s.nickname, s.currentLevelId, s.XP,
                     l.levelNameEN, l.levelNameBM, sp.relationship
                     FROM dbo.[Student] s
                     LEFT JOIN dbo.[Level] l ON l.levelId = s.currentLevelId
                     INNER JOIN dbo.[StudentParent] sp ON sp.studentId = s.studentId AND sp.parentId = @parentId
                     WHERE s.studentId = @studentId";
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(sql, conn))
+
+                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var command = new SqlCommand(identityQuery, connection))
                 {
-                    cmd.Parameters.AddWithValue("@studentId", _studentId);
-                    cmd.Parameters.AddWithValue("@parentId", _parentId);
-                    conn.Open();
-                    using (var reader = cmd.ExecuteReader())
+                    command.Parameters.AddWithValue("@studentId", _viewedStudentId);
+                    command.Parameters.AddWithValue("@parentId", _parentRecordId);
+                    connection.Open();
+
+                    using (var reader = command.ExecuteReader())
                     {
                         if (reader.Read())
                         {
-                            string name = reader["name"]?.ToString() ?? "-";
-                            string nick = reader["nickname"]?.ToString() ?? "";
-                            string rel = reader["relationship"]?.ToString() ?? "";
-                            string lvl = CurrentLanguage == "BM" ? (reader["levelNameBM"]?.ToString() ?? "-") : (reader["levelNameEN"]?.ToString() ?? "-");
-                            int xp = reader["XP"] != DBNull.Value ? Convert.ToInt32(reader["XP"]) : 0;
+                            string studentName = reader["name"]?.ToString() ?? "-";
+                            string studentNickname = reader["nickname"]?.ToString() ?? "";
+                            string relationship = reader["relationship"]?.ToString() ?? "";
+                            string levelName = CurrentLanguage == "BM"
+                                ? (reader["levelNameBM"]?.ToString() ?? "-")
+                                : (reader["levelNameEN"]?.ToString() ?? "-");
+                            int experiencePoints = reader["XP"] != DBNull.Value
+                                ? Convert.ToInt32(reader["XP"])
+                                : 0;
 
-                            litName.Text = Server.HtmlEncode(name);
-                            litNickname.Text = !string.IsNullOrWhiteSpace(nick) ? T("Nickname: ", "Nama panggilan: ") + Server.HtmlEncode(nick) : "";
-                            litLevel.Text = Server.HtmlEncode(lvl);
-                            litRelationship.Text = Server.HtmlEncode(!string.IsNullOrWhiteSpace(rel) ? rel : T("Family", "Keluarga"));
-                            litXP.Text = xp.ToString("N0");
+                            litName.Text = Server.HtmlEncode(studentName);
+                            litNickname.Text = !string.IsNullOrWhiteSpace(studentNickname)
+                                ? T("Nickname: ", "Nama panggilan: ") + Server.HtmlEncode(studentNickname)
+                                : "";
+                            litLevel.Text = Server.HtmlEncode(levelName);
+                            litRelationship.Text = Server.HtmlEncode(
+                                !string.IsNullOrWhiteSpace(relationship) ? relationship : T("Family", "Keluarga"));
+                            litXP.Text = experiencePoints.ToString("N0");
 
-                            string initials = "?";
-                            if (!string.IsNullOrWhiteSpace(name))
-                            { var p = name.Trim().Split(' '); initials = p.Length >= 2 ? (p[0][0].ToString() + p[p.Length - 1][0].ToString()).ToUpper() : name[0].ToString().ToUpper(); }
-                            litInitials.Text = Server.HtmlEncode(initials);
+                            string avatarInitials = BuildNameInitials(studentName);
+                            litInitials.Text = Server.HtmlEncode(avatarInitials);
                         }
                     }
                 }
             }
             catch (SqlException) { }
+        }
+
+        private string BuildNameInitials(string fullName)
+        {
+            if (string.IsNullOrWhiteSpace(fullName))
+            {
+                return "?";
+            }
+
+            string[] nameParts = fullName.Trim().Split(' ');
+            if (nameParts.Length >= 2)
+            {
+                return (nameParts[0][0].ToString() + nameParts[nameParts.Length - 1][0].ToString()).ToUpper();
+            }
+
+            return fullName[0].ToString().ToUpper();
         }
 
         // ═══════════════════════════════════════════════════
@@ -199,54 +359,84 @@ namespace ScienceBuddy.Parent
         {
             pnlPersonality.Visible = false;
             pnlNoPersonality.Visible = false;
+
             try
             {
-                const string sql = @"SELECT s.name, s.nickname, s.personalityId, sp.relationship,
+                const string personalityQuery = @"SELECT s.name, s.nickname, s.personalityId, sp.relationship,
                     p.personalityNameEN, p.personalityNameBM, p.descriptionEN, p.descriptionBM,
                     p.avatar, p.learningStyleEN, p.learningStyleBM
                     FROM dbo.[Student] s
-                    INNER JOIN dbo.[StudentParent] sp ON sp.studentId=s.studentId AND sp.parentId=@parentId
-                    LEFT JOIN dbo.[Personality] p ON p.personalityId=s.personalityId
-                    WHERE s.studentId=@studentId";
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@studentId", _studentId);
-                    cmd.Parameters.AddWithValue("@parentId", _parentId);
-                    conn.Open();
-                    using (var r = cmd.ExecuteReader())
-                    {
-                        if (r.Read())
-                        {
-                            string pName = CurrentLanguage == "BM" ? (r["personalityNameBM"]?.ToString() ?? "") : (r["personalityNameEN"]?.ToString() ?? "");
-                            string pDesc = CurrentLanguage == "BM" ? (r["descriptionBM"]?.ToString() ?? "") : (r["descriptionEN"]?.ToString() ?? "");
-                            string avatar = r["avatar"] != DBNull.Value ? r["avatar"].ToString() : "";
-                            string learnStyle = CurrentLanguage == "BM" ? (r["learningStyleBM"]?.ToString() ?? "") : (r["learningStyleEN"]?.ToString() ?? "");
-                            string fullName = r["name"]?.ToString() ?? "-";
-                            string nick = r["nickname"]?.ToString() ?? "-";
-                            string rel = r["relationship"]?.ToString() ?? T("Family", "Keluarga");
+                    INNER JOIN dbo.[StudentParent] sp ON sp.studentId = s.studentId AND sp.parentId = @parentId
+                    LEFT JOIN dbo.[Personality] p ON p.personalityId = s.personalityId
+                    WHERE s.studentId = @studentId";
 
-                            if (!string.IsNullOrWhiteSpace(pName))
+                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var command = new SqlCommand(personalityQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@studentId", _viewedStudentId);
+                    command.Parameters.AddWithValue("@parentId", _parentRecordId);
+                    connection.Open();
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            string personalityName = CurrentLanguage == "BM"
+                                ? (reader["personalityNameBM"]?.ToString() ?? "")
+                                : (reader["personalityNameEN"]?.ToString() ?? "");
+                            string personalityDescription = CurrentLanguage == "BM"
+                                ? (reader["descriptionBM"]?.ToString() ?? "")
+                                : (reader["descriptionEN"]?.ToString() ?? "");
+                            string avatarPath = reader["avatar"] != DBNull.Value
+                                ? reader["avatar"].ToString()
+                                : "";
+                            string learningStyle = CurrentLanguage == "BM"
+                                ? (reader["learningStyleBM"]?.ToString() ?? "")
+                                : (reader["learningStyleEN"]?.ToString() ?? "");
+                            string childFullName = reader["name"]?.ToString() ?? "-";
+                            string childNickname = reader["nickname"]?.ToString() ?? "-";
+                            string familyRelationship = reader["relationship"]?.ToString()
+                                ?? T("Family", "Keluarga");
+
+                            if (!string.IsNullOrWhiteSpace(personalityName))
                             {
                                 pnlPersonality.Visible = true;
-                                litPersonalityTitle.Text = string.Format(T("Your child is a {0}:", "Anak anda ialah {0}:"), Server.HtmlEncode(pName));
-                                litPersonalityDesc.Text = Server.HtmlEncode(pDesc);
-                                litInfoFullName.Text = Server.HtmlEncode(fullName);
-                                litInfoNickname.Text = Server.HtmlEncode(!string.IsNullOrWhiteSpace(nick) ? nick : "-");
-                                litInfoRelationship.Text = Server.HtmlEncode(rel);
-                                litInfoLearningStyle.Text = Server.HtmlEncode(!string.IsNullOrWhiteSpace(learnStyle) ? learnStyle : "-");
-                                if (!string.IsNullOrWhiteSpace(avatar))
-                                    imgPersonality.ImageUrl = ResolveUrl("~/" + avatar);
+                                litPersonalityTitle.Text = string.Format(
+                                    T("Your child is a {0}:", "Anak anda ialah {0}:"),
+                                    Server.HtmlEncode(personalityName));
+                                litPersonalityDesc.Text = Server.HtmlEncode(personalityDescription);
+                                litInfoFullName.Text = Server.HtmlEncode(childFullName);
+                                litInfoNickname.Text = Server.HtmlEncode(
+                                    !string.IsNullOrWhiteSpace(childNickname) ? childNickname : "-");
+                                litInfoRelationship.Text = Server.HtmlEncode(familyRelationship);
+                                litInfoLearningStyle.Text = Server.HtmlEncode(
+                                    !string.IsNullOrWhiteSpace(learningStyle) ? learningStyle : "-");
+
+                                if (!string.IsNullOrWhiteSpace(avatarPath))
+                                {
+                                    imgPersonality.ImageUrl = ResolveUrl("~/" + avatarPath);
+                                }
                                 else
+                                {
                                     imgPersonality.Visible = false;
+                                }
                             }
-                            else { pnlNoPersonality.Visible = true; }
+                            else
+                            {
+                                pnlNoPersonality.Visible = true;
+                            }
                         }
-                        else { pnlNoPersonality.Visible = true; }
+                        else
+                        {
+                            pnlNoPersonality.Visible = true;
+                        }
                     }
                 }
             }
-            catch { pnlNoPersonality.Visible = true; }
+            catch
+            {
+                pnlNoPersonality.Visible = true;
+            }
         }
 
         // ═══════════════════════════════════════════════════
@@ -256,71 +446,115 @@ namespace ScienceBuddy.Parent
         {
             pnlLevelInfo.Visible = false;
             pnlNoLevel.Visible = false;
+
             try
             {
-                const string sql = @"SELECT l.levelNameEN, l.levelNameBM, l.levelDescriptionEN, l.levelDescriptionBM,
-                    e.enrolledDate
+                const string levelQuery = @"SELECT l.levelNameEN, l.levelNameBM, 
+                    l.levelDescriptionEN, l.levelDescriptionBM, e.enrolledDate
                     FROM dbo.[Student] s
-                    LEFT JOIN dbo.[Level] l ON l.levelId=s.currentLevelId
-                    LEFT JOIN dbo.[Enrollment] e ON e.studentId=s.studentId AND e.levelId=s.currentLevelId AND e.status='Active'
-                    WHERE s.studentId=@studentId";
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(sql, conn))
+                    LEFT JOIN dbo.[Level] l ON l.levelId = s.currentLevelId
+                    LEFT JOIN dbo.[Enrollment] e ON e.studentId = s.studentId 
+                        AND e.levelId = s.currentLevelId AND e.status = 'Active'
+                    WHERE s.studentId = @studentId";
+
+                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var command = new SqlCommand(levelQuery, connection))
                 {
-                    cmd.Parameters.AddWithValue("@studentId", _studentId);
-                    conn.Open();
-                    using (var r = cmd.ExecuteReader())
+                    command.Parameters.AddWithValue("@studentId", _viewedStudentId);
+                    connection.Open();
+
+                    using (var reader = command.ExecuteReader())
                     {
-                        if (r.Read() && r["levelNameEN"] != DBNull.Value)
+                        if (reader.Read() && reader["levelNameEN"] != DBNull.Value)
                         {
                             pnlLevelInfo.Visible = true;
-                            string lvlName = CurrentLanguage == "BM" ? (r["levelNameBM"]?.ToString() ?? "-") : (r["levelNameEN"]?.ToString() ?? "-");
-                            string lvlDesc = CurrentLanguage == "BM" ? (r["levelDescriptionBM"]?.ToString() ?? "") : (r["levelDescriptionEN"]?.ToString() ?? "");
-                            string enrolled = r["enrolledDate"] != DBNull.Value ? Convert.ToDateTime(r["enrolledDate"]).ToString("dd MMM yyyy") : T("Not available", "Tidak tersedia");
-                            litLevelName.Text = Server.HtmlEncode(lvlName);
-                            litLevelDesc.Text = Server.HtmlEncode(lvlDesc);
-                            litEnrolledSince.Text = T("Enrolled Since: ", "Didaftarkan Sejak: ") + Server.HtmlEncode(enrolled);
+
+                            string levelDisplayName = CurrentLanguage == "BM"
+                                ? (reader["levelNameBM"]?.ToString() ?? "-")
+                                : (reader["levelNameEN"]?.ToString() ?? "-");
+                            string levelDescription = CurrentLanguage == "BM"
+                                ? (reader["levelDescriptionBM"] != DBNull.Value ? reader["levelDescriptionBM"].ToString() : "")
+                                : (reader["levelDescriptionEN"] != DBNull.Value ? reader["levelDescriptionEN"].ToString() : "");
+                            string enrollmentDate = reader["enrolledDate"] != DBNull.Value
+                                ? Convert.ToDateTime(reader["enrolledDate"]).ToString("dd MMM yyyy")
+                                : T("Not available", "Tidak tersedia");
+
+                            litLevelName.Text = Server.HtmlEncode(levelDisplayName);
+                            litLevelDesc.Text = Server.HtmlEncode(levelDescription);
+                            litEnrolledSince.Text = T("Enrolled Since: ", "Didaftarkan Sejak: ")
+                                + Server.HtmlEncode(enrollmentDate);
                         }
-                        else { pnlNoLevel.Visible = true; }
+                        else
+                        {
+                            pnlNoLevel.Visible = true;
+                        }
                     }
                 }
             }
-            catch { pnlNoLevel.Visible = true; }
+            catch
+            {
+                pnlNoLevel.Visible = true;
+            }
         }
 
         // ═══════════════════════════════════════════════════
         //  ACHIEVEMENTS
         // ═══════════════════════════════════════════════════
-        private void LoadAchievements()
+        private void LoadAchievementSnapshot()
         {
-            // Badge count
-            try
-            {
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.[StudentBadge] WHERE studentId=@s", conn))
-                { cmd.Parameters.AddWithValue("@s", _studentId); conn.Open(); litBadgeCount.Text = Convert.ToInt32(cmd.ExecuteScalar()).ToString(); }
-            }
-            catch (SqlException) { litBadgeCount.Text = "0"; }
+            LoadBadgeCount();
+            LoadLatestBadgeName();
+        }
 
-            // Latest badge name
-            pnlLatestBadge.Visible = false;
+        private void LoadBadgeCount()
+        {
             try
             {
-                const string sql = @"SELECT TOP 1 b.badgeNameEN, b.badgeNameBM
-                    FROM dbo.[StudentBadge] sb INNER JOIN dbo.[Badge] b ON b.badgeId=sb.badgeId
-                    WHERE sb.studentId=@s ORDER BY sb.earnedAt DESC";
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(sql, conn))
+                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var command = new SqlCommand(
+                    "SELECT COUNT(*) FROM dbo.[StudentBadge] WHERE studentId = @studentId", connection))
                 {
-                    cmd.Parameters.AddWithValue("@s", _studentId); conn.Open();
-                    using (var r = cmd.ExecuteReader())
+                    command.Parameters.AddWithValue("@studentId", _viewedStudentId);
+                    connection.Open();
+                    litBadgeCount.Text = Convert.ToInt32(command.ExecuteScalar()).ToString();
+                }
+            }
+            catch (SqlException)
+            {
+                litBadgeCount.Text = "0";
+            }
+        }
+
+        private void LoadLatestBadgeName()
+        {
+            pnlLatestBadge.Visible = false;
+
+            try
+            {
+                const string latestBadgeQuery = @"SELECT TOP 1 b.badgeNameEN, b.badgeNameBM
+                    FROM dbo.[StudentBadge] sb 
+                    INNER JOIN dbo.[Badge] b ON b.badgeId = sb.badgeId
+                    WHERE sb.studentId = @studentId 
+                    ORDER BY sb.earnedAt DESC";
+
+                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var command = new SqlCommand(latestBadgeQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@studentId", _viewedStudentId);
+                    connection.Open();
+
+                    using (var reader = command.ExecuteReader())
                     {
-                        if (r.Read())
+                        if (reader.Read())
                         {
-                            string bname = CurrentLanguage == "BM" ? (r["badgeNameBM"]?.ToString() ?? r["badgeNameEN"]?.ToString() ?? "") : (r["badgeNameEN"]?.ToString() ?? "");
-                            if (!string.IsNullOrWhiteSpace(bname))
+                            string badgeName = CurrentLanguage == "BM"
+                                ? (reader["badgeNameBM"]?.ToString() ?? reader["badgeNameEN"]?.ToString() ?? "")
+                                : (reader["badgeNameEN"]?.ToString() ?? "");
+
+                            if (!string.IsNullOrWhiteSpace(badgeName))
                             {
-                                litLatestBadge.Text = T("Latest: ", "Terkini: ") + Server.HtmlEncode(bname);
+                                litLatestBadge.Text = T("Latest: ", "Terkini: ")
+                                    + Server.HtmlEncode(badgeName);
                                 pnlLatestBadge.Visible = true;
                             }
                         }
@@ -330,77 +564,147 @@ namespace ScienceBuddy.Parent
             catch (SqlException) { }
         }
 
+        // ═══════════════════════════════════════════════════
+        //  BADGE COLLECTION GRID
+        // ═══════════════════════════════════════════════════
+
+        /// <summary>
+        /// Renders the complete badge collection showing both earned and locked badges.
+        /// Earned badges appear first (sorted by most recent), followed by locked badges.
+        /// </summary>
         private void LoadBadgeCollection()
         {
             pnlBadgeGrid.Controls.Clear();
+
             try
             {
-                const string sql = @"SELECT b.badgeId, b.badgeNameEN, b.badgeNameBM, b.badgeDescriptionEN, b.badgeDescriptionBM,
-                    b.requirementDescriptionEN, b.xpReward,
-                    sb.earnedAt
+                const string badgeCollectionQuery = @"SELECT b.badgeId, b.badgeNameEN, b.badgeNameBM, 
+                    b.badgeDescriptionEN, b.badgeDescriptionBM,
+                    b.requirementDescriptionEN, b.xpReward, sb.earnedAt
                     FROM dbo.[Badge] b
-                    LEFT JOIN dbo.[StudentBadge] sb ON b.badgeId=sb.badgeId AND sb.studentId=@s
-                    ORDER BY CASE WHEN sb.earnedAt IS NOT NULL THEN 0 ELSE 1 END, sb.earnedAt DESC, b.badgeNameEN";
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@s", _studentId);
-                    conn.Open();
-                    using (var r = cmd.ExecuteReader())
-                    {
-                        var html = new System.Text.StringBuilder();
-                        html.Append("<div class=\"pt-badge-grid\">");
-                        bool hasBadges = false;
-                        while (r.Read())
-                        {
-                            hasBadges = true;
-                            bool earned = r["earnedAt"] != DBNull.Value;
-                            string bname = CurrentLanguage == "BM" && r["badgeNameBM"] != DBNull.Value && !string.IsNullOrEmpty(r["badgeNameBM"].ToString()) ? r["badgeNameBM"].ToString() : r["badgeNameEN"] != DBNull.Value ? r["badgeNameEN"].ToString() : "";
-                            string desc = CurrentLanguage == "BM" && r["badgeDescriptionBM"] != DBNull.Value && !string.IsNullOrEmpty(r["badgeDescriptionBM"].ToString()) ? r["badgeDescriptionBM"].ToString() : r["badgeDescriptionEN"] != DBNull.Value ? r["badgeDescriptionEN"].ToString() : "";
-                            string req = r["requirementDescriptionEN"] != DBNull.Value ? r["requirementDescriptionEN"].ToString() : "";
-                            int xp = r["xpReward"] != DBNull.Value ? Convert.ToInt32(r["xpReward"]) : 0;
-                            string earnedDate = earned ? Convert.ToDateTime(r["earnedAt"]).ToString("dd MMM yyyy") : "";
+                    LEFT JOIN dbo.[StudentBadge] sb ON b.badgeId = sb.badgeId AND sb.studentId = @studentId
+                    ORDER BY CASE WHEN sb.earnedAt IS NOT NULL THEN 0 ELSE 1 END, 
+                             sb.earnedAt DESC, b.badgeNameEN";
 
-                            string cardClass = earned ? "pt-badge-card pt-badge-card-earned" : "pt-badge-card pt-badge-card-locked";
-                            string lockIcon = earned ? "" : "<div class=\"pt-badge-lock-icon\"><i class=\"bi bi-lock-fill\"></i></div>";
-                            string badgeIcon = earned
+                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var command = new SqlCommand(badgeCollectionQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@studentId", _viewedStudentId);
+                    connection.Open();
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        var badgeGridHtml = new System.Text.StringBuilder();
+                        badgeGridHtml.Append("<div class=\"pt-badge-grid\">");
+                        bool hasBadgeRecords = false;
+
+                        while (reader.Read())
+                        {
+                            hasBadgeRecords = true;
+                            bool hasBeenEarned = reader["earnedAt"] != DBNull.Value;
+
+                            string badgeDisplayName = CurrentLanguage == "BM"
+                                && reader["badgeNameBM"] != DBNull.Value
+                                && !string.IsNullOrEmpty(reader["badgeNameBM"].ToString())
+                                    ? reader["badgeNameBM"].ToString()
+                                    : reader["badgeNameEN"] != DBNull.Value
+                                        ? reader["badgeNameEN"].ToString()
+                                        : "";
+
+                            string badgeDescription = CurrentLanguage == "BM"
+                                && reader["badgeDescriptionBM"] != DBNull.Value
+                                && !string.IsNullOrEmpty(reader["badgeDescriptionBM"].ToString())
+                                    ? reader["badgeDescriptionBM"].ToString()
+                                    : reader["badgeDescriptionEN"] != DBNull.Value
+                                        ? reader["badgeDescriptionEN"].ToString()
+                                        : "";
+
+                            string requirementText = reader["requirementDescriptionEN"] != DBNull.Value
+                                ? reader["requirementDescriptionEN"].ToString()
+                                : "";
+                            int xpReward = reader["xpReward"] != DBNull.Value
+                                ? Convert.ToInt32(reader["xpReward"])
+                                : 0;
+                            string earnedDateFormatted = hasBeenEarned
+                                ? Convert.ToDateTime(reader["earnedAt"]).ToString("dd MMM yyyy")
+                                : "";
+
+                            string truncatedDescription = badgeDescription.Length > 100
+                                ? badgeDescription.Substring(0, 100) + "..."
+                                : badgeDescription;
+                            string truncatedRequirement = requirementText.Length > 80
+                                ? requirementText.Substring(0, 80) + "..."
+                                : requirementText;
+
+                            string cardCssClass = hasBeenEarned
+                                ? "pt-badge-card pt-badge-card-earned"
+                                : "pt-badge-card pt-badge-card-locked";
+                            string lockOverlay = hasBeenEarned
+                                ? ""
+                                : "<div class=\"pt-badge-lock-icon\"><i class=\"bi bi-lock-fill\"></i></div>";
+                            string badgeIconMarkup = hasBeenEarned
                                 ? "<div class=\"pt-badge-icon-wrap pt-badge-icon-earned\"><i class=\"bi bi-award-fill\"></i></div>"
                                 : "<div class=\"pt-badge-icon-wrap pt-badge-icon-locked\"><i class=\"bi bi-award-fill\"></i></div>";
-                            string statusPill = earned
-                                ? "<div class=\"pt-badge-status-pill pt-badge-pill-earned\">" + T("Earned", "Diperoleh") + " &bull; " + earnedDate + "</div>"
-                                : "<div class=\"pt-badge-status-pill pt-badge-pill-locked\">" + T("Locked", "Terkunci") + "</div>";
+                            string statusPillMarkup = hasBeenEarned
+                                ? "<div class=\"pt-badge-status-pill pt-badge-pill-earned\">"
+                                    + T("Earned", "Diperoleh") + " &bull; " + earnedDateFormatted + "</div>"
+                                : "<div class=\"pt-badge-status-pill pt-badge-pill-locked\">"
+                                    + T("Locked", "Terkunci") + "</div>";
 
-                            html.Append("<div class=\"" + cardClass + "\">");
-                            html.Append(lockIcon);
-                            html.Append(badgeIcon);
-                            html.Append("<div class=\"pt-badge-card-name\">" + Server.HtmlEncode(bname) + "</div>");
-                            html.Append("<div class=\"pt-badge-card-desc\">" + Server.HtmlEncode(desc.Length > 100 ? desc.Substring(0, 100) + "..." : desc) + "</div>");
-                            html.Append("<div class=\"pt-badge-card-req\">" + Server.HtmlEncode(req.Length > 80 ? req.Substring(0, 80) + "..." : req) + "</div>");
-                            html.Append("<div class=\"pt-badge-card-xp\">+" + xp + " XP</div>");
-                            html.Append(statusPill);
-                            html.Append("</div>");
+                            badgeGridHtml.Append("<div class=\"" + cardCssClass + "\">");
+                            badgeGridHtml.Append(lockOverlay);
+                            badgeGridHtml.Append(badgeIconMarkup);
+                            badgeGridHtml.Append("<div class=\"pt-badge-card-name\">"
+                                + Server.HtmlEncode(badgeDisplayName) + "</div>");
+                            badgeGridHtml.Append("<div class=\"pt-badge-card-desc\">"
+                                + Server.HtmlEncode(truncatedDescription) + "</div>");
+                            badgeGridHtml.Append("<div class=\"pt-badge-card-req\">"
+                                + Server.HtmlEncode(truncatedRequirement) + "</div>");
+                            badgeGridHtml.Append("<div class=\"pt-badge-card-xp\">+"
+                                + xpReward + " XP</div>");
+                            badgeGridHtml.Append(statusPillMarkup);
+                            badgeGridHtml.Append("</div>");
                         }
-                        html.Append("</div>");
-                        if (hasBadges) { pnlBadgeGrid.Controls.Add(new LiteralControl(html.ToString())); pnlNoBadges.Visible = false; }
-                        else { pnlNoBadges.Visible = true; }
+
+                        badgeGridHtml.Append("</div>");
+
+                        if (hasBadgeRecords)
+                        {
+                            pnlBadgeGrid.Controls.Add(new LiteralControl(badgeGridHtml.ToString()));
+                            pnlNoBadges.Visible = false;
+                        }
+                        else
+                        {
+                            pnlNoBadges.Visible = true;
+                        }
                     }
                 }
             }
-            catch { pnlNoBadges.Visible = true; }
+            catch
+            {
+                pnlNoBadges.Visible = true;
+            }
         }
 
+        // ═══════════════════════════════════════════════════
+        //  NOTIFICATION BADGE
+        // ═══════════════════════════════════════════════════
         private void LoadUnreadBadge()
         {
             try
             {
-                using (var c = new System.Data.SqlClient.SqlConnection(ConnStr))
-                using (var cmd = new System.Data.SqlClient.SqlCommand("SELECT COUNT(*) FROM dbo.Notification WHERE toUserId=@uid AND isRead=0", c))
+                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var command = new SqlCommand(
+                    "SELECT COUNT(*) FROM dbo.Notification WHERE toUserId = @userId AND isRead = 0",
+                    connection))
                 {
-                    cmd.Parameters.AddWithValue("@uid", Session["userId"].ToString());
-                    c.Open();
-                    int count = (int)cmd.ExecuteScalar();
-                    if (count > 0) litUnreadBadge.Text = "<span class='pt-sidebar-badge'>" + count + "</span>";
-                    else litUnreadBadge.Text = "";
+                    command.Parameters.AddWithValue("@userId", Session["userId"].ToString());
+                    connection.Open();
+                    int unreadCount = (int)command.ExecuteScalar();
+
+                    litUnreadBadge.Text = unreadCount > 0
+                        ? "<span class='pt-sidebar-badge'>" + unreadCount + "</span>"
+                        : "";
                 }
             }
             catch { }
