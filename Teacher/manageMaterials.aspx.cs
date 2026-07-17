@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -324,13 +325,22 @@ namespace ScienceBuddy.Teacher
                             hidMaterialId.Value = materialId;
                             txtTitle.Text = r["materialTitle"]?.ToString() ?? "";
                             txtDescription.Text = r["materialContent"]?.ToString() ?? "";
-                            try { ddlLanguage.SelectedValue = r["language"]?.ToString() ?? "EN"; } catch { }
+                            string langVal = r["language"]?.ToString() ?? "EN";
+                            try { ddlLanguage.SelectedValue = langVal; } catch { }
                             string levelId = r["levelId"]?.ToString();
                             string unitId = r["unitId"]?.ToString();
                             string subtopicId = r["subtopicId"]?.ToString();
                             string fileUrl = r["fileUrl"]?.ToString();
                             string matStatus = r["status"]?.ToString() ?? "";
                             r.Close();
+
+                            // Store original values for change detection
+                            hidOrigTitle.Value = txtTitle.Text;
+                            hidOrigDesc.Value = txtDescription.Text;
+                            hidOrigLang.Value = langVal;
+                            hidOrigLevel.Value = levelId ?? "";
+                            hidOrigUnit.Value = unitId ?? "";
+                            hidOrigSubtopic.Value = subtopicId ?? "";
 
                             // Load form dropdowns
                             LoadFormDropdowns(conn, levelId, unitId, subtopicId);
@@ -342,7 +352,7 @@ namespace ScienceBuddy.Teacher
                             // Modal title
                             bool isResubmit = matStatus.Equals("Rejected", StringComparison.OrdinalIgnoreCase);
                             litFormTitle.Text = isResubmit ? "Resubmit Material" : "Edit Material";
-                            litSaveBtnText.Text = isResubmit ? "Resubmit Material" : "Update Material";
+                            litSaveBtnText.Text = "Confirm Changes";
 
                             hidShowEditModal.Value = "1";
                         }
@@ -414,13 +424,49 @@ namespace ScienceBuddy.Teacher
             string title = txtTitle.Text.Trim();
             string desc = txtDescription.Text.Trim();
             string lang = ddlLanguage.SelectedValue;
+            string levelVal = ddlLevel.SelectedValue;
+            string unitVal = ddlUnit.SelectedValue;
             string subtopicId = ddlSubtopic.SelectedValue;
 
-            if (string.IsNullOrEmpty(title) || string.IsNullOrEmpty(subtopicId))
-            { hidToast.Value = "Please fill in required fields."; hidShowEditModal.Value = "1"; LoadMaterials(); return; }
+            // ── Server-side validation (same rules as upload) ──
+            if (string.IsNullOrEmpty(title))
+            { hidToast.Value = "Title is required."; hidShowEditModal.Value = "1"; LoadMaterials(); return; }
+            if (string.IsNullOrEmpty(lang))
+            { hidToast.Value = "Language is required."; hidShowEditModal.Value = "1"; LoadMaterials(); return; }
 
+            if (string.IsNullOrEmpty(levelVal))
+            { hidToast.Value = "Level is required."; hidShowEditModal.Value = "1"; LoadMaterials(); return; }
+            if (string.IsNullOrEmpty(unitVal))
+            { hidToast.Value = "Unit is required."; hidShowEditModal.Value = "1"; LoadMaterials(); return; }
+            if (string.IsNullOrEmpty(subtopicId))
+            { hidToast.Value = "Subtopic is required."; hidShowEditModal.Value = "1"; LoadMaterials(); return; }
+
+            // ── Change detection — compare with original values ──
+            string origTitle = hidOrigTitle.Value.Trim();
+            string origDesc = hidOrigDesc.Value.Trim();
+            string origLang = hidOrigLang.Value;
+            string origLevel = hidOrigLevel.Value;
+            string origUnit = hidOrigUnit.Value;
+            string origSubtopic = hidOrigSubtopic.Value;
+            bool hasNewFile = fuFile.HasFile;
+
+            bool changed = hasNewFile ||
+                !string.Equals(title, origTitle, StringComparison.Ordinal) ||
+                !string.Equals(desc, origDesc, StringComparison.Ordinal) ||
+                !string.Equals(lang, origLang, StringComparison.Ordinal) ||
+                !string.Equals(levelVal, origLevel, StringComparison.Ordinal) ||
+                !string.Equals(unitVal, origUnit, StringComparison.Ordinal) ||
+                !string.Equals(subtopicId, origSubtopic, StringComparison.Ordinal);
+
+            if (!changed)
+            {
+                hidToast.Value = T("No changes were made.", "Tiada perubahan dibuat.");
+                LoadMaterials(); return;
+            }
+
+            // ── File validation (only if a new file is uploaded) ──
             string fileUrl = null; string materialType = null;
-            if (fuFile.HasFile)
+            if (hasNewFile)
             {
                 string ext = Path.GetExtension(fuFile.FileName).ToLower();
                 if (!AllowedExtensions.Contains(ext)) { hidToast.Value = "Invalid file type."; hidShowEditModal.Value = "1"; LoadMaterials(); return; }
@@ -430,7 +476,7 @@ namespace ScienceBuddy.Teacher
                 string dir = Server.MapPath("~/Images/Material/");
                 if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
                 fuFile.SaveAs(Path.Combine(dir, fn));
-                fileUrl = fn; // Store filename only in database
+                fileUrl = fn;
             }
 
             try
@@ -454,10 +500,20 @@ namespace ScienceBuddy.Teacher
                         cmd.ExecuteNonQuery();
                     }
                 }
-                hidToast.Value = T("Material updated successfully.","Bahan berjaya dikemas kini.");
+                hidToast.Value = T("Material updated successfully and submitted for review.", "Bahan berjaya dikemas kini dan dihantar untuk semakan.");
             }
             catch { hidToast.Value = "An error occurred. Please try again."; }
             LoadMaterials();
+        }
+
+        /// <summary>Checks if a rich-text value is effectively empty (only empty HTML tags or whitespace).</summary>
+        private static bool IsEmptyRichText(string val)
+        {
+            if (string.IsNullOrWhiteSpace(val)) return true;
+            // Strip all HTML tags and decode common entities
+            string stripped = System.Text.RegularExpressions.Regex.Replace(val, @"<[^>]*>", "");
+            stripped = stripped.Replace("&nbsp;", " ").Trim();
+            return stripped.Length == 0;
         }
 
         // ── Delete (soft delete — set status to 'Deleted') ─────────

@@ -279,5 +279,13 @@ namespace ScienceBuddy.Teacher
         protected global::System.Web.UI.WebControls.Panel pnlDiscoverEmpty;
         protected global::System.Web.UI.WebControls.Panel pnlMyMaterialsPending;
         protected global::System.Web.UI.WebControls.HiddenField hidActiveTab;
+
+        // ── Hidden fields for edit change detection ──
+        protected global::System.Web.UI.WebControls.HiddenField hidOrigTitle;
+        protected global::System.Web.UI.WebControls.HiddenField hidOrigDesc;
+        protected global::System.Web.UI.WebControls.HiddenField hidOrigLang;
+        protected global::System.Web.UI.WebControls.HiddenField hidOrigLevel;
+        protected global::System.Web.UI.WebControls.HiddenField hidOrigUnit;
+        protected global::System.Web.UI.WebControls.HiddenField hidOrigSubtopic;
     }
 }

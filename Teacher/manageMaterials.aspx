@@ -173,6 +173,11 @@
 @keyframes mmSlideIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
 @keyframes mmSlideOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(30px); } }
 
+/* ─── Validation messages ─── */
+.mm-val-msg { font-size:.76rem; color:var(--tc-error); margin-top:4px; display:none; font-weight:600; }
+.mm-val-msg.show { display:block; }
+.mm-input.mm-invalid { border-color:var(--tc-error)!important; }
+
 /* ─── Responsive ─── */
 @media (max-width: 1100px) {
     .mm-filter-bar { flex-wrap: wrap; }
@@ -291,8 +296,8 @@
                     <div class='mm-card-ico <%# GetIconCss(Eval("materialType").ToString()) %>'><i class='bi <%# GetFileIcon(Eval("materialType").ToString()) %>'></i></div>
                     <div class="mm-card-info">
                         <div class="mm-card-title"><%# HttpUtility.HtmlEncode(Eval("materialTitle")) %></div>
-                        <div class="mm-card-desc"><%# (Eval("materialContent")?.ToString() ?? "").Length > 120 ? "<span class='mm-desc-short'>" + HttpUtility.HtmlEncode((Eval("materialContent")?.ToString() ?? "").Substring(0,120)) + "...</span><span class='mm-desc-full'>" + HttpUtility.HtmlEncode(Eval("materialContent")?.ToString() ?? "") + "</span>" : HttpUtility.HtmlEncode(Eval("materialContent")?.ToString() ?? "") %></div>
-                        <%# (Eval("materialContent")?.ToString() ?? "").Length > 120 ? "<span class='mm-view-more' onclick='toggleDesc(this)'>View More</span>" : "" %>
+                        <div class="mm-card-desc"><%# (Eval("materialContent")?.ToString() ?? "").Length > 250 ? "<span class='mm-desc-short'>" + HttpUtility.HtmlEncode((Eval("materialContent")?.ToString() ?? "").Substring(0,250)) + "...</span><span class='mm-desc-full'>" + HttpUtility.HtmlEncode(Eval("materialContent")?.ToString() ?? "") + "</span>" : HttpUtility.HtmlEncode(Eval("materialContent")?.ToString() ?? "") %></div>
+                        <%# (Eval("materialContent")?.ToString() ?? "").Length > 250 ? "<span class='mm-view-more' onclick='toggleDesc(this)'>View More</span>" : "" %>
                         <div class="mm-card-meta">
                             <span><i class="bi bi-folder2"></i> <%# HttpUtility.HtmlEncode(Eval("subtopicName")) %></span>
                             <span><i class="bi bi-file-earmark"></i> <%# HttpUtility.HtmlEncode(Eval("materialType")) %></span>
@@ -341,8 +346,8 @@
                     <div class="mm-card-info">
                         <div class="mm-card-title"><%# HttpUtility.HtmlEncode(Eval("materialTitle")) %></div>
                         <div style="font-size:.78rem;color:var(--tc-primary);font-weight:600;margin-bottom:4px;"><%: T("By","Oleh") %> <%# HttpUtility.HtmlEncode(Eval("teacherName")) %></div>
-                        <div class="mm-card-desc"><%# (Eval("materialContent")?.ToString() ?? "").Length > 120 ? "<span class='mm-desc-short'>" + HttpUtility.HtmlEncode((Eval("materialContent")?.ToString() ?? "").Substring(0,120)) + "...</span><span class='mm-desc-full'>" + HttpUtility.HtmlEncode(Eval("materialContent")?.ToString() ?? "") + "</span>" : HttpUtility.HtmlEncode(Eval("materialContent")?.ToString() ?? "") %></div>
-                        <%# (Eval("materialContent")?.ToString() ?? "").Length > 120 ? "<span class='mm-view-more' onclick='toggleDesc(this)'>View More</span>" : "" %>
+                        <div class="mm-card-desc"><%# (Eval("materialContent")?.ToString() ?? "").Length > 250 ? "<span class='mm-desc-short'>" + HttpUtility.HtmlEncode((Eval("materialContent")?.ToString() ?? "").Substring(0,250)) + "...</span><span class='mm-desc-full'>" + HttpUtility.HtmlEncode(Eval("materialContent")?.ToString() ?? "") + "</span>" : HttpUtility.HtmlEncode(Eval("materialContent")?.ToString() ?? "") %></div>
+                        <%# (Eval("materialContent")?.ToString() ?? "").Length > 250 ? "<span class='mm-view-more' onclick='toggleDesc(this)'>View More</span>" : "" %>
                         <div class="mm-card-meta">
                             <span><i class="bi bi-folder2"></i> <%# HttpUtility.HtmlEncode(Eval("subtopicName")) %></span>
                             <span><i class="bi bi-file-earmark"></i> <%# HttpUtility.HtmlEncode(Eval("materialType")) %></span>
@@ -388,10 +393,18 @@
         </div>
         <div class="mm-modal-body">
             <asp:HiddenField ID="hidMaterialId" runat="server" Value="" />
+            <%-- Hidden fields to store original values for change detection --%>
+            <asp:HiddenField ID="hidOrigTitle" runat="server" Value="" />
+            <asp:HiddenField ID="hidOrigDesc" runat="server" Value="" />
+            <asp:HiddenField ID="hidOrigLang" runat="server" Value="" />
+            <asp:HiddenField ID="hidOrigLevel" runat="server" Value="" />
+            <asp:HiddenField ID="hidOrigUnit" runat="server" Value="" />
+            <asp:HiddenField ID="hidOrigSubtopic" runat="server" Value="" />
             <div class="mm-form-grid2">
                 <div>
                     <label class="mm-label">Title *</label>
                     <asp:TextBox ID="txtTitle" runat="server" MaxLength="150" CssClass="mm-input" />
+                    <div class="mm-val-msg" id="valTitle">Title is required.</div>
                 </div>
                 <div>
                     <label class="mm-label">Language *</label>
@@ -400,6 +413,7 @@
                         <asp:ListItem Value="BM" Text="Bahasa Melayu" />
                         <asp:ListItem Value="BOTH" Text="Both" />
                     </asp:DropDownList>
+                    <div class="mm-val-msg" id="valLang">Language is required.</div>
                 </div>
             </div>
             <div style="margin-bottom:1rem;">
@@ -408,16 +422,19 @@
             </div>
             <div class="mm-form-grid3">
                 <div>
-                    <label class="mm-label">Level</label>
+                    <label class="mm-label">Level *</label>
                     <asp:DropDownList ID="ddlLevel" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlLevel_Changed" CssClass="mm-input" />
+                    <div class="mm-val-msg" id="valLevel">Level is required.</div>
                 </div>
                 <div>
-                    <label class="mm-label">Unit</label>
+                    <label class="mm-label">Unit *</label>
                     <asp:DropDownList ID="ddlUnit" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlUnit_Changed" CssClass="mm-input" />
+                    <div class="mm-val-msg" id="valUnit">Unit is required.</div>
                 </div>
                 <div>
                     <label class="mm-label">Subtopic *</label>
                     <asp:DropDownList ID="ddlSubtopic" runat="server" CssClass="mm-input" />
+                    <div class="mm-val-msg" id="valSubtopic">Subtopic is required.</div>
                 </div>
             </div>
             <div style="margin-bottom:.5rem;">
@@ -431,8 +448,8 @@
         </div>
         <div class="mm-modal-footer">
             <button type="button" class="mm-btn-cancel" onclick="closeEditModal()"><%: T("Cancel","Batal") %></button>
-            <button type="button" class="mm-btn-primary" onclick="openSaveConfirm()">
-                <asp:Literal ID="litSaveBtnText" runat="server" Text="Save Material" /></button>
+            <button type="button" class="mm-btn-primary" id="btnEditConfirmChanges" onclick="validateEditForm()">
+                <asp:Literal ID="litSaveBtnText" runat="server" Text="Confirm Changes" /></button>
         </div>
     </div>
 </div>
@@ -441,15 +458,16 @@
 <div id="saveConfirmModal" class="mm-modal-overlay" style="display:none;">
     <div class="mm-modal mm-modal-sm">
         <div class="mm-modal-header">
-            <h3 class="mm-modal-title"><%: T("Confirm Changes","Sahkan Perubahan") %></h3>
+            <h3 class="mm-modal-title"><%: T("Confirm Material Changes","Sahkan Perubahan Bahan") %></h3>
             <button type="button" class="mm-modal-close" onclick="closeSaveConfirm()">×</button>
         </div>
         <div class="mm-modal-body" style="text-align:center;padding:1.5rem;">
-            <p style="font-size:.9rem;color:var(--tc-text);"><%: T("Are you sure you want to save these changes?","Adakah anda pasti mahu menyimpan perubahan ini?") %></p>
+            <div style="font-size:2.2rem;margin-bottom:.75rem;">⚠️</div>
+            <p style="font-size:.9rem;color:var(--tc-text);line-height:1.6;"><%: T("Editing this material will return its status to Pending for review. Are you sure you want to continue?","Mengemas kini bahan ini akan menukar statusnya kepada Menunggu untuk semakan. Adakah anda pasti mahu meneruskan?") %></p>
         </div>
         <div class="mm-modal-footer" style="justify-content:center;">
             <button type="button" class="mm-btn-cancel" onclick="closeSaveConfirm()"><%: T("Cancel","Batal") %></button>
-            <asp:Button ID="btnSave" runat="server" Text="Save" OnClick="btnSave_Click" CausesValidation="false" CssClass="mm-btn-primary" />
+            <asp:Button ID="btnSave" runat="server" Text="Confirm Changes" OnClick="btnSave_Click" CausesValidation="false" CssClass="mm-btn-primary" OnClientClick="return disableConfirmBtn();" />
         </div>
     </div>
 </div>
@@ -490,8 +508,6 @@
             <button type="button" style="background:none;border:none;font-size:1.3rem;color:var(--tc-muted);cursor:pointer;" onclick="closeViewModal()">×</button>
         </div>
         <div style="flex:1;overflow-y:auto;padding:1.25rem 1.5rem;">
-            <div id="vmMeta" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1rem;font-size:.8rem;"></div>
-            <div id="vmDesc" style="font-size:.86rem;color:var(--tc-muted);line-height:1.6;margin-bottom:1.25rem;"></div>
             <div id="vmPreview" style="border-radius:12px;overflow:hidden;"></div>
         </div>
     </div>
@@ -517,31 +533,17 @@ function toggleDesc(el) {
 }
 function openViewModal(btn) {
     var title = btn.dataset.title || '';
-    var desc = btn.dataset.desc || '';
-    var type = btn.dataset.type || '';
-    var lang = btn.dataset.lang || '';
-    var subtopic = btn.dataset.subtopic || '';
-    var teacher = btn.dataset.teacher || '';
     var file = btn.dataset.file || '';
 
     document.getElementById('vmTitle').textContent = title;
-    document.getElementById('vmDesc').textContent = desc || 'No description provided.';
 
-    // Meta chips
-    var metaHtml = '';
-    if (type) metaHtml += '<span style="background:#EDE9FE;color:#6C63FF;padding:3px 10px;border-radius:6px;font-weight:600;"><i class="bi bi-file-earmark"></i> ' + escVM(type) + '</span>';
-    if (lang) metaHtml += '<span style="background:#DBEAFE;color:#1D4ED8;padding:3px 10px;border-radius:6px;font-weight:600;"><i class="bi bi-translate"></i> ' + escVM(lang) + '</span>';
-    if (subtopic) metaHtml += '<span style="background:#D1FAE5;color:#047857;padding:3px 10px;border-radius:6px;font-weight:600;"><i class="bi bi-folder2"></i> ' + escVM(subtopic) + '</span>';
-    if (teacher) metaHtml += '<span style="background:#FEF3C7;color:#92400E;padding:3px 10px;border-radius:6px;font-weight:600;"><i class="bi bi-person"></i> ' + escVM(teacher) + '</span>';
-    document.getElementById('vmMeta').innerHTML = metaHtml;
-
-    // Preview
+    // Preview only — no meta, no description
     var preview = document.getElementById('vmPreview');
     var resolvedUrl = '<%: ResolveUrl("~/") %>' + file;
     var ext = file.split('.').pop().toLowerCase();
 
     if (ext === 'pdf') {
-        preview.innerHTML = '<iframe src="' + resolvedUrl + '" style="width:100%;height:500px;border:1px solid #E5E7EB;border-radius:10px;" frameborder="0"></iframe>';
+        preview.innerHTML = '<iframe src="' + resolvedUrl + '" style="width:100%;height:550px;border:1px solid #E5E7EB;border-radius:10px;" frameborder="0"></iframe>';
     } else if (['jpg','jpeg','png','gif','webp'].indexOf(ext) >= 0) {
         preview.innerHTML = '<img src="' + resolvedUrl + '" style="max-width:100%;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.08);" alt="Preview" />';
     } else if (['mp4','webm','ogg'].indexOf(ext) >= 0) {
@@ -563,10 +565,120 @@ function openEditModal(id) {
     document.getElementById('<%=hidMaterialId.ClientID%>').value = id;
     __doPostBack('LoadEdit', id);
 }
-function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
+function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+    clearValidation();
+}
 function showEditModal() { document.getElementById('editModal').style.display = 'flex'; }
-function openSaveConfirm() { document.getElementById('saveConfirmModal').style.display = 'flex'; }
-function closeSaveConfirm() { document.getElementById('saveConfirmModal').style.display = 'none'; }
+
+/* ═══ VALIDATION ═══ */
+function clearValidation() {
+    var msgs = document.querySelectorAll('.mm-val-msg');
+    for (var i = 0; i < msgs.length; i++) msgs[i].classList.remove('show');
+    var inputs = document.querySelectorAll('#editModal .mm-invalid');
+    for (var i = 0; i < inputs.length; i++) inputs[i].classList.remove('mm-invalid');
+}
+
+function isEmptyHtml(val) {
+    if (!val) return true;
+    // Strip HTML tags and check if only whitespace/empty remains
+    var stripped = val.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+    return stripped.length === 0;
+}
+
+function showVal(id, el) {
+    document.getElementById(id).classList.add('show');
+    if (el) el.classList.add('mm-invalid');
+}
+function hideVal(id, el) {
+    document.getElementById(id).classList.remove('show');
+    if (el) el.classList.remove('mm-invalid');
+}
+
+function validateEditForm() {
+    clearValidation();
+    var valid = true;
+
+    // Title
+    var titleEl = document.querySelector('[id$="txtTitle"]');
+    var titleVal = titleEl.value.trim();
+    if (!titleVal) { showVal('valTitle', titleEl); valid = false; } else { hideVal('valTitle', titleEl); }
+
+    // Description (optional — no validation needed)
+    var descEl = document.querySelector('[id$="txtDescription"]');
+    var descVal = descEl.value.trim();
+
+    // Language
+    var langEl = document.querySelector('[id$="ddlLanguage"]');
+    var langVal = langEl.value;
+    if (!langVal) { showVal('valLang', langEl); valid = false; } else { hideVal('valLang', langEl); }
+
+    // Level
+    var levelEl = document.querySelector('[id$="ddlLevel"]');
+    var levelVal = levelEl.value;
+    if (!levelVal) { showVal('valLevel', levelEl); valid = false; } else { hideVal('valLevel', levelEl); }
+
+    // Unit
+    var unitEl = document.querySelector('[id$="ddlUnit"]');
+    var unitVal = unitEl.value;
+    if (!unitVal) { showVal('valUnit', unitEl); valid = false; } else { hideVal('valUnit', unitEl); }
+
+    // Subtopic
+    var subEl = document.querySelector('[id$="ddlSubtopic"]');
+    var subVal = subEl.value;
+    if (!subVal) { showVal('valSubtopic', subEl); valid = false; } else { hideVal('valSubtopic', subEl); }
+
+    if (!valid) return; // Do not close edit popup
+
+    // Check if any field has actually changed
+    var origTitle = document.getElementById('<%=hidOrigTitle.ClientID%>').value;
+    var origDesc = document.getElementById('<%=hidOrigDesc.ClientID%>').value;
+    var origLang = document.getElementById('<%=hidOrigLang.ClientID%>').value;
+    var origLevel = document.getElementById('<%=hidOrigLevel.ClientID%>').value;
+    var origUnit = document.getElementById('<%=hidOrigUnit.ClientID%>').value;
+    var origSubtopic = document.getElementById('<%=hidOrigSubtopic.ClientID%>').value;
+
+    // Check file upload
+    var fuEl = document.querySelector('[id$="fuFile"]');
+    var hasNewFile = fuEl && fuEl.files && fuEl.files.length > 0;
+
+    var changed = hasNewFile ||
+        titleVal !== origTitle.trim() ||
+        descVal !== origDesc.trim() ||
+        langVal !== origLang ||
+        levelVal !== origLevel ||
+        unitVal !== origUnit ||
+        subVal !== origSubtopic;
+
+    if (!changed) {
+        showToast('No changes were made.');
+        return;
+    }
+
+    // All valid and has changes — show confirmation modal
+    openSaveConfirm();
+}
+
+function openSaveConfirm() {
+    document.getElementById('saveConfirmModal').style.display = 'flex';
+}
+function closeSaveConfirm() {
+    document.getElementById('saveConfirmModal').style.display = 'none';
+    // Re-enable the confirm button in case it was disabled
+    var btn = document.querySelector('[id$="btnSave"]');
+    if (btn) { btn.disabled = false; btn.value = 'Confirm Changes'; }
+}
+
+function disableConfirmBtn() {
+    var btn = document.querySelector('[id$="btnSave"]');
+    if (btn) {
+        if (btn.disabled) return false; // Already processing — block duplicate
+        btn.disabled = true;
+        btn.value = 'Processing...';
+    }
+    return true;
+}
+
 function openDeleteModal(id, title) {
     document.getElementById('<%=hidDeleteId.ClientID%>').value = id;
     document.getElementById('delMaterialTitle').textContent = '"' + (title || 'this material') + '"';

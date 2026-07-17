@@ -77,6 +77,19 @@
 .um-rte-editor b,.um-rte-editor strong{font-weight:700;}
 .um-rte-editor i,.um-rte-editor em{font-style:italic;}
 .um-rte-editor u{text-decoration:underline;}
+/* ── Unsaved Changes Modal ── */
+.um-unsaved-overlay{position:fixed;inset:0;background:rgba(30,27,58,.50);z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s;}
+.um-unsaved-overlay.open{opacity:1;pointer-events:all;}
+.um-unsaved-modal{background:#fff;border-radius:20px;padding:2rem;width:380px;max-width:90vw;box-shadow:0 20px 60px rgba(109,94,247,.18);transform:translateY(10px) scale(.97);transition:transform .22s;}
+.um-unsaved-overlay.open .um-unsaved-modal{transform:translateY(0) scale(1);}
+.um-unsaved-icon{width:52px;height:52px;border-radius:14px;background:#FEF3C7;border:1.5px solid #FDE68A;display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:#D97706;margin-bottom:1rem;}
+.um-unsaved-modal h3{font-size:1rem;font-weight:800;color:var(--t);margin:0 0 6px;}
+.um-unsaved-modal p{font-size:.84rem;color:var(--m);margin:0 0 1.5rem;line-height:1.6;}
+.um-unsaved-actions{display:flex;gap:.7rem;}
+.um-unsaved-cancel{flex:1;padding:.65rem;border-radius:11px;border:1.5px solid var(--b);background:#fff;font-size:.84rem;font-weight:700;color:var(--t);cursor:pointer;transition:all .18s;}
+.um-unsaved-cancel:hover{border-color:var(--p);color:var(--p);}
+.um-unsaved-confirm{flex:1;padding:.65rem;border-radius:11px;border:none;background:#DC2626;color:#fff;font-size:.84rem;font-weight:700;cursor:pointer;transition:all .18s;box-shadow:0 3px 10px rgba(220,38,38,.22);}
+.um-unsaved-confirm:hover{background:#B91C1C;box-shadow:0 5px 16px rgba(220,38,38,.32);}
 </style>
 </asp:Content>
 
@@ -209,6 +222,19 @@
     </div>
 </div>
 
+<%-- Unsaved Changes Modal --%>
+<div class="um-unsaved-overlay" id="umUnsavedOverlay">
+    <div class="um-unsaved-modal">
+        <div class="um-unsaved-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+        <h3><%: T("Unsaved Changes","Perubahan Belum Disimpan") %></h3>
+        <p><%: T("Your unsaved material will be discarded. Are you sure you want to leave this page?","Bahan anda yang belum disimpan akan dibuang. Adakah anda pasti mahu meninggalkan halaman ini?") %></p>
+        <div class="um-unsaved-actions">
+            <button type="button" class="um-unsaved-cancel" onclick="document.getElementById('umUnsavedOverlay').classList.remove('open')"><%: T("Cancel","Batal") %></button>
+            <button type="button" class="um-unsaved-confirm" id="umUnsavedConfirm"><%: T("Confirm","Sahkan") %></button>
+        </div>
+    </div>
+</div>
+
 <asp:HiddenField ID="hidToast" runat="server" Value="" />
 <div class="um-toast-wrap" id="toastWrap"></div>
 </asp:Content>
@@ -224,7 +250,7 @@ function handleFile(inp){
     hide('vFile');var dz=document.getElementById('dropZone');dz.classList.remove('invalid');
     if(!inp.files||!inp.files[0])return;var f=inp.files[0],ext=f.name.split('.').pop().toLowerCase();
     if(ALLOWED.indexOf(ext)===-1){show('vFile');dz.classList.add('invalid');inp.value='';return;}
-    if(f.size>100*1024*1024){show('vFile');dz.classList.add('invalid');inp.value='';return;}
+    if(f.size>100*1024*1024){document.getElementById('vFile').textContent='The selected file exceeds the 100 MB upload limit. Please choose a smaller file.';show('vFile');dz.classList.add('invalid');inp.value='';fileOk=false;return;}
     fileOk=true;dz.style.display='none';
     var card=document.getElementById('fileCard');card.style.display='flex';
     document.getElementById('fName').textContent=f.name;
@@ -246,7 +272,7 @@ function validateForm(){
     var u=document.querySelector('[id$="ddlUnit"]');if(!u.value){show('vUnit');u.classList.add('invalid');ok=false;}else{hide('vUnit');u.classList.remove('invalid');}
     var lv=document.querySelector('[id$="ddlLevel"]');if(!lv.value){show('vLevel');lv.classList.add('invalid');ok=false;}else{hide('vLevel');lv.classList.remove('invalid');}
     var s=document.querySelector('[id$="ddlSubtopic"]');if(!s.value){show('vSub');s.classList.add('invalid');ok=false;}else{hide('vSub');s.classList.remove('invalid');}
-    if(!fileOk){show('vFile');document.getElementById('dropZone').classList.add('invalid');ok=false;}else{hide('vFile');}
+    if(!fileOk){document.getElementById('vFile').textContent='<%: T("Please upload a file.","Sila muat naik fail.") %>';show('vFile');document.getElementById('dropZone').classList.add('invalid');ok=false;}else{hide('vFile');}
     if(ok)document.getElementById('confirmModal').style.display='flex';}
 function closeModal(){document.getElementById('confirmModal').style.display='none';}
 
@@ -307,10 +333,20 @@ function closeModal(){document.getElementById('confirmModal').style.display='non
     /* editor.addEventListener('input', function(){ syncRteToTextarea(); }); */
     /* Sync happens only on submit — see validateForm() and btnUpload click below */
 
-    /* Also sync before the modal upload button triggers the postback */
+    /* Also sync before the modal upload button triggers the postback + loading state */
     var btnUpload = document.querySelector('[id$="btnUpload"]');
     if(btnUpload){
-        btnUpload.addEventListener('click', function(){ syncRteToTextarea(); });
+        btnUpload.addEventListener('click', function(e){
+            syncRteToTextarea();
+            if(btnUpload.getAttribute('data-uploading')==='true'){e.preventDefault();return false;}
+            btnUpload.setAttribute('data-uploading','true');
+            // Delay disabling so the form submission is not cancelled by the browser
+            setTimeout(function(){
+                btnUpload.disabled=true;
+                btnUpload.value='Uploading material...';
+                btnUpload.style.opacity='0.7';btnUpload.style.cursor='not-allowed';
+            },0);
+        });
     }
 })();
 // Drag & drop
@@ -319,6 +355,65 @@ if(dz){['dragenter','dragover'].forEach(function(ev){dz.addEventListener(ev,func
 ['dragleave','drop'].forEach(function(ev){dz.addEventListener(ev,function(e){e.preventDefault();dz.classList.remove('dragover');});});
 dz.addEventListener('drop',function(e){var dt=e.dataTransfer;if(dt.files&&dt.files[0]){var inp=document.getElementById('<%=fuFile.ClientID%>');inp.files=dt.files;handleFile(inp);}});}
 // Toast
-window.addEventListener('load',function(){var h=document.getElementById('<%=hidToast.ClientID%>');if(h&&h.value){var w=document.getElementById('toastWrap'),t=document.createElement('div');t.className='um-toast';t.innerHTML='<i class="bi bi-check-circle-fill"></i> '+h.value;w.appendChild(t);h.value='';setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .3s';},3e3);setTimeout(function(){t.remove();},3500);}});
+window.addEventListener('load',function(){var h=document.getElementById('<%=hidToast.ClientID%>');if(h&&h.value){var w=document.getElementById('toastWrap'),t=document.createElement('div');t.className='um-toast';t.innerHTML='<i class="bi bi-check-circle-fill"></i> '+h.value;w.appendChild(t);h.value='';setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .3s';},3e3);setTimeout(function(){t.remove();},3500);/* Reset language buttons and file UI after successful upload */setLang('EN');fileOk=false;document.getElementById('dropZone').style.display='block';document.getElementById('fileCard').style.display='none';/* Reset RTE editor */var rte=document.getElementById('rteEditor');if(rte)rte.innerHTML='';}});
+
+/* ═══ UNSAVED CHANGES DETECTION ═══════════════════════════ */
+(function(){
+    var dirty=false;
+    var pendingUrl='';
+    var submitting=false;
+
+    // Mark dirty on input/change in the form card
+    var card=document.querySelector('.um-card');
+    if(card){
+        card.addEventListener('input',function(){dirty=true;},true);
+        card.addEventListener('change',function(){dirty=true;},true);
+    }
+    // RTE editor
+    var rte=document.querySelector('.um-rte-editor');
+    if(rte)rte.addEventListener('input',function(){dirty=true;});
+    // File upload
+    var fu=document.getElementById('<%=fuFile.ClientID%>');
+    if(fu)fu.addEventListener('change',function(){dirty=true;});
+
+    // Clear dirty on submit
+    var form=document.querySelector('form');
+    if(form)form.addEventListener('submit',function(){submitting=true;});
+
+    // Clear dirty if toast shows (successful upload)
+    window.addEventListener('load',function(){
+        var h=document.getElementById('<%=hidToast.ClientID%>');
+        if(h&&h.value)dirty=false;
+    });
+
+    // Browser native beforeunload
+    window.addEventListener('beforeunload',function(e){
+        if(dirty&&!submitting){e.preventDefault();e.returnValue='';}
+    });
+
+    // Intercept sidebar links + Back to Materials link
+    document.querySelectorAll('.sb-sidebar-item, .um-back').forEach(function(link){
+        link.addEventListener('click',function(e){
+            if(!dirty||submitting)return;
+            e.preventDefault();e.stopPropagation();
+            pendingUrl=link.getAttribute('href')||link.href;
+            document.getElementById('umUnsavedOverlay').classList.add('open');
+        });
+    });
+
+    // Confirm button — navigate away
+    var confirmBtn=document.getElementById('umUnsavedConfirm');
+    if(confirmBtn)confirmBtn.addEventListener('click',function(){
+        dirty=false;
+        document.getElementById('umUnsavedOverlay').classList.remove('open');
+        if(pendingUrl)window.location.href=pendingUrl;
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown',function(e){
+        if(e.key==='Escape'&&document.getElementById('umUnsavedOverlay').classList.contains('open'))
+            document.getElementById('umUnsavedOverlay').classList.remove('open');
+    });
+})();
 </script>
 </asp:Content>
