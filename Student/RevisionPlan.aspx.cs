@@ -591,13 +591,13 @@ namespace ScienceBuddy.Student
                 string rewardImage = "";
                 if (row["rewardImage"] != DBNull.Value)
                 {
-                    rewardImage = row["rewardImage"].ToString();
+                    rewardImage = ResolveUrl("~/" + rewardImage);
                 }
 
                 string imageUrl = "";
                 if (!string.IsNullOrWhiteSpace(rewardImage))
                 {
-                    imageUrl = ResolveUrl("~/" + rewardImage.TrimStart('~', '/'));
+                    imageUrl = ResolveUrl("~/" + rewardImage);
                 }
 
                 rewardList.Add(new

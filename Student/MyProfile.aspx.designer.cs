@@ -237,5 +237,48 @@ namespace ScienceBuddy.Student
         /// litSaveError control.
         /// </summary>
         protected global::System.Web.UI.WebControls.Literal litSaveError;
+
+        // Change Password
+        protected global::System.Web.UI.WebControls.Literal litPasswordTitle;
+        protected global::System.Web.UI.WebControls.Literal litCurrentPwLbl;
+        protected global::System.Web.UI.WebControls.TextBox txtCurrentPw;
+        protected global::System.Web.UI.WebControls.Literal litNewPwLbl;
+        protected global::System.Web.UI.WebControls.TextBox txtNewPw;
+        protected global::System.Web.UI.WebControls.Literal litConfirmPwLbl;
+        protected global::System.Web.UI.WebControls.TextBox txtConfirmPw;
+        protected global::System.Web.UI.WebControls.Button btnChangePw;
+        protected global::System.Web.UI.WebControls.Panel pnlPwSuccess;
+        protected global::System.Web.UI.WebControls.Literal litPwSuccess;
+        protected global::System.Web.UI.WebControls.Panel pnlPwError;
+        protected global::System.Web.UI.WebControls.Literal litPwError;
+
+        // Linked Parent
+        protected global::System.Web.UI.WebControls.Literal litParentTitle;
+        protected global::System.Web.UI.WebControls.Panel pnlParentList;
+        protected global::System.Web.UI.WebControls.Repeater rptParents;
+        protected global::System.Web.UI.WebControls.Panel pnlNoParent;
+        protected global::System.Web.UI.WebControls.Literal litNoParent;
+
+        // Delete Account
+        protected global::System.Web.UI.WebControls.Literal litDeleteTitle;
+        protected global::System.Web.UI.WebControls.Literal litDeleteDesc;
+        protected global::System.Web.UI.WebControls.Literal litDeletePwLbl;
+        protected global::System.Web.UI.WebControls.TextBox txtDeletePw;
+        protected global::System.Web.UI.WebControls.Button btnDeleteAccount;
+        protected global::System.Web.UI.WebControls.Panel pnlDeleteError;
+        protected global::System.Web.UI.WebControls.Literal litDeleteError;
+
+        // Contact
+        protected global::System.Web.UI.WebControls.Literal litContactTitle;
+        protected global::System.Web.UI.WebControls.Literal litContactDesc;
+        protected global::System.Web.UI.WebControls.Literal litContactSubjectLbl;
+        protected global::System.Web.UI.WebControls.TextBox txtContactSubject;
+        protected global::System.Web.UI.WebControls.Literal litContactMsgLbl;
+        protected global::System.Web.UI.WebControls.TextBox txtContactMsg;
+        protected global::System.Web.UI.WebControls.Button btnSendQuery;
+        protected global::System.Web.UI.WebControls.Panel pnlContactSuccess;
+        protected global::System.Web.UI.WebControls.Literal litContactSuccess;
+        protected global::System.Web.UI.WebControls.Panel pnlContactError;
+        protected global::System.Web.UI.WebControls.Literal litContactError;
     }
 }

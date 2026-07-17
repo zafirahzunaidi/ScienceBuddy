@@ -115,7 +115,28 @@
     </div>
 </div>
 
-<%-- -- LANGUAGE PREFERENCE -- --%>
+<%-- -- LINKED PARENT -- --%>
+<div class="st-profile-form" style="margin-top:var(--space-xl);">
+    <div class="st-profile-form-title"><i class="bi bi-people-fill"></i> <asp:Literal ID="litParentTitle" runat="server" Text="Linked Parent" /></div>
+    <asp:Panel ID="pnlParentList" runat="server">
+        <asp:Repeater ID="rptParents" runat="server" OnItemCommand="rptParents_ItemCommand">
+            <ItemTemplate>
+                <div class="st-profile-parent-row">
+                    <div class="st-profile-parent-name"><i class="bi bi-person-heart"></i> <%# Eval("ParentName") %></div>
+                    <div class="st-profile-parent-rel"><%# Eval("Relationship") %></div>
+                    <asp:LinkButton runat="server" CommandName="RemoveParent" CommandArgument='<%# Eval("StudentParentId") %>'
+                        CssClass="st-profile-parent-remove" ToolTip="Remove"
+                        OnClientClick="return confirm('Are you sure you want to remove this parent link?');">
+                        <i class="bi bi-x-lg"></i>
+                    </asp:LinkButton>
+                </div>
+            </ItemTemplate>
+        </asp:Repeater>
+    </asp:Panel>
+    <asp:Panel ID="pnlNoParent" runat="server" Visible="false">
+        <p class="st-profile-parent-empty"><i class="bi bi-info-circle"></i> <asp:Literal ID="litNoParent" runat="server" Text="No parent linked yet." /></p>
+    </asp:Panel>
+</div>
 <div class="st-profile-lang">
     <div class="st-profile-lang-title"><i class="bi bi-translate"></i> <asp:Literal ID="litLangTitle" runat="server" Text="Language Preference" /></div>
     <div class="st-profile-field" style="max-width:320px;">
@@ -132,7 +153,7 @@
     <div class="st-profile-personality-title"><i class="bi bi-puzzle-fill"></i> <asp:Literal ID="litPersonalityTitle" runat="server" Text="Personality" /></div>
     <div class="st-profile-pers-card">
         <div class="st-profile-pers-avatar">
-            <asp:Literal ID="litPersAvatarFallback" runat="server" Text="&#x1F9E0;" />
+            <asp:Literal ID="litPersAvatarFallback" runat="server" Text="<i class='bi bi-puzzle-fill' style='font-size:2rem;color:#7C3AED;'></i>" />
         </div>
         <div class="st-profile-pers-body">
             <div class="st-profile-pers-name"><asp:Literal ID="litPersName" runat="server" Text="&#x2014;" /></div>
@@ -174,5 +195,75 @@
         <i class="bi bi-exclamation-triangle-fill"></i> <asp:Literal ID="litSaveError" runat="server" Text="Please fill in all required fields." />
     </asp:Panel>
 </div>
+
+<%-- -- CONTACT / QUERY -- --%>
+<div class="st-profile-form" style="margin-top:var(--space-xl);">
+    <div class="st-profile-form-title"><i class="bi bi-envelope-fill"></i> <asp:Literal ID="litContactTitle" runat="server" Text="Have any questions?" /></div>
+    <p style="font-size:.875rem;color:var(--color-text-secondary);margin-bottom:var(--space-md);">
+        <asp:Literal ID="litContactDesc" runat="server" Text="Send us a message and we'll get back to you." />
+    </p>
+    <div class="st-profile-field">
+        <label><asp:Literal ID="litContactSubjectLbl" runat="server" Text="Subject" /></label>
+        <asp:TextBox ID="txtContactSubject" runat="server" CssClass="st-profile-input" placeholder="What is it about?" />
+    </div>
+    <div class="st-profile-field">
+        <label><asp:Literal ID="litContactMsgLbl" runat="server" Text="Message" /></label>
+        <asp:TextBox ID="txtContactMsg" runat="server" CssClass="st-profile-input" TextMode="MultiLine" Rows="4" placeholder="Write your question..." />
+    </div>
+    <asp:Button ID="btnSendQuery" runat="server" CssClass="st-profile-btn-save" Text="Send" OnClick="btnSendQuery_Click" />
+    <asp:Panel ID="pnlContactSuccess" runat="server" Visible="false" CssClass="st-profile-alert-success" style="margin-top:var(--space-sm);">
+        <i class="bi bi-check-circle-fill"></i> <asp:Literal ID="litContactSuccess" runat="server" />
+    </asp:Panel>
+    <asp:Panel ID="pnlContactError" runat="server" Visible="false" CssClass="st-profile-alert-error" style="margin-top:var(--space-sm);">
+        <i class="bi bi-exclamation-triangle-fill"></i> <asp:Literal ID="litContactError" runat="server" />
+    </asp:Panel>
+</div>
+
+<%-- -- CHANGE PASSWORD (collapsible) -- --%>
+<details class="st-profile-collapsible" style="margin-top:var(--space-xl);">
+    <summary class="st-profile-collapsible-header"><i class="bi bi-key-fill"></i> <asp:Literal ID="litPasswordTitle" runat="server" Text="Change Password" /></summary>
+    <div class="st-profile-collapsible-body">
+        <div class="st-profile-form-grid">
+            <div class="st-profile-field">
+                <label><asp:Literal ID="litCurrentPwLbl" runat="server" Text="Current Password" /></label>
+                <asp:TextBox ID="txtCurrentPw" runat="server" CssClass="st-profile-input" TextMode="Password" />
+            </div>
+            <div class="st-profile-field">
+                <label><asp:Literal ID="litNewPwLbl" runat="server" Text="New Password" /></label>
+                <asp:TextBox ID="txtNewPw" runat="server" CssClass="st-profile-input" TextMode="Password" />
+            </div>
+            <div class="st-profile-field">
+                <label><asp:Literal ID="litConfirmPwLbl" runat="server" Text="Confirm New Password" /></label>
+                <asp:TextBox ID="txtConfirmPw" runat="server" CssClass="st-profile-input" TextMode="Password" />
+            </div>
+        </div>
+        <asp:Button ID="btnChangePw" runat="server" CssClass="st-profile-btn-save" style="margin-top:var(--space-md);" Text="Update Password" OnClick="btnChangePw_Click" />
+        <asp:Panel ID="pnlPwSuccess" runat="server" Visible="false" CssClass="st-profile-alert-success" style="margin-top:var(--space-sm);">
+            <i class="bi bi-check-circle-fill"></i> <asp:Literal ID="litPwSuccess" runat="server" />
+        </asp:Panel>
+        <asp:Panel ID="pnlPwError" runat="server" Visible="false" CssClass="st-profile-alert-error" style="margin-top:var(--space-sm);">
+            <i class="bi bi-exclamation-triangle-fill"></i> <asp:Literal ID="litPwError" runat="server" />
+        </asp:Panel>
+    </div>
+</details>
+
+<%-- -- DELETE ACCOUNT (collapsible) -- --%>
+<details class="st-profile-collapsible st-profile-danger" style="margin-top:var(--space-md);">
+    <summary class="st-profile-collapsible-header" style="color:#DC2626;"><i class="bi bi-trash3-fill"></i> <asp:Literal ID="litDeleteTitle" runat="server" Text="Delete Account" /></summary>
+    <div class="st-profile-collapsible-body">
+        <p style="font-size:.875rem;color:var(--color-text-secondary);margin-bottom:var(--space-md);">
+            <asp:Literal ID="litDeleteDesc" runat="server" Text="This action is permanent. Your account will be deactivated and you will be logged out." />
+        </p>
+        <div class="st-profile-field" style="max-width:320px;">
+            <label><asp:Literal ID="litDeletePwLbl" runat="server" Text="Enter your password to confirm" /></label>
+            <asp:TextBox ID="txtDeletePw" runat="server" CssClass="st-profile-input" TextMode="Password" />
+        </div>
+        <asp:Button ID="btnDeleteAccount" runat="server" CssClass="st-profile-btn-delete" Text="Delete My Account"
+            OnClick="btnDeleteAccount_Click" OnClientClick="return confirm('Are you absolutely sure? This cannot be undone.');" />
+        <asp:Panel ID="pnlDeleteError" runat="server" Visible="false" CssClass="st-profile-alert-error" style="margin-top:var(--space-sm);">
+            <i class="bi bi-exclamation-triangle-fill"></i> <asp:Literal ID="litDeleteError" runat="server" />
+        </asp:Panel>
+    </div>
+</details>
 
 </asp:Content>

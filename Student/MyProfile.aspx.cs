@@ -404,6 +404,9 @@ namespace ScienceBuddy.Student
                 // Store studentId in ViewState for save
                 ViewState["studentId"] = studentId;
                 ViewState["userId"] = userId;
+
+                // Load linked parents
+                LoadParents(connection, studentId);
             }
         }
 
@@ -480,6 +483,269 @@ namespace ScienceBuddy.Student
             // Refresh labels and profile display
             SetLabels();
             LoadProfile();
+        }
+
+        // ── btnChangePw_Click ──────────────────────────────────────────
+        protected void btnChangePw_Click(object sender, EventArgs e)
+        {
+            InitLang();
+            pnlPwSuccess.Visible = false;
+            pnlPwError.Visible = false;
+            // Keep the details section open after postback
+            ClientScript.RegisterStartupScript(GetType(), "openPw", "document.querySelector('.st-profile-collapsible').open=true;", true);
+
+            // Password fields don't retain value on postback, read from Request.Form
+            string currentPw = Request.Form[txtCurrentPw.UniqueID] ?? "";
+            string newPw = Request.Form[txtNewPw.UniqueID] ?? "";
+            string confirmPw = Request.Form[txtConfirmPw.UniqueID] ?? "";
+            string userId = Session["userId"].ToString();
+
+            if (string.IsNullOrEmpty(currentPw) || string.IsNullOrEmpty(newPw) || string.IsNullOrEmpty(confirmPw))
+            {
+                litPwError.Text = T("Please fill in all password fields.", "Sila isi semua ruangan kata laluan.");
+                pnlPwError.Visible = true;
+                return;
+            }
+            if (newPw != confirmPw)
+            {
+                litPwError.Text = T("New passwords do not match.", "Kata laluan baru tidak sepadan.");
+                pnlPwError.Visible = true;
+                return;
+            }
+            if (newPw.Length < 5)
+            {
+                litPwError.Text = T("Password must be at least 5 characters.", "Kata laluan mestilah sekurang-kurangnya 5 aksara.");
+                pnlPwError.Visible = true;
+                return;
+            }
+
+            using (SqlConnection connection = new SqlConnection(ConnStr))
+            {
+                connection.Open();
+                // Verify current password
+                using (SqlCommand cmd = new SqlCommand("SELECT password FROM [User] WHERE userId=@uid", connection))
+                {
+                    cmd.Parameters.AddWithValue("@uid", userId);
+                    object result = cmd.ExecuteScalar();
+                    if (result == null || result.ToString() != currentPw)
+                    {
+                        litPwError.Text = T("Current password is incorrect.", "Kata laluan semasa tidak betul.");
+                        pnlPwError.Visible = true;
+                        return;
+                    }
+                }
+                // Update password
+                using (SqlCommand cmd = new SqlCommand("UPDATE [User] SET password=@pw WHERE userId=@uid", connection))
+                {
+                    cmd.Parameters.AddWithValue("@pw", newPw);
+                    cmd.Parameters.AddWithValue("@uid", userId);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+
+            txtCurrentPw.Text = "";
+            txtNewPw.Text = "";
+            txtConfirmPw.Text = "";
+            litPwSuccess.Text = T("Password updated successfully.", "Kata laluan berjaya dikemas kini.");
+            pnlPwSuccess.Visible = true;
+        }
+
+        // ── rptParents_ItemCommand (Remove Parent) ────────────────────
+        protected void rptParents_ItemCommand(object source, System.Web.UI.WebControls.RepeaterCommandEventArgs e)
+        {
+            if (e.CommandName != "RemoveParent") return;
+            InitLang();
+            string studentParentId = e.CommandArgument.ToString();
+
+            using (SqlConnection connection = new SqlConnection(ConnStr))
+            {
+                connection.Open();
+                using (SqlCommand cmd = new SqlCommand("DELETE FROM StudentParent WHERE studentParentId=@spid", connection))
+                {
+                    cmd.Parameters.AddWithValue("@spid", studentParentId);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+
+            LoadProfile();
+        }
+
+        // ── btnDeleteAccount_Click ────────────────────────────────────
+        protected void btnDeleteAccount_Click(object sender, EventArgs e)
+        {
+            InitLang();
+            pnlDeleteError.Visible = false;
+
+            string password = (Request.Form[txtDeletePw.UniqueID] ?? "").Trim();
+            string userId = Session["userId"].ToString();
+
+            if (string.IsNullOrEmpty(password))
+            {
+                litDeleteError.Text = T("Please enter your password.", "Sila masukkan kata laluan anda.");
+                pnlDeleteError.Visible = true;
+                return;
+            }
+
+            using (SqlConnection connection = new SqlConnection(ConnStr))
+            {
+                connection.Open();
+
+                // Verify password
+                using (SqlCommand cmd = new SqlCommand("SELECT password FROM [User] WHERE userId=@uid", connection))
+                {
+                    cmd.Parameters.AddWithValue("@uid", userId);
+                    object result = cmd.ExecuteScalar();
+                    if (result == null || result.ToString() != password)
+                    {
+                        litDeleteError.Text = T("Incorrect password.", "Kata laluan tidak betul.");
+                        pnlDeleteError.Visible = true;
+                        return;
+                    }
+                }
+
+                // Set status to Deleted
+                using (SqlCommand cmd = new SqlCommand("UPDATE [User] SET status='Deleted' WHERE userId=@uid", connection))
+                {
+                    cmd.Parameters.AddWithValue("@uid", userId);
+                    cmd.ExecuteNonQuery();
+                }
+
+                // Log the deletion
+                if (Tbl(connection, "Log"))
+                {
+                    string logId = "LOG001";
+                    using (SqlCommand seqCmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(logId,4,LEN(logId)-3) AS INT)),0) FROM Log WHERE logId LIKE 'LOG[0-9]%'", connection))
+                    {
+                        int last = Convert.ToInt32(seqCmd.ExecuteScalar());
+                        logId = "LOG" + (last + 1).ToString("D3");
+                    }
+                    using (SqlCommand cmd = new SqlCommand("INSERT INTO Log(logId,userId,action,description,logDateTime,status) VALUES(@lid,@uid,@act,@desc,@dt,@st)", connection))
+                    {
+                        cmd.Parameters.AddWithValue("@lid", logId);
+                        cmd.Parameters.AddWithValue("@uid", userId);
+                        cmd.Parameters.AddWithValue("@act", "Account Deleted");
+                        cmd.Parameters.AddWithValue("@desc", "Student account deleted by user request.");
+                        cmd.Parameters.AddWithValue("@dt", DateTime.Now);
+                        cmd.Parameters.AddWithValue("@st", "Success");
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+
+            // Logout
+            Session.Clear();
+            Session.Abandon();
+            Response.Redirect("~/Login.aspx", false);
+        }
+
+        // ── btnSendQuery_Click ────────────────────────────────────────
+        protected void btnSendQuery_Click(object sender, EventArgs e)
+        {
+            InitLang();
+            pnlContactSuccess.Visible = false;
+            pnlContactError.Visible = false;
+
+            string subject = txtContactSubject.Text.Trim();
+            string message = txtContactMsg.Text.Trim();
+
+            if (string.IsNullOrEmpty(subject) || string.IsNullOrEmpty(message))
+            {
+                litContactError.Text = T("Please fill in both subject and message.", "Sila isi kedua-dua subjek dan mesej.");
+                pnlContactError.Visible = true;
+                return;
+            }
+
+            try
+            {
+                string smtpHost = ConfigurationManager.AppSettings["SmtpHost"];
+                int smtpPort = int.Parse(ConfigurationManager.AppSettings["SmtpPort"] ?? "587");
+                string smtpUser = ConfigurationManager.AppSettings["SmtpUsername"];
+                string smtpPass = ConfigurationManager.AppSettings["SmtpPassword"];
+                bool smtpSsl = ConfigurationManager.AppSettings["SmtpEnableSsl"] == "true";
+                string adminEmail = ConfigurationManager.AppSettings["ContactRecipientEmail"];
+
+                string studentName = txtName.Text.Trim();
+                string studentEmail = txtEmail.Text.Trim();
+
+                string body = "Student Query from ScienceBuddy\n\n";
+                body += "From: " + studentName + " (" + studentEmail + ")\n";
+                body += "Subject: " + subject + "\n\n";
+                body += "Message:\n" + message + "\n\n";
+                body += "Sent: " + DateTime.Now.ToString("dd MMM yyyy HH:mm");
+
+                using (var mail = new System.Net.Mail.MailMessage())
+                {
+                    mail.From = new System.Net.Mail.MailAddress(smtpUser, "ScienceBuddy Student");
+                    mail.To.Add(adminEmail);
+                    mail.Subject = "[Student Query] " + subject;
+                    mail.Body = body;
+                    mail.IsBodyHtml = false;
+
+                    using (var smtp = new System.Net.Mail.SmtpClient(smtpHost, smtpPort))
+                    {
+                        smtp.Credentials = new System.Net.NetworkCredential(smtpUser, smtpPass);
+                        smtp.EnableSsl = smtpSsl;
+                        smtp.Send(mail);
+                    }
+                }
+
+                txtContactSubject.Text = "";
+                txtContactMsg.Text = "";
+                litContactSuccess.Text = T("Your message has been sent! We'll get back to you soon.", "Mesej anda telah dihantar! Kami akan hubungi anda segera.");
+                pnlContactSuccess.Visible = true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Email error: " + ex.Message);
+                litContactError.Text = T("Failed to send message. Please try again later.", "Gagal menghantar mesej. Sila cuba lagi kemudian.");
+                pnlContactError.Visible = true;
+            }
+        }
+
+        // ── Load linked parents ───────────────────────────────────────
+        private void LoadParents(SqlConnection connection, string studentId)
+        {
+            if (!Tbl(connection, "StudentParent") || !Tbl(connection, "Parent"))
+            {
+                pnlParentList.Visible = false;
+                pnlNoParent.Visible = true;
+                return;
+            }
+
+            const string sql = @"SELECT sp.studentParentId, p.name AS parentName, sp.relationship
+                FROM StudentParent sp JOIN Parent p ON p.parentId=sp.parentId
+                JOIN Student s ON s.studentId=sp.studentId
+                WHERE s.studentId=@sid";
+
+            DataTable dt = new DataTable();
+            using (SqlCommand cmd = new SqlCommand(sql, connection))
+            {
+                cmd.Parameters.AddWithValue("@sid", studentId);
+                new SqlDataAdapter(cmd).Fill(dt);
+            }
+
+            if (dt.Rows.Count == 0)
+            {
+                pnlParentList.Visible = false;
+                pnlNoParent.Visible = true;
+            }
+            else
+            {
+                pnlParentList.Visible = true;
+                pnlNoParent.Visible = false;
+                var list = new System.Collections.Generic.List<object>();
+                foreach (DataRow r in dt.Rows)
+                {
+                    list.Add(new
+                    {
+                        StudentParentId = r["studentParentId"].ToString(),
+                        ParentName = System.Web.HttpUtility.HtmlEncode(r["parentName"].ToString()),
+                        Relationship = System.Web.HttpUtility.HtmlEncode(r["relationship"].ToString())
+                    });
+                }
+                rptParents.DataSource = list;
+                rptParents.DataBind();
+            }
         }
 
         // ── Utility helpers ───────────────────────────────────────────
