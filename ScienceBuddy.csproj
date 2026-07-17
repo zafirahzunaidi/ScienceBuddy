@@ -111,7 +111,6 @@
   <ItemGroup>
     <Content Include="About.aspx" />
     <Content Include="Admin\Dashboard.aspx" />
-    <Content Include="Admin\MigratePasswords.aspx" />
     <Content Include="Admin\Notifications.aspx" />
     <Content Include="Admin\Profile.aspx" />
     <Content Include="Admin\Settings.aspx" />
@@ -327,13 +326,6 @@
     <Compile Include="Admin\Dashboard.aspx.cs">
       <DependentUpon>Dashboard.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Admin\MigratePasswords.aspx.cs">
-      <DependentUpon>MigratePasswords.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Admin\MigratePasswords.aspx.designer.cs">
-      <DependentUpon>MigratePasswords.aspx</DependentUpon>
     </Compile>
     <Compile Include="App_Code\PasswordHelper.cs" />
     <Compile Include="Admin\Dashboard.aspx.designer.cs">

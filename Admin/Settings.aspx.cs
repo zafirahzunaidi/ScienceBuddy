@@ -4,6 +4,8 @@ using System.Data.SqlClient;
 using System.Web;
 using System.Web.UI;
 
+// Admin Settings - Code Behind
+
 namespace ScienceBuddy.Admin
 {
     public partial class Settings : Page
