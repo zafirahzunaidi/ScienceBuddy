@@ -167,7 +167,7 @@ namespace ScienceBuddy.Parent
             string code         = txtCode.Text.Trim().ToUpper();
             string relationship = ddlRelationship.SelectedValue;
 
-            // Validate
+            // ── Input validation ──
             if (string.IsNullOrEmpty(code))
             {
                 ShowMessage(T("Please enter the child link code.", "Sila masukkan kod paut anak."), true);
@@ -180,69 +180,104 @@ namespace ScienceBuddy.Parent
                 return;
             }
 
-            // Find student by parentCode
+            // ── Find the child by their unique parent code ──
             string studentId   = "";
             string studentName = "";
             string nickname    = "";
 
-            try
-            {
-                const string findSql = "SELECT studentId, name, nickname FROM dbo.[Student] WHERE parentCode = @code";
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(findSql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@code", code);
-                    conn.Open();
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            studentId   = reader["studentId"]?.ToString() ?? "";
-                            studentName = reader["name"]?.ToString() ?? "";
-                            nickname    = reader["nickname"]?.ToString() ?? "";
-                        }
-                    }
-                }
-            }
-            catch (SqlException)
-            {
-                ShowMessage(T("An error occurred. Please try again.", "Ralat berlaku. Sila cuba lagi."), true);
-                return;
-            }
-
-            if (string.IsNullOrEmpty(studentId))
+            if (!TryFindStudentByCode(code, out studentId, out studentName, out nickname))
             {
                 ShowMessage(T("Invalid link code. No child found with this code.",
                               "Kod paut tidak sah. Tiada anak ditemui dengan kod ini."), true);
                 return;
             }
 
-            // Check duplicate
+            // ── Prevent linking the same child twice ──
+            if (IsChildAlreadyLinked(studentId))
+            {
+                ShowMessage(T("This child is already linked to your account.",
+                              "Anak ini sudah dipautkan ke akaun anda."), true);
+                return;
+            }
+
+            // ── Create the link ──
+            if (!CreateStudentParentLink(studentId, relationship))
+            {
+                ShowMessage(T("An error occurred while linking. Please try again.",
+                              "Ralat berlaku semasa memautkan. Sila cuba lagi."), true);
+                return;
+            }
+
+            // ── Success ──
+            string displayName = !string.IsNullOrWhiteSpace(nickname) ? nickname : studentName;
+            ShowMessage(T("Successfully linked to ", "Berjaya dipautkan ke ") + displayName + "!", false);
+            txtCode.Text = "";
+            LoadLinkedChildren();
+        }
+
+        /// <summary>
+        /// Searches the Student table for a matching parentCode.
+        /// Returns false if not found or if a database error occurs.
+        /// </summary>
+        private bool TryFindStudentByCode(string code, out string studentId, out string name, out string nickname)
+        {
+            studentId = "";
+            name = "";
+            nickname = "";
+
             try
             {
-                const string dupSql = "SELECT COUNT(*) FROM dbo.[StudentParent] WHERE parentId = @parentId AND studentId = @studentId";
+                const string sql = "SELECT studentId, name, nickname FROM dbo.[Student] WHERE parentCode = @code";
                 using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(dupSql, conn))
+                using (var cmd = new SqlCommand(sql, conn))
                 {
-                    cmd.Parameters.AddWithValue("@parentId", _parentId);
-                    cmd.Parameters.AddWithValue("@studentId", studentId);
+                    cmd.Parameters.AddWithValue("@code", code);
                     conn.Open();
-                    int count = Convert.ToInt32(cmd.ExecuteScalar());
-                    if (count > 0)
+                    using (var reader = cmd.ExecuteReader())
                     {
-                        ShowMessage(T("This child is already linked to your account.",
-                                      "Anak ini sudah dipautkan ke akaun anda."), true);
-                        return;
+                        if (!reader.Read()) return false;
+
+                        studentId = reader["studentId"]?.ToString() ?? "";
+                        name      = reader["name"]?.ToString() ?? "";
+                        nickname  = reader["nickname"]?.ToString() ?? "";
+                        return !string.IsNullOrEmpty(studentId);
                     }
                 }
             }
             catch (SqlException)
             {
-                ShowMessage(T("An error occurred. Please try again.", "Ralat berlaku. Sila cuba lagi."), true);
-                return;
+                return false;
             }
+        }
 
-            // Insert with generated ID
+        /// <summary>
+        /// Checks whether this parent already has a link to the given student.
+        /// </summary>
+        private bool IsChildAlreadyLinked(string studentId)
+        {
+            try
+            {
+                const string sql = "SELECT COUNT(*) FROM dbo.[StudentParent] WHERE parentId = @parentId AND studentId = @studentId";
+                using (var conn = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@parentId", _parentId);
+                    cmd.Parameters.AddWithValue("@studentId", studentId);
+                    conn.Open();
+                    return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+                }
+            }
+            catch (SqlException)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Inserts a new row in StudentParent with a generated ID. Returns true on success.
+        /// </summary>
+        private bool CreateStudentParentLink(string studentId, string relationship)
+        {
             try
             {
                 using (var conn = new SqlConnection(ConnStr))
@@ -250,7 +285,7 @@ namespace ScienceBuddy.Parent
                     conn.Open();
                     using (var tran = conn.BeginTransaction())
                     {
-                        // Generate next SP ID
+                        // Generate next sequential ID (SP001, SP002, etc.)
                         const string idSql = @"
                             SELECT ISNULL(MAX(CAST(SUBSTRING(studentParentId, 3, LEN(studentParentId)-2) AS INT)), 0) + 1
                             FROM dbo.[StudentParent]
@@ -264,7 +299,6 @@ namespace ScienceBuddy.Parent
 
                         string newId = "SP" + nextNum.ToString("D3");
 
-                        // Insert
                         const string insertSql = @"
                             INSERT INTO dbo.[StudentParent] (studentParentId, studentId, parentId, relationship)
                             VALUES (@id, @studentId, @parentId, @relationship)";
@@ -279,19 +313,13 @@ namespace ScienceBuddy.Parent
                         }
 
                         tran.Commit();
+                        return true;
                     }
                 }
-
-                string displayName = !string.IsNullOrWhiteSpace(nickname) ? nickname : studentName;
-                ShowMessage(T("Successfully linked to ", "Berjaya dipautkan ke ") + displayName + "!", false);
-
-                txtCode.Text = "";
-                LoadLinkedChildren();
             }
             catch (SqlException)
             {
-                ShowMessage(T("An error occurred while linking. Please try again.",
-                              "Ralat berlaku semasa memautkan. Sila cuba lagi."), true);
+                return false;
             }
         }
 
