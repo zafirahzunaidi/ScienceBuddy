@@ -15,11 +15,6 @@ namespace ScienceBuddy.Student
     {
 
         /// <summary>
-        /// litPageTitle control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Literal litPageTitle;
-
-        /// <summary>
         /// litTitle control.
         /// </summary>
         /// <remarks>
@@ -27,15 +22,6 @@ namespace ScienceBuddy.Student
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litTitle;
-
-        /// <summary>
-        /// litSubtitle control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litSubtitle;
 
         /// <summary>
         /// txtSearch control.

@@ -660,7 +660,6 @@
     line-height: 1.4;
 }
 
-/* Notifications */
 .st-dash-notif-card {
     background: var(--color-white);
     border-radius: var(--border-radius-xl);
