@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
@@ -42,6 +43,17 @@ namespace ScienceBuddy.Student
             }
         }
 
+        // ── Edit mode: forumId from URL param ─────────────────────────
+        private string EditForumId
+        {
+            get { return Request.QueryString["forumId"]; }
+        }
+
+        private bool IsEditMode
+        {
+            get { return !string.IsNullOrEmpty(EditForumId); }
+        }
+
         // ── Page Load ─────────────────────────────────────────────────
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -61,6 +73,11 @@ namespace ScienceBuddy.Student
             {
                 SetLabels();
                 BuildForm();
+
+                if (IsEditMode)
+                {
+                    LoadPostForEdit();
+                }
             }
         }
 
@@ -142,17 +159,19 @@ namespace ScienceBuddy.Student
             }
             else
             {
-                litPageTitle.Text = T("Create Public Discussion", "Cipta Perbincangan Awam");
-                litTitle.Text = T("Create Public Discussion", "Cipta Perbincangan Awam");
-                litSubtitle.Text = T("Ask a question or start a Science discussion with the community.",
-                                     "Tanya soalan atau mulakan perbincangan Sains dengan komuniti.");
+                litPageTitle.Text = IsEditMode ? T("Edit Discussion", "Sunting Perbincangan") : T("Create Public Discussion", "Cipta Perbincangan Awam");
+                litTitle.Text = IsEditMode ? T("Edit Discussion", "Sunting Perbincangan") : T("Create Public Discussion", "Cipta Perbincangan Awam");
+                litSubtitle.Text = IsEditMode
+                    ? T("Update your discussion title or message.", "Kemas kini tajuk atau mesej perbincangan anda.")
+                    : T("Ask a question or start a Science discussion with the community.",
+                         "Tanya soalan atau mulakan perbincangan Sains dengan komuniti.");
 
                 divHeader.Attributes["class"] = "st-createpost-header public-mode";
-                divHeaderIcon.InnerHtml = "<i class=\"bi bi-chat-dots-fill\"></i>";
+                divHeaderIcon.InnerHtml = IsEditMode ? "<i class=\"bi bi-pencil-square\"></i>" : "<i class=\"bi bi-chat-dots-fill\"></i>";
 
                 pnlTypeDropdown.Visible = true;
                 pnlTypeLocked.Visible = false;
-                litSubmitBtn.Text = T("Create Discussion", "Cipta Perbincangan");
+                litSubmitBtn.Text = IsEditMode ? T("Update Discussion", "Kemas Kini Perbincangan") : T("Create Discussion", "Cipta Perbincangan");
             }
 
             litTitleLbl.Text = T("Discussion Title", "Tajuk Perbincangan");
@@ -216,14 +235,11 @@ namespace ScienceBuddy.Student
             {
                 ddlType.Items.Clear();
                 ddlType.Items.Add(new ListItem(T("Public", "Awam"), "Public"));
-                ddlType.Items.Add(new ListItem(T("Question", "Soalan"), "Question"));
-                ddlType.Items.Add(new ListItem(T("Sharing", "Perkongsian"), "Sharing"));
-                ddlType.Items.Add(new ListItem(T("Help", "Bantuan"), "Help"));
+                ddlType.Items.Add(new ListItem(T("Family", "Keluarga"), "Private"));
             }
 
-            // Tags dropdown
-            ddlTag.Items.Clear();
-            ddlTag.Items.Add(new ListItem(T("No tag", "Tiada tag"), ""));
+            // Tags checkboxes
+            cblTags.Items.Clear();
 
             using (SqlConnection connection = new SqlConnection(ConnStr))
             {
@@ -242,7 +258,71 @@ namespace ScienceBuddy.Student
                     {
                         string tagId = reader["tagId"].ToString();
                         string tagName = reader["tagName"].ToString();
-                        ddlTag.Items.Add(new ListItem(tagName, tagId));
+                        cblTags.Items.Add(new ListItem(tagName, tagId));
+                    }
+                }
+            }
+        }
+
+        // ── Load existing post for editing ───────────────────────────
+        private void LoadPostForEdit()
+        {
+            string userId = Session["userId"].ToString();
+            string forumId = EditForumId;
+
+            using (SqlConnection connection = new SqlConnection(ConnStr))
+            {
+                connection.Open();
+
+                const string sql = "SELECT title, message, discussionType, createdBy FROM Forum WHERE forumId = @fid";
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@fid", forumId);
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (!reader.Read())
+                        {
+                            // Post not found
+                            Response.Redirect("~/Student/Forum.aspx", false);
+                            return;
+                        }
+
+                        string createdBy = reader["createdBy"].ToString();
+                        if (createdBy != userId)
+                        {
+                            // Not owner — redirect
+                            Response.Redirect("~/Student/Forum.aspx", false);
+                            return;
+                        }
+
+                        txtTitle.Text = reader["title"].ToString();
+                        txtMessage.Text = reader["message"].ToString();
+
+                        string discType = reader["discussionType"] != DBNull.Value ? reader["discussionType"].ToString() : "Public";
+                        if (ddlType.Items.FindByValue(discType) != null)
+                        {
+                            ddlType.SelectedValue = discType;
+                        }
+                    }
+                }
+
+                // Load existing tags and pre-select them
+                if (Tbl(connection, "ForumTag") && Tbl(connection, "Tag"))
+                {
+                    const string tagSql = "SELECT tagId FROM ForumTag WHERE forumId = @fid";
+                    using (SqlCommand tagCmd = new SqlCommand(tagSql, connection))
+                    {
+                        tagCmd.Parameters.AddWithValue("@fid", forumId);
+                        using (SqlDataReader tagReader = tagCmd.ExecuteReader())
+                        {
+                            while (tagReader.Read())
+                            {
+                                string existingTag = tagReader["tagId"].ToString();
+                                ListItem item = cblTags.Items.FindByValue(existingTag);
+                                if (item != null)
+                                    item.Selected = true;
+                            }
+                        }
                     }
                 }
             }
@@ -273,7 +353,12 @@ namespace ScienceBuddy.Student
                 }
             }
 
-            string tagId = ddlTag.SelectedValue;
+            List<string> selectedTagIds = new List<string>();
+            foreach (ListItem item in cblTags.Items)
+            {
+                if (item.Selected)
+                    selectedTagIds.Add(item.Value);
+            }
 
             // Validation
             if (string.IsNullOrEmpty(title))
@@ -284,6 +369,13 @@ namespace ScienceBuddy.Student
             if (string.IsNullOrEmpty(message))
             {
                 ShowError(T("Please write your question or message.", "Sila tulis soalan atau mesej anda."));
+                return;
+            }
+
+            // ── EDIT MODE ──
+            if (IsEditMode)
+            {
+                UpdatePost(title, message, discussionType, selectedTagIds);
                 return;
             }
 
@@ -356,20 +448,20 @@ namespace ScienceBuddy.Student
                             command.ExecuteNonQuery();
                         }
 
-                        // Insert ForumTag if a tag was selected
-                        if (!string.IsNullOrEmpty(tagId))
+                        // Insert ForumTag for each selected tag
+                        foreach (string selectedTag in selectedTagIds)
                         {
-                            string forumTagId = "FT001";
+                            string forumTagId = "FTAG001";
                             const string seqTagSql = @"
-                                SELECT ISNULL(MAX(CAST(SUBSTRING(forumTagId, 3, LEN(forumTagId) - 2) AS INT)), 0)
-                                FROM ForumTag WHERE forumTagId LIKE 'FT[0-9]%'";
+                                SELECT ISNULL(MAX(CAST(SUBSTRING(forumTagId, 5, LEN(forumTagId) - 4) AS INT)), 0)
+                                FROM ForumTag WHERE forumTagId LIKE 'FTAG[0-9]%'";
                             using (SqlCommand seqCmd = new SqlCommand(seqTagSql, connection, transaction))
                             {
                                 object lastVal = seqCmd.ExecuteScalar();
                                 if (lastVal != null && lastVal != DBNull.Value)
                                 {
                                     int lastNum = Convert.ToInt32(lastVal);
-                                    forumTagId = "FT" + (lastNum + 1).ToString("D3");
+                                    forumTagId = "FTAG" + (lastNum + 1).ToString("D3");
                                 }
                             }
 
@@ -380,7 +472,7 @@ namespace ScienceBuddy.Student
                             {
                                 command.Parameters.AddWithValue("@ftid", forumTagId);
                                 command.Parameters.AddWithValue("@fid", forumId);
-                                command.Parameters.AddWithValue("@tagId", tagId);
+                                command.Parameters.AddWithValue("@tagId", selectedTag);
                                 command.ExecuteNonQuery();
                             }
                         }
@@ -398,6 +490,85 @@ namespace ScienceBuddy.Student
                                     "Ralat berlaku semasa mencipta perbincangan. Sila cuba lagi."));
                     }
                 }
+            }
+        }
+
+        // ── Update existing post ──────────────────────────────────────
+        private void UpdatePost(string title, string message, string discussionType, List<string> selectedTagIds)
+        {
+            string userId = Session["userId"].ToString();
+            string forumId = EditForumId;
+
+            using (SqlConnection connection = new SqlConnection(ConnStr))
+            {
+                connection.Open();
+
+                // Verify ownership again before updating
+                const string ownerSql = "SELECT createdBy FROM Forum WHERE forumId = @fid";
+                using (SqlCommand ownerCmd = new SqlCommand(ownerSql, connection))
+                {
+                    ownerCmd.Parameters.AddWithValue("@fid", forumId);
+                    object result = ownerCmd.ExecuteScalar();
+                    if (result == null || result == DBNull.Value || result.ToString() != userId)
+                    {
+                        Response.Redirect("~/Student/Forum.aspx", false);
+                        return;
+                    }
+                }
+
+                // Update the forum post
+                const string updateSql = @"
+                    UPDATE Forum SET title = @title, message = @msg, discussionType = @type
+                    WHERE forumId = @fid AND createdBy = @uid";
+                using (SqlCommand command = new SqlCommand(updateSql, connection))
+                {
+                    command.Parameters.AddWithValue("@title", title);
+                    command.Parameters.AddWithValue("@msg", message);
+                    command.Parameters.AddWithValue("@type", discussionType);
+                    command.Parameters.AddWithValue("@fid", forumId);
+                    command.Parameters.AddWithValue("@uid", userId);
+                    command.ExecuteNonQuery();
+                }
+
+                // Update tags: remove old, add new
+                if (Tbl(connection, "ForumTag"))
+                {
+                    using (SqlCommand delCmd = new SqlCommand("DELETE FROM ForumTag WHERE forumId = @fid", connection))
+                    {
+                        delCmd.Parameters.AddWithValue("@fid", forumId);
+                        delCmd.ExecuteNonQuery();
+                    }
+
+                    foreach (string tagId in selectedTagIds)
+                    {
+                        string forumTagId = "FTAG001";
+                        const string seqTagSql = @"
+                            SELECT ISNULL(MAX(CAST(SUBSTRING(forumTagId, 5, LEN(forumTagId) - 4) AS INT)), 0)
+                            FROM ForumTag WHERE forumTagId LIKE 'FTAG[0-9]%'";
+                        using (SqlCommand seqCmd = new SqlCommand(seqTagSql, connection))
+                        {
+                            object lastVal = seqCmd.ExecuteScalar();
+                            if (lastVal != null && lastVal != DBNull.Value)
+                            {
+                                int lastNum = Convert.ToInt32(lastVal);
+                                forumTagId = "FTAG" + (lastNum + 1).ToString("D3");
+                            }
+                        }
+
+                        const string sqlTag = @"
+                            INSERT INTO ForumTag (forumTagId, forumId, tagId)
+                            VALUES (@ftid, @fid, @tagId)";
+                        using (SqlCommand command = new SqlCommand(sqlTag, connection))
+                        {
+                            command.Parameters.AddWithValue("@ftid", forumTagId);
+                            command.Parameters.AddWithValue("@fid", forumId);
+                            command.Parameters.AddWithValue("@tagId", tagId);
+                            command.ExecuteNonQuery();
+                        }
+                    }
+                }
+
+                Response.Redirect("~/Student/ForumThread.aspx?forumId=" + forumId, false);
             }
         }
 

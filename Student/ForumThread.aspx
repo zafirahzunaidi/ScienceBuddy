@@ -113,36 +113,47 @@
         </div>
     </asp:Panel>
 
-    <%-- Thread Header --%>
+    <%-- Thread Header with Avatar --%>
     <div class="st-forumthread-header" id="divHeader" runat="server">
-        <div class="st-forumthread-header-title"><asp:Literal ID="litThreadTitle" runat="server" /></div>
-        <div class="st-forumthread-header-meta">
-            <span class="st-forumthread-disc-badge" id="spnDiscBadge" runat="server"><asp:Literal ID="litDiscType" runat="server" /></span>
-            <span><i class="bi bi-person-fill"></i> <asp:Literal ID="litCreatorName" runat="server" /></span>
-            <span>&#8226;</span>
-            <span><i class="bi bi-clock"></i> <asp:Literal ID="litCreatorDate" runat="server" /></span>
+        <div class="st-forumthread-header-top">
+            <div class="st-forumthread-header-avatar"><asp:Literal ID="litCreatorInitial" runat="server" /></div>
+            <div class="st-forumthread-header-info">
+                <div class="st-forumthread-header-name">
+                    <asp:Literal ID="litCreatorName" runat="server" />
+                    <span class="st-forumthread-disc-badge" id="spnDiscBadge" runat="server"><asp:Literal ID="litDiscType" runat="server" /></span>
+                </div>
+                <div class="st-forumthread-header-date"><i class="bi bi-clock"></i> <asp:Literal ID="litCreatorDate" runat="server" /></div>
+            </div>
         </div>
+        <div class="st-forumthread-header-title"><asp:Literal ID="litThreadTitle" runat="server" /></div>
         <div class="st-forumthread-header-tags">
             <asp:Literal ID="litTags" runat="server" />
-        </div>
-        <div class="st-forumthread-header-stats">
-            <span class="st-forumthread-stat"><i class="bi bi-heart-fill" style="color:#EF4444;"></i> <asp:Literal ID="litLikeCount" runat="server" Text="0" /> <asp:Literal ID="litLikesLabel" runat="server" Text="likes" /></span>
-            <span class="st-forumthread-stat"><i class="bi bi-chat-left-text" style="color:var(--ft-primary);"></i> <asp:Literal ID="litReplyCount" runat="server" Text="0" /> <asp:Literal ID="litRepliesLabel" runat="server" Text="replies" /></span>
-            <asp:LinkButton ID="btnLike" runat="server" CssClass="st-forumthread-like-btn" OnClick="btnLike_Click">
-                <i class="bi bi-heart"></i> <asp:Literal ID="litLikeText" runat="server" Text="Like" />
-            </asp:LinkButton>
         </div>
     </div>
 
     <%-- Original Message --%>
     <div class="st-forumthread-message">
-        <div class="st-forumthread-message-label"><i class="bi bi-chat-square-text"></i> <asp:Literal ID="litOrigMsgLabel" runat="server" Text="Original Message" /></div>
+        <asp:Literal ID="litOrigMsgLabel" runat="server" Visible="false" />
         <div class="st-forumthread-message-body"><asp:Literal ID="litOrigMessage" runat="server" /></div>
     </div>
 
-    <%-- Reply List --%>
+    <%-- Stats & Like --%>
+    <div class="st-forumthread-header-stats">
+        <span class="st-forumthread-stat"><i class="bi bi-chat-left-text"></i> <asp:Literal ID="litReplyCount" runat="server" Text="0" /> <asp:Literal ID="litRepliesLabel" runat="server" Text="replies" /></span>
+        <span class="st-forumthread-stat"><i class="bi bi-heart"></i> <asp:Literal ID="litLikeCount" runat="server" Text="0" /> <asp:Literal ID="litLikesLabel" runat="server" Text="Like" /></span>
+        <asp:LinkButton ID="btnLike" runat="server" CssClass="st-forumthread-like-btn" OnClick="btnLike_Click" />
+        <asp:Literal ID="litLikeText" runat="server" Visible="false" />
+        <asp:Panel ID="pnlOwnerActions" runat="server" Visible="false" CssClass="st-forumthread-owner-actions">
+            <a id="lnkEditPost" runat="server" class="st-forum-action-btn st-forum-action-edit" title="Edit"><i class="bi bi-pencil-square"></i></a>
+            <asp:LinkButton ID="btnDeletePost" runat="server" CssClass="st-forum-action-btn st-forum-action-delete"
+                OnClick="btnDeletePost_Click" OnClientClick="return confirm('Are you sure you want to delete this forum post?');"
+                ToolTip="Delete"><i class="bi bi-trash"></i></asp:LinkButton>
+        </asp:Panel>
+    </div>
+
+    <%-- Reply List (Comments) --%>
     <div class="st-forumthread-replies">
-        <div class="st-forumthread-replies-title"><i class="bi bi-chat-left-text"></i> <asp:Literal ID="litRepliesTitle" runat="server" Text="Replies" /></div>
+        <div class="st-forumthread-replies-title"><asp:Literal ID="litRepliesTitle" runat="server" Text="Comments" /> <span class="st-forumthread-replies-count"><asp:Literal ID="litReplyCountFooter" runat="server" Text="0" /></span></div>
         <div class="st-forumthread-reply-list">
             <asp:Repeater ID="rptReplies" runat="server">
                 <ItemTemplate>
@@ -163,8 +174,7 @@
             </asp:Repeater>
             <asp:Panel ID="pnlNoReplies" runat="server" Visible="false">
                 <div class="st-forumthread-no-replies">
-                    <i class="bi bi-chat-square" style="font-size:1.5rem;display:block;margin-bottom:8px;"></i>
-                    <asp:Literal ID="litNoReplies" runat="server" Text="No replies yet. Be the first to respond!" />
+                    <asp:Literal ID="litNoReplies" runat="server" Text="No replies yet." />
                 </div>
             </asp:Panel>
         </div>
@@ -172,8 +182,7 @@
 
     <%-- Reply Form --%>
     <div class="st-forumthread-reply-form">
-        <div class="st-forumthread-reply-form-title"><i class="bi bi-reply"></i> <asp:Literal ID="litReplyFormTitle" runat="server" Text="Post Reply" /></div>
-
+        <asp:Literal ID="litReplyFormTitle" runat="server" Visible="false" />
         <%-- Success Panel --%>
         <asp:Panel ID="pnlReplySuccess" runat="server" Visible="false">
             <div class="st-forumthread-alert st-forumthread-alert-success">
@@ -190,8 +199,10 @@
 
         <asp:TextBox ID="txtReply" runat="server" TextMode="MultiLine" CssClass="st-forumthread-reply-textarea"
             placeholder="Write your reply..." />
-        <asp:Button ID="btnReply" runat="server" CssClass="st-forumthread-reply-submit" OnClick="btnReply_Click"
-            Text="Post Reply" />
+        <div class="st-forumthread-reply-actions">
+            <asp:Button ID="btnReply" runat="server" CssClass="st-forumthread-reply-submit" OnClick="btnReply_Click"
+                Text="Post" />
+        </div>
     </div>
 
 </asp:Panel>

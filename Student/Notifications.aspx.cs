@@ -95,13 +95,11 @@ namespace ScienceBuddy.Student
 
         private void SetLabels()
         {
-            litPageTitle.Text = T("Notifications", "Pemberitahuan");
             litTitle.Text = T("Notifications", "Pemberitahuan");
-            litSubtitle.Text = T("Stay updated with your learning activities.", "Kekal dikemas kini dengan aktiviti pembelajaran anda.");
             litFilterAll.Text = T("All", "Semua");
             litFilterUnread.Text = T("Unread", "Belum Dibaca");
             litFilterRead.Text = T("Read", "Dibaca");
-            litMarkAll.Text = T("Mark All Read", "Tandai Semua Dibaca");
+            litMarkAll.Text = T("Mark All Read", "Tanda Semua Telah Dibaca");
             litEmptyTitle.Text = T("All caught up!", "Semuanya dikemas kini!");
             litEmptyDesc.Text = T("No notifications here. Keep learning and updates will appear!", "Tiada pemberitahuan di sini. Teruskan belajar dan kemas kini akan muncul!");
             litEmptyBtn.Text = T("Continue Learning", "Teruskan Belajar");

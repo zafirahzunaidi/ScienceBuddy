@@ -97,7 +97,7 @@ namespace ScienceBuddy.Teacher
 
             string ext = Path.GetExtension(fuFile.FileName).ToLower();
             if (!AllowedExts.Contains(ext)) { ShowError(T("Unsupported file type.","Jenis fail tidak disokong.")); return; }
-            if (fuFile.PostedFile.ContentLength > MaxFileBytes) { ShowError(T("File exceeds 100 MB limit.","Fail melebihi had 100 MB.")); return; }
+            if (fuFile.PostedFile.ContentLength > MaxFileBytes) { ShowError(T("The selected file exceeds the 100 MB upload limit. Please choose a smaller file.","Fail yang dipilih melebihi had muat naik 100 MB. Sila pilih fail yang lebih kecil.")); return; }
 
             string materialType = GetMaterialType(ext);
             string fileName = fuFile.FileName; // keep original filename
@@ -131,6 +131,10 @@ namespace ScienceBuddy.Teacher
                 }
                 hidToast.Value = T("Material uploaded successfully!", "Bahan berjaya dimuat naik!");
                 txtTitle.Text = ""; txtDescription.Text = "";
+                hidLanguage.Value = "EN";
+                ddlLevel.SelectedIndex = 0;
+                ddlUnit.Items.Clear(); ddlUnit.Items.Add(new ListItem(T("— Select Unit —","— Pilih Unit —"), ""));
+                ddlSubtopic.Items.Clear(); ddlSubtopic.Items.Add(new ListItem(T("— Select Subtopic —","— Pilih Subtopik —"), ""));
             }
             catch { ShowError(T("An error occurred. Please try again.","Ralat berlaku. Sila cuba lagi.")); }
         }

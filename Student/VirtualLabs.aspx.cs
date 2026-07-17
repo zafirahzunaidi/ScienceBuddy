@@ -423,42 +423,42 @@ namespace ScienceBuddy.Student
         {
             if (string.IsNullOrEmpty(t))
             {
-                return "🧪";
+                return "<i class=\"bi bi-eyedropper\"></i>";
             }
             string s = t.ToLower();
             if (s.Contains("magnet"))
             {
-                return "🧲";
+                return "<i class=\"bi bi-magnet\"></i>";
             }
             if (s.Contains("soak") || s.Contains("water") || s.Contains("air"))
             {
-                return "💧";
+                return "<i class=\"bi bi-droplet-half\"></i>";
             }
             if (s.Contains("sandwich") || s.Contains("digest"))
             {
-                return "🥪";
+                return "<i class=\"bi bi-heart-pulse\"></i>";
             }
             if (s.Contains("sink") || s.Contains("float"))
             {
-                return "🚢";
+                return "<i class=\"bi bi-water\"></i>";
             }
             if (s.Contains("litmus") || s.Contains("acid"))
             {
-                return "🧫";
+                return "<i class=\"bi bi-moisture\"></i>";
             }
             if (s.Contains("blood") || s.Contains("darah"))
             {
-                return "❤️";
+                return "<i class=\"bi bi-heart-fill\"></i>";
             }
             if (s.Contains("circuit") || s.Contains("litar"))
             {
-                return "⚡";
+                return "<i class=\"bi bi-lightning-charge\"></i>";
             }
             if (s.Contains("matter") || s.Contains("jirim"))
             {
-                return "🧊";
+                return "<i class=\"bi bi-snow3\"></i>";
             }
-            return "🔬";
+            return "<i class=\"bi bi-eyedropper\"></i>";
         }
 
         private static int Ord(string id)

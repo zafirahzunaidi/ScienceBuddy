@@ -451,7 +451,7 @@ namespace ScienceBuddy.Student
                 if (!Tbl(connection, "AILearningAnalysis"))
                 {
                     pnlRecommend.Visible = true;
-                    litRecommendTitle.Text = T("💡 Personalised Recommendations", "💡 Cadangan Peribadi");
+                    litRecommendTitle.Text = T("Personalised Recommendations", "Cadangan Peribadi");
                     litRecommendText.Text = T("Complete more quizzes to unlock personalised recommendations.", "Selesaikan lebih banyak kuiz untuk membuka cadangan peribadi.");
                     return;
                 }
@@ -460,7 +460,7 @@ namespace ScienceBuddy.Student
                 if (string.IsNullOrEmpty(studentId))
                 {
                     pnlRecommend.Visible = true;
-                    litRecommendTitle.Text = T("💡 Personalised Recommendations", "💡 Cadangan Peribadi");
+                    litRecommendTitle.Text = T("Personalised Recommendations", "Cadangan Peribadi");
                     litRecommendText.Text = T("Complete more quizzes to unlock personalised recommendations.", "Selesaikan lebih banyak kuiz untuk membuka cadangan peribadi.");
                     return;
                 }
@@ -473,12 +473,12 @@ namespace ScienceBuddy.Student
                     pnlRecommend.Visible = true;
                     if (result != null && result != DBNull.Value && !string.IsNullOrWhiteSpace(result.ToString()))
                     {
-                        litRecommendTitle.Text = T("🎯 Recommended based on your weak topics:", "🎯 Dicadangkan berdasarkan topik lemah anda:");
+                        litRecommendTitle.Text = T("Recommended based on your weak topics:", "Dicadangkan berdasarkan topik lemah anda:");
                         litRecommendText.Text = HttpUtility.HtmlEncode(result.ToString());
                     }
                     else
                     {
-                        litRecommendTitle.Text = T("💡 Personalised Recommendations", "💡 Cadangan Peribadi");
+                        litRecommendTitle.Text = T("Personalised Recommendations", "Cadangan Peribadi");
                         litRecommendText.Text = T("Complete more quizzes to unlock personalised recommendations.", "Selesaikan lebih banyak kuiz untuk membuka cadangan peribadi.");
                     }
                 }

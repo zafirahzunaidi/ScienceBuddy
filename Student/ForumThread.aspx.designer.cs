@@ -150,6 +150,24 @@ namespace ScienceBuddy.Student
         protected global::System.Web.UI.WebControls.Literal litThreadTitle;
 
         /// <summary>
+        /// litCreatorInitial control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litCreatorInitial;
+
+        /// <summary>
+        /// litReplyCountFooter control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litReplyCountFooter;
+
+        /// <summary>
         /// spnDiscBadge control.
         /// </summary>
         /// <remarks>
@@ -238,6 +256,21 @@ namespace ScienceBuddy.Student
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton btnLike;
+
+        /// <summary>
+        /// pnlOwnerActions control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlOwnerActions;
+
+        /// <summary>
+        /// lnkEditPost control.
+        /// </summary>
+        protected global::System.Web.UI.HtmlControls.HtmlAnchor lnkEditPost;
+
+        /// <summary>
+        /// btnDeletePost control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.LinkButton btnDeletePost;
 
         /// <summary>
         /// litLikeText control.

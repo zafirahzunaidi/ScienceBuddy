@@ -541,7 +541,7 @@ namespace ScienceBuddy.Student
                         pnlLab.Visible = true;
                         pnlLabEmpty.Visible = false;
                         litLabTitle.Text = HttpUtility.HtmlEncode(t);
-                        litLabSub.Text = HttpUtility.HtmlEncode(d) + " • " + reader["difficulty"].ToString();
+                        litLabSub.Text = HttpUtility.HtmlEncode(d) + " &bull; " + reader["difficulty"].ToString();
                         litLabBtn.Text = T("Start Lab", "Mula Makmal");
                     }
                     else

@@ -78,7 +78,6 @@
 </asp:Content>
 
 <asp:Content ID="DashboardPageTitle" ContentPlaceHolderID="PageTitle" runat="server">
-    <asp:Literal ID="litPageTitle" runat="server" Text="Notifications" />
 </asp:Content>
 
 <asp:Content ID="StudentUserDropdownMenu" ContentPlaceHolderID="UserDropdownMenu" runat="server">
@@ -87,74 +86,69 @@
 <asp:Content ID="NotificationsBreadcrumb" ContentPlaceHolderID="BreadcrumbContent" runat="server">
 </asp:Content>
 
-<%-- Dashboard Main Content --%>
+<%-- Notifications Main Content --%>
 <asp:Content ID="NotificationsMainContent" ContentPlaceHolderID="MainContentSidebar" runat="server">
-
-<%-- Page Header --%>
-<div class="st-notifications-header">
+    <%-- Page Header --%>
     <div class="st-notifications-title"><asp:Literal ID="litTitle" runat="server" /></div>
-    <div class="st-notifications-subtitle"><asp:Literal ID="litSubtitle" runat="server" /></div>
-</div>
 
-<%-- Search Bar + Filter Chips --%>
-<div class="st-notifications-bar">
-    <div class="st-notifications-search">
-        <i class="bi bi-search"></i>
-        <asp:TextBox ID="txtSearch" runat="server" placeholder="Search..." />
+    <%-- Search Bar + Filter Chips --%>
+    <div class="st-notifications-bar">
+        <div class="st-notifications-search">
+            <i class="bi bi-search"></i>
+            <asp:TextBox ID="txtSearch" runat="server" placeholder="Search..." />
+        </div>
+        <div class="st-notifications-chips">
+            <asp:LinkButton ID="btnFilterAll" runat="server" CssClass="st-notifications-chip active" OnClick="btnFilter_Click" CommandArgument="all" CausesValidation="false"><asp:Literal ID="litFilterAll" runat="server" Text="All" /></asp:LinkButton>
+            <asp:LinkButton ID="btnFilterUnread" runat="server" CssClass="st-notifications-chip" OnClick="btnFilter_Click" CommandArgument="unread" CausesValidation="false"><asp:Literal ID="litFilterUnread" runat="server" Text="Unread" /></asp:LinkButton>
+            <asp:LinkButton ID="btnFilterRead" runat="server" CssClass="st-notifications-chip" OnClick="btnFilter_Click" CommandArgument="read" CausesValidation="false"><asp:Literal ID="litFilterRead" runat="server" Text="Read" /></asp:LinkButton>
+        </div>
+        <asp:LinkButton ID="btnMarkAllRead" runat="server" CssClass="sb-btn sb-btn-primary sb-btn-sm"
+            OnClick="btnMarkAllRead_Click" CausesValidation="false">
+            <i class="bi bi-check2-all"></i> <asp:Literal ID="litMarkAll" runat="server" Text="Mark All Read" />
+        </asp:LinkButton>
     </div>
-    <div class="st-notifications-chips">
-        <asp:LinkButton ID="btnFilterAll" runat="server" CssClass="st-notifications-chip active" OnClick="btnFilter_Click" CommandArgument="all" CausesValidation="false"><asp:Literal ID="litFilterAll" runat="server" Text="All" /></asp:LinkButton>
-        <asp:LinkButton ID="btnFilterUnread" runat="server" CssClass="st-notifications-chip" OnClick="btnFilter_Click" CommandArgument="unread" CausesValidation="false"><asp:Literal ID="litFilterUnread" runat="server" Text="Unread" /></asp:LinkButton>
-        <asp:LinkButton ID="btnFilterRead" runat="server" CssClass="st-notifications-chip" OnClick="btnFilter_Click" CommandArgument="read" CausesValidation="false"><asp:Literal ID="litFilterRead" runat="server" Text="Read" /></asp:LinkButton>
-    </div>
-    <asp:LinkButton ID="btnMarkAllRead" runat="server" CssClass="sb-btn sb-btn-primary sb-btn-sm"
-        OnClick="btnMarkAllRead_Click" CausesValidation="false">
-        <i class="bi bi-check2-all"></i> <asp:Literal ID="litMarkAll" runat="server" Text="Mark All Read" />
-    </asp:LinkButton>
-</div>
 
-<%-- Notification List --%>
-<asp:Panel ID="pnlList" runat="server">
-    <div class="st-notifications-list">
-        <asp:Repeater ID="rptNotifications" runat="server" OnItemCommand="rptNotifications_ItemCommand">
-            <ItemTemplate>
-                <div class="st-notifications-item <%# !(bool)Eval("IsRead") ? "unread" : "" %>">
-                    <div class="st-notifications-item-icon" style="background:<%# Eval("IconBg") %>;color:<%# Eval("IconColor") %>;">
-                        <i class="bi <%# Eval("Icon") %>"></i>
-                    </div>
-                    <div class="st-notifications-item-body">
-                        <div class="st-notifications-item-title">
-                            <%# Eval("Title") %>
-                            <%# !(bool)Eval("IsRead") ? "<span class='st-notifications-unread-dot'></span>" : "" %>
+    <%-- Notification List --%>
+    <asp:Panel ID="pnlList" runat="server">
+        <div class="st-notifications-list">
+            <asp:Repeater ID="rptNotifications" runat="server" OnItemCommand="rptNotifications_ItemCommand">
+                <ItemTemplate>
+                    <div class="st-notifications-item <%# !(bool)Eval("IsRead") ? "unread" : "" %>">
+                        <div class="st-notifications-item-icon" style="background:<%# Eval("IconBg") %>;color:<%# Eval("IconColor") %>;">
+                            <i class="bi <%# Eval("Icon") %>"></i>
                         </div>
-                        <div class="st-notifications-item-msg"><%# Eval("Message") %></div>
-                        <div class="st-notifications-item-time"><i class="bi bi-clock"></i> <%# Eval("TimeAgo") %></div>
+                        <div class="st-notifications-item-body">
+                            <div class="st-notifications-item-title">
+                                <%# Eval("Title") %>
+                                <%# !(bool)Eval("IsRead") ? "<span class='st-notifications-unread-dot'></span>" : "" %>
+                            </div>
+                            <div class="st-notifications-item-msg"><%# Eval("Message") %></div>
+                            <div class="st-notifications-item-time"><i class="bi bi-clock"></i> <%# Eval("TimeAgo") %></div>
+                        </div>
+                        <div class="st-notifications-item-actions">
+                            <asp:LinkButton runat="server" CommandName="MarkRead" CommandArgument='<%# Eval("Id") %>'
+                                CssClass="sb-btn sb-btn-light sb-btn-xs"
+                                Visible='<%# !(bool)Eval("IsRead") %>' CausesValidation="false">
+                                <i class="bi bi-check2"></i>
+                            </asp:LinkButton>
+                        </div>
                     </div>
-                    <div class="st-notifications-item-actions">
-                        <asp:LinkButton runat="server" CommandName="MarkRead" CommandArgument='<%# Eval("Id") %>'
-                            CssClass="sb-btn sb-btn-light sb-btn-xs"
-                            Visible='<%# !(bool)Eval("IsRead") %>' CausesValidation="false">
-                            <i class="bi bi-check2"></i>
-                        </asp:LinkButton>
-                    </div>
-                </div>
-            </ItemTemplate>
-        </asp:Repeater>
-    </div>
-</asp:Panel>
+                </ItemTemplate>
+            </asp:Repeater>
+        </div>
+    </asp:Panel>
 
-<%-- Empty State --%>
-<asp:Panel ID="pnlEmpty" runat="server" Visible="false">
-    <div class="sb-empty-state" style="padding:var(--space-3xl) 0;">
-        <div class="empty-icon" style="font-size:3.5rem;"><i class="bi bi-bell-slash"></i></div>
-        <div class="empty-title"><asp:Literal ID="litEmptyTitle" runat="server" /></div>
-        <div class="empty-desc"><asp:Literal ID="litEmptyDesc" runat="server" /></div>
-        <a href="<%: ResolveUrl("~/Student/Dashboard.aspx") %>" class="sb-btn sb-btn-primary sb-btn-sm mt-lg">
-            <i class="bi bi-house"></i> <asp:Literal ID="litEmptyBtn" runat="server" Text="Dashboard" />
-        </a>
-    </div>
-</asp:Panel>
-
+    <%-- Empty State --%>
+    <asp:Panel ID="pnlEmpty" runat="server" Visible="false">
+        <div class="sb-empty-state" style="padding:var(--space-3xl) 0;">
+            <div class="empty-icon" style="font-size:3.5rem;"><i class="bi bi-bell-slash"></i></div>
+            <div class="empty-title"><asp:Literal ID="litEmptyTitle" runat="server" /></div>
+            <div class="empty-desc"><asp:Literal ID="litEmptyDesc" runat="server" /></div>
+            <a href="<%: ResolveUrl("~/Student/MyLearning.aspx") %>" class="sb-btn sb-btn-primary sb-btn-sm mt-lg">
+                <i class="bi bi-house"></i> <asp:Literal ID="litEmptyBtn" runat="server" Text="My Learning" />
+            </a>
+        </div>
+    </asp:Panel>
 </asp:Content>
 
 <asp:Content ID="NotificationsScripts" ContentPlaceHolderID="ScriptsContent" runat="server">
