@@ -263,19 +263,27 @@ namespace ScienceBuddy.Student
                 if (!string.IsNullOrWhiteSpace(attach))
                 {
                     pnlAttach.Visible = true;
-                    pnlAttachEmpty.Visible = false;
-                    litAttachName.Text = HttpUtility.HtmlEncode(System.IO.Path.GetFileName(attach));
-                    lnkAttach.NavigateUrl = attach;
-                    litAttachBtn.Text = T("Open", "Buka");
+                    string resolvedAttach = ResolveUrl("~/Images/Lesson/" + attach);
+                    string ext = System.IO.Path.GetExtension(attach).ToLower();
+
+                    if (ext == ".mp4" || ext == ".webm" || ext == ".ogg")
+                    {
+                        litAttachInline.Text = "<video controls style=\"width:100%;max-height:400px;border-radius:8px;\">" +
+                            "<source src=\"" + HttpUtility.HtmlAttributeEncode(resolvedAttach) + "\" type=\"video/" + ext.TrimStart('.') + "\" />" +
+                            "</video>";
+                    }
+                    else
+                    {
+                        litAttachInline.Text = "<img src=\"" + HttpUtility.HtmlAttributeEncode(resolvedAttach) +
+                            "\" alt=\"\" style=\"width:100%;max-height:400px;object-fit:contain;border-radius:8px;\" />";
+                    }
                 }
                 else
                 {
                     pnlAttach.Visible = false;
-                    pnlAttachEmpty.Visible = true;
-                    litAttachEmpty.Text = T("No lesson attachment is available.", "Tiada lampiran pelajaran tersedia.");
                 }
 
-                LoadMaterials(connection);
+                SetupNavigation(connection, lessonId, _unitId);
                 litTTSStart.Text = T("Read Aloud", "Baca Kuat");
             }
         }
@@ -284,86 +292,18 @@ namespace ScienceBuddy.Student
         {
             if (done)
             {
-                litCompleteTitle.Text = T("Lesson Completed!", "Pelajaran Selesai!");
-                litCompleteSub.Text = T("You have already completed this lesson.", "Anda telah menyelesaikan pelajaran ini.");
-                btnComplete.Text = T("\u2713 Completed", "\u2713 Selesai");
-                btnComplete.Enabled = false;
-                btnComplete.CssClass = "sb-btn sb-btn-success sb-btn-sm";
-                completeIcon.Style["background"] = "#DCFCE7";
-                completeIcon.Style["color"] = "#15803D";
                 heroBadgeDiv.Attributes["class"] = "st-lesson-hero-badge st-lesson-badge-done";
                 heroBadgeIcon.Attributes["class"] = "bi bi-check-circle-fill";
                 litBadgeText.Text = T("Completed", "Selesai");
             }
             else
             {
-                litCompleteTitle.Text = T("Finish reading?", "Selesai membaca?");
-                litCompleteSub.Text = T("Mark this lesson as complete to track your progress.", "Tandakan pelajaran ini selesai untuk mengesan kemajuan anda.");
-                btnComplete.Text = T("Mark as Complete", "Tandakan Selesai");
-                btnComplete.Enabled = true;
-                btnComplete.CssClass = "sb-btn sb-btn-orange sb-btn-sm";
-                completeIcon.Style["background"] = "#FFF0E8";
-                completeIcon.Style["color"] = "#FF6B2C";
                 heroBadgeDiv.Attributes["class"] = "st-lesson-hero-badge st-lesson-badge-pending";
                 heroBadgeIcon.Attributes["class"] = "bi bi-clock";
                 litBadgeText.Text = T("Not Completed", "Belum Selesai");
             }
         }
 
-        private void LoadMaterials(SqlConnection conn)
-        {
-            litMatHd.Text = T("Teacher Materials", "Bahan Guru");
-            litMatsEmpty.Text = T("No extra materials are available for this lesson yet.", "Tiada bahan tambahan tersedia untuk pelajaran ini buat masa ini.");
-
-            if (!Tbl("Material") || string.IsNullOrEmpty(_subtopicId))
-            {
-                pnlMats.Visible = false;
-                pnlMatsEmpty.Visible = true;
-                return;
-            }
-
-            DataTable dataTable = new DataTable();
-            using (SqlCommand command = new SqlCommand("SELECT materialTitle,materialType,language,fileUrl FROM Material WHERE subtopicId=@s AND status='Approved'", conn))
-            {
-                command.Parameters.AddWithValue("@s", _subtopicId);
-                new SqlDataAdapter(command).Fill(dataTable);
-            }
-
-            if (dataTable.Rows.Count == 0)
-            {
-                pnlMats.Visible = false;
-                pnlMatsEmpty.Visible = true;
-                return;
-            }
-
-            List<object> list = new List<object>();
-            foreach (DataRow r in dataTable.Rows)
-            {
-                string fileUrl = "";
-                if (r["fileUrl"] != null && r["fileUrl"] != DBNull.Value)
-                {
-                    fileUrl = r["fileUrl"].ToString();
-                }
-                else
-                {
-                    fileUrl = "#";
-                }
-
-                list.Add(new
-                {
-                    Title = HttpUtility.HtmlEncode(r["materialTitle"].ToString()),
-                    Type = r["materialType"].ToString(),
-                    Lang = r["language"].ToString(),
-                    Url = fileUrl,
-                    Btn = T("Open", "Buka")
-                });
-            }
-
-            pnlMats.Visible = true;
-            pnlMatsEmpty.Visible = false;
-            rptMats.DataSource = list;
-            rptMats.DataBind();
-        }
 
         protected void btnComplete_Click(object sender, EventArgs e)
         {
@@ -406,11 +346,11 @@ namespace ScienceBuddy.Student
 
                 if (!already && Tbl("LessonProgress"))
                 {
-                    string progId = "LP001";
-                    using (SqlCommand seqCmd = new SqlCommand(@"SELECT ISNULL(MAX(CAST(SUBSTRING(progressId,3,LEN(progressId)-2) AS INT)),0) FROM LessonProgress WHERE progressId LIKE 'LP[0-9]%'", connection))
+                    string progId = "PR001";
+                    using (SqlCommand seqCmd = new SqlCommand(@"SELECT ISNULL(MAX(CAST(SUBSTRING(progressId,3,LEN(progressId)-2) AS INT)),0) FROM LessonProgress WHERE progressId LIKE 'PR[0-9]%'", connection))
                     {
                         int last = Convert.ToInt32(seqCmd.ExecuteScalar());
-                        progId = "LP" + (last + 1).ToString("D3");
+                        progId = "PR" + (last + 1).ToString("D3");
                     }
 
                     using (SqlCommand command = new SqlCommand(@"INSERT INTO LessonProgress(progressId,studentId,lessonId,isCompleted,completedDate) VALUES(@pid,@s,@l,1,@d)", connection))
@@ -455,11 +395,11 @@ namespace ScienceBuddy.Student
                 }
 
                 int xpAmount = 10;
-                string xtId = "XT001";
-                using (SqlCommand command = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(xpTransactionId,3,LEN(xpTransactionId)-2) AS INT)),0) FROM XPTransaction WHERE xpTransactionId LIKE 'XT[0-9]%'", conn))
+                string xtId = "XPT001";
+                using (SqlCommand command = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(xpTransactionId,3,LEN(xpTransactionId)-2) AS INT)),0) FROM XPTransaction WHERE xpTransactionId LIKE 'XPT[0-9]%'", conn))
                 {
                     int last = Convert.ToInt32(command.ExecuteScalar());
-                    xtId = "XT" + (last + 1).ToString("D3");
+                    xtId = "XPT" + (last + 1).ToString("D3");
                 }
 
                 using (SqlCommand command = new SqlCommand("INSERT INTO XPTransaction(xpTransactionId,studentId,xpActionId,xpAmount,dateEarned) VALUES(@id,@s,@a,@xp,@dt)", conn))
@@ -483,6 +423,102 @@ namespace ScienceBuddy.Student
             {
                 System.Diagnostics.Debug.WriteLine("Error: " + ex.Message);
             }
+        }
+
+        private void SetupNavigation(SqlConnection connection, string currentLessonId, string unitId)
+        {
+            // Get all lessons in this unit, ordered
+            const string sql = @"SELECT ls.lessonId FROM Lesson ls
+                JOIN Subtopic st ON st.subtopicId = ls.subtopicId
+                WHERE st.unitId = @uid ORDER BY st.orderNo, ls.orderNo";
+            List<string> allLessons = new List<string>();
+            using (SqlCommand command = new SqlCommand(sql, connection))
+            {
+                command.Parameters.AddWithValue("@uid", unitId);
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                        allLessons.Add(reader["lessonId"].ToString());
+                }
+            }
+
+            int idx = allLessons.IndexOf(currentLessonId);
+            if (idx < 0) return;
+
+            litPrevBtn.Text = T("Previous", "Sebelum");
+            litNextBtn.Text = T("Next", "Seterusnya");
+
+            // Previous button
+            if (idx > 0)
+            {
+                lnkPrev.Visible = true;
+                lnkPrev.NavigateUrl = ResolveUrl("~/Student/Lesson.aspx?lessonId=" + allLessons[idx - 1]);
+            }
+
+            // Next button
+            if (idx < allLessons.Count - 1)
+            {
+                btnNext.Visible = true;
+                btnNext.CommandArgument = allLessons[idx + 1];
+            }
+        }
+
+        protected void btnNext_Click(object sender, EventArgs e)
+        {
+            InitLang();
+            string currentLessonId = Request.QueryString["lessonId"];
+            string nextLessonId = btnNext.CommandArgument;
+            string userId = Session["userId"].ToString();
+
+            if (string.IsNullOrEmpty(currentLessonId) || string.IsNullOrEmpty(nextLessonId)) return;
+
+            // Mark current lesson as complete
+            using (SqlConnection connection = new SqlConnection(ConnStr))
+            {
+                connection.Open();
+                string studentId = null;
+                using (SqlCommand command = new SqlCommand("SELECT studentId FROM Student WHERE userId=@u", connection))
+                {
+                    command.Parameters.AddWithValue("@u", userId);
+                    object result = command.ExecuteScalar();
+                    if (result != null && result != DBNull.Value) studentId = result.ToString();
+                }
+
+                if (!string.IsNullOrEmpty(studentId) && Tbl("LessonProgress"))
+                {
+                    bool already = false;
+                    using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM LessonProgress WHERE studentId=@s AND lessonId=@l AND isCompleted=1", connection))
+                    {
+                        command.Parameters.AddWithValue("@s", studentId);
+                        command.Parameters.AddWithValue("@l", currentLessonId);
+                        already = (int)command.ExecuteScalar() > 0;
+                    }
+
+                    if (!already)
+                    {
+                        string progId = "PR001";
+                        using (SqlCommand seqCmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(progressId,3,LEN(progressId)-2) AS INT)),0) FROM LessonProgress WHERE progressId LIKE 'PR[0-9]%'", connection))
+                        {
+                            int last = Convert.ToInt32(seqCmd.ExecuteScalar());
+                            progId = "PR" + (last + 1).ToString("D3");
+                        }
+
+                        using (SqlCommand command = new SqlCommand("INSERT INTO LessonProgress(progressId,studentId,lessonId,isCompleted,completedDate) VALUES(@pid,@s,@l,1,@d)", connection))
+                        {
+                            command.Parameters.AddWithValue("@pid", progId);
+                            command.Parameters.AddWithValue("@s", studentId);
+                            command.Parameters.AddWithValue("@l", currentLessonId);
+                            command.Parameters.AddWithValue("@d", DateTime.Now);
+                            command.ExecuteNonQuery();
+                        }
+
+                        AwardXP(connection, studentId, currentLessonId);
+                    }
+                }
+            }
+
+            // Navigate to next lesson
+            Response.Redirect("~/Student/Lesson.aspx?lessonId=" + nextLessonId, false);
         }
 
         private void ShowLocked(string t, string d)
