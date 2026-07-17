@@ -105,7 +105,7 @@ namespace ScienceBuddy.Student
 
             // Tab labels (include icon HTML so it persists on postback)
             litTabPublic.Text = "<i class=\"bi bi-globe\"></i> " + T("Public", "Awam");
-            litTabPrivate.Text = "<i class=\"bi bi-people-fill\"></i> " + T("Student-Parent", "Murid-Ibu Bapa");
+            litTabPrivate.Text = "<i class=\"bi bi-people-fill\"></i> " + T("Family", "Keluarga");
             litTabMy.Text = "<i class=\"bi bi-person-fill\"></i> " + T("My Forum", "Forum Saya");
 
             // Summary card labels based on selected tab
@@ -127,7 +127,7 @@ namespace ScienceBuddy.Student
             {
                 litEmptyTitle.Text = T("No private parent-student discussions yet.",
                                         "Tiada perbincangan peribadi murid-ibu bapa lagi.");
-                litEmptyDesc.Text = T("Start a private discussion with your linked parent. Only you and your parent can see these conversations.",
+                litEmptyDesc.Text = T("Start a private discussion with your linked parent and siblings. Only you, your siblings and your parent can see these conversations.",
                                         "Mulakan perbincangan peribadi dengan ibu bapa anda yang dipautkan. Hanya anda dan ibu bapa anda boleh melihat perbualan ini.");
                 litCTAText.Text = T("Want to chat with your parent privately?", "Ingin berbual dengan ibu bapa anda secara peribadi?");
                 litCTABtn.Text = T("Create Private Discussion", "Cipta Perbincangan Peribadi");

@@ -109,7 +109,6 @@
                         </div>
                     </div>
                     <div class="st-quizhistory-card-actions">
-                        <a href='<%# Eval("ResultUrl") %>' class="st-quizhistory-btn-sm st-quizhistory-btn-blue"><i class="bi bi-eye"></i> <%# Eval("ViewLbl") %></a>
                         <a href='<%# Eval("ReviewUrl") %>' class="st-quizhistory-btn-sm st-quizhistory-btn-outline"><i class="bi bi-search"></i> <%# Eval("ReviewLbl") %></a>
                         <a href='<%# Eval("RetryUrl") %>' class="st-quizhistory-btn-sm st-quizhistory-btn-orange"><i class="bi bi-arrow-repeat"></i> <%# Eval("RetryLbl") %></a>
                     </div>

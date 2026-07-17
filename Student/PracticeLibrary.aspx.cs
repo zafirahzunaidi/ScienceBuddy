@@ -9,7 +9,7 @@ using System.Web.UI.WebControls;
 
 namespace ScienceBuddy.Student
 {
-    public partial class PracticeLibrary1 : Page
+    public partial class PracticeLibrary : Page
     {
         private string ConnStr
         {

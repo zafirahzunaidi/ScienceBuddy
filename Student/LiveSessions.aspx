@@ -112,6 +112,12 @@
                             Visible='<%# (bool)Eval("HasLink") && Eval("Status").ToString() != Eval("CompletedLabel").ToString() %>'>
                             <i class="bi bi-box-arrow-up-right"></i> <%# Eval("JoinBtnText") %>
                         </asp:LinkButton>
+                        <asp:LinkButton runat="server" CommandName="Reminder" CommandArgument='<%# Eval("SessionId") %>'
+                            CssClass='<%# (bool)Eval("HasJoined") ? "st-livesessions-card-btn secondary disabled" : "st-livesessions-card-btn st-livesessions-reminder-btn" %>'
+                            Visible='<%# Eval("Status").ToString() == Eval("UpcomingLabel").ToString() %>'
+                            Enabled='<%# !(bool)Eval("HasJoined") %>'>
+                            <i class='bi <%# (bool)Eval("HasJoined") ? "bi-check-circle-fill" : "bi-bell-fill" %>'></i> <%# (bool)Eval("HasJoined") ? Eval("ReminderSentLabel") : Eval("GetReminderLabel") %>
+                        </asp:LinkButton>
                     </div>
                 </div>
             </ItemTemplate>

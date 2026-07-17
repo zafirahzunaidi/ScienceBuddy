@@ -43,143 +43,126 @@
 
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 
-<%-- EMPTY STATE --%>
-<asp:Panel ID="pnlEmpty" runat="server" Visible="false">
-    <div class="st-progress-empty-page">
-        <div class="st-progress-empty-icon"><i class="bi bi-rocket-takeoff-fill"></i></div>
-        <h2 class="st-progress-empty-title"><asp:Literal ID="litEmptyTitle" runat="server" /></h2>
-        <p class="st-progress-empty-desc"><asp:Literal ID="litEmptyDesc" runat="server" /></p>
-        <a href="<%: ResolveUrl("~/Student/MyLearning.aspx") %>" class="st-progress-empty-btn"><i class="bi bi-book"></i> <asp:Literal ID="litEmptyBtn" runat="server" /></a>
-    </div>
-</asp:Panel>
-
-<asp:Panel ID="pnlMain" runat="server">
-
-<%-- HERO --%>
-<div class="st-progress-hero">
-    <div class="st-progress-hero-decor"></div>
-    <div class="st-progress-hero-content">
-        <h1 class="st-progress-hero-title"><i class="bi bi-trophy-fill"></i> <asp:Literal ID="litHeroTitle" runat="server" /></h1>
-        <p class="st-progress-hero-subtitle"><asp:Literal ID="litHeroSubtitle" runat="server" /></p>
-    </div>
-</div>
-
-<%-- STAT CARDS --%>
-<div class="st-progress-stats-grid">
-    <div class="st-progress-stat-card st-progress-stat-xp">
-        <div class="st-progress-stat-icon"><i class="bi bi-lightning-charge-fill"></i></div>
-        <div class="st-progress-stat-value"><asp:Literal ID="litStatXP" runat="server" Text="0" /></div>
-        <div class="st-progress-stat-label"><asp:Literal ID="litStatXPLabel" runat="server" /></div>
-    </div>
-    <div class="st-progress-stat-card st-progress-stat-lessons">
-        <div class="st-progress-stat-icon"><i class="bi bi-book-fill"></i></div>
-        <div class="st-progress-stat-value"><asp:Literal ID="litStatLessons" runat="server" Text="0" /></div>
-        <div class="st-progress-stat-label"><asp:Literal ID="litStatLessonsLabel" runat="server" /></div>
-    </div>
-    <div class="st-progress-stat-card st-progress-stat-quizzes">
-        <div class="st-progress-stat-icon"><i class="bi bi-patch-question-fill"></i></div>
-        <div class="st-progress-stat-value"><asp:Literal ID="litStatQuizzes" runat="server" Text="0" /></div>
-        <div class="st-progress-stat-label"><asp:Literal ID="litStatQuizzesLabel" runat="server" /></div>
-    </div>
-    <div class="st-progress-stat-card st-progress-stat-badges">
-        <div class="st-progress-stat-icon"><i class="bi bi-award-fill"></i></div>
-        <div class="st-progress-stat-value"><asp:Literal ID="litStatBadges" runat="server" Text="0" /></div>
-        <div class="st-progress-stat-label"><asp:Literal ID="litStatBadgesLabel" runat="server" /></div>
-    </div>
-</div>
-
-<%-- WEEKLY ACTIVITY --%>
-<div class="st-progress-section-card">
-    <div class="st-progress-section-header"><i class="bi bi-graph-up"></i> <asp:Literal ID="litWeeklyTitle" runat="server" /></div>
-    <asp:Literal ID="litWeeklyChart" runat="server" />
-    <div class="st-progress-chart-legend"><asp:Literal ID="litChartLegend" runat="server" /></div>
-</div>
-
-<%-- QUIZ PERFORMANCE --%>
-<div class="st-progress-section-card">
-    <div class="st-progress-section-header"><i class="bi bi-bar-chart-line-fill"></i> <asp:Literal ID="litQuizPerfTitle" runat="server" /></div>
-    <asp:Panel ID="pnlQuizPerf" runat="server"><asp:Literal ID="litQuizPerfContent" runat="server" /></asp:Panel>
-    <asp:Panel ID="pnlNoQuizPerf" runat="server" Visible="false">
-        <div class="st-progress-empty-state"><i class="bi bi-clipboard2-data"></i><p><asp:Literal ID="litNoQuizPerf" runat="server" /></p></div>
-    </asp:Panel>
-</div>
-
-<%-- WEAK TOPICS --%>
-<div class="st-progress-section-card">
-    <div class="st-progress-section-header"><i class="bi bi-exclamation-triangle-fill"></i> <asp:Literal ID="litWeakTitle" runat="server" /></div>
-    <asp:Panel ID="pnlWeakTopics" runat="server"><asp:Literal ID="litWeakTopicsContent" runat="server" /></asp:Panel>
-    <asp:Panel ID="pnlNoWeakTopics" runat="server" Visible="false">
-        <div class="st-progress-empty-state st-progress-empty-success"><i class="bi bi-emoji-smile-fill"></i><p><asp:Literal ID="litNoWeakTopics" runat="server" /></p></div>
-    </asp:Panel>
-</div>
-
-<%-- BADGE COLLECTION --%>
-<div class="st-progress-section-card">
-    <div class="st-progress-section-header"><i class="bi bi-award"></i> <asp:Literal ID="litBadgeTitle" runat="server" /></div>
-    <asp:Panel ID="pnlBadges" runat="server">
-        <div class="st-progress-badge-grid">
-            <asp:Repeater ID="rptBadges" runat="server">
-                <ItemTemplate>
-                    <div class='st-progress-badge-card <%# (bool)Eval("IsEarned") ? "earned" : "locked" %>'>
-                        <div class="st-progress-badge-icon-wrap">
-                            <%# !string.IsNullOrEmpty((string)Eval("IconUrl"))
-                                ? "<img src='" + Eval("IconUrl") + "' alt='" + Eval("Name") + "' onerror=\"this.style.display='none';this.nextElementSibling.style.display='flex';\" /><div class='st-progress-badge-fallback' style='display:none;'><i class='bi bi-award-fill'></i></div>"
-                                : "<div class='st-progress-badge-fallback'><i class='bi bi-award-fill'></i></div>" %>
-                        </div>
-                        <div class="st-progress-badge-info">
-                            <div class="st-progress-badge-name"><%# Eval("Name") %></div>
-                            <div class="st-progress-badge-desc"><%# Eval("Description") %></div>
-                        </div>
-                        <div class='st-progress-badge-status <%# (bool)Eval("IsEarned") ? "earned" : "locked" %>'>
-                            <i class='bi <%# (bool)Eval("IsEarned") ? "bi-check-circle-fill" : "bi-lock-fill" %>'></i>
-                            <%# (bool)Eval("IsEarned") ? Eval("EarnedText") : Eval("LockedText") %>
-                        </div>
-                    </div>
-                </ItemTemplate>
-            </asp:Repeater>
+    <%-- EMPTY STATE --%>
+    <asp:Panel ID="pnlEmpty" runat="server" Visible="false">
+        <div class="st-progress-empty-page">
+            <div class="st-progress-empty-icon"><i class="bi bi-rocket-takeoff-fill"></i></div>
+            <h2 class="st-progress-empty-title"><asp:Literal ID="litEmptyTitle" runat="server" /></h2>
+            <p class="st-progress-empty-desc"><asp:Literal ID="litEmptyDesc" runat="server" /></p>
+            <a href="<%: ResolveUrl("~/Student/MyLearning.aspx") %>" class="st-progress-empty-btn"><i class="bi bi-book"></i> <asp:Literal ID="litEmptyBtn" runat="server" /></a>
         </div>
     </asp:Panel>
-    <asp:Panel ID="pnlNoBadges" runat="server" Visible="false">
-        <div class="st-progress-empty-state"><i class="bi bi-award"></i><p><asp:Literal ID="litNoBadges" runat="server" /></p></div>
-    </asp:Panel>
-</div>
 
-<%-- CERTIFICATES --%>
-<div class="st-progress-section-card">
-    <div class="st-progress-section-header"><i class="bi bi-file-earmark-check-fill"></i> <asp:Literal ID="litCertTitle" runat="server" /></div>
-    <asp:Literal ID="litCertContent" runat="server" />
-</div>
+    <asp:Panel ID="pnlMain" runat="server">
 
-<%-- BUDDY TIP --%>
-<asp:Panel ID="pnlAIHint" runat="server">
-    <div class="st-progress-ai-hint">
-        <div class="st-progress-ai-hint-icon"><i class="bi bi-robot"></i></div>
-        <div class="st-progress-ai-hint-body">
-            <div class="st-progress-ai-hint-title"><asp:Literal ID="litAIHintTitle" runat="server" /></div>
-            <div class="st-progress-ai-hint-text"><asp:Literal ID="litAIHintText" runat="server" /></div>
+    <%-- HERO --%>
+    <div class="st-progress-hero">
+        <div class="st-progress-hero-decor"></div>
+        <div class="st-progress-hero-content">
+            <h1 class="st-progress-hero-title"><i class="bi bi-trophy-fill"></i> <asp:Literal ID="litHeroTitle" runat="server" /></h1>
+            <p class="st-progress-hero-subtitle"><asp:Literal ID="litHeroSubtitle" runat="server" /></p>
         </div>
     </div>
-</asp:Panel>
 
-<%-- CERTIFICATE MODAL --%>
-<div id="certModal" class="st-progress-cert-modal" style="display:none;" onclick="closeCertModal(event)">
-    <div class="st-progress-cert-modal-content" onclick="event.stopPropagation();">
-        <button type="button" class="st-progress-cert-modal-close" onclick="closeCertModal(event)"><i class="bi bi-x-lg"></i></button>
-        <iframe id="certFrame" class="st-progress-cert-modal-frame" src="about:blank"></iframe>
+    <%-- STAT CARDS --%>
+    <div class="st-progress-stats-grid">
+        <div class="st-progress-stat-card st-progress-stat-xp">
+            <div class="st-progress-stat-icon"><i class="bi bi-lightning-charge-fill"></i></div>
+            <div class="st-progress-stat-value"><asp:Literal ID="litStatXP" runat="server" Text="0" /></div>
+            <div class="st-progress-stat-label"><asp:Literal ID="litStatXPLabel" runat="server" /></div>
+        </div>
+        <div class="st-progress-stat-card st-progress-stat-lessons">
+            <div class="st-progress-stat-icon"><i class="bi bi-book-fill"></i></div>
+            <div class="st-progress-stat-value"><asp:Literal ID="litStatLessons" runat="server" Text="0" /></div>
+            <div class="st-progress-stat-label"><asp:Literal ID="litStatLessonsLabel" runat="server" /></div>
+        </div>
+        <div class="st-progress-stat-card st-progress-stat-quizzes">
+            <div class="st-progress-stat-icon"><i class="bi bi-patch-question-fill"></i></div>
+            <div class="st-progress-stat-value"><asp:Literal ID="litStatQuizzes" runat="server" Text="0" /></div>
+            <div class="st-progress-stat-label"><asp:Literal ID="litStatQuizzesLabel" runat="server" /></div>
+        </div>
+        <div class="st-progress-stat-card st-progress-stat-badges">
+            <div class="st-progress-stat-icon"><i class="bi bi-award-fill"></i></div>
+            <div class="st-progress-stat-value"><asp:Literal ID="litStatBadges" runat="server" Text="0" /></div>
+            <div class="st-progress-stat-label"><asp:Literal ID="litStatBadgesLabel" runat="server" /></div>
+        </div>
     </div>
-</div>
-<script>
-function openCertModal(url){
-    document.getElementById('certFrame').src=url;
-    document.getElementById('certModal').style.display='flex';
-    document.body.style.overflow='hidden';
-}
-function closeCertModal(e){
-    document.getElementById('certModal').style.display='none';
-    document.getElementById('certFrame').src='about:blank';
-    document.body.style.overflow='';
-}
-</script>
 
-</asp:Panel>
+    <%-- WEEKLY ACTIVITY --%>
+    <div class="st-progress-section-card">
+        <div class="st-progress-section-header"><i class="bi bi-graph-up"></i> <asp:Literal ID="litWeeklyTitle" runat="server" /></div>
+        <asp:Literal ID="litWeeklyChart" runat="server" />
+        <div class="st-progress-chart-legend"><asp:Literal ID="litChartLegend" runat="server" /></div>
+    </div>
+
+
+    <%-- BADGE COLLECTION --%>
+    <div class="st-progress-section-card">
+        <div class="st-progress-section-header"><i class="bi bi-award"></i> <asp:Literal ID="litBadgeTitle" runat="server" /></div>
+        <asp:Panel ID="pnlBadges" runat="server">
+            <div class="st-progress-badge-grid">
+                <asp:Repeater ID="rptBadges" runat="server">
+                    <ItemTemplate>
+                        <div class='st-progress-badge-card <%# (bool)Eval("IsEarned") ? "earned" : "locked" %>'>
+                            <div class="st-progress-badge-icon-wrap">
+                                <%# !string.IsNullOrEmpty((string)Eval("IconUrl"))
+                                    ? "<img src='" + Eval("IconUrl") + "' alt='" + Eval("Name") + "' onerror=\"this.style.display='none';this.nextElementSibling.style.display='flex';\" /><div class='st-progress-badge-fallback' style='display:none;'><i class='bi bi-award-fill'></i></div>"
+                                    : "<div class='st-progress-badge-fallback'><i class='bi bi-award-fill'></i></div>" %>
+                            </div>
+                            <div class="st-progress-badge-info">
+                                <div class="st-progress-badge-name"><%# Eval("Name") %></div>
+                                <div class="st-progress-badge-desc"><%# Eval("Description") %></div>
+                            </div>
+                            <div class='st-progress-badge-status <%# (bool)Eval("IsEarned") ? "earned" : "locked" %>'>
+                                <i class='bi <%# (bool)Eval("IsEarned") ? "bi-check-circle-fill" : "bi-lock-fill" %>'></i>
+                                <%# (bool)Eval("IsEarned") ? Eval("EarnedText") : Eval("LockedText") %>
+                            </div>
+                        </div>
+                    </ItemTemplate>
+                </asp:Repeater>
+            </div>
+        </asp:Panel>
+        <asp:Panel ID="pnlNoBadges" runat="server" Visible="false">
+            <div class="st-progress-empty-state"><i class="bi bi-award"></i><p><asp:Literal ID="litNoBadges" runat="server" /></p></div>
+        </asp:Panel>
+    </div>
+
+    <%-- CERTIFICATES --%>
+    <div class="st-progress-section-card">
+        <div class="st-progress-section-header"><i class="bi bi-file-earmark-check-fill"></i> <asp:Literal ID="litCertTitle" runat="server" /></div>
+        <asp:Literal ID="litCertContent" runat="server" />
+    </div>
+
+    <%-- BUDDY TIP --%>
+    <asp:Panel ID="pnlAIHint" runat="server">
+        <div class="st-progress-ai-hint">
+            <div class="st-progress-ai-hint-icon"><i class="bi bi-robot"></i></div>
+            <div class="st-progress-ai-hint-body">
+                <div class="st-progress-ai-hint-title"><asp:Literal ID="litAIHintTitle" runat="server" /></div>
+                <div class="st-progress-ai-hint-text"><asp:Literal ID="litAIHintText" runat="server" /></div>
+            </div>
+        </div>
+    </asp:Panel>
+
+    <%-- CERTIFICATE MODAL --%>
+    <div id="certModal" class="st-progress-cert-modal" style="display:none;" onclick="closeCertModal(event)">
+        <div class="st-progress-cert-modal-content" onclick="event.stopPropagation();">
+            <button type="button" class="st-progress-cert-modal-close" onclick="closeCertModal(event)"><i class="bi bi-x-lg"></i></button>
+            <iframe id="certFrame" class="st-progress-cert-modal-frame" src="about:blank"></iframe>
+        </div>
+    </div>
+    <script>
+    function openCertModal(url){
+        document.getElementById('certFrame').src=url;
+        document.getElementById('certModal').style.display='flex';
+        document.body.style.overflow='hidden';
+    }
+    function closeCertModal(e){
+        document.getElementById('certModal').style.display='none';
+        document.getElementById('certFrame').src='about:blank';
+        document.body.style.overflow='';
+    }
+    </script>
+
+    </asp:Panel>
 </asp:Content>

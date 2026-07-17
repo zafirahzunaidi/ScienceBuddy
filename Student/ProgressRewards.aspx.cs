@@ -132,8 +132,6 @@ namespace ScienceBuddy.Student
             litWeeklyTitle.Text = T("Weekly Activity", "Aktiviti Mingguan");
             litChartLegend.Text = T("Activities include completed lessons, labs, quizzes, and study plan tasks.",
                 "Aktiviti termasuk pelajaran, makmal, kuiz dan tugasan pelan belajar yang selesai.");
-            litQuizPerfTitle.Text = T("Quiz Performance by Unit", "Prestasi Kuiz Mengikut Unit");
-            litWeakTitle.Text = T("Topics to Review", "Topik untuk Ulangkaji");
             litBadgeTitle.Text = T("Badge Collection", "Koleksi Lencana");
             litCertTitle.Text = T("Certificate Status", "Status Sijil");
             litAIHintTitle.Text = T("Buddy's Study Tip", "Tip Kajian Buddy");
@@ -276,9 +274,6 @@ namespace ScienceBuddy.Student
             }
             if (dataTable.Rows.Count == 0)
             {
-                pnlQuizPerf.Visible = false;
-                pnlNoQuizPerf.Visible = true;
-                litNoQuizPerf.Text = T("No quiz attempts yet. Take a quiz to see your performance!", "Tiada percubaan kuiz lagi. Jawab kuiz untuk melihat prestasi anda!");
                 return;
             }
 
@@ -329,7 +324,6 @@ namespace ScienceBuddy.Student
                 htmlBuilder.Append("</div>");
             }
             htmlBuilder.Append("</div>");
-            litQuizPerfContent.Text = htmlBuilder.ToString();
         }
 
         private void BuildWeakTopics(SqlConnection conn, string studentId)
@@ -358,9 +352,6 @@ namespace ScienceBuddy.Student
             }
             if (dataTable.Rows.Count == 0)
             {
-                pnlWeakTopics.Visible = false;
-                pnlNoWeakTopics.Visible = true;
-                litNoWeakTopics.Text = T("No weak topics found yet. Keep attempting quizzes!", "Tiada topik lemah ditemui lagi. Teruskan menjawab kuiz!");
                 return;
             }
 
@@ -385,7 +376,6 @@ namespace ScienceBuddy.Student
                 htmlBuilder.Append("</div>");
             }
             htmlBuilder.Append("</div>");
-            litWeakTopicsContent.Text = htmlBuilder.ToString();
         }
 
         private void LoadBadges(SqlConnection conn, string studentId)

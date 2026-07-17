@@ -82,7 +82,12 @@
 <%-- RESULT --%>
 <asp:Panel ID="pnlResult" runat="server" Visible="false">
 
-    <%-- Hero --%>
+    <%-- Back to Quiz History --%>
+    <a href="<%: ResolveUrl("~/Student/QuizHistory.aspx") %>" class="st-quizresult-back">
+        <i class="bi bi-arrow-left"></i> <asp:Literal ID="litBackToHistory" runat="server" Text="Back to Quiz History" />
+    </a>
+
+    <%-- Hero (compact) --%>
     <div class="st-quizresult-hero" id="divHero" runat="server">
         <div class="st-quizresult-hero-blob"></div>
         <div class="st-quizresult-hero-icon"><asp:Literal ID="litHeroIcon" runat="server" /></div>
@@ -94,7 +99,7 @@
         </div>
     </div>
 
-    <%-- Stats --%>
+    <%-- Stats (4 cards only) --%>
     <div class="st-quizresult-stats">
         <div class="st-quizresult-stat">
             <div class="st-quizresult-stat-icon" style="background:#DCFCE7;color:#15803D;"><i class="bi bi-check-circle-fill"></i></div>
@@ -105,11 +110,6 @@
             <div class="st-quizresult-stat-icon" style="background:#FEF2F2;color:#DC2626;"><i class="bi bi-x-circle-fill"></i></div>
             <div class="st-quizresult-stat-val"><asp:Literal ID="litStatWrong" runat="server" /></div>
             <div class="st-quizresult-stat-lbl"><asp:Literal ID="litStatWrongLbl" runat="server" Text="Wrong" /></div>
-        </div>
-        <div class="st-quizresult-stat">
-            <div class="st-quizresult-stat-icon" style="background:#EFF6FF;color:#2563EB;"><i class="bi bi-list-check"></i></div>
-            <div class="st-quizresult-stat-val"><asp:Literal ID="litStatTotal" runat="server" /></div>
-            <div class="st-quizresult-stat-lbl"><asp:Literal ID="litStatTotalLbl" runat="server" Text="Questions" /></div>
         </div>
         <div class="st-quizresult-stat">
             <div class="st-quizresult-stat-icon" style="background:#FFF0E8;color:#FF6B2C;"><i class="bi bi-trophy-fill"></i></div>
@@ -123,26 +123,48 @@
         </div>
     </div>
 
-    <%-- Quiz Type Message --%>
-    <asp:Panel ID="pnlMessage" runat="server" Visible="false">
-        <div class="st-quizresult-msg">
-            <div class="st-quizresult-msg-icon" id="divMsgIcon" runat="server" style="background:#EFF6FF;color:#2563EB;"><i class="bi bi-info-circle-fill"></i></div>
-            <div class="st-quizresult-msg-body">
-                <div class="st-quizresult-msg-title"><asp:Literal ID="litMsgTitle" runat="server" /></div>
-                <div class="st-quizresult-msg-text"><asp:Literal ID="litMessage" runat="server" /></div>
-            </div>
-        </div>
-    </asp:Panel>
+    <%-- Hidden controls for compatibility --%>
+    <asp:Literal ID="litStatTotal" runat="server" Visible="false" />
+    <asp:Literal ID="litStatTotalLbl" runat="server" Visible="false" />
+    <asp:Panel ID="pnlMessage" runat="server" Visible="false"><asp:Literal ID="litMsgTitle" runat="server" /><asp:Literal ID="litMessage" runat="server" /></asp:Panel>
+    <div id="divMsgIcon" runat="server" style="display:none;"></div>
+    <asp:Literal ID="litReviewBtn" runat="server" Visible="false" />
+    <asp:Literal ID="litRetryBtn" runat="server" Visible="false" />
+    <asp:Literal ID="litBackBtn" runat="server" Visible="false" />
+    <asp:Literal ID="litProgressBtn" runat="server" Visible="false" />
+    <asp:Literal ID="litHistoryBtn" runat="server" Visible="false" />
+    <a id="lnkReview" runat="server" style="display:none;"></a>
+    <a id="lnkRetry" runat="server" style="display:none;"></a>
+    <a id="lnkBack" runat="server" style="display:none;"></a>
+    <asp:Panel ID="pnlRetry" runat="server" Visible="false" />
 
-    <%-- Actions --%>
-    <div class="st-quizresult-actions">
-        <a href="#" id="lnkReview" runat="server" class="st-quizresult-btn st-quizresult-btn-primary"><i class="bi bi-search"></i> <asp:Literal ID="litReviewBtn" runat="server" Text="Review Answers" /></a>
-        <asp:Panel ID="pnlRetry" runat="server" style="display:inline;">
-            <a href="#" id="lnkRetry" runat="server" class="st-quizresult-btn st-quizresult-btn-retry"><i class="bi bi-arrow-repeat"></i> <asp:Literal ID="litRetryBtn" runat="server" Text="Try Again" /></a>
-        </asp:Panel>
-        <a href="#" id="lnkBack" runat="server" class="st-quizresult-btn st-quizresult-btn-secondary"><i class="bi bi-arrow-left"></i> <asp:Literal ID="litBackBtn" runat="server" Text="Back" /></a>
-        <a href="<%: ResolveUrl("~/Student/ProgressRewards.aspx") %>" class="st-quizresult-btn st-quizresult-btn-green"><i class="bi bi-bar-chart-line-fill"></i> <asp:Literal ID="litProgressBtn" runat="server" Text="Progress" /></a>
-        <a href="<%: ResolveUrl("~/Student/QuizHistory.aspx") %>" class="st-quizresult-btn st-quizresult-btn-secondary"><i class="bi bi-clock-history"></i> <asp:Literal ID="litHistoryBtn" runat="server" Text="Quiz History" /></a>
+    <%-- Question Review (inline) --%>
+    <div class="st-quizresult-review">
+        <div class="st-quizresult-review-title"><i class="bi bi-search"></i> <asp:Literal ID="litReviewTitle" runat="server" Text="Answer Review" /></div>
+        <div class="st-quizresult-review-list">
+            <asp:Repeater ID="rptReview" runat="server">
+                <ItemTemplate>
+                    <div class="st-quizresult-q-card <%# (bool)Eval("IsCorrect") ? "correct" : "wrong" %>">
+                        <div class="st-quizresult-q-num"><%# Eval("Num") %></div>
+                        <div class="st-quizresult-q-body">
+                            <div class="st-quizresult-q-text"><%# Eval("QuestionText") %></div>
+                            <div class="st-quizresult-q-answer st-quizresult-q-student">
+                                <span class="st-quizresult-q-label"><%# Eval("YourAnswerLabel") %></span>
+                                <span class="st-quizresult-q-value"><%# Eval("StudentAnswer") %></span>
+                            </div>
+                            <div class="st-quizresult-q-answer st-quizresult-q-correct">
+                                <span class="st-quizresult-q-label"><%# Eval("CorrectLabel") %></span>
+                                <span class="st-quizresult-q-value"><%# Eval("CorrectAnswer") %></span>
+                            </div>
+                            <%# !string.IsNullOrEmpty(Eval("Explanation").ToString()) ? "<div class='st-quizresult-q-explanation'>" + Eval("Explanation") + "</div>" : "" %>
+                        </div>
+                        <div class="st-quizresult-q-icon">
+                            <i class="bi <%# (bool)Eval("IsCorrect") ? "bi-check-circle-fill" : "bi-x-circle-fill" %>"></i>
+                        </div>
+                    </div>
+                </ItemTemplate>
+            </asp:Repeater>
+        </div>
     </div>
 
 </asp:Panel>

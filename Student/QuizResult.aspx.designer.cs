@@ -46,5 +46,8 @@ namespace ScienceBuddy.Student
         protected global::System.Web.UI.WebControls.Literal litBackBtn;
         protected global::System.Web.UI.WebControls.Literal litProgressBtn;
         protected global::System.Web.UI.WebControls.Literal litHistoryBtn;
+        protected global::System.Web.UI.WebControls.Literal litReviewTitle;
+        protected global::System.Web.UI.WebControls.Repeater rptReview;
+        protected global::System.Web.UI.WebControls.Literal litBackToHistory;
     }
 }
