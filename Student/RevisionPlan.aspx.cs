@@ -726,6 +726,38 @@ namespace ScienceBuddy.Student
                         }
 
                         trans.Commit();
+
+                        // Award XP for completing task (XP009)
+                        string studentId = ViewState["StudentId"] as string;
+                        if (!string.IsNullOrEmpty(studentId))
+                        {
+                            AwardTaskXp(connection, studentId);
+                        }
+
+                        // Notify parent(s) of task completion
+                        try
+                        {
+                            string taskStudentUserId = Session["userId"].ToString();
+                            using (SqlCommand pCmd = new SqlCommand("SELECT p.userId FROM Parent p JOIN StudentParent sp ON sp.parentId=p.parentId JOIN Student s ON s.studentId=sp.studentId WHERE s.userId=@uid", connection))
+                            {
+                                pCmd.Parameters.AddWithValue("@uid", taskStudentUserId);
+                                using (SqlDataReader rdr = pCmd.ExecuteReader())
+                                {
+                                    var parentIds = new System.Collections.Generic.List<string>();
+                                    while (rdr.Read()) { parentIds.Add(rdr["userId"].ToString()); }
+                                    rdr.Close();
+                                    foreach (string pid in parentIds)
+                                    {
+                                        SendNotification(connection, pid, "Study Plan Progress", "Kemajuan Pelan Belajar", "Your child completed a revision task.", "Anak anda menyelesaikan tugasan ulang kaji.");
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception notifEx)
+                        {
+                            System.Diagnostics.Debug.WriteLine("Task notification error: " + notifEx.Message);
+                        }
+
                         pnlSuccess.Visible = true;
                         litSuccess.Text = T("Task completed! Keep going!", "Tugasan selesai! Teruskan!");
                     }
@@ -755,6 +787,75 @@ namespace ScienceBuddy.Student
                 return "<img src=\"" + HttpUtility.HtmlAttributeEncode(url) + "\" alt=\"Reward\" onerror=\"this.style.display='none';this.nextElementSibling.style.display='flex';\" /><span class='st-revision-rbox-fallback' style='display:none;'><i class='" + fallbackIcon + "'></i></span>";
             }
             return "<i class='" + fallbackIcon + "'></i>";
+        }
+
+        // Award XP for completing study plan task (XP009)
+        private void AwardTaskXp(SqlConnection conn, string studentId)
+        {
+            try
+            {
+                int xpAmount = 0;
+                using (SqlCommand cmd = new SqlCommand("SELECT xpValue FROM XPAction WHERE xpActionId='XP009'", conn))
+                {
+                    object r = cmd.ExecuteScalar();
+                    if (r != null && r != DBNull.Value) xpAmount = Convert.ToInt32(r);
+                }
+                if (xpAmount <= 0) return;
+
+                string xtId = "XPT001";
+                using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(xpTransactionId,4,LEN(xpTransactionId)-3) AS INT)),0) FROM XPTransaction WHERE xpTransactionId LIKE 'XPT[0-9]%'", conn))
+                {
+                    xtId = "XPT" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                }
+
+                using (SqlCommand cmd = new SqlCommand("INSERT INTO XPTransaction(xpTransactionId,studentId,xpActionId,xpAmount,dateEarned) VALUES(@id,@s,@a,@xp,@dt)", conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", xtId);
+                    cmd.Parameters.AddWithValue("@s", studentId);
+                    cmd.Parameters.AddWithValue("@a", "XP009");
+                    cmd.Parameters.AddWithValue("@xp", xpAmount);
+                    cmd.Parameters.AddWithValue("@dt", DateTime.Today);
+                    cmd.ExecuteNonQuery();
+                }
+
+                using (SqlCommand cmd = new SqlCommand("UPDATE Student SET XP=ISNULL(XP,0)+@xp WHERE studentId=@s", conn))
+                {
+                    cmd.Parameters.AddWithValue("@xp", xpAmount);
+                    cmd.Parameters.AddWithValue("@s", studentId);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Task XP error: " + ex.Message);
+            }
+        }
+
+        private void SendNotification(SqlConnection conn, string toUserId, string titleEN, string titleBM, string msgEN, string msgBM)
+        {
+            try
+            {
+                string nId = "NTF001";
+                using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(notificationId,4,LEN(notificationId)-3) AS INT)),0) FROM Notification WHERE notificationId LIKE 'NTF[0-9]%'", conn))
+                {
+                    nId = "NTF" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                }
+                using (SqlCommand cmd = new SqlCommand("INSERT INTO Notification(notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt) VALUES(@id,@to,@tEN,@tBM,@mEN,@mBM,0,@dt)", conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", nId);
+                    cmd.Parameters.AddWithValue("@to", toUserId);
+                    cmd.Parameters.AddWithValue("@tEN", titleEN);
+                    cmd.Parameters.AddWithValue("@tBM", titleBM);
+                    cmd.Parameters.AddWithValue("@mEN", msgEN);
+                    cmd.Parameters.AddWithValue("@mBM", msgBM);
+                    cmd.Parameters.AddWithValue("@dt", DateTime.Now);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Notification error: " + ex.Message);
+            }
         }
     }
 }

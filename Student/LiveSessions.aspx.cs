@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -227,8 +227,8 @@ namespace ScienceBuddy.Student
                     string upcomingLabel = T("Upcoming", "Akan Datang");
                     string ongoingLabel = T("Ongoing", "Sedang Berlangsung");
                     string completedLabel = T("Completed", "Selesai");
-                    string getReminderLabel = T("Get Reminder", "Dapat Peringatan");
-                    string reminderSentLabel = T("Reminder Sent", "Peringatan Dihantar");
+                    string getReminderLabel = T("Remind Me", "Ingatkan");
+                    string reminderSentLabel = T("Sent", "Dihantar");
 
                     int countUpcoming = 0, countJoined = 0, countCompleted = 0;
                     string filter = hfFilter.Value;
@@ -516,6 +516,9 @@ namespace ScienceBuddy.Student
                         command.Parameters.AddWithValue("@now", now);
                         command.ExecuteNonQuery();
                     }
+
+                    // Award XP for attending live session (XP008) â€” first join only
+                    AwardSessionXp(connection, studentId);
                 }
                 else
                 {
@@ -583,7 +586,7 @@ namespace ScienceBuddy.Student
             LoadSessions();
         }
 
-        // ── Handle Reminder (register + send email) ─────────────────
+        // â”€â”€ Handle Reminder (register + send email) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         private void HandleReminder(string sessionId)
         {
             InitLang();
@@ -710,6 +713,50 @@ namespace ScienceBuddy.Student
             }
         }
 
+        // Award XP for attending live session (XP008)
+        private void AwardSessionXp(SqlConnection conn, string studentId)
+        {
+            try
+            {
+                if (!Tbl(conn, "XPAction") || !Tbl(conn, "XPTransaction")) return;
+
+                int xpAmount = 0;
+                using (SqlCommand cmd = new SqlCommand("SELECT xpValue FROM XPAction WHERE xpActionId='XP008'", conn))
+                {
+                    object r = cmd.ExecuteScalar();
+                    if (r != null && r != DBNull.Value) xpAmount = Convert.ToInt32(r);
+                }
+                if (xpAmount <= 0) return;
+
+                string xtId = "XPT001";
+                using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(xpTransactionId,4,LEN(xpTransactionId)-3) AS INT)),0) FROM XPTransaction WHERE xpTransactionId LIKE 'XPT[0-9]%'", conn))
+                {
+                    xtId = "XPT" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                }
+
+                using (SqlCommand cmd = new SqlCommand("INSERT INTO XPTransaction(xpTransactionId,studentId,xpActionId,xpAmount,dateEarned) VALUES(@id,@s,@a,@xp,@dt)", conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", xtId);
+                    cmd.Parameters.AddWithValue("@s", studentId);
+                    cmd.Parameters.AddWithValue("@a", "XP008");
+                    cmd.Parameters.AddWithValue("@xp", xpAmount);
+                    cmd.Parameters.AddWithValue("@dt", DateTime.Today);
+                    cmd.ExecuteNonQuery();
+                }
+
+                using (SqlCommand cmd = new SqlCommand("UPDATE Student SET XP=ISNULL(XP,0)+@xp WHERE studentId=@s", conn))
+                {
+                    cmd.Parameters.AddWithValue("@xp", xpAmount);
+                    cmd.Parameters.AddWithValue("@s", studentId);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Session XP error: " + ex.Message);
+            }
+        }
+
         // Get studentId for the logged-in user
         private string GetStudentId(SqlConnection conn)
         {
@@ -759,3 +806,4 @@ namespace ScienceBuddy.Student
 
     }
 }
+

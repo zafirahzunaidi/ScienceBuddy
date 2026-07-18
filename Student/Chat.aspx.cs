@@ -425,6 +425,27 @@ namespace ScienceBuddy.Student
                     command.ExecuteNonQuery();
                 }
 
+                // Notify recipient of new message
+                try
+                {
+                    string recipientUserId = "";
+                    using (SqlCommand recipCmd = new SqlCommand("SELECT CASE WHEN userId=@uid THEN user2Id ELSE userId END FROM userChat WHERE chatId=@chatId", connection))
+                    {
+                        recipCmd.Parameters.AddWithValue("@uid", uid);
+                        recipCmd.Parameters.AddWithValue("@chatId", ChatId);
+                        var r = recipCmd.ExecuteScalar();
+                        if (r != null && r != DBNull.Value) recipientUserId = r.ToString();
+                    }
+                    if (!string.IsNullOrEmpty(recipientUserId))
+                    {
+                        SendNotification(connection, recipientUserId, "New Message", "Mesej Baru", "You received a new message.", "Anda menerima mesej baru.");
+                    }
+                }
+                catch (Exception notifEx)
+                {
+                    System.Diagnostics.Debug.WriteLine("Chat notification error: " + notifEx.Message);
+                }
+
                 // Clear textbox and reload messages
                 txtMessage.Text = "";
                 LoadChatHeader(connection, uid);
@@ -524,6 +545,33 @@ namespace ScienceBuddy.Student
             {
                 command.Parameters.AddWithValue("@tableName", tableName);
                 return (int)command.ExecuteScalar() > 0;
+            }
+        }
+
+        private void SendNotification(SqlConnection conn, string toUserId, string titleEN, string titleBM, string msgEN, string msgBM)
+        {
+            try
+            {
+                string nId = "NTF001";
+                using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(notificationId,4,LEN(notificationId)-3) AS INT)),0) FROM Notification WHERE notificationId LIKE 'NTF[0-9]%'", conn))
+                {
+                    nId = "NTF" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                }
+                using (SqlCommand cmd = new SqlCommand("INSERT INTO Notification(notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt) VALUES(@id,@to,@tEN,@tBM,@mEN,@mBM,0,@dt)", conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", nId);
+                    cmd.Parameters.AddWithValue("@to", toUserId);
+                    cmd.Parameters.AddWithValue("@tEN", titleEN);
+                    cmd.Parameters.AddWithValue("@tBM", titleBM);
+                    cmd.Parameters.AddWithValue("@mEN", msgEN);
+                    cmd.Parameters.AddWithValue("@mBM", msgBM);
+                    cmd.Parameters.AddWithValue("@dt", DateTime.Now);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Notification error: " + ex.Message);
             }
         }
     }

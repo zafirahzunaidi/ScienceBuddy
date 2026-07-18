@@ -210,7 +210,7 @@
         <label><asp:Literal ID="litContactMsgLbl" runat="server" Text="Message" /></label>
         <asp:TextBox ID="txtContactMsg" runat="server" CssClass="st-profile-input" TextMode="MultiLine" Rows="4" placeholder="Write your question..." />
     </div>
-    <asp:Button ID="btnSendQuery" runat="server" CssClass="st-profile-btn-save" Text="Send" OnClick="btnSendQuery_Click" />
+    <asp:Button ID="btnSendQuery" runat="server" CssClass="st-profile-btn-save" style="margin-top:var(--space-md);" Text="Send" OnClick="btnSendQuery_Click" />
     <asp:Panel ID="pnlContactSuccess" runat="server" Visible="false" CssClass="st-profile-alert-success" style="margin-top:var(--space-sm);">
         <i class="bi bi-check-circle-fill"></i> <asp:Literal ID="litContactSuccess" runat="server" />
     </asp:Panel>

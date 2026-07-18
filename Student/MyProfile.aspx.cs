@@ -512,9 +512,10 @@ namespace ScienceBuddy.Student
                 pnlPwError.Visible = true;
                 return;
             }
-            if (newPw.Length < 5)
+            int minPwLength = GetConfigInt("Password Minimum Length", 8);
+            if (newPw.Length < minPwLength)
             {
-                litPwError.Text = T("Password must be at least 5 characters.", "Kata laluan mestilah sekurang-kurangnya 5 aksara.");
+                litPwError.Text = T("Password must be at least " + minPwLength + " characters.", "Kata laluan mestilah sekurang-kurangnya " + minPwLength + " aksara.");
                 pnlPwError.Visible = true;
                 return;
             }
@@ -560,10 +561,34 @@ namespace ScienceBuddy.Student
             using (SqlConnection connection = new SqlConnection(ConnStr))
             {
                 connection.Open();
+
+                // Get parent userId before deleting the link
+                string parentUserId = "";
+                try
+                {
+                    using (SqlCommand cmd = new SqlCommand("SELECT p.userId FROM Parent p JOIN StudentParent sp ON sp.parentId=p.parentId WHERE sp.studentParentId=@spid", connection))
+                    {
+                        cmd.Parameters.AddWithValue("@spid", studentParentId);
+                        var r = cmd.ExecuteScalar();
+                        if (r != null && r != DBNull.Value) parentUserId = r.ToString();
+                    }
+                }
+                catch (Exception ex) { System.Diagnostics.Debug.WriteLine("Get parent userId error: " + ex.Message); }
+
                 using (SqlCommand cmd = new SqlCommand("DELETE FROM StudentParent WHERE studentParentId=@spid", connection))
                 {
                     cmd.Parameters.AddWithValue("@spid", studentParentId);
                     cmd.ExecuteNonQuery();
+                }
+
+                // Notify parent of unlink
+                if (!string.IsNullOrEmpty(parentUserId))
+                {
+                    try
+                    {
+                        SendNotification(connection, parentUserId, "Child Unlinked", "Anak Dipadam Pautan", "Your child has removed the parent link.", "Anak anda telah membuang pautan ibu bapa.");
+                    }
+                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine("Unlink notification error: " + ex.Message); }
                 }
             }
 
@@ -775,6 +800,58 @@ namespace ScienceBuddy.Student
                 command.Parameters.AddWithValue("@tableName", tableName);
                 return (int)command.ExecuteScalar() > 0;
             }
+        }
+
+        private void SendNotification(SqlConnection conn, string toUserId, string titleEN, string titleBM, string msgEN, string msgBM)
+        {
+            try
+            {
+                string nId = "NTF001";
+                using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(notificationId,4,LEN(notificationId)-3) AS INT)),0) FROM Notification WHERE notificationId LIKE 'NTF[0-9]%'", conn))
+                {
+                    nId = "NTF" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                }
+                using (SqlCommand cmd = new SqlCommand("INSERT INTO Notification(notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt) VALUES(@id,@to,@tEN,@tBM,@mEN,@mBM,0,@dt)", conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", nId);
+                    cmd.Parameters.AddWithValue("@to", toUserId);
+                    cmd.Parameters.AddWithValue("@tEN", titleEN);
+                    cmd.Parameters.AddWithValue("@tBM", titleBM);
+                    cmd.Parameters.AddWithValue("@mEN", msgEN);
+                    cmd.Parameters.AddWithValue("@mBM", msgBM);
+                    cmd.Parameters.AddWithValue("@dt", DateTime.Now);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Notification error: " + ex.Message);
+            }
+        }
+
+        private int GetConfigInt(string configKey, int defaultValue)
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = new SqlCommand("SELECT configValue FROM ConfigurationSetting WHERE configKey=@k", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@k", configKey);
+                        object result = cmd.ExecuteScalar();
+                        if (result != null && result != DBNull.Value)
+                        {
+                            return Convert.ToInt32(result);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Config error: " + ex.Message);
+            }
+            return defaultValue;
         }
     }
 }
