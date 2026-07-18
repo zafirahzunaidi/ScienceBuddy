@@ -14,5 +14,6 @@ namespace ScienceBuddy.Admin
         protected global::System.Web.UI.WebControls.Literal litActivityLog;
         protected global::System.Web.UI.WebControls.HiddenField hfParentId;
         protected global::System.Web.UI.WebControls.HiddenField hfUserId;
+        protected global::System.Web.UI.WebControls.HiddenField hfStatus;
     }
 }

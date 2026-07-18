@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -227,6 +227,8 @@ namespace ScienceBuddy.Student
                     string upcomingLabel = T("Upcoming", "Akan Datang");
                     string ongoingLabel = T("Ongoing", "Sedang Berlangsung");
                     string completedLabel = T("Completed", "Selesai");
+                    string getReminderLabel = T("Remind Me", "Ingatkan");
+                    string reminderSentLabel = T("Sent", "Dihantar");
 
                     int countUpcoming = 0, countJoined = 0, countCompleted = 0;
                     string filter = hfFilter.Value;
@@ -399,7 +401,10 @@ namespace ScienceBuddy.Student
                             NoLinkText = noLinkText,
                             JoinedLabel = joinedLabel,
                             NotJoinedLabel = notJoinedLabel,
-                            CompletedLabel = completedLabel
+                            CompletedLabel = completedLabel,
+                            UpcomingLabel = upcomingLabel,
+                            GetReminderLabel = getReminderLabel,
+                            ReminderSentLabel = reminderSentLabel
                         });
                     }
 
@@ -458,6 +463,12 @@ namespace ScienceBuddy.Student
         // Repeater item command (Join Session)
         protected void rptSessions_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
+            if (e.CommandName == "Reminder")
+            {
+                HandleReminder(e.CommandArgument.ToString());
+                return;
+            }
+
             if (e.CommandName != "Join")
             {
                 return;
@@ -505,6 +516,9 @@ namespace ScienceBuddy.Student
                         command.Parameters.AddWithValue("@now", now);
                         command.ExecuteNonQuery();
                     }
+
+                    // Award XP for attending live session (XP008) â€” first join only
+                    AwardSessionXp(connection, studentId);
                 }
                 else
                 {
@@ -572,6 +586,177 @@ namespace ScienceBuddy.Student
             LoadSessions();
         }
 
+        // â”€â”€ Handle Reminder (register + send email) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        private void HandleReminder(string sessionId)
+        {
+            InitLang();
+            using (SqlConnection connection = new SqlConnection(ConnStr))
+            {
+                connection.Open();
+
+                string studentId = GetStudentId(connection);
+                if (string.IsNullOrEmpty(studentId)) return;
+
+                // Register as participant if not already
+                bool exists = false;
+                if (Tbl(connection, "LiveSessionParticipant"))
+                {
+                    using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM LiveSessionParticipant WHERE sessionId=@sid AND studentId=@stid", connection))
+                    {
+                        cmd.Parameters.AddWithValue("@sid", sessionId);
+                        cmd.Parameters.AddWithValue("@stid", studentId);
+                        exists = (int)cmd.ExecuteScalar() > 0;
+                    }
+
+                    if (!exists)
+                    {
+                        string participantId = "LSP" + DateTime.Now.ToString("yyyyMMddHHmmss");
+                        using (SqlCommand cmd = new SqlCommand("INSERT INTO LiveSessionParticipant(participantId,sessionId,studentId,joinedAt) VALUES(@pid,@sid,@stid,@now)", connection))
+                        {
+                            cmd.Parameters.AddWithValue("@pid", participantId);
+                            cmd.Parameters.AddWithValue("@sid", sessionId);
+                            cmd.Parameters.AddWithValue("@stid", studentId);
+                            cmd.Parameters.AddWithValue("@now", DateTime.Now);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+
+                // Get session details for email
+                string title = "", teacherName = "", meetingLink = "";
+                DateTime startDT = DateTime.Now, endDT = DateTime.Now;
+
+                const string sessSql = @"SELECT s.sessionTitle, s.meetingLink, s.startDateTime, s.endDateTime, t.name AS teacherName
+                    FROM LiveConsultationSession s LEFT JOIN Teacher t ON t.teacherId=s.teacherId
+                    WHERE s.sessionId=@sid";
+                using (SqlCommand cmd = new SqlCommand(sessSql, connection))
+                {
+                    cmd.Parameters.AddWithValue("@sid", sessionId);
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            title = reader["sessionTitle"] != DBNull.Value ? reader["sessionTitle"].ToString() : "";
+                            teacherName = reader["teacherName"] != DBNull.Value ? reader["teacherName"].ToString() : "";
+                            meetingLink = reader["meetingLink"] != DBNull.Value ? reader["meetingLink"].ToString() : "";
+                            startDT = Convert.ToDateTime(reader["startDateTime"]);
+                            endDT = Convert.ToDateTime(reader["endDateTime"]);
+                        }
+                    }
+                }
+
+                // Get student email
+                string userId = Session["userId"].ToString();
+                string studentEmail = "";
+                using (SqlCommand cmd = new SqlCommand("SELECT email FROM [User] WHERE userId=@uid", connection))
+                {
+                    cmd.Parameters.AddWithValue("@uid", userId);
+                    object result = cmd.ExecuteScalar();
+                    if (result != null && result != DBNull.Value)
+                        studentEmail = result.ToString();
+                }
+
+                // Send reminder email
+                if (!string.IsNullOrEmpty(studentEmail))
+                {
+                    SendReminderEmail(studentEmail, title, teacherName, startDT, endDT, meetingLink);
+                }
+            }
+
+            // Reload page
+            SetLabels();
+            LoadSessions();
+        }
+
+        private void SendReminderEmail(string toEmail, string sessionTitle, string teacherName,
+            DateTime startDT, DateTime endDT, string meetingLink)
+        {
+            try
+            {
+                string smtpHost = ConfigurationManager.AppSettings["SmtpHost"];
+                int smtpPort = int.Parse(ConfigurationManager.AppSettings["SmtpPort"] ?? "587");
+                string smtpUser = ConfigurationManager.AppSettings["SmtpUsername"];
+                string smtpPass = ConfigurationManager.AppSettings["SmtpPassword"];
+                bool smtpSsl = ConfigurationManager.AppSettings["SmtpEnableSsl"] == "true";
+
+                string subject = T("Reminder: Live Session - ", "Peringatan: Sesi Langsung - ") + sessionTitle;
+
+                string body = T("Hi! Here is your live session reminder:\n\n", "Hai! Berikut ialah peringatan sesi langsung anda:\n\n");
+                body += T("Session: ", "Sesi: ") + sessionTitle + "\n";
+                body += T("Teacher: ", "Guru: ") + teacherName + "\n";
+                body += T("Date: ", "Tarikh: ") + startDT.ToString("dd MMM yyyy") + "\n";
+                body += T("Time: ", "Masa: ") + startDT.ToString("hh:mm tt") + " - " + endDT.ToString("hh:mm tt") + "\n";
+                if (!string.IsNullOrEmpty(meetingLink))
+                    body += T("Meeting Link: ", "Pautan Mesyuarat: ") + meetingLink + "\n";
+                body += "\n" + T("Don't forget to join on time. See you there!", "Jangan lupa untuk menyertai tepat pada waktunya. Jumpa di sana!");
+                body += "\n\n- ScienceBuddy";
+
+                using (var mail = new System.Net.Mail.MailMessage())
+                {
+                    mail.From = new System.Net.Mail.MailAddress(smtpUser, "ScienceBuddy");
+                    mail.To.Add(toEmail);
+                    mail.Subject = subject;
+                    mail.Body = body;
+                    mail.IsBodyHtml = false;
+
+                    using (var smtp = new System.Net.Mail.SmtpClient(smtpHost, smtpPort))
+                    {
+                        smtp.Credentials = new System.Net.NetworkCredential(smtpUser, smtpPass);
+                        smtp.EnableSsl = smtpSsl;
+                        smtp.Send(mail);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Email error: " + ex.Message);
+            }
+        }
+
+        // Award XP for attending live session (XP008)
+        private void AwardSessionXp(SqlConnection conn, string studentId)
+        {
+            try
+            {
+                if (!Tbl(conn, "XPAction") || !Tbl(conn, "XPTransaction")) return;
+
+                int xpAmount = 0;
+                using (SqlCommand cmd = new SqlCommand("SELECT xpValue FROM XPAction WHERE xpActionId='XP008'", conn))
+                {
+                    object r = cmd.ExecuteScalar();
+                    if (r != null && r != DBNull.Value) xpAmount = Convert.ToInt32(r);
+                }
+                if (xpAmount <= 0) return;
+
+                string xtId = "XPT001";
+                using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(xpTransactionId,4,LEN(xpTransactionId)-3) AS INT)),0) FROM XPTransaction WHERE xpTransactionId LIKE 'XPT[0-9]%'", conn))
+                {
+                    xtId = "XPT" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                }
+
+                using (SqlCommand cmd = new SqlCommand("INSERT INTO XPTransaction(xpTransactionId,studentId,xpActionId,xpAmount,dateEarned) VALUES(@id,@s,@a,@xp,@dt)", conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", xtId);
+                    cmd.Parameters.AddWithValue("@s", studentId);
+                    cmd.Parameters.AddWithValue("@a", "XP008");
+                    cmd.Parameters.AddWithValue("@xp", xpAmount);
+                    cmd.Parameters.AddWithValue("@dt", DateTime.Today);
+                    cmd.ExecuteNonQuery();
+                }
+
+                using (SqlCommand cmd = new SqlCommand("UPDATE Student SET XP=ISNULL(XP,0)+@xp WHERE studentId=@s", conn))
+                {
+                    cmd.Parameters.AddWithValue("@xp", xpAmount);
+                    cmd.Parameters.AddWithValue("@s", studentId);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Session XP error: " + ex.Message);
+            }
+        }
+
         // Get studentId for the logged-in user
         private string GetStudentId(SqlConnection conn)
         {
@@ -621,3 +806,4 @@ namespace ScienceBuddy.Student
 
     }
 }
+

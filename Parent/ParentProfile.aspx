@@ -144,5 +144,96 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
         <p class="pt-profile-save-hint"><%: T("This saves all changes made on this page.","Ini menyimpan semua perubahan yang dibuat di halaman ini.") %></p>
     </div>
 
+    <%-- ══ ACCORDION — HELP & SUPPORT + ACCOUNT ACCESS ══ --%>
+    <div class="pt-profile-accordion">
+
+        <%-- ── 1. Help & Support ── --%>
+        <div class="pt-profile-accordion-item" id="accSupport">
+            <button type="button" class="pt-profile-accordion-header" onclick="toggleAccordion('accSupport')">
+                <span class="pt-profile-accordion-icon pt-acc-icon-support"><i class="bi bi-life-preserver"></i></span>
+                <span class="pt-profile-accordion-text">
+                    <span class="pt-profile-accordion-title"><%: T("Help & Support","Bantuan & Sokongan") %></span>
+                    <span class="pt-profile-accordion-subtitle"><%: T("Need help? Send a message to the admin.","Perlukan bantuan? Hantar mesej kepada pentadbir.") %></span>
+                </span>
+                <i class="bi bi-chevron-down pt-profile-accordion-chevron"></i>
+            </button>
+            <div class="pt-profile-accordion-content">
+                <div class="pt-support-inner">
+                    <h4 class="pt-support-inner-title"><i class="bi bi-chat-left-text"></i> <%: T("Report a Problem","Laporkan Masalah") %></h4>
+                    <p class="pt-support-inner-desc"><%: T("Need help with something? Tell us what happened, and we'll let the admin know.","Perlukan bantuan? Beritahu kami apa yang berlaku, dan kami akan maklumkan kepada pentadbir.") %></p>
+
+                    <asp:Panel ID="pnlReportSuccess" runat="server" Visible="false" CssClass="pt-support-status pt-support-status-ok">
+                        <i class="bi bi-check-circle-fill"></i> <asp:Literal ID="litReportStatus" runat="server" />
+                    </asp:Panel>
+                    <asp:Panel ID="pnlReportError" runat="server" Visible="false" CssClass="pt-support-status pt-support-status-err">
+                        <i class="bi bi-exclamation-circle-fill"></i> <asp:Literal ID="litReportError" runat="server" />
+                    </asp:Panel>
+
+                    <div class="pt-support-form">
+                        <div class="pt-support-field">
+                            <label class="pt-label"><%: T("Issue Category","Kategori Isu") %> <span class="pt-required">*</span></label>
+                            <asp:DropDownList ID="ddlReportCategory" runat="server" CssClass="pt-select" />
+                        </div>
+                        <div class="pt-support-field">
+                            <label class="pt-label"><%: T("Subject","Subjek") %> <span class="pt-required">*</span></label>
+                            <asp:TextBox ID="txtReportSubject" runat="server" CssClass="pt-input" MaxLength="100" />
+                        </div>
+                        <div class="pt-support-field">
+                            <label class="pt-label"><%: T("Message","Mesej") %> <span class="pt-required">*</span></label>
+                            <asp:TextBox ID="txtReportMessage" runat="server" CssClass="pt-input" TextMode="MultiLine" Rows="5" MaxLength="1000" />
+                        </div>
+                        <asp:Button ID="btnReportSubmit" runat="server" CssClass="pt-support-submit"
+                            OnClick="BtnReportSubmit_Click" CausesValidation="false" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <%-- ── 2. Account Access ── --%>
+        <div class="pt-profile-accordion-item" id="accAccount">
+            <button type="button" class="pt-profile-accordion-header" onclick="toggleAccordion('accAccount')">
+                <span class="pt-profile-accordion-icon pt-acc-icon-account"><i class="bi bi-person-lock"></i></span>
+                <span class="pt-profile-accordion-text">
+                    <span class="pt-profile-accordion-title"><%: T("Account Access","Akses Akaun") %></span>
+                    <span class="pt-profile-accordion-subtitle"><%: T("Manage account closure and recovery options.","Urus pilihan penutupan dan pemulihan akaun.") %></span>
+                </span>
+                <i class="bi bi-chevron-down pt-profile-accordion-chevron"></i>
+            </button>
+            <div class="pt-profile-accordion-content">
+                <div class="pt-account-close-card">
+                    <h4 class="pt-account-close-title"><i class="bi bi-box-arrow-right"></i> <%: T("Close My Account","Tutup Akaun Saya") %></h4>
+                    <p class="pt-account-close-desc"><%: T("If you no longer want to use ScienceBuddy, you can mark your account as deleted. You will not be able to log in after this. To recover your account, contact the admin at","Jika anda tidak lagi mahu menggunakan ScienceBuddy, anda boleh menandakan akaun anda sebagai dipadam. Anda tidak akan dapat log masuk selepas ini. Untuk memulihkan akaun, hubungi pentadbir di") %> <strong>najihahazmi26@gmail.com</strong></p>
+
+                    <asp:Panel ID="pnlDeleteError" runat="server" Visible="false" CssClass="pt-support-status pt-support-status-err" style="margin-bottom:12px;">
+                        <i class="bi bi-exclamation-circle-fill"></i> <asp:Literal ID="litDeleteError" runat="server" />
+                    </asp:Panel>
+
+                    <div class="pt-account-close-form">
+                        <div class="pt-support-field">
+                            <label class="pt-label"><%: T("Reason (optional)","Sebab (pilihan)") %></label>
+                            <asp:TextBox ID="txtDeleteReason" runat="server" CssClass="pt-input" TextMode="MultiLine" Rows="2" MaxLength="300" />
+                        </div>
+                        <div class="pt-delete-confirm">
+                            <asp:CheckBox ID="chkDeleteConfirm" runat="server" />
+                            <label for="<%= chkDeleteConfirm.ClientID %>">
+                                <%: T("I understand that my account will be marked as deleted and I will need to contact admin to recover it.",
+                                       "Saya faham bahawa akaun saya akan ditandakan sebagai dipadam dan saya perlu menghubungi pentadbir untuk memulihkannya.") %>
+                            </label>
+                        </div>
+                        <asp:Button ID="btnDeleteAccount" runat="server" CssClass="pt-delete-button"
+                            OnClick="BtnDeleteAccount_Click" CausesValidation="false"
+                            OnClientClick="return confirmCloseAccount();" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script type="text/javascript">
+    function toggleAccordion(id){var el=document.getElementById(id);if(!el)return;el.classList.toggle('pt-profile-accordion-open');}
+    function confirmCloseAccount(){var cb=document.getElementById('<%= chkDeleteConfirm.ClientID %>');if(!cb||!cb.checked){return true;}return confirm('<%= T("Are you sure you want to close your account? Your account will be marked as deleted and you will no longer be able to log in. To recover your account, contact the admin.","Adakah anda pasti mahu menutup akaun anda? Akaun anda akan ditandakan sebagai dipadam dan anda tidak akan dapat log masuk. Untuk memulihkan akaun, hubungi pentadbir.") %>');}
+    </script>
+
 </div>
 </asp:Content>

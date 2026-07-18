@@ -141,15 +141,6 @@ namespace ScienceBuddy.Student
         protected global::System.Web.UI.WebControls.Literal litContent;
 
         /// <summary>
-        /// litTTSStart control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litTTSStart;
-
-        /// <summary>
         /// pnlAttach control.
         /// </summary>
         /// <remarks>
@@ -157,6 +148,24 @@ namespace ScienceBuddy.Student
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlAttach;
+
+        /// <summary>
+        /// litAttachInline control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litAttachInline;
+
+        /// <summary>
+        /// litTTSStart control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litTTSStart;
 
         /// <summary>
         /// litAttachHd control.
@@ -222,24 +231,6 @@ namespace ScienceBuddy.Student
         protected global::System.Web.UI.WebControls.Panel pnlMats;
 
         /// <summary>
-        /// litMatHd control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litMatHd;
-
-        /// <summary>
-        /// rptMats control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptMats;
-
-        /// <summary>
         /// pnlMatsEmpty control.
         /// </summary>
         /// <remarks>
@@ -247,6 +238,15 @@ namespace ScienceBuddy.Student
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlMatsEmpty;
+
+        /// <summary>
+        /// litMatHd control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litMatHd;
 
         /// <summary>
         /// litMatsEmpty control.
@@ -258,13 +258,49 @@ namespace ScienceBuddy.Student
         protected global::System.Web.UI.WebControls.Literal litMatsEmpty;
 
         /// <summary>
-        /// completeIcon control.
+        /// rptMats control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl completeIcon;
+        protected global::System.Web.UI.WebControls.Repeater rptMats;
+
+        /// <summary>
+        /// lnkPrev control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkPrev;
+
+        /// <summary>
+        /// litPrevBtn control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litPrevBtn;
+
+        /// <summary>
+        /// btnNext control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnNext;
+
+        /// <summary>
+        /// litNextBtn control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litNextBtn;
 
         /// <summary>
         /// litCompleteTitle control.

@@ -5,6 +5,8 @@ using System.Web;
 using System.Web.Services;
 using System.Web.UI;
 
+// Admin Profile - Code Behind
+
 namespace ScienceBuddy.Admin
 {
     public partial class Profile : Page

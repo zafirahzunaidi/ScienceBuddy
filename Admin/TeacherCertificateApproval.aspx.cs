@@ -6,6 +6,7 @@ using System.Data.SqlClient;
 using System.Web;
 using System.Web.UI;
 
+// Admin TeacherCertificateApproval - Code Behind
 namespace ScienceBuddy.Admin
 {
     public partial class TeacherCertificateApproval : Page
@@ -94,10 +95,13 @@ namespace ScienceBuddy.Admin
                 if (!string.IsNullOrWhiteSpace(statusFilter))
                     sql += " AND t.[status] = @status";
 
+                // Priority: Pending first, then Certified, then Not Certified
+                sql += " ORDER BY CASE t.[status] WHEN 'Pending' THEN 0 WHEN 'Certified' THEN 1 ELSE 2 END";
+
                 switch (sortBy)
                 {
-                    case "oldest": sql += " ORDER BY t.[approvedDate] ASC, t.[teacherId] ASC"; break;
-                    default: sql += " ORDER BY t.[approvedDate] DESC, t.[teacherId] DESC"; break;
+                    case "oldest": sql += ", t.[approvedDate] ASC, t.[teacherId] ASC"; break;
+                    default: sql += ", t.[approvedDate] DESC, t.[teacherId] DESC"; break;
                 }
 
                 using (var cmd = new SqlCommand(sql, conn))
@@ -221,6 +225,34 @@ namespace ScienceBuddy.Admin
             {
                 conn.Open();
 
+                // Get teacher's userId for notification
+                string teacherUserId = "";
+                using (var cmd = new SqlCommand("SELECT [userId] FROM dbo.[Teacher] WHERE [teacherId]=@tid", conn))
+                {
+                    cmd.Parameters.AddWithValue("@tid", teacherId);
+                    var v = cmd.ExecuteScalar();
+                    teacherUserId = (v != null && v != DBNull.Value) ? v.ToString() : "";
+                }
+
+                // Check current status - only allow action on Pending certificates
+                string currentStatus = "";
+                using (var cmd = new SqlCommand("SELECT [status] FROM dbo.[Teacher] WHERE [teacherId]=@tid", conn))
+                {
+                    cmd.Parameters.AddWithValue("@tid", teacherId);
+                    var v = cmd.ExecuteScalar();
+                    currentStatus = (v != null && v != DBNull.Value) ? v.ToString() : "";
+                }
+
+                if (currentStatus != "Pending")
+                {
+                    ShowToast(T("This certificate has already been reviewed.",
+                        "Sijil ini telah disemak."), false);
+                    hfAction.Value = ""; hfTeacherId.Value = "";
+                    LoadSummary();
+                    LoadTeachers(txtSearch.Text.Trim(), ddlStatus.SelectedValue, ddlSort.SelectedValue);
+                    return;
+                }
+
                 if (action == "approve")
                 {
                     using (var cmd = new SqlCommand(
@@ -231,9 +263,18 @@ namespace ScienceBuddy.Admin
                         cmd.ExecuteNonQuery();
                     }
 
-                    InsertLog(conn, "Teacher Certificate Approved",
-                        "Administrator approved teacher certificate for Teacher " + teacherId + ".",
+                    InsertLog(conn, "Approved Teacher Certificate",
+                        "Administrator approved teacher certificate " + teacherId + ".",
                         "Success");
+
+                    // Send notification to teacher
+                    if (!string.IsNullOrEmpty(teacherUserId))
+                    {
+                        InsertNotification(conn, teacherUserId,
+                            "Certificate Approved", "Sijil Diluluskan",
+                            "Congratulations! Your teaching certificate has been approved. You may now upload learning materials to ScienceBuddy.",
+                            "Tahniah! Sijil pengajaran anda telah diluluskan. Anda kini boleh memuat naik bahan pembelajaran ke ScienceBuddy.");
+                    }
 
                     ShowToast(T("Teacher certificate approved successfully.",
                         "Sijil guru berjaya diluluskan."), true);
@@ -247,9 +288,18 @@ namespace ScienceBuddy.Admin
                         cmd.ExecuteNonQuery();
                     }
 
-                    InsertLog(conn, "Teacher Certificate Rejected",
-                        "Administrator rejected teacher certificate for Teacher " + teacherId + ".",
+                    InsertLog(conn, "Rejected Teacher Certificate",
+                        "Administrator rejected teacher certificate " + teacherId + ".",
                         "Success");
+
+                    // Send notification to teacher
+                    if (!string.IsNullOrEmpty(teacherUserId))
+                    {
+                        InsertNotification(conn, teacherUserId,
+                            "Certificate Rejected", "Sijil Ditolak",
+                            "Your teaching certificate was not approved. Please review the feedback and upload a new certificate.",
+                            "Sijil pengajaran anda tidak diluluskan. Sila semak maklum balas dan muat naik sijil baharu.");
+                    }
 
                     ShowToast(T("Teacher certificate rejected.",
                         "Sijil guru ditolak."), true);
@@ -334,6 +384,42 @@ namespace ScienceBuddy.Admin
             if (parts.Length >= 2)
                 return (parts[0][0].ToString() + parts[parts.Length - 1][0].ToString()).ToUpper();
             return name.Substring(0, Math.Min(2, name.Length)).ToUpper();
+        }
+
+        private void InsertNotification(SqlConnection conn, string toUserId, string titleEN, string titleBM, string msgEN, string msgBM)
+        {
+            try
+            {
+                string notifId = GenNotifId(conn);
+                using (var cmd = new SqlCommand(
+                    @"INSERT INTO dbo.[Notification]([notificationId],[toUserId],[titleEN],[titleBM],[messageEN],[messageBM],[isRead],[createdAt])
+                      VALUES(@id,@uid,@tEN,@tBM,@mEN,@mBM,0,GETDATE())", conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", notifId);
+                    cmd.Parameters.AddWithValue("@uid", toUserId);
+                    cmd.Parameters.AddWithValue("@tEN", titleEN);
+                    cmd.Parameters.AddWithValue("@tBM", titleBM);
+                    cmd.Parameters.AddWithValue("@mEN", msgEN);
+                    cmd.Parameters.AddWithValue("@mBM", msgBM);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch { }
+        }
+
+        private string GenNotifId(SqlConnection conn)
+        {
+            try
+            {
+                using (var cmd = new SqlCommand(
+                    "SELECT MAX(CAST(SUBSTRING([notificationId],2,LEN([notificationId])-1) AS INT)) FROM dbo.[Notification]", conn))
+                {
+                    var val = cmd.ExecuteScalar();
+                    int next = (val != null && val != DBNull.Value) ? Convert.ToInt32(val) + 1 : 1;
+                    return "N" + next.ToString("D3");
+                }
+            }
+            catch { return "N" + DateTime.Now.Ticks.ToString().Substring(10); }
         }
     }
 }

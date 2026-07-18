@@ -515,136 +515,31 @@ namespace ScienceBuddy.Parent
 
             try
             {
-                // Find studentParentId
-                string studentParentId = "";
-                const string spSql = @"
-                    SELECT studentParentId FROM dbo.[StudentParent]
-                    WHERE parentId = @parentId AND studentId = @studentId";
-
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(spSql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@parentId", _parentId);
-                    cmd.Parameters.AddWithValue("@studentId", studentId);
-                    conn.Open();
-                    object result = cmd.ExecuteScalar();
-                    if (result != null && result != DBNull.Value)
-                        studentParentId = result.ToString();
-                }
-
+                // Find the link between this parent and the selected child
+                string studentParentId = GetStudentParentId(studentId);
                 if (string.IsNullOrEmpty(studentParentId))
                 {
                     pnlNoStudyPlan.Visible = true;
                     return;
                 }
 
-                // Get latest study plan
+                // Get the most recent study plan for this child
                 string studyPlanId = "";
                 string planTitle   = "";
                 DateTime planEnd   = DateTime.MaxValue;
 
-                const string planSql = @"
-                    SELECT TOP 1 studyPlanId, planTitle, endDate
-                    FROM dbo.[StudyPlan]
-                    WHERE studentParentId = @studentParentId
-                    ORDER BY createdAt DESC";
-
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(planSql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@studentParentId", studentParentId);
-                    conn.Open();
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            studyPlanId = reader["studyPlanId"]?.ToString() ?? "";
-                            planTitle   = reader["planTitle"]?.ToString() ?? "";
-                            if (reader["endDate"] != DBNull.Value)
-                                planEnd = Convert.ToDateTime(reader["endDate"]);
-                        }
-                    }
-                }
-
-                if (string.IsNullOrEmpty(studyPlanId))
+                if (!TryLoadLatestStudyPlan(studentParentId, out studyPlanId, out planTitle, out planEnd))
                 {
                     pnlNoStudyPlan.Visible = true;
                     return;
                 }
 
-                // Set plan title in card header
                 litStudyPlanTitle.Text = Server.HtmlEncode(planTitle);
 
-                // Load ALL tasks (completed + pending) ordered by orderNo
-                const string taskSql = @"
-                    SELECT taskTitle, suggestedAction, isCompleted, completedAt, orderNo
-                    FROM dbo.[SPTask]
-                    WHERE studyPlanId = @studyPlanId
-                    ORDER BY orderNo ASC";
-
-                int totalTasks    = 0;
+                // Load all tasks and render them
+                int totalTasks = 0;
                 int completedCount = 0;
-                var taskHtmlList  = new System.Collections.Generic.List<string>();
-
-                using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(taskSql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@studyPlanId", studyPlanId);
-                    conn.Open();
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            totalTasks++;
-                            string taskTitle  = reader["taskTitle"]?.ToString() ?? "-";
-                            string suggested  = reader["suggestedAction"]?.ToString() ?? "";
-                            bool isCompleted  = reader["isCompleted"] != DBNull.Value && Convert.ToBoolean(reader["isCompleted"]);
-                            DateTime? completedAt = reader["completedAt"] != DBNull.Value
-                                ? (DateTime?)Convert.ToDateTime(reader["completedAt"]) : null;
-
-                            if (isCompleted)
-                            {
-                                completedCount++;
-
-                                // Completed task row — softer style
-                                string completedDateText = completedAt.HasValue
-                                    ? T("Completed on ", "Selesai pada ") + completedAt.Value.ToString("dd MMM yyyy")
-                                    : T("Completed", "Selesai");
-
-                                string html = "<div class='pd-sp-task-row completed'>"
-                                    + "<div class='pd-sp-task-icon'><i class='bi bi-check-circle-fill'></i></div>"
-                                    + "<div class='pd-sp-task-body'>"
-                                    + "<div class='pd-sp-task-title'>" + Server.HtmlEncode(taskTitle) + "</div>"
-                                    + (!string.IsNullOrWhiteSpace(suggested) ? "<div class='pd-sp-task-sub'>" + Server.HtmlEncode(suggested) + "</div>" : "")
-                                    + "</div>"
-                                    + "<span class='pd-sp-task-badge completed'>" + Server.HtmlEncode(completedDateText) + "</span>"
-                                    + "</div>";
-
-                                taskHtmlList.Add(html);
-                            }
-                            else
-                            {
-                                // Pending or overdue
-                                bool isOverdue = planEnd < DateTime.Today;
-
-                                string rowClass  = isOverdue ? "pd-sp-task-row overdue" : "pd-sp-task-row";
-                                string badgeText = isOverdue ? T("Overdue", "Lewat") : T("Pending", "Belum selesai");
-                                string badgeClass = isOverdue ? "pd-sp-task-badge overdue" : "pd-sp-task-badge pending";
-
-                                string html = "<div class='" + rowClass + "'>"
-                                    + "<div class='pd-sp-task-icon'><i class='bi bi-square'></i></div>"
-                                    + "<div class='pd-sp-task-body'>"
-                                    + "<div class='pd-sp-task-title'>" + Server.HtmlEncode(taskTitle) + "</div>"
-                                    + (!string.IsNullOrWhiteSpace(suggested) ? "<div class='pd-sp-task-sub'>" + Server.HtmlEncode(suggested) + "</div>" : "")
-                                    + "</div>"
-                                    + "<span class='" + badgeClass + "'>" + badgeText + "</span>"
-                                    + "</div>";
-
-                                taskHtmlList.Add(html);
-                            }
-                        }
-                    }
-                }
+                var taskHtmlList = LoadStudyPlanTasks(studyPlanId, planEnd, out totalTasks, out completedCount);
 
                 if (totalTasks == 0)
                 {
@@ -652,61 +547,13 @@ namespace ScienceBuddy.Parent
                     return;
                 }
 
-                // Status summary message above the checklist
-                string statusHtml;
-                if (completedCount == totalTasks)
-                {
-                    statusHtml = "<div style='display:flex;align-items:center;gap:6px;padding:8px 12px;margin-bottom:10px;"
-                        + "background:#ECFDF5;border-radius:10px;font-size:0.82rem;font-weight:600;color:#065F46;'>"
-                        + "<i class='bi bi-check-circle-fill'></i> "
-                        + T("All tasks completed", "Semua tugasan selesai")
-                        + "</div>";
-                }
-                else if (planEnd != DateTime.MaxValue)
-                {
-                    int daysLeft = (planEnd.Date - DateTime.Today).Days;
-                    string dueDateStr = planEnd.ToString("dd MMM yyyy");
-                    if (daysLeft < 0)
-                    {
-                        statusHtml = "<div style='display:flex;align-items:center;gap:6px;padding:6px 12px;margin-bottom:8px;"
-                            + "background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;font-size:0.8125rem;font-weight:600;color:#991B1B;'>"
-                            + "<i class='bi bi-calendar-x'></i> "
-                            + string.Format(T("Due date was {0} (overdue)", "Tarikh akhir {0} (lewat)"), dueDateStr)
-                            + "</div>";
-                    }
-                    else if (daysLeft == 0)
-                    {
-                        statusHtml = "<div style='display:flex;align-items:center;gap:6px;padding:6px 12px;margin-bottom:8px;"
-                            + "background:#FEF3C7;border:1px solid #FDE68A;border-radius:8px;font-size:0.8125rem;font-weight:600;color:#92400E;'>"
-                            + "<i class='bi bi-calendar-event'></i> "
-                            + T("Due today!", "Tamat hari ini!")
-                            + "</div>";
-                    }
-                    else
-                    {
-                        statusHtml = "<div style='display:flex;align-items:center;gap:6px;padding:6px 12px;margin-bottom:8px;"
-                            + "background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;font-size:0.8125rem;font-weight:600;color:#4338CA;'>"
-                            + "<i class='bi bi-calendar-check'></i> "
-                            + string.Format(T("Due on {0} ({1} days left)", "Tarikh akhir {0} ({1} hari lagi)"), dueDateStr, daysLeft)
-                            + "</div>";
-                    }
-                }
-                else
-                {
-                    statusHtml = "<div style='display:flex;align-items:center;gap:6px;padding:8px 12px;margin-bottom:10px;"
-                        + "background:#F8FAFC;border-radius:10px;font-size:0.82rem;font-weight:600;color:#64748B;'>"
-                        + "<i class='bi bi-calendar'></i> "
-                        + T("No due date set", "Tiada tarikh akhir ditetapkan")
-                        + "</div>";
-                }
-
+                // Show a status banner (all done / due date / overdue)
+                string statusHtml = BuildDueDateStatusHtml(completedCount, totalTasks, planEnd);
                 pnlSPTaskList.Controls.Add(new LiteralControl(statusHtml));
 
-                // Render all task rows
+                // Render each task row
                 foreach (string taskHtml in taskHtmlList)
-                {
                     pnlSPTaskList.Controls.Add(new LiteralControl(taskHtml));
-                }
 
                 pnlStudyPlanCard.Visible = true;
             }
@@ -714,6 +561,191 @@ namespace ScienceBuddy.Parent
             {
                 pnlNoStudyPlan.Visible = true;
             }
+        }
+
+        /// <summary>
+        /// Finds the StudentParent link ID for the current parent + selected child.
+        /// </summary>
+        private string GetStudentParentId(string studentId)
+        {
+            const string sql = @"
+                SELECT studentParentId FROM dbo.[StudentParent]
+                WHERE parentId = @parentId AND studentId = @studentId";
+
+            using (var conn = new SqlConnection(ConnStr))
+            using (var cmd = new SqlCommand(sql, conn))
+            {
+                cmd.Parameters.AddWithValue("@parentId", _parentId);
+                cmd.Parameters.AddWithValue("@studentId", studentId);
+                conn.Open();
+                object result = cmd.ExecuteScalar();
+                if (result != null && result != DBNull.Value)
+                    return result.ToString();
+            }
+            return "";
+        }
+
+        /// <summary>
+        /// Loads the most recent study plan. Returns false if none exists.
+        /// </summary>
+        private bool TryLoadLatestStudyPlan(string studentParentId, out string planId, out string title, out DateTime endDate)
+        {
+            planId = "";
+            title = "";
+            endDate = DateTime.MaxValue;
+
+            const string sql = @"
+                SELECT TOP 1 studyPlanId, planTitle, endDate
+                FROM dbo.[StudyPlan]
+                WHERE studentParentId = @spId
+                ORDER BY createdAt DESC";
+
+            using (var conn = new SqlConnection(ConnStr))
+            using (var cmd = new SqlCommand(sql, conn))
+            {
+                cmd.Parameters.AddWithValue("@spId", studentParentId);
+                conn.Open();
+                using (var reader = cmd.ExecuteReader())
+                {
+                    if (!reader.Read()) return false;
+
+                    planId = reader["studyPlanId"]?.ToString() ?? "";
+                    title = reader["planTitle"]?.ToString() ?? "";
+                    if (reader["endDate"] != DBNull.Value)
+                        endDate = Convert.ToDateTime(reader["endDate"]);
+                }
+            }
+            return !string.IsNullOrEmpty(planId);
+        }
+
+        /// <summary>
+        /// Loads all tasks for a study plan and builds the HTML for each.
+        /// </summary>
+        private System.Collections.Generic.List<string> LoadStudyPlanTasks(string studyPlanId, DateTime planEnd, out int totalTasks, out int completedCount)
+        {
+            totalTasks = 0;
+            completedCount = 0;
+            var taskHtmlList = new System.Collections.Generic.List<string>();
+
+            const string sql = @"
+                SELECT taskTitle, suggestedAction, isCompleted, completedAt, orderNo
+                FROM dbo.[SPTask]
+                WHERE studyPlanId = @studyPlanId
+                ORDER BY orderNo ASC";
+
+            using (var conn = new SqlConnection(ConnStr))
+            using (var cmd = new SqlCommand(sql, conn))
+            {
+                cmd.Parameters.AddWithValue("@studyPlanId", studyPlanId);
+                conn.Open();
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        totalTasks++;
+                        string taskTitle = reader["taskTitle"]?.ToString() ?? "-";
+                        string suggested = reader["suggestedAction"]?.ToString() ?? "";
+                        bool isCompleted = reader["isCompleted"] != DBNull.Value && Convert.ToBoolean(reader["isCompleted"]);
+                        DateTime? completedAt = reader["completedAt"] != DBNull.Value
+                            ? (DateTime?)Convert.ToDateTime(reader["completedAt"]) : null;
+
+                        if (isCompleted)
+                        {
+                            completedCount++;
+                            taskHtmlList.Add(BuildCompletedTaskHtml(taskTitle, suggested, completedAt));
+                        }
+                        else
+                        {
+                            taskHtmlList.Add(BuildPendingTaskHtml(taskTitle, suggested, planEnd));
+                        }
+                    }
+                }
+            }
+            return taskHtmlList;
+        }
+
+        private string BuildCompletedTaskHtml(string taskTitle, string suggested, DateTime? completedAt)
+        {
+            string completedDateText = completedAt.HasValue
+                ? T("Completed on ", "Selesai pada ") + completedAt.Value.ToString("dd MMM yyyy")
+                : T("Completed", "Selesai");
+
+            return "<div class='pd-sp-task-row completed'>"
+                + "<div class='pd-sp-task-icon'><i class='bi bi-check-circle-fill'></i></div>"
+                + "<div class='pd-sp-task-body'>"
+                + "<div class='pd-sp-task-title'>" + Server.HtmlEncode(taskTitle) + "</div>"
+                + (!string.IsNullOrWhiteSpace(suggested) ? "<div class='pd-sp-task-sub'>" + Server.HtmlEncode(suggested) + "</div>" : "")
+                + "</div>"
+                + "<span class='pd-sp-task-badge completed'>" + Server.HtmlEncode(completedDateText) + "</span>"
+                + "</div>";
+        }
+
+        private string BuildPendingTaskHtml(string taskTitle, string suggested, DateTime planEnd)
+        {
+            bool isOverdue = planEnd < DateTime.Today;
+            string rowClass = isOverdue ? "pd-sp-task-row overdue" : "pd-sp-task-row";
+            string badgeText = isOverdue ? T("Overdue", "Lewat") : T("Pending", "Belum selesai");
+            string badgeClass = isOverdue ? "pd-sp-task-badge overdue" : "pd-sp-task-badge pending";
+
+            return "<div class='" + rowClass + "'>"
+                + "<div class='pd-sp-task-icon'><i class='bi bi-square'></i></div>"
+                + "<div class='pd-sp-task-body'>"
+                + "<div class='pd-sp-task-title'>" + Server.HtmlEncode(taskTitle) + "</div>"
+                + (!string.IsNullOrWhiteSpace(suggested) ? "<div class='pd-sp-task-sub'>" + Server.HtmlEncode(suggested) + "</div>" : "")
+                + "</div>"
+                + "<span class='" + badgeClass + "'>" + badgeText + "</span>"
+                + "</div>";
+        }
+
+        /// <summary>
+        /// Builds the due-date status banner shown above the task list.
+        /// </summary>
+        private string BuildDueDateStatusHtml(int completedCount, int totalTasks, DateTime planEnd)
+        {
+            if (completedCount == totalTasks)
+            {
+                return "<div style='display:flex;align-items:center;gap:6px;padding:8px 12px;margin-bottom:10px;"
+                    + "background:#ECFDF5;border-radius:10px;font-size:0.82rem;font-weight:600;color:#065F46;'>"
+                    + "<i class='bi bi-check-circle-fill'></i> "
+                    + T("All tasks completed", "Semua tugasan selesai")
+                    + "</div>";
+            }
+
+            if (planEnd == DateTime.MaxValue)
+            {
+                return "<div style='display:flex;align-items:center;gap:6px;padding:8px 12px;margin-bottom:10px;"
+                    + "background:#F8FAFC;border-radius:10px;font-size:0.82rem;font-weight:600;color:#64748B;'>"
+                    + "<i class='bi bi-calendar'></i> "
+                    + T("No due date set", "Tiada tarikh akhir ditetapkan")
+                    + "</div>";
+            }
+
+            int daysLeft = (planEnd.Date - DateTime.Today).Days;
+            string dueDateStr = planEnd.ToString("dd MMM yyyy");
+
+            if (daysLeft < 0)
+            {
+                return "<div style='display:flex;align-items:center;gap:6px;padding:6px 12px;margin-bottom:8px;"
+                    + "background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;font-size:0.8125rem;font-weight:600;color:#991B1B;'>"
+                    + "<i class='bi bi-calendar-x'></i> "
+                    + string.Format(T("Due date was {0} (overdue)", "Tarikh akhir {0} (lewat)"), dueDateStr)
+                    + "</div>";
+            }
+
+            if (daysLeft == 0)
+            {
+                return "<div style='display:flex;align-items:center;gap:6px;padding:6px 12px;margin-bottom:8px;"
+                    + "background:#FEF3C7;border:1px solid #FDE68A;border-radius:8px;font-size:0.8125rem;font-weight:600;color:#92400E;'>"
+                    + "<i class='bi bi-calendar-event'></i> "
+                    + T("Due today!", "Tamat hari ini!")
+                    + "</div>";
+            }
+
+            return "<div style='display:flex;align-items:center;gap:6px;padding:6px 12px;margin-bottom:8px;"
+                + "background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;font-size:0.8125rem;font-weight:600;color:#4338CA;'>"
+                + "<i class='bi bi-calendar-check'></i> "
+                + string.Format(T("Due on {0} ({1} days left)", "Tarikh akhir {0} ({1} hari lagi)"), dueDateStr, daysLeft)
+                + "</div>";
         }
 
         // ══════════════════════════════════════════════════════════════

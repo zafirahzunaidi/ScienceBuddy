@@ -8,7 +8,7 @@ using System.Web.UI;
 
 namespace ScienceBuddy.Student
 {
-    public partial class MyLearning1 : Page
+    public partial class MyLearning : Page
     {
         private string ConnStr
         {
@@ -28,8 +28,7 @@ namespace ScienceBuddy.Student
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["userId"] == null || Session["role"] == null ||
-                Session["role"].ToString() != "Student")
+            if (Session["userId"] == null || Session["role"] == null || Session["role"].ToString() != "Student")
             {
                 Response.Redirect("~/Login.aspx", false);
                 return;
@@ -38,10 +37,11 @@ namespace ScienceBuddy.Student
             ScienceBuddy.SiteMaster master = (ScienceBuddy.SiteMaster)Master;
             master.LayoutMode = "Sidebar";
 
+            InitLanguage();
+            SetLabels();
+
             if (!IsPostBack)
             {
-                InitLanguage();
-                SetLabels();
                 LoadPage();
             }
         }
@@ -90,13 +90,32 @@ namespace ScienceBuddy.Student
         {
             litPageTitle.Text = T("My Learning", "Pembelajaran Saya");
             litTitle.Text = T("My Learning", "Pembelajaran Saya");
-            litSubtitle.Text = T("Choose your level and continue your science journey.",
-                "Pilih tahap anda dan teruskan perjalanan Sains.");
+            litSubtitle.Text = T("Choose your level and continue your science journey.","Pilih tahap anda dan teruskan pembelajaran Sains.");
             litEmptyTitle.Text = T("No learning content yet", "Tiada kandungan pembelajaran lagi");
-            litEmptyDesc.Text = T("Learning levels will appear here once available.",
-                "Tahap pembelajaran akan muncul di sini apabila tersedia.");
-            litQuizEmpty.Text = T("Level assessment is not available yet.",
-                "Penilaian tahap belum tersedia lagi.");
+            litEmptyDesc.Text = T("Learning levels will appear here once available.","Tahap pembelajaran akan muncul di sini apabila tersedia.");
+            litQuizEmpty.Text = T("Level assessment is not available yet.","Penilaian tahap belum tersedia lagi.");
+        }
+
+        // Selected level tracking
+        private string SelectedLevelId
+        {
+            get 
+            { 
+                return ViewState["SelectedLevel"] as string; 
+            }
+            set 
+            { 
+                ViewState["SelectedLevel"] = value; 
+            }
+        }
+
+        protected void rptLevels_ItemCommand(object source, System.Web.UI.WebControls.RepeaterCommandEventArgs e)
+        {
+            if (e.CommandName == "SelectLevel")
+            {
+                SelectedLevelId = e.CommandArgument.ToString();
+                LoadPage();
+            }
         }
 
         private void LoadPage()
@@ -134,13 +153,28 @@ namespace ScienceBuddy.Student
                     currentLevelId = "LV001";
                 }
 
-                LoadLevels(connection, currentLevelId);
-                LoadUnits(connection, currentLevelId, studentId);
-                LoadLevelQuiz(connection, currentLevelId);
+                // Use selected level if set, otherwise default to current level
+                string displayLevelId = SelectedLevelId;
+                if (string.IsNullOrEmpty(displayLevelId))
+                {
+                    displayLevelId = currentLevelId;
+                    SelectedLevelId = currentLevelId;
+                }
+
+                // Ensure selected level is not locked (order <= current)
+                if (GetLevelOrder(displayLevelId) > GetLevelOrder(currentLevelId))
+                {
+                    displayLevelId = currentLevelId;
+                    SelectedLevelId = currentLevelId;
+                }
+
+                LoadLevels(connection, currentLevelId, displayLevelId);
+                LoadUnits(connection, displayLevelId, studentId);
+                LoadLevelQuiz(connection, displayLevelId);
             }
         }
 
-        private void LoadLevels(SqlConnection connection, string currentLevelId)
+        private void LoadLevels(SqlConnection connection, string currentLevelId, string selectedLevelId)
         {
             const string sql = "SELECT levelId, levelNameEN, levelNameBM, levelDescriptionEN, levelDescriptionBM FROM Level ORDER BY levelId";
             DataTable dataTable = new DataTable();
@@ -159,7 +193,7 @@ namespace ScienceBuddy.Student
             int currentOrder = GetLevelOrder(currentLevelId);
             bool isBM = CurrentLanguage == "BM";
             List<object> list = new List<object>();
-            string[] icons = { "🌱", "🔬", "🚀" };
+            string[] icons = { "<i class=\"bi bi-flower2\"></i>", "<i class=\"bi bi-eyedropper\"></i>", "<i class=\"bi bi-rocket-takeoff\"></i>" };
             string[] iconBgs = { "#DCFCE7", "#DBEAFE", "#F3E8FF" };
             string[] iconColors = { "#15803D", "#1D4ED8", "#7C3AED" };
 
@@ -200,7 +234,7 @@ namespace ScienceBuddy.Student
                 }
 
                 string cssClass;
-                if (isCurrent)
+                if (lid == selectedLevelId)
                 {
                     cssClass = "current";
                 }
@@ -214,7 +248,7 @@ namespace ScienceBuddy.Student
                 }
 
                 string badgeClass;
-                if (isCurrent)
+                if (lid == selectedLevelId)
                 {
                     badgeClass = "st-mylearning-badge-current";
                 }
@@ -241,36 +275,6 @@ namespace ScienceBuddy.Student
                     badgeText = T("Unlocked", "Dibuka");
                 }
 
-                string btnText;
-                if (isLocked)
-                {
-                    btnText = T("Locked", "Dikunci");
-                }
-                else
-                {
-                    btnText = T("View Level", "Lihat Tahap");
-                }
-
-                string btnClass;
-                if (isLocked)
-                {
-                    btnClass = "sb-btn sb-btn-ghost sb-btn-sm";
-                }
-                else
-                {
-                    btnClass = "sb-btn sb-btn-primary sb-btn-sm";
-                }
-
-                string linkUrl;
-                if (isLocked)
-                {
-                    linkUrl = "#";
-                }
-                else
-                {
-                    linkUrl = ResolveUrl("~/Student/LevelDetails.aspx?levelId=" + lid);
-                }
-
                 string icon;
                 if (i < icons.Length)
                 {
@@ -278,7 +282,7 @@ namespace ScienceBuddy.Student
                 }
                 else
                 {
-                    icon = "📖";
+                    icon = "<i class=\"bi bi-book\"></i>";
                 }
 
                 string iconBg;
@@ -303,6 +307,7 @@ namespace ScienceBuddy.Student
 
                 list.Add(new
                 {
+                    LevelId = lid,
                     CssClass = cssClass,
                     Name = HttpUtility.HtmlEncode(name),
                     Description = HttpUtility.HtmlEncode(desc),
@@ -311,10 +316,8 @@ namespace ScienceBuddy.Student
                     IconColor = iconColor,
                     BadgeClass = badgeClass,
                     BadgeText = badgeText,
-                    BtnText = btnText,
-                    BtnClass = btnClass,
-                    LinkUrl = linkUrl,
-                    IsLocked = isLocked
+                    IsLocked = isLocked,
+                    IsSelected = (lid == selectedLevelId)
                 });
             }
 
@@ -324,12 +327,6 @@ namespace ScienceBuddy.Student
 
         private void LoadUnits(SqlConnection connection, string levelId, string studentId)
         {
-            string qLevel = Request.QueryString["level"];
-            if (!string.IsNullOrEmpty(qLevel) && GetLevelOrder(qLevel) <= GetLevelOrder(levelId))
-            {
-                levelId = qLevel;
-            }
-
             if (!TableExists("Unit"))
             {
                 pnlUnits.Visible = false;
@@ -339,16 +336,12 @@ namespace ScienceBuddy.Student
             bool isBM = CurrentLanguage == "BM";
             litUnitsTitle.Text = T("Units", "Unit");
 
-            const string sql = @"
-                SELECT u.unitId, u.unitNameEN, u.unitNameBM,
-                       u.unitDescriptionEN, u.unitDescriptionBM, u.orderNo,
+            const string sql = @"SELECT u.unitId, u.unitNameEN, u.unitNameBM,u.unitDescriptionEN, u.unitDescriptionBM, u.orderNo,
                        (SELECT COUNT(*) FROM Subtopic WHERE unitId = u.unitId) AS subtopicCount,
-                       (SELECT COUNT(*) FROM Lesson ls
-                        JOIN Subtopic st ON st.subtopicId = ls.subtopicId
-                        WHERE st.unitId = u.unitId) AS lessonCount
-                FROM Unit u
-                WHERE u.levelId = @levelId
-                ORDER BY u.orderNo";
+                       (SELECT COUNT(*) FROM Lesson ls JOIN Subtopic st ON st.subtopicId = ls.subtopicId WHERE st.unitId = u.unitId) AS lessonCount
+                        FROM Unit u
+                        WHERE u.levelId = @levelId
+                        ORDER BY u.orderNo";
 
             DataTable dataTable = new DataTable();
             using (SqlCommand command = new SqlCommand(sql, connection))
@@ -367,13 +360,13 @@ namespace ScienceBuddy.Student
             Dictionary<string, int> completedMap = new Dictionary<string, int>();
             if (!string.IsNullOrEmpty(studentId) && TableExists("LessonProgress"))
             {
-                const string pSql = @"
-                    SELECT st.unitId, COUNT(*) AS cnt
+                const string pSql = @"SELECT st.unitId, COUNT(*) AS cnt
                     FROM LessonProgress lp
                     JOIN Lesson ls ON ls.lessonId = lp.lessonId
                     JOIN Subtopic st ON st.subtopicId = ls.subtopicId
                     WHERE lp.studentId = @studentId AND lp.isCompleted = 1
                     GROUP BY st.unitId";
+
                 using (SqlCommand cmd2 = new SqlCommand(pSql, connection))
                 {
                     cmd2.Parameters.AddWithValue("@studentId", studentId);
@@ -472,8 +465,7 @@ namespace ScienceBuddy.Student
             }
 
             bool isBM = CurrentLanguage == "BM";
-            const string sql = @"
-                SELECT TOP 1 quizId, quizTitleEN, quizTitleBM
+            const string sql = @"SELECT quizId, quizTitleEN, quizTitleBM
                 FROM Quiz
                 WHERE levelId = @levelId AND quizType = 'Level'
                 ORDER BY createdAt DESC";
@@ -502,8 +494,7 @@ namespace ScienceBuddy.Student
                         pnlQuiz.Visible = true;
                         pnlQuizEmpty.Visible = false;
                         litQuizTitle.Text = HttpUtility.HtmlEncode(title);
-                        litQuizSub.Text = T("Test your knowledge for this level",
-                            "Uji pengetahuan anda untuk tahap ini");
+                        litQuizSub.Text = T("Test your knowledge for this level","Uji pengetahuan anda untuk tahap ini");
                         litQuizBtn.Text = T("Start Quiz", "Mula Kuiz");
                     }
                     else
@@ -519,17 +510,20 @@ namespace ScienceBuddy.Student
         {
             switch (levelId)
             {
-                case "LV001": return 1;
-                case "LV002": return 2;
-                case "LV003": return 3;
-                default: return 0;
+                case "LV001": 
+                    return 1;
+                case "LV002": 
+                    return 2;
+                case "LV003": 
+                    return 3;
+                default: 
+                    return 0;
             }
         }
 
         private bool TableExists(string tableName)
         {
-            const string sql = @"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
-                WHERE TABLE_NAME = @t AND TABLE_TYPE = 'BASE TABLE'";
+            const string sql = @"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = @t AND TABLE_TYPE = 'BASE TABLE'";
             using (SqlConnection connection = new SqlConnection(ConnStr))
             using (SqlCommand command = new SqlCommand(sql, connection))
             {

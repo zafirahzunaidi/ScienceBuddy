@@ -130,7 +130,7 @@
                             <td class="col-actions">
                                 <asp:LinkButton ID="lnkUnblock" runat="server" CssClass="sb-btn sb-btn-success sb-btn-xs"
                                     CommandName="UnblockUser" CommandArgument='<%# Eval("userId") %>'
-                                    Visible='<%# Eval("actionType").ToString()=="Blocked" %>'
+                                    Visible='<%# (bool)Eval("canUnblock") %>'
                                     OnClientClick="return confirm('Unblock this user?');">
                                     <i class="bi bi-unlock"></i> <%= T("Unblock", "Nyahsekat") %>
                                 </asp:LinkButton>

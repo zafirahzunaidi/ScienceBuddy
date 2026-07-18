@@ -7,6 +7,8 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+// Admin ParentManagement - Code Behind
+
 namespace ScienceBuddy.Admin
 {
     public partial class ParentManagement : Page
@@ -317,12 +319,21 @@ namespace ScienceBuddy.Admin
 
         private string SafeScalar(SqlConnection conn, string sql)
         {
-            try { using (var cmd = new SqlCommand(sql, conn)) { var v = cmd.ExecuteScalar(); return (v != null && v != DBNull.Value) ? Convert.ToInt32(v).ToString() : "0"; } }
+            try
+            {
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    var result = cmd.ExecuteScalar();
+                    return (result != null && result != DBNull.Value) ? Convert.ToInt32(result).ToString() : "0";
+                }
+            }
             catch { return "0"; }
         }
 
         private static string NullSafe(object val)
-        { return (val == null || val == DBNull.Value) ? "" : val.ToString(); }
+        {
+            return (val == null || val == DBNull.Value) ? "" : val.ToString();
+        }
 
         private static string GetInitials(string name)
         {
@@ -432,12 +443,29 @@ namespace ScienceBuddy.Admin
             }
         }
 
-        private string GenId(SqlConnection c, string tbl, string col, string pfx)
-        { return GenId(c, tbl, col, pfx, null); }
+        private string GenId(SqlConnection conn, string tbl, string col, string pfx)
+        {
+            return GenId(conn, tbl, col, pfx, null);
+        }
 
-        private string GenId(SqlConnection c, string tbl, string col, string pfx, SqlTransaction txn)
-        { using (var cmd = new SqlCommand(string.Format("SELECT TOP 1 [{0}] FROM dbo.[{1}] ORDER BY [{0}] DESC", col, tbl), c)) { cmd.Transaction = txn; var v = cmd.ExecuteScalar(); if (v == null || v == DBNull.Value) return pfx + "001"; string l = v.ToString(); int n; int.TryParse(l.Substring(pfx.Length), out n); n++; return pfx + n.ToString().PadLeft(l.Length - pfx.Length, '0'); } }
+        private string GenId(SqlConnection conn, string tbl, string col, string pfx, SqlTransaction txn)
+        {
+            using (var cmd = new SqlCommand(string.Format("SELECT TOP 1 [{0}] FROM dbo.[{1}] ORDER BY [{0}] DESC", col, tbl), conn))
+            {
+                cmd.Transaction = txn;
+                var result = cmd.ExecuteScalar();
+                if (result == null || result == DBNull.Value) return pfx + "001";
+                string lastId = result.ToString();
+                int num;
+                int.TryParse(lastId.Substring(pfx.Length), out num);
+                num++;
+                return pfx + num.ToString().PadLeft(lastId.Length - pfx.Length, '0');
+            }
+        }
 
-        private static string EscJ(string s) { return (s ?? "").Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", ""); }
+        private static string EscJ(string s)
+        {
+            return (s ?? "").Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "");
+        }
     }
 }

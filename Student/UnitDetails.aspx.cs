@@ -8,7 +8,7 @@ using System.Web.UI;
 
 namespace ScienceBuddy.Student
 {
-    public partial class UnitDetails1 : Page
+    public partial class UnitDetails : Page
     {
         private string ConnStr
         {
@@ -58,9 +58,9 @@ namespace ScienceBuddy.Student
                 try
                 {
                     using (SqlConnection connection = new SqlConnection(ConnStr))
-                    using (SqlCommand command = new SqlCommand("SELECT preferredLanguage FROM [User] WHERE userId=@u", connection))
+                    using (SqlCommand command = new SqlCommand("SELECT preferredLanguage FROM [User] WHERE userId=@userId", connection))
                     {
-                        command.Parameters.AddWithValue("@u", uid);
+                        command.Parameters.AddWithValue("@userId", uid);
                         connection.Open();
                         object result = command.ExecuteScalar();
                         if (result != null && result != DBNull.Value)
@@ -97,9 +97,9 @@ namespace ScienceBuddy.Student
                 connection.Open();
                 string studentId = null;
                 string curLevel = "LV001";
-                using (SqlCommand command = new SqlCommand("SELECT studentId,currentlevelId FROM Student WHERE userId=@u", connection))
+                using (SqlCommand command = new SqlCommand("SELECT studentId,currentlevelId FROM Student WHERE userId=@userId", connection))
                 {
-                    command.Parameters.AddWithValue("@u", userId);
+                    command.Parameters.AddWithValue("@userId", userId);
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
                         if (reader.Read())
@@ -123,9 +123,9 @@ namespace ScienceBuddy.Student
                 }
 
                 string unitLevel = null;
-                using (SqlCommand command = new SqlCommand("SELECT levelId FROM Unit WHERE unitId=@u", connection))
+                using (SqlCommand command = new SqlCommand("SELECT levelId FROM Unit WHERE unitId=@unitId", connection))
                 {
-                    command.Parameters.AddWithValue("@u", unitId);
+                    command.Parameters.AddWithValue("@unitId", unitId);
                     object result = command.ExecuteScalar();
                     if (result != null)
                     {
@@ -166,9 +166,9 @@ namespace ScienceBuddy.Student
         {
             bool bm = CurrentLanguage == "BM";
             using (SqlCommand command = new SqlCommand(@"SELECT u.unitNameEN,u.unitNameBM,u.unitDescriptionEN,u.unitDescriptionBM,
-                l.levelNameEN,l.levelNameBM FROM Unit u LEFT JOIN Level l ON l.levelId=u.levelId WHERE u.unitId=@u", connection))
+                l.levelNameEN,l.levelNameBM FROM Unit u LEFT JOIN Level l ON l.levelId=u.levelId WHERE u.unitId=@unitId", connection))
             {
-                command.Parameters.AddWithValue("@u", unitId);
+                command.Parameters.AddWithValue("@unitId", unitId);
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
                     if (reader.Read())
@@ -228,10 +228,6 @@ namespace ScienceBuddy.Student
 
         private void BuildPath(SqlConnection connection, string unitId)
         {
-            litPathLessons.Text = T("Lessons", "Pelajaran");
-            litPathMats.Text = T("Materials", "Bahan");
-            litPathLab.Text = T("Virtual Lab", "Makmal Maya");
-            litPathQuiz.Text = T("Unit Quiz", "Kuiz Unit");
 
             int lc = 0;
             int mc = 0;
@@ -240,60 +236,54 @@ namespace ScienceBuddy.Student
 
             if (Tbl("Lesson") && Tbl("Subtopic"))
             {
-                using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM Lesson ls JOIN Subtopic st ON st.subtopicId=ls.subtopicId WHERE st.unitId=@u", connection))
+                using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM Lesson ls JOIN Subtopic st ON st.subtopicId=ls.subtopicId WHERE st.unitId=@unitId", connection))
                 {
-                    command.Parameters.AddWithValue("@u", unitId);
+                    command.Parameters.AddWithValue("@unitId", unitId);
                     lc = (int)command.ExecuteScalar();
                 }
             }
             if (Tbl("Material") && Tbl("Subtopic"))
             {
-                using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM Material m JOIN Subtopic st ON st.subtopicId=m.subtopicId WHERE st.unitId=@u AND m.status='Approved'", connection))
+                using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM Material m JOIN Subtopic st ON st.subtopicId=m.subtopicId WHERE st.unitId=@unitId AND m.status='Approved'", connection))
                 {
-                    command.Parameters.AddWithValue("@u", unitId);
+                    command.Parameters.AddWithValue("@unitId", unitId);
                     mc = (int)command.ExecuteScalar();
                 }
             }
             if (Tbl("VirtualLab"))
             {
-                using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM VirtualLab WHERE unitId=@u", connection))
+                using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM VirtualLab WHERE unitId=@unitId", connection))
                 {
-                    command.Parameters.AddWithValue("@u", unitId);
+                    command.Parameters.AddWithValue("@unitId", unitId);
                     vc = (int)command.ExecuteScalar();
                 }
             }
             if (Tbl("Quiz"))
             {
-                using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM Quiz WHERE unitId=@u AND quizType='Unit'", connection))
+                using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM Quiz WHERE unitId=@unitId AND quizType='Unit'", connection))
                 {
-                    command.Parameters.AddWithValue("@u", unitId);
+                    command.Parameters.AddWithValue("@unitId", unitId);
                     qc = (int)command.ExecuteScalar();
                 }
             }
 
-            litPathLessonsCt.Text = lc + " " + T("available", "tersedia");
-            litPathMatsCt.Text = mc + " " + T("available", "tersedia");
             if (vc > 0)
             {
-                litPathLabCt.Text = T("Available", "Tersedia");
             }
             else
             {
-                litPathLabCt.Text = T("None", "Tiada");
             }
             if (qc > 0)
             {
-                litPathQuizCt.Text = T("Available", "Tersedia");
             }
             else
             {
-                litPathQuizCt.Text = T("None", "Tiada");
             }
         }
 
         private void BuildLessons(SqlConnection connection, string unitId, string studentId)
         {
-            litLessonHd.Text = T("Subtopics & Lessons", "Subtopik & Pelajaran");
+            litLessonHd.Text = T("Lessons", "Bahan Belajar");
             if (!Tbl("Subtopic"))
             {
                 pnlLessons.Visible = false;
@@ -318,9 +308,9 @@ namespace ScienceBuddy.Student
             }
 
             DataTable dtSt = new DataTable();
-            using (SqlCommand command = new SqlCommand("SELECT subtopicId,subtopicTitleEN,subtopicTitleBM,subtopicDescriptionEN,subtopicDescriptionBM,orderNo FROM Subtopic WHERE unitId=@u ORDER BY orderNo", connection))
+            using (SqlCommand command = new SqlCommand("SELECT subtopicId,subtopicTitleEN,subtopicTitleBM,subtopicDescriptionEN,subtopicDescriptionBM,orderNo FROM Subtopic WHERE unitId=@unitId ORDER BY orderNo", connection))
             {
-                command.Parameters.AddWithValue("@u", unitId);
+                command.Parameters.AddWithValue("@unitId", unitId);
                 SqlDataAdapter adapter = new SqlDataAdapter(command);
                 adapter.Fill(dtSt);
             }
@@ -334,9 +324,9 @@ namespace ScienceBuddy.Student
             DataTable dtLs = new DataTable();
             if (Tbl("Lesson"))
             {
-                using (SqlCommand command = new SqlCommand("SELECT ls.lessonId,ls.subtopicId,ls.lessonTitleEN,ls.lessonTitleBM,ls.orderNo FROM Lesson ls JOIN Subtopic st ON st.subtopicId=ls.subtopicId WHERE st.unitId=@u ORDER BY ls.orderNo", connection))
+                using (SqlCommand command = new SqlCommand("SELECT ls.lessonId,ls.subtopicId,ls.lessonTitleEN,ls.lessonTitleBM,ls.orderNo FROM Lesson ls JOIN Subtopic st ON st.subtopicId=ls.subtopicId WHERE st.unitId=@unitId ORDER BY ls.orderNo", connection))
                 {
-                    command.Parameters.AddWithValue("@u", unitId);
+                    command.Parameters.AddWithValue("@unitId", unitId);
                     SqlDataAdapter adapter = new SqlDataAdapter(command);
                     adapter.Fill(dtLs);
                 }
@@ -446,21 +436,19 @@ namespace ScienceBuddy.Student
         private void BuildMaterials(SqlConnection connection, string unitId)
         {
             litMatHd.Text = T("Materials", "Bahan Sokongan");
-            litMatsEmpty.Text = T("No extra materials are available for this unit yet.", "Tiada bahan tambahan tersedia untuk unit ini lagi.");
 
             if (!Tbl("Material") || !Tbl("Subtopic"))
             {
                 pnlMats.Visible = false;
-                pnlMatsEmpty.Visible = true;
                 return;
             }
 
             DataTable dataTable = new DataTable();
             using (SqlCommand command = new SqlCommand(@"SELECT m.materialId,m.materialTitle,m.materialType,m.fileUrl,m.language
                 FROM Material m JOIN Subtopic st ON st.subtopicId=m.subtopicId
-                WHERE st.unitId=@u AND m.status='Approved' ORDER BY m.createdDate DESC", connection))
+                WHERE st.unitId=@unitId AND m.status='Approved' ORDER BY m.createdDate DESC", connection))
             {
-                command.Parameters.AddWithValue("@u", unitId);
+                command.Parameters.AddWithValue("@unitId", unitId);
                 SqlDataAdapter adapter = new SqlDataAdapter(command);
                 adapter.Fill(dataTable);
             }
@@ -468,24 +456,30 @@ namespace ScienceBuddy.Student
             if (dataTable.Rows.Count == 0)
             {
                 pnlMats.Visible = false;
-                pnlMatsEmpty.Visible = true;
                 return;
             }
 
             var list = new List<object>();
             foreach (DataRow r in dataTable.Rows)
             {
+                string fileUrl = r["fileUrl"]?.ToString() ?? "";
+                string resolvedUrl = "";
+                if (!string.IsNullOrEmpty(fileUrl))
+                {
+                    resolvedUrl = ResolveUrl("~/Images/Material/" + fileUrl);
+                }
+
                 list.Add(new
                 {
                     Title = HttpUtility.HtmlEncode(r["materialTitle"].ToString()),
                     Type = r["materialType"].ToString(),
                     Lang = r["language"].ToString(),
-                    Url = r["fileUrl"]?.ToString() ?? "#",
-                    Btn = T("Open", "Buka")
+                    ResolvedUrl = resolvedUrl,
+                    ViewBtn = T("View", "Lihat"),
+                    DownloadBtn = T("Download", "Muat Turun")
                 });
             }
             pnlMats.Visible = true;
-            pnlMatsEmpty.Visible = false;
             rptMats.DataSource = list;
             rptMats.DataBind();
         }
@@ -493,19 +487,20 @@ namespace ScienceBuddy.Student
         private void BuildLab(SqlConnection connection, string unitId, string studentId)
         {
             litLabHd.Text = T("Virtual Lab", "Makmal Maya");
-            litLabEmpty.Text = T("No virtual lab is available for this unit yet.", "Tiada makmal maya tersedia untuk unit ini lagi.");
 
             if (!Tbl("VirtualLab"))
             {
                 pnlLab.Visible = false;
-                pnlLabEmpty.Visible = true;
                 return;
             }
 
             bool bm = CurrentLanguage == "BM";
-            using (SqlCommand command = new SqlCommand("SELECT TOP 1 labId,labTitleEN,labTitleBM,labDescriptionEN,labDescriptionBM,difficulty FROM VirtualLab WHERE unitId=@u", connection))
+            using (SqlCommand command = new SqlCommand("SELECT TOP 1 labId,labTitleEN,labTitleBM,labDescriptionEN,labDescriptionBM,difficulty " +
+                "FROM VirtualLab " +
+                "WHERE unitId=@unitId", 
+                connection))
             {
-                command.Parameters.AddWithValue("@u", unitId);
+                command.Parameters.AddWithValue("@unitId", unitId);
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
                     if (reader.Read())
@@ -539,15 +534,13 @@ namespace ScienceBuddy.Student
                         }
 
                         pnlLab.Visible = true;
-                        pnlLabEmpty.Visible = false;
                         litLabTitle.Text = HttpUtility.HtmlEncode(t);
-                        litLabSub.Text = HttpUtility.HtmlEncode(d) + " • " + reader["difficulty"].ToString();
+                        litLabSub.Text = HttpUtility.HtmlEncode(d) + " &bull; " + reader["difficulty"].ToString();
                         litLabBtn.Text = T("Start Lab", "Mula Makmal");
                     }
                     else
                     {
                         pnlLab.Visible = false;
-                        pnlLabEmpty.Visible = true;
                     }
                 }
             }
@@ -556,20 +549,18 @@ namespace ScienceBuddy.Student
         private void BuildQuiz(SqlConnection connection, string unitId, string studentId)
         {
             litQuizHd.Text = T("Unit Quiz", "Kuiz Unit");
-            litQuizEmpty.Text = T("Unit quiz is not available yet.", "Kuiz unit belum tersedia lagi.");
 
             if (!Tbl("Quiz"))
             {
                 pnlQuiz.Visible = false;
-                pnlQuizEmpty.Visible = true;
                 return;
             }
 
             bool bm = CurrentLanguage == "BM";
             string quizId = null;
-            using (SqlCommand command = new SqlCommand("SELECT TOP 1 quizId,quizTitleEN,quizTitleBM FROM Quiz WHERE unitId=@u AND quizType='Unit' AND (status IS NULL OR status IN ('Approved','Published')) ORDER BY createdAt DESC", connection))
+            using (SqlCommand command = new SqlCommand("SELECT TOP 1 quizId,quizTitleEN,quizTitleBM FROM Quiz WHERE unitId=@unitId AND quizType='Unit' AND (status IS NULL OR status IN ('Approved','Published')) ORDER BY createdAt DESC", connection))
             {
-                command.Parameters.AddWithValue("@u", unitId);
+                command.Parameters.AddWithValue("@unitId", unitId);
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
                     if (reader.Read())
@@ -590,7 +581,6 @@ namespace ScienceBuddy.Student
                         }
 
                         pnlQuiz.Visible = true;
-                        pnlQuizEmpty.Visible = false;
                         litQuizTitle.Text = HttpUtility.HtmlEncode(t);
                         litQuizSub.Text = T("Test your understanding of this unit.", "Uji kefahaman anda tentang unit ini.");
                         litQuizBtn.Text = T("Start Quiz", "Mula Kuiz");
@@ -599,7 +589,6 @@ namespace ScienceBuddy.Student
                     else
                     {
                         pnlQuiz.Visible = false;
-                        pnlQuizEmpty.Visible = true;
                         return;
                     }
                 }
@@ -652,3 +641,4 @@ namespace ScienceBuddy.Student
         }
     }
 }
+

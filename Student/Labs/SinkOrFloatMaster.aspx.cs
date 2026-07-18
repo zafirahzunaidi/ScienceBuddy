@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.Web;
@@ -138,6 +138,7 @@ namespace ScienceBuddy.Student.Labs
                         cmd.Parameters.AddWithValue("@dt", DateTime.Now); cmd.ExecuteNonQuery();
                     }
                     AwardXP(conn, studentId, labId);
+                    CheckLabBadge(conn, studentId);
                 }
                 else if (Tbl("LabProgress"))
                 {
@@ -188,6 +189,76 @@ namespace ScienceBuddy.Student.Labs
             using (var c = new SqlConnection(ConnStr))
             using (var cmd = new SqlCommand("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME=@t AND TABLE_TYPE='BASE TABLE'", c))
             { cmd.Parameters.AddWithValue("@t", t); c.Open(); return (int)cmd.ExecuteScalar() > 0; }
+        }
+
+        private void CheckLabBadge(SqlConnection conn, string studentId)
+        {
+            try
+            {
+                if (!Tbl("StudentBadge") || !Tbl("LabProgress")) return;
+                int labCount = 0;
+                using (var cmd = new SqlCommand("SELECT COUNT(*) FROM LabProgress WHERE studentId=@s AND isCompleted=1", conn))
+                { cmd.Parameters.AddWithValue("@s", studentId); labCount = (int)cmd.ExecuteScalar(); }
+                if (labCount == 1)
+                {
+                    AwardBadgeIfNotEarned(conn, studentId, "B002");
+                }
+            }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine("Badge error: " + ex.Message); }
+        }
+
+        private void AwardBadgeIfNotEarned(SqlConnection conn, string studentId, string badgeId)
+        {
+            using (var cmd = new SqlCommand("SELECT COUNT(*) FROM StudentBadge WHERE studentId=@s AND badgeId=@b", conn))
+            { cmd.Parameters.AddWithValue("@s", studentId); cmd.Parameters.AddWithValue("@b", badgeId); if ((int)cmd.ExecuteScalar() > 0) return; }
+            string sbId = "SB001";
+            using (var cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(studentBadgeId,3,LEN(studentBadgeId)-2) AS INT)),0) FROM StudentBadge WHERE studentBadgeId LIKE 'SB[0-9]%'", conn))
+            { sbId = "SB" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3"); }
+            using (var cmd = new SqlCommand("INSERT INTO StudentBadge(studentBadgeId,studentId,badgeId,earnedAt) VALUES(@id,@s,@b,@dt)", conn))
+            { cmd.Parameters.AddWithValue("@id", sbId); cmd.Parameters.AddWithValue("@s", studentId); cmd.Parameters.AddWithValue("@b", badgeId); cmd.Parameters.AddWithValue("@dt", DateTime.Now); cmd.ExecuteNonQuery(); }
+
+            // Send badge earned notification
+            try
+            {
+                string uId = "";
+                using (var uidCmd = new SqlCommand("SELECT userId FROM Student WHERE studentId=@s", conn))
+                { uidCmd.Parameters.AddWithValue("@s", studentId); var r = uidCmd.ExecuteScalar(); if (r != null) uId = r.ToString(); }
+                if (!string.IsNullOrEmpty(uId))
+                {
+                    string bName = "";
+                    using (var bCmd = new SqlCommand("SELECT badgeNameEN FROM Badge WHERE badgeId=@b", conn))
+                    { bCmd.Parameters.AddWithValue("@b", badgeId); var r = bCmd.ExecuteScalar(); if (r != null) bName = r.ToString(); }
+                    SendNotification(conn, uId, "New Badge Earned", "Lencana Baru Diperolehi", "You earned the " + bName + " badge!", "Anda memperoleh lencana " + bName + "!");
+                }
+            }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine("Badge notification error: " + ex.Message); }
+        }
+
+        private void SendNotification(SqlConnection conn, string toUserId, string titleEN, string titleBM, string msgEN, string msgBM)
+        {
+            try
+            {
+                string nId = "NTF001";
+                using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(notificationId,4,LEN(notificationId)-3) AS INT)),0) FROM Notification WHERE notificationId LIKE 'NTF[0-9]%'", conn))
+                {
+                    nId = "NTF" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                }
+                using (SqlCommand cmd = new SqlCommand("INSERT INTO Notification(notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt) VALUES(@id,@to,@tEN,@tBM,@mEN,@mBM,0,@dt)", conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", nId);
+                    cmd.Parameters.AddWithValue("@to", toUserId);
+                    cmd.Parameters.AddWithValue("@tEN", titleEN);
+                    cmd.Parameters.AddWithValue("@tBM", titleBM);
+                    cmd.Parameters.AddWithValue("@mEN", msgEN);
+                    cmd.Parameters.AddWithValue("@mBM", msgBM);
+                    cmd.Parameters.AddWithValue("@dt", DateTime.Now);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Notification error: " + ex.Message);
+            }
         }
     }
 }

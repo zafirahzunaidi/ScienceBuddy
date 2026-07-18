@@ -252,6 +252,7 @@ namespace ScienceBuddy.Student
                 List<object> leaderboard = new List<object>();
                 int count = 0;
                 int filteredRank = 0;
+                int topCount = GetConfigInt("Leaderboard Top Count", 10);
                 foreach (DataRow row in dataTable.Rows)
                 {
                     if (rankFilter == "level" && !string.IsNullOrEmpty(currentLevelId))
@@ -272,7 +273,7 @@ namespace ScienceBuddy.Student
                     }
 
                     filteredRank++;
-                    if (count >= 10)
+                    if (count >= topCount)
                     {
                         continue;
                     }
@@ -340,7 +341,7 @@ namespace ScienceBuddy.Student
 
                 BuildPodium(dataTable, studentId);
 
-                if (myRank > 10)
+                if (myRank > topCount)
                 {
                     pnlYourPosition.Visible = true;
                     litYourPosRank.Text = "#" + myRank.ToString();
@@ -559,6 +560,31 @@ namespace ScienceBuddy.Student
                 command.Parameters.AddWithValue("@tableName", tableName);
                 return (int)command.ExecuteScalar() > 0;
             }
+        }
+
+        private int GetConfigInt(string configKey, int defaultValue)
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = new SqlCommand("SELECT configValue FROM ConfigurationSetting WHERE configKey=@k", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@k", configKey);
+                        object result = cmd.ExecuteScalar();
+                        if (result != null && result != DBNull.Value)
+                        {
+                            return Convert.ToInt32(result);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Config error: " + ex.Message);
+            }
+            return defaultValue;
         }
     }
 }

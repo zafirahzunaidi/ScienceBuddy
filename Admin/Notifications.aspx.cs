@@ -7,6 +7,8 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+// Admin Notifications - Code Behind
+
 namespace ScienceBuddy.Admin
 {
     public partial class Notifications : Page

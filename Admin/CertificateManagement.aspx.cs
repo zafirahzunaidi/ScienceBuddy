@@ -9,6 +9,7 @@ using System.Web.UI.WebControls;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 
+// Admin CertificateManagement - Code Behind
 namespace ScienceBuddy.Admin
 {
     public partial class CertificateManagement : Page
@@ -29,11 +30,18 @@ namespace ScienceBuddy.Admin
 
         private void SetMasterUser()
         {
-            using (var conn = new SqlConnection(ConnStr)) { conn.Open();
+            using (var conn = new SqlConnection(ConnStr))
+            {
+                conn.Open();
                 using (var cmd = new SqlCommand("SELECT [username] FROM dbo.[User] WHERE [userId]=@uid", conn))
-                { cmd.Parameters.AddWithValue("@uid", Session["userId"].ToString());
-                  var v = cmd.ExecuteScalar(); string n = v != null && v != DBNull.Value ? v.ToString() : "Admin";
-                  ((ScienceBuddy.SiteMaster)Master).SetUserInfo(n, "Administrator", n.Length >= 2 ? n.Substring(0, 2).ToUpper() : n.ToUpper()); } }
+                {
+                    cmd.Parameters.AddWithValue("@uid", Session["userId"].ToString());
+                    var result = cmd.ExecuteScalar();
+                    string name = result != null && result != DBNull.Value ? result.ToString() : "Admin";
+                    string initials = name.Length >= 2 ? name.Substring(0, 2).ToUpper() : name.ToUpper();
+                    ((ScienceBuddy.SiteMaster)Master).SetUserInfo(name, "Administrator", initials);
+                }
+            }
         }
 
         private void LoadAll()
@@ -541,7 +549,22 @@ namespace ScienceBuddy.Admin
                 success ? "sb-alert-success" : "sb-alert-error", success ? "bi-check-circle-fill" : "bi-x-circle-fill", HttpUtility.HtmlEncode(msg));
         }
 
-        private string SS(SqlConnection c, string sql) { try { using (var cmd = new SqlCommand(sql, c)) { var v = cmd.ExecuteScalar(); return v != null && v != DBNull.Value ? Convert.ToInt32(v).ToString() : "0"; } } catch { return "0"; } }
-        private static string NS(object v) { return (v == null || v == DBNull.Value) ? "" : v.ToString(); }
+        private string SS(SqlConnection c, string sql)
+        {
+            try
+            {
+                using (var cmd = new SqlCommand(sql, c))
+                {
+                    var val = cmd.ExecuteScalar();
+                    return val != null && val != DBNull.Value ? Convert.ToInt32(val).ToString() : "0";
+                }
+            }
+            catch { return "0"; }
+        }
+
+        private static string NS(object v)
+        {
+            return (v == null || v == DBNull.Value) ? "" : v.ToString();
+        }
     }
 }

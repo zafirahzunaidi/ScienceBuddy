@@ -3,30 +3,35 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Text;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+// Admin QuestionRequests - Code Behind
 namespace ScienceBuddy.Admin
 {
     public partial class QuestionRequests : Page
     {
-        private string ConnStr =>
-            ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
-
-        protected string CurrentLanguage =>
-            ((ScienceBuddy.SiteMaster)Master).CurrentLanguage;
-
+        private string ConnStr => ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+        protected string CurrentLanguage => ((ScienceBuddy.SiteMaster)Master).CurrentLanguage;
         protected string T(string en, string bm) => CurrentLanguage == "BM" ? bm : en;
+        private bool _isAjax = false;
+
+        protected override void Render(HtmlTextWriter writer)
+        {
+            if (!_isAjax) base.Render(writer);
+        }
+
+        // --- Page Lifecycle ---
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // AJAX handler for approve/reject
-            if (Request.QueryString["handler"] == "ReviewQuestion" && Request.HttpMethod == "POST")
-            {
-                HandleReview();
-                return;
-            }
+            if (Request.QueryString["handler"] == "ReviewQuiz" && Request.HttpMethod == "POST")
+            { _isAjax = true; HandleReview(); return; }
+
+            if (Request.QueryString["handler"] == "ViewQuiz" && Request.HttpMethod == "POST")
+            { _isAjax = true; HandleView(); return; }
 
             if (Session["userId"] == null || Session["role"]?.ToString() != "Admin")
             { Response.Redirect("~/Login.aspx", false); return; }
@@ -37,124 +42,28 @@ namespace ScienceBuddy.Admin
             {
                 SetUserInfo();
                 LoadStats();
-                LoadData("", "", "");
-                txtSearch.Attributes["placeholder"] = T("Search question, teacher, subtopic...", "Cari soalan, guru, subtopik...");
+                LoadData("", "", "", "");
             }
+
+            txtSearch.Attributes["placeholder"] = T("Search quiz title, teacher or ID…", "Cari tajuk kuiz, guru atau ID…");
+            btnSearch.Text = T("Search", "Cari");
+            btnReset.Text = T("Reset", "Tetapkan Semula");
         }
 
-        private void HandleReview()
-        {
-            Response.Clear();
-            Response.ContentType = "application/json";
-            Response.CacheControl = "no-cache";
-            try
-            {
-                if (Session["userId"] == null || Session["role"]?.ToString() != "Admin")
-                { Response.Write("{\"success\":false,\"msg\":\"Unauthorized\"}"); goto done; }
-
-                string qId = Request.QueryString["qId"] ?? "";
-                string action = Request.QueryString["action"] ?? "";
-                string teacherUid = Request.QueryString["tUid"] ?? "";
-                string userId = Session["userId"].ToString();
-
-                if (string.IsNullOrEmpty(qId) || (action != "Approve" && action != "Reject"))
-                { Response.Write("{\"success\":false,\"msg\":\"Invalid\"}"); goto done; }
-
-                string newStatus = action == "Approve" ? "Approved" : "Rejected";
-                string reviewedAt = "";
-
-                using (var conn = new SqlConnection(ConnStr))
-                {
-                    conn.Open();
-                    DateTime now = DateTime.Now;
-
-                    // Update question status
-                    using (var cmd = new SqlCommand("UPDATE dbo.[Question] SET [status]=@s,[reviewedDate]=@d WHERE [questionId]=@id", conn))
-                    {
-                        cmd.Parameters.AddWithValue("@s", newStatus);
-                        cmd.Parameters.AddWithValue("@d", now);
-                        cmd.Parameters.AddWithValue("@id", qId);
-                        cmd.ExecuteNonQuery();
-                    }
-                    reviewedAt = now.ToString("d MMM yyyy");
-
-                    // If approving, check if all questions in the same quiz are now approved
-                    if (action == "Approve")
-                    {
-                        string quizId = "";
-                        using (var cmd = new SqlCommand("SELECT [quizId] FROM dbo.[Question] WHERE [questionId]=@id", conn))
-                        {
-                            cmd.Parameters.AddWithValue("@id", qId);
-                            var v = cmd.ExecuteScalar();
-                            quizId = v != null && v != DBNull.Value ? v.ToString() : "";
-                        }
-
-                        if (!string.IsNullOrEmpty(quizId))
-                        {
-                            int notApproved = 0;
-                            using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.[Question] WHERE [quizId]=@qz AND [status]<>'Approved'", conn))
-                            {
-                                cmd.Parameters.AddWithValue("@qz", quizId);
-                                notApproved = Convert.ToInt32(cmd.ExecuteScalar());
-                            }
-
-                            if (notApproved == 0)
-                            {
-                                using (var cmd = new SqlCommand("UPDATE dbo.[Quiz] SET [status]='Approved' WHERE [quizId]=@qz", conn))
-                                {
-                                    cmd.Parameters.AddWithValue("@qz", quizId);
-                                    cmd.ExecuteNonQuery();
-                                }
-                            }
-                        }
-                    }
-
-                    string logAction = action == "Approve" ? "Approved Question " + qId : "Rejected Question " + qId;
-                    InsertLog(conn, userId, logAction, logAction + ".", "Success");
-
-                    if (!string.IsNullOrEmpty(teacherUid))
-                    {
-                        if (action == "Approve")
-                            InsertNotification(conn, teacherUid, "Question Approved", "Soalan Diluluskan",
-                                "Your submitted question has been approved and is now available for quiz creation.",
-                                "Soalan yang anda hantar telah diluluskan dan kini boleh digunakan untuk pembinaan kuiz.");
-                        else
-                            InsertNotification(conn, teacherUid, "Question Rejected", "Soalan Ditolak",
-                                "Your submitted question requires revision before approval.",
-                                "Soalan anda memerlukan pembetulan sebelum boleh diluluskan.");
-                    }
-
-                    // Get updated counts
-                    int pending = SC(conn, "SELECT COUNT(*) FROM dbo.[Question] WHERE [status]='Pending'");
-                    int approved = SC(conn, "SELECT COUNT(*) FROM dbo.[Question] WHERE [status]='Approved'");
-                    int rejected = SC(conn, "SELECT COUNT(*) FROM dbo.[Question] WHERE [status]='Rejected'");
-                    int today = SC(conn, "SELECT COUNT(*) FROM dbo.[Question] WHERE [reviewedDate] IS NOT NULL AND CAST([reviewedDate] AS DATE)=CAST(GETDATE() AS DATE)");
-
-                    Response.Write("{\"success\":true,\"status\":\"" + newStatus + "\",\"reviewedAt\":\"" + reviewedAt + "\"," +
-                        "\"pending\":" + pending + ",\"approved\":" + approved + ",\"rejected\":" + rejected + ",\"today\":" + today + "}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Response.Clear();
-                Response.Write("{\"success\":false,\"msg\":\"" + ex.Message.Replace("\"", "'").Replace("\r", "").Replace("\n", " ") + "\"}");
-            }
-            done:
-            try { Response.End(); } catch (System.Threading.ThreadAbortException) { }
-        }
+        // --- Data Loading ---
 
         private void SetUserInfo()
         {
             using (var conn = new SqlConnection(ConnStr))
             {
                 conn.Open();
-                using (var cmd = new SqlCommand("SELECT [username] FROM dbo.[User] WHERE [userId]=@u", conn))
+                using (var cmd = new SqlCommand("SELECT [username] FROM dbo.[User] WHERE [userId]=@uid", conn))
                 {
-                    cmd.Parameters.AddWithValue("@u", Session["userId"].ToString());
-                    var v = cmd.ExecuteScalar();
-                    string name = v?.ToString() ?? "Admin";
-                    ((ScienceBuddy.SiteMaster)Master).SetUserInfo(name, "Administrator",
-                        name.Length >= 2 ? name.Substring(0, 2).ToUpper() : name.ToUpper());
+                    cmd.Parameters.AddWithValue("@uid", Session["userId"].ToString());
+                    var result = cmd.ExecuteScalar();
+                    string name = result != null && result != DBNull.Value ? result.ToString() : "Admin";
+                    string initials = name.Length >= 2 ? name.Substring(0, 2).ToUpper() : name.ToUpper();
+                    ((ScienceBuddy.SiteMaster)Master).SetUserInfo(name, "Administrator", initials);
                 }
             }
         }
@@ -164,227 +73,435 @@ namespace ScienceBuddy.Admin
             using (var conn = new SqlConnection(ConnStr))
             {
                 conn.Open();
-                litPending.Text = SC(conn, "SELECT COUNT(*) FROM dbo.[Question] WHERE [status]='Pending'").ToString();
-                litApproved.Text = SC(conn, "SELECT COUNT(*) FROM dbo.[Question] WHERE [status]='Approved'").ToString();
-                litRejected.Text = SC(conn, "SELECT COUNT(*) FROM dbo.[Question] WHERE [status]='Rejected'").ToString();
-                litToday.Text = SC(conn, "SELECT COUNT(*) FROM dbo.[Question] WHERE [reviewedDate] IS NOT NULL AND CAST([reviewedDate] AS DATE)=CAST(GETDATE() AS DATE)").ToString();
-                int p = int.Parse(litPending.Text);
-                litBadge.Text = p > 0 ? "<span class=\"sb-badge sb-badge-warning\" style=\"margin-left:6px;\">" + p + "</span>" : "";
+                litPending.Text = SC(conn, "SELECT COUNT(*) FROM dbo.[Quiz] WHERE [status]='Pending'");
+                litApproved.Text = SC(conn, "SELECT COUNT(*) FROM dbo.[Quiz] WHERE [status]='Approved'");
+                litRejected.Text = SC(conn, "SELECT COUNT(*) FROM dbo.[Quiz] WHERE [status]='Rejected'");
+                litToday.Text = SC(conn, "SELECT COUNT(*) FROM dbo.[Quiz] WHERE [status] IN ('Approved','Rejected') AND CAST([createdAt] AS DATE)=CAST(GETDATE() AS DATE)");
+
+                string pCount = SC(conn, "SELECT COUNT(*) FROM dbo.[Quiz] WHERE [status]='Pending'");
+                litBadge.Text = pCount != "0"
+                    ? "<span class=\"sb-badge sb-badge-warning\" style=\"margin-left:6px;\">" + pCount + "</span>"
+                    : "";
             }
         }
 
-        private void LoadData(string search, string status, string diff)
+        private void LoadData(string search, string statusF, string typeF, string langF)
         {
-            var all = Fetch(search, status, diff);
-            var pending = new List<object>();
-            var history = new List<object>();
-            foreach (var r in all) { if (((dynamic)r).status == "Pending") pending.Add(r); else history.Add(r); }
-
-            pnlPending.Visible = pending.Count > 0; pnlPendingEmpty.Visible = pending.Count == 0;
-            if (pending.Count > 0) { rptPending.DataSource = pending; rptPending.DataBind(); }
-
-            pnlHistory.Visible = history.Count > 0; pnlHistoryEmpty.Visible = history.Count == 0;
-            if (history.Count > 0) { rptHistory.DataSource = history; rptHistory.DataBind(); }
-        }
-
-        private List<object> Fetch(string search, string status, string diff)
-        {
-            var list = new List<object>();
             using (var conn = new SqlConnection(ConnStr))
             {
                 conn.Open();
-                string sql = @"SELECT q.[questionId],q.[questionTextEN],q.[questionTextBM],q.[questionType],
-                    q.[difficulty],q.[status],q.[createdAt],q.[reviewedDate],q.[createdByUserId],q.[correctAnswer],
-                    q.[optionA_EN],q.[optionA_BM],q.[optionB_EN],q.[optionB_BM],
-                    q.[optionC_EN],q.[optionC_BM],q.[optionD_EN],q.[optionD_BM],
-                    q.[correctExplanationEN],q.[correctExplanationBM],
-                    ISNULL(t.[name],u.[username]) AS teacherName,
-                    ISNULL(st.[subtopicTitleEN],'') AS subEN, ISNULL(st.[subtopicTitleBM],'') AS subBM,
-                    ISNULL(un.[unitNameEN],'') AS unitEN, ISNULL(un.[unitNameBM],'') AS unitBM,
-                    ISNULL(lv.[levelNameEN],'') AS levelEN, ISNULL(lv.[levelNameBM],'') AS levelBM
-                    FROM dbo.[Question] q
-                    LEFT JOIN dbo.[User] u ON u.[userId]=q.[createdByUserId]
-                    LEFT JOIN dbo.[Teacher] t ON t.[userId]=q.[createdByUserId]
-                    LEFT JOIN dbo.[Subtopic] st ON st.[subtopicId]=q.[subtopicId]
-                    LEFT JOIN dbo.[Unit] un ON un.[unitId]=st.[unitId]
-                    LEFT JOIN dbo.[Level] lv ON lv.[levelId]=un.[levelId]
-                    WHERE 1=1";
-                if (!string.IsNullOrWhiteSpace(status)) sql += " AND q.[status]=@st";
-                if (!string.IsNullOrWhiteSpace(diff)) sql += " AND q.[difficulty]=@df";
-                if (!string.IsNullOrWhiteSpace(search)) sql += " AND (q.[questionTextEN] LIKE @s OR q.[questionTextBM] LIKE @s OR ISNULL(t.[name],'') LIKE @s OR u.[username] LIKE @s OR ISNULL(st.[subtopicTitleEN],'') LIKE @s)";
-                sql += " ORDER BY CASE WHEN q.[status]='Pending' THEN 0 ELSE 1 END, CASE WHEN q.[status]='Pending' THEN q.[createdAt] ELSE q.[reviewedDate] END DESC";
+                string tCol = CurrentLanguage == "BM"
+                    ? "ISNULL(q.[quizTitleBM],q.[quizTitleEN])"
+                    : "ISNULL(q.[quizTitleEN],q.[quizTitleBM])";
 
-                using (var cmd = new SqlCommand(sql, conn))
+                string baseSql = string.Format(@"SELECT q.[quizId], {0} AS quizTitle, q.[quizType], q.[language],
+                    q.[status], q.[createdAt], ISNULL(t.[name],u.[username]) AS teacherName,
+                    (SELECT COUNT(*) FROM dbo.[Question] qn WHERE qn.[quizId]=q.[quizId]) AS questionCount
+                    FROM dbo.[Quiz] q LEFT JOIN dbo.[User] u ON u.[userId]=q.[createdByUserId]
+                    LEFT JOIN dbo.[Teacher] t ON t.[userId]=q.[createdByUserId]
+                    WHERE q.[status] IS NOT NULL", tCol);
+
+                if (!string.IsNullOrWhiteSpace(search))
+                    baseSql += " AND (" + tCol + " LIKE @s OR q.[quizId] LIKE @s OR ISNULL(t.[name],u.[username]) LIKE @s)";
+                if (!string.IsNullOrWhiteSpace(statusF))
+                    baseSql += " AND q.[status]=@st";
+                if (!string.IsNullOrWhiteSpace(typeF))
+                    baseSql += " AND q.[quizType]=@tp";
+                if (!string.IsNullOrWhiteSpace(langF))
+                    baseSql += " AND q.[language]=@lg";
+
+                // Pending quizzes
+                string pendingSql = baseSql + " AND q.[status]='Pending' ORDER BY q.[createdAt] DESC";
+                using (var cmd = new SqlCommand(pendingSql, conn))
                 {
-                    if (!string.IsNullOrWhiteSpace(status)) cmd.Parameters.AddWithValue("@st", status);
-                    if (!string.IsNullOrWhiteSpace(diff)) cmd.Parameters.AddWithValue("@df", diff);
                     if (!string.IsNullOrWhiteSpace(search)) cmd.Parameters.AddWithValue("@s", "%" + search + "%");
-                    using (var da = new SqlDataAdapter(cmd))
+                    if (!string.IsNullOrWhiteSpace(statusF)) cmd.Parameters.AddWithValue("@st", statusF);
+                    if (!string.IsNullOrWhiteSpace(typeF)) cmd.Parameters.AddWithValue("@tp", typeF);
+                    if (!string.IsNullOrWhiteSpace(langF)) cmd.Parameters.AddWithValue("@lg", langF);
+
+                    var da = new SqlDataAdapter(cmd);
+                    var dt = new DataTable();
+                    da.Fill(dt);
+
+                    if (dt.Rows.Count > 0)
                     {
-                        var dt = new DataTable(); da.Fill(dt);
+                        pnlPending.Visible = true;
+                        pnlPendingEmpty.Visible = false;
+                        var list = new List<object>();
                         foreach (DataRow r in dt.Rows)
                         {
-                            string textEN = NullSafe(r, "questionTextEN");
-                            string textBM = NullSafe(r, "questionTextBM");
-                            string text = CurrentLanguage == "BM" && !string.IsNullOrEmpty(textBM) ? textBM : textEN;
-                            if (string.IsNullOrEmpty(text)) text = !string.IsNullOrEmpty(textEN) ? textEN : textBM;
-                            if (string.IsNullOrEmpty(text)) text = "(No question text)";
-
-                            string subName = CurrentLanguage == "BM" && !string.IsNullOrEmpty(NullSafe(r, "subBM")) ? NullSafe(r, "subBM") : NullSafe(r, "subEN");
-                            string unitName = CurrentLanguage == "BM" && !string.IsNullOrEmpty(NullSafe(r, "unitBM")) ? NullSafe(r, "unitBM") : NullSafe(r, "unitEN");
-                            string levelName = CurrentLanguage == "BM" && !string.IsNullOrEmpty(NullSafe(r, "levelBM")) ? NullSafe(r, "levelBM") : NullSafe(r, "levelEN");
-
-                            string optA = CurrentLanguage == "BM" && !string.IsNullOrEmpty(NullSafe(r, "optionA_BM")) ? NullSafe(r, "optionA_BM") : NullSafe(r, "optionA_EN");
-                            string optB = CurrentLanguage == "BM" && !string.IsNullOrEmpty(NullSafe(r, "optionB_BM")) ? NullSafe(r, "optionB_BM") : NullSafe(r, "optionB_EN");
-                            string optC = CurrentLanguage == "BM" && !string.IsNullOrEmpty(NullSafe(r, "optionC_BM")) ? NullSafe(r, "optionC_BM") : NullSafe(r, "optionC_EN");
-                            string optD = CurrentLanguage == "BM" && !string.IsNullOrEmpty(NullSafe(r, "optionD_BM")) ? NullSafe(r, "optionD_BM") : NullSafe(r, "optionD_EN");
-                            string explanation = CurrentLanguage == "BM" && !string.IsNullOrEmpty(NullSafe(r, "correctExplanationBM")) ? NullSafe(r, "correctExplanationBM") : NullSafe(r, "correctExplanationEN");
-
-                            // Build safe JSON using escaped values
-                            string json = "{" +
-                                "id:" + JsStr(NullSafe(r, "questionId")) + "," +
-                                "text:" + JsStr(text) + "," +
-                                "type:" + JsStr(NullSafe(r, "questionType")) + "," +
-                                "diff:" + JsStr(NullSafe(r, "difficulty")) + "," +
-                                "status:" + JsStr(NullSafe(r, "status")) + "," +
-                                "teacher:" + JsStr(NullSafe(r, "teacherName")) + "," +
-                                "subtopic:" + JsStr(subName) + "," +
-                                "unit:" + JsStr(unitName) + "," +
-                                "level:" + JsStr(levelName) + "," +
-                                "correct:" + JsStr(NullSafe(r, "correctAnswer")) + "," +
-                                "optA:" + JsStr(optA) + "," +
-                                "optB:" + JsStr(optB) + "," +
-                                "optC:" + JsStr(optC) + "," +
-                                "optD:" + JsStr(optD) + "," +
-                                "explanation:" + JsStr(explanation) + "," +
-                                "date:" + JsStr(r["createdAt"] != DBNull.Value ? Convert.ToDateTime(r["createdAt"]).ToString("d MMM yyyy") : "-") +
-                                "}";
-
                             list.Add(new
                             {
-                                questionId = NullSafe(r, "questionId"),
-                                questionText = text.Length > 120 ? text.Substring(0, 120) + "..." : text,
-                                questionType = NullSafe(r, "questionType"),
-                                difficulty = NullSafe(r, "difficulty"),
-                                status = NullSafe(r, "status"),
-                                teacherName = NullSafe(r, "teacherName"),
-                                teacherUserId = NullSafe(r, "createdByUserId"),
-                                subtopicName = subName,
-                                createdAt = r["createdAt"] != DBNull.Value ? Convert.ToDateTime(r["createdAt"]).ToString("d MMM yyyy") : "-",
-                                reviewedDate = r["reviewedDate"] != DBNull.Value ? Convert.ToDateTime(r["reviewedDate"]).ToString("d MMM yyyy") : "-",
-                                jsonData = json
+                                quizId = r["quizId"].ToString(),
+                                quizTitle = NS(r["quizTitle"]),
+                                quizType = NS(r["quizType"]),
+                                language = NS(r["language"]),
+                                teacherName = NS(r["teacherName"]),
+                                questionCount = r["questionCount"].ToString(),
+                                createdAt = r["createdAt"] != DBNull.Value
+                                    ? Convert.ToDateTime(r["createdAt"]).ToString("dd MMM yyyy") : "-"
                             });
                         }
+                        rptPending.DataSource = list;
+                        rptPending.DataBind();
+                    }
+                    else
+                    {
+                        pnlPending.Visible = false;
+                        pnlPendingEmpty.Visible = true;
+                    }
+                }
+
+                // History (Approved + Rejected)
+                string histSql = baseSql + " AND q.[status] IN ('Approved','Rejected') ORDER BY q.[createdAt] DESC";
+                using (var cmd = new SqlCommand(histSql, conn))
+                {
+                    if (!string.IsNullOrWhiteSpace(search)) cmd.Parameters.AddWithValue("@s", "%" + search + "%");
+                    if (!string.IsNullOrWhiteSpace(statusF)) cmd.Parameters.AddWithValue("@st", statusF);
+                    if (!string.IsNullOrWhiteSpace(typeF)) cmd.Parameters.AddWithValue("@tp", typeF);
+                    if (!string.IsNullOrWhiteSpace(langF)) cmd.Parameters.AddWithValue("@lg", langF);
+
+                    var da = new SqlDataAdapter(cmd);
+                    var dt = new DataTable();
+                    da.Fill(dt);
+
+                    if (dt.Rows.Count > 0)
+                    {
+                        pnlHistory.Visible = true;
+                        pnlHistoryEmpty.Visible = false;
+                        var list = new List<object>();
+                        foreach (DataRow r in dt.Rows)
+                        {
+                            list.Add(new
+                            {
+                                quizId = r["quizId"].ToString(),
+                                quizTitle = NS(r["quizTitle"]),
+                                quizType = NS(r["quizType"]),
+                                teacherName = NS(r["teacherName"]),
+                                questionCount = r["questionCount"].ToString(),
+                                reviewedDate = r["createdAt"] != DBNull.Value
+                                    ? Convert.ToDateTime(r["createdAt"]).ToString("dd MMM yyyy") : "-",
+                                status = NS(r["status"])
+                            });
+                        }
+                        rptHistory.DataSource = list;
+                        rptHistory.DataBind();
+                    }
+                    else
+                    {
+                        pnlHistory.Visible = false;
+                        pnlHistoryEmpty.Visible = true;
                     }
                 }
             }
-            return list;
         }
 
         protected void btnSearch_Click(object sender, EventArgs e)
         {
             LoadStats();
-            LoadData(txtSearch.Text.Trim(), fStatus.SelectedValue, fDifficulty.SelectedValue);
+            LoadData(txtSearch.Text.Trim(), fStatus.SelectedValue, fType.SelectedValue, fLang.SelectedValue);
         }
 
         protected void btnReset_Click(object sender, EventArgs e)
         {
-            txtSearch.Text = ""; fStatus.SelectedIndex = 0; fDifficulty.SelectedIndex = 0;
-            LoadStats(); LoadData("", "", "");
+            txtSearch.Text = "";
+            fStatus.SelectedIndex = 0;
+            fType.SelectedIndex = 0;
+            fLang.SelectedIndex = 0;
+            LoadStats();
+            LoadData("", "", "", "");
         }
 
-        protected void rptPending_ItemCommand(object source, RepeaterCommandEventArgs e)
+        // --- AJAX Handlers ---
+
+        private void HandleReview()
         {
-            if (e.CommandName != "Approve" && e.CommandName != "Reject") return;
-            string[] p = e.CommandArgument.ToString().Split('|');
-            string qId = p[0], teacherUid = p.Length > 1 ? p[1] : "";
-            string newStatus = e.CommandName == "Approve" ? "Approved" : "Rejected";
-
-            using (var conn = new SqlConnection(ConnStr))
+            Response.Clear();
+            Response.ContentType = "application/json";
+            try
             {
-                conn.Open();
-                using (var cmd = new SqlCommand("UPDATE dbo.[Question] SET [status]=@s,[reviewedDate]=@d WHERE [questionId]=@id", conn))
-                {
-                    cmd.Parameters.AddWithValue("@s", newStatus);
-                    cmd.Parameters.AddWithValue("@d", DateTime.Now);
-                    cmd.Parameters.AddWithValue("@id", qId);
-                    cmd.ExecuteNonQuery();
-                }
+                if (Session["userId"] == null || Session["role"]?.ToString() != "Admin")
+                { Response.Write("{\"success\":false,\"msg\":\"Unauthorized\"}"); Flush(); return; }
 
-                string logAction = e.CommandName == "Approve" ? "Approved Question " + qId : "Rejected Question " + qId;
-                InsertLog(conn, Session["userId"].ToString(), logAction, logAction + ".", "Success");
+                string quizId = Request.QueryString["quizId"] ?? "";
+                string action = Request.QueryString["action"] ?? "";
+                string adminId = Session["userId"].ToString();
+                string newStatus = action == "Approve" ? "Approved" : "Rejected";
 
-                if (!string.IsNullOrEmpty(teacherUid))
+                using (var conn = new SqlConnection(ConnStr))
                 {
-                    if (e.CommandName == "Approve")
-                        InsertNotification(conn, teacherUid, "Question Approved", "Soalan Diluluskan",
-                            "Your submitted question has been approved and is now available for quiz creation.",
-                            "Soalan yang anda hantar telah diluluskan dan kini boleh digunakan untuk pembinaan kuiz.");
-                    else
-                        InsertNotification(conn, teacherUid, "Question Rejected", "Soalan Ditolak",
-                            "Your submitted question requires revision before approval.",
-                            "Soalan anda memerlukan pembetulan sebelum boleh diluluskan.");
+                    conn.Open();
+
+                    // Verify quiz is still Pending
+                    string curStatus = "";
+                    using (var cmd = new SqlCommand("SELECT [status] FROM dbo.[Quiz] WHERE [quizId]=@id", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", quizId);
+                        var result = cmd.ExecuteScalar();
+                        curStatus = result?.ToString() ?? "";
+                    }
+                    if (curStatus != "Pending")
+                    { Response.Write("{\"success\":false,\"msg\":\"Quiz already reviewed.\"}"); Flush(); return; }
+
+                    using (var txn = conn.BeginTransaction())
+                    {
+                        try
+                        {
+                            // Update Quiz status
+                            using (var cmd = new SqlCommand("UPDATE dbo.[Quiz] SET [status]=@st WHERE [quizId]=@id", conn, txn))
+                            {
+                                cmd.Parameters.AddWithValue("@st", newStatus);
+                                cmd.Parameters.AddWithValue("@id", quizId);
+                                cmd.ExecuteNonQuery();
+                            }
+
+                            // Update all questions in the quiz
+                            using (var cmd = new SqlCommand("UPDATE dbo.[Question] SET [status]=@st, [reviewedDate]=GETDATE() WHERE [quizId]=@id", conn, txn))
+                            {
+                                cmd.Parameters.AddWithValue("@st", newStatus);
+                                cmd.Parameters.AddWithValue("@id", quizId);
+                                cmd.ExecuteNonQuery();
+                            }
+
+                            // Log the action
+                            string logId = GenId(conn, txn, "Log", "logId", "LOG");
+                            using (var cmd = new SqlCommand("INSERT INTO dbo.[Log]([logId],[userId],[action],[description],[logDateTime],[status]) VALUES(@a,@b,@c,@d,GETDATE(),'Success')", conn, txn))
+                            {
+                                cmd.Parameters.AddWithValue("@a", logId);
+                                cmd.Parameters.AddWithValue("@b", adminId);
+                                cmd.Parameters.AddWithValue("@c", action == "Approve" ? "Approved Quiz" : "Rejected Quiz");
+                                cmd.Parameters.AddWithValue("@d", "Admin " + action.ToLower() + "d quiz " + quizId + ".");
+                                cmd.ExecuteNonQuery();
+                            }
+
+                            // Notify the teacher
+                            string teacherUserId = "";
+                            using (var cmd = new SqlCommand("SELECT [createdByUserId] FROM dbo.[Quiz] WHERE [quizId]=@id", conn, txn))
+                            {
+                                cmd.Parameters.AddWithValue("@id", quizId);
+                                var result = cmd.ExecuteScalar();
+                                teacherUserId = result?.ToString() ?? "";
+                            }
+
+                            if (!string.IsNullOrEmpty(teacherUserId))
+                            {
+                                string tEN, tBM, mEN, mBM;
+                                string qTitle = "";
+                                using (var cmd = new SqlCommand("SELECT ISNULL([quizTitleEN],[quizTitleBM]) FROM dbo.[Quiz] WHERE [quizId]=@id", conn, txn))
+                                {
+                                    cmd.Parameters.AddWithValue("@id", quizId);
+                                    var result = cmd.ExecuteScalar();
+                                    qTitle = result?.ToString() ?? quizId;
+                                }
+
+                                if (action == "Approve")
+                                {
+                                    tEN = "Quiz Approved"; tBM = "Kuiz Diluluskan";
+                                    mEN = "Congratulations! Your quiz \"" + qTitle + "\" has been approved. Students can now attempt it.";
+                                    mBM = "Tahniah! Kuiz anda \"" + qTitle + "\" telah diluluskan. Pelajar kini boleh menjawabnya.";
+                                }
+                                else
+                                {
+                                    tEN = "Quiz Rejected"; tBM = "Kuiz Ditolak";
+                                    mEN = "Your quiz \"" + qTitle + "\" was not approved. Please review and resubmit.";
+                                    mBM = "Kuiz anda \"" + qTitle + "\" tidak diluluskan. Sila semak dan hantar semula.";
+                                }
+
+                                string nId = GenId(conn, txn, "Notification", "notificationId", "N");
+                                using (var cmd = new SqlCommand("INSERT INTO dbo.[Notification]([notificationId],[toUserId],[titleEN],[titleBM],[messageEN],[messageBM],[isRead],[createdAt]) VALUES(@a,@b,@c,@d,@e,@f,0,GETDATE())", conn, txn))
+                                {
+                                    cmd.Parameters.AddWithValue("@a", nId);
+                                    cmd.Parameters.AddWithValue("@b", teacherUserId);
+                                    cmd.Parameters.AddWithValue("@c", tEN);
+                                    cmd.Parameters.AddWithValue("@d", tBM);
+                                    cmd.Parameters.AddWithValue("@e", mEN);
+                                    cmd.Parameters.AddWithValue("@f", mBM);
+                                    cmd.ExecuteNonQuery();
+                                }
+                            }
+                            txn.Commit();
+                        }
+                        catch
+                        {
+                            txn.Rollback();
+                            Response.Write("{\"success\":false,\"msg\":\"Transaction failed.\"}");
+                            Flush();
+                            return;
+                        }
+                    }
+
+                    // Return updated counts
+                    string pending = SC(conn, "SELECT COUNT(*) FROM dbo.[Quiz] WHERE [status]='Pending'");
+                    string approved = SC(conn, "SELECT COUNT(*) FROM dbo.[Quiz] WHERE [status]='Approved'");
+                    string rejected = SC(conn, "SELECT COUNT(*) FROM dbo.[Quiz] WHERE [status]='Rejected'");
+                    string today = SC(conn, "SELECT COUNT(*) FROM dbo.[Quiz] WHERE [status] IN ('Approved','Rejected') AND CAST([createdAt] AS DATE)=CAST(GETDATE() AS DATE)");
+                    Response.Write("{\"success\":true,\"pending\":" + pending + ",\"approved\":" + approved + ",\"rejected\":" + rejected + ",\"today\":" + today + ",\"reviewedAt\":\"" + DateTime.Now.ToString("dd MMM yyyy") + "\"}");
                 }
             }
-            LoadStats(); LoadData(txtSearch.Text.Trim(), fStatus.SelectedValue, fDifficulty.SelectedValue);
+            catch (Exception ex)
+            {
+                Response.Write("{\"success\":false,\"msg\":\"" + EJ(ex.Message) + "\"}");
+            }
+            Flush();
         }
 
-        protected string GetDiffClass(object d)
+        private void HandleView()
         {
-            switch ((d?.ToString() ?? "").ToLower())
+            Response.Clear();
+            Response.ContentType = "application/json";
+            try
             {
-                case "easy": return "ad-question-request-diff-easy";
-                case "medium": return "ad-question-request-diff-medium";
-                case "hard": return "ad-question-request-diff-hard";
+                string quizId = Request.QueryString["quizId"] ?? "";
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    string tCol = CurrentLanguage == "BM"
+                        ? "ISNULL(q.[quizTitleBM],q.[quizTitleEN])"
+                        : "ISNULL(q.[quizTitleEN],q.[quizTitleBM])";
+
+                    string sql = string.Format(@"SELECT q.[quizId], {0} AS title, q.[quizType], q.[language], q.[createdAt],
+                        ISNULL(t.[name],u.[username]) AS teacher,
+                        (SELECT COUNT(*) FROM dbo.[Question] qn WHERE qn.[quizId]=q.[quizId]) AS questionCount
+                        FROM dbo.[Quiz] q LEFT JOIN dbo.[User] u ON u.[userId]=q.[createdByUserId]
+                        LEFT JOIN dbo.[Teacher] t ON t.[userId]=q.[createdByUserId] WHERE q.[quizId]=@id", tCol);
+
+                    var sb = new StringBuilder();
+                    using (var cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", quizId);
+                        using (var rd = cmd.ExecuteReader())
+                        {
+                            if (!rd.Read()) { Response.Write("{\"success\":false,\"msg\":\"Not found\"}"); Flush(); return; }
+                            sb.Append("{\"success\":true,\"quiz\":{");
+                            sb.AppendFormat("\"quizId\":\"{0}\",", EJ(rd["quizId"]));
+                            sb.AppendFormat("\"title\":\"{0}\",", EJ(rd["title"]));
+                            sb.AppendFormat("\"quizType\":\"{0}\",", EJ(rd["quizType"]));
+                            sb.AppendFormat("\"language\":\"{0}\",", EJ(rd["language"]));
+                            sb.AppendFormat("\"teacher\":\"{0}\",", EJ(rd["teacher"]));
+                            sb.AppendFormat("\"createdAt\":\"{0}\",", rd["createdAt"] != DBNull.Value ? Convert.ToDateTime(rd["createdAt"]).ToString("dd MMM yyyy HH:mm") : "-");
+                            sb.AppendFormat("\"questionCount\":\"{0}\"", rd["questionCount"]);
+                            sb.Append("},\"questions\":[");
+                        }
+                    }
+
+                    // Get questions for this quiz
+                    string qCol = CurrentLanguage == "BM" ? "ISNULL(qn.[questionTextBM],qn.[questionTextEN])" : "ISNULL(qn.[questionTextEN],qn.[questionTextBM])";
+                    string oA = CurrentLanguage == "BM" ? "ISNULL(qn.[optionA_BM],qn.[optionA_EN])" : "ISNULL(qn.[optionA_EN],qn.[optionA_BM])";
+                    string oB = CurrentLanguage == "BM" ? "ISNULL(qn.[optionB_BM],qn.[optionB_EN])" : "ISNULL(qn.[optionB_EN],qn.[optionB_BM])";
+                    string oC = CurrentLanguage == "BM" ? "ISNULL(qn.[optionC_BM],qn.[optionC_EN])" : "ISNULL(qn.[optionC_EN],qn.[optionC_BM])";
+                    string oD = CurrentLanguage == "BM" ? "ISNULL(qn.[optionD_BM],qn.[optionD_EN])" : "ISNULL(qn.[optionD_EN],qn.[optionD_BM])";
+                    string expCol = CurrentLanguage == "BM" ? "ISNULL(qn.[correctExplanationBM],qn.[correctExplanationEN])" : "ISNULL(qn.[correctExplanationEN],qn.[correctExplanationBM])";
+
+                    string qSql = string.Format(@"SELECT qn.[questionId], {0} AS text, qn.[questionType], qn.[difficulty],
+                        {1} AS optA, {2} AS optB, {3} AS optC, {4} AS optD, qn.[correctAnswer], {5} AS explanation
+                        FROM dbo.[Question] qn WHERE qn.[quizId]=@id ORDER BY qn.[questionId]", qCol, oA, oB, oC, oD, expCol);
+
+                    using (var cmd = new SqlCommand(qSql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", quizId);
+                        using (var rd = cmd.ExecuteReader())
+                        {
+                            bool first = true;
+                            while (rd.Read())
+                            {
+                                if (!first) sb.Append(",");
+                                first = false;
+                                sb.Append("{");
+                                sb.AppendFormat("\"text\":\"{0}\",", EJ(rd["text"]));
+                                sb.AppendFormat("\"type\":\"{0}\",", EJ(rd["questionType"]));
+                                sb.AppendFormat("\"difficulty\":\"{0}\",", EJ(rd["difficulty"]));
+                                sb.AppendFormat("\"optA\":\"{0}\",", EJ(rd["optA"]));
+                                sb.AppendFormat("\"optB\":\"{0}\",", EJ(rd["optB"]));
+                                sb.AppendFormat("\"optC\":\"{0}\",", EJ(rd["optC"]));
+                                sb.AppendFormat("\"optD\":\"{0}\",", EJ(rd["optD"]));
+                                sb.AppendFormat("\"correct\":\"{0}\",", EJ(rd["correctAnswer"]));
+                                sb.AppendFormat("\"explanation\":\"{0}\"", EJ(rd["explanation"]));
+                                sb.Append("}");
+                            }
+                        }
+                    }
+                    sb.Append("]}");
+                    Response.Write(sb.ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+                Response.Write("{\"success\":false,\"msg\":\"" + EJ(ex.Message) + "\"}");
+            }
+            Flush();
+        }
+
+        // --- Helper Methods ---
+
+        protected string GetTypeClass(object quizType)
+        {
+            string t = (quizType ?? "").ToString();
+            switch (t)
+            {
+                case "Unit": return "sb-badge sb-badge-primary";
+                case "Practice": return "sb-badge sb-badge-warning";
+                case "Level": return "sb-badge sb-badge-success";
                 default: return "sb-badge sb-badge-gray";
             }
         }
 
-        protected string BuildBadge(string s)
+        protected string BuildBadge(string status)
         {
-            switch (s)
+            switch (status)
             {
-                case "Approved": return "<span class=\"sb-badge sb-badge-success\"><i class=\"bi bi-check-circle-fill\"></i> " + T("Approved", "Diluluskan") + "</span>";
-                case "Rejected": return "<span class=\"sb-badge sb-badge-error\"><i class=\"bi bi-x-circle-fill\"></i> " + T("Rejected", "Ditolak") + "</span>";
-                default: return "<span class=\"sb-badge sb-badge-warning\"><i class=\"bi bi-hourglass-split\"></i> " + T("Pending", "Tertunggak") + "</span>";
+                case "Approved":
+                    return "<span class=\"sb-badge sb-badge-success\"><i class=\"bi bi-check-circle-fill\"></i> Approved</span>";
+                case "Rejected":
+                    return "<span class=\"sb-badge sb-badge-error\"><i class=\"bi bi-x-circle-fill\"></i> Rejected</span>";
+                default:
+                    return "<span class=\"sb-badge sb-badge-warning\">" + status + "</span>";
             }
         }
 
-        private int SC(SqlConnection c, string sql) { try { using (var cmd = new SqlCommand(sql, c)) { var v = cmd.ExecuteScalar(); return v != null && v != DBNull.Value ? Convert.ToInt32(v) : 0; } } catch { return 0; } }
-
-        private void InsertLog(SqlConnection c, string uid, string action, string desc, string status)
+        private string SC(SqlConnection c, string sql)
         {
-            string id = GenId(c, "Log", "logId", "LOG");
-            using (var cmd = new SqlCommand("INSERT INTO dbo.[Log]([logId],[userId],[action],[description],[logDateTime],[status]) VALUES(@a,@b,@c,@d,@e,@f)", c))
-            { cmd.Parameters.AddWithValue("@a", id); cmd.Parameters.AddWithValue("@b", uid); cmd.Parameters.AddWithValue("@c", action); cmd.Parameters.AddWithValue("@d", desc.Length > 900 ? desc.Substring(0, 900) : desc); cmd.Parameters.AddWithValue("@e", DateTime.Now); cmd.Parameters.AddWithValue("@f", status); cmd.ExecuteNonQuery(); }
+            try
+            {
+                using (var cmd = new SqlCommand(sql, c))
+                {
+                    var val = cmd.ExecuteScalar();
+                    return val != null && val != DBNull.Value ? Convert.ToInt32(val).ToString() : "0";
+                }
+            }
+            catch { return "0"; }
         }
 
-        private void InsertNotification(SqlConnection c, string toUid, string tEN, string tBM, string mEN, string mBM)
+        private static string NS(object v)
         {
-            string id = GenId(c, "Notification", "notificationId", "N");
-            using (var cmd = new SqlCommand("INSERT INTO dbo.[Notification]([notificationId],[toUserId],[titleEN],[titleBM],[messageEN],[messageBM],[isRead],[createdAt]) VALUES(@a,@b,@c,@d,@e,@f,0,@g)", c))
-            { cmd.Parameters.AddWithValue("@a", id); cmd.Parameters.AddWithValue("@b", toUid); cmd.Parameters.AddWithValue("@c", tEN); cmd.Parameters.AddWithValue("@d", tBM); cmd.Parameters.AddWithValue("@e", mEN); cmd.Parameters.AddWithValue("@f", mBM); cmd.Parameters.AddWithValue("@g", DateTime.Now); cmd.ExecuteNonQuery(); }
+            return (v == null || v == DBNull.Value) ? "" : v.ToString();
         }
 
-        private string GenId(SqlConnection c, string tbl, string col, string pfx)
+        private static string EJ(object v)
         {
-            using (var cmd = new SqlCommand(string.Format("SELECT TOP 1 [{0}] FROM dbo.[{1}] ORDER BY [{0}] DESC", col, tbl), c))
-            { var v = cmd.ExecuteScalar(); if (v == null || v == DBNull.Value) return pfx + "001"; string l = v.ToString(); int n; int.TryParse(l.Substring(pfx.Length), out n); n++; return pfx + n.ToString().PadLeft(l.Length - pfx.Length, '0'); }
+            string s = NS(v);
+            return s.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "");
         }
 
-        private static string NullSafe(DataRow r, string col)
+        private string GenId(SqlConnection conn, SqlTransaction txn, string table, string col, string prefix)
         {
-            if (!r.Table.Columns.Contains(col)) return "";
-            return r[col] == null || r[col] == DBNull.Value ? "" : r[col].ToString();
+            try
+            {
+                string sql = string.Format("SELECT MAX(CAST(SUBSTRING([{0}],{1},LEN([{0}])-{2}) AS INT)) FROM dbo.[{3}]",
+                    col, prefix.Length + 1, prefix.Length, table);
+                using (var cmd = new SqlCommand(sql, conn, txn))
+                {
+                    var val = cmd.ExecuteScalar();
+                    int next = (val != null && val != DBNull.Value) ? Convert.ToInt32(val) + 1 : 1;
+                    return prefix + next.ToString("D3");
+                }
+            }
+            catch { return prefix + DateTime.Now.Ticks.ToString().Substring(10); }
         }
 
-        private static string JsStr(string s)
+        private void Flush()
         {
-            if (string.IsNullOrEmpty(s)) return "\"\"";
-            s = s.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "").Replace("'", "\\'");
-            return "\"" + s + "\"";
+            Response.Flush();
+            HttpContext.Current.ApplicationInstance.CompleteRequest();
         }
-
-        private static string Esc(object v) { string s = v?.ToString() ?? ""; if (v == DBNull.Value) s = ""; return s.Replace("\\", "\\\\").Replace("'", "\\'").Replace("\n", " ").Replace("\r", ""); }
     }
 }

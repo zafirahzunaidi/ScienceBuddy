@@ -99,7 +99,25 @@ namespace ScienceBuddy.Parent
             catch { ShowMsg(T("Error creating discussion.", "Ralat membuat perbincangan."), false); }
         }
 
-        private string GenId(SqlConnection c, SqlTransaction t, string table, string col, string prefix) { int n = 1; using (var cmd = new SqlCommand(string.Format("SELECT MAX({0}) FROM dbo.[{1}]", col, table), c, t)) { var r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) { string last = r.ToString(); if (last.Length > prefix.Length) { int num; if (int.TryParse(last.Substring(prefix.Length), out num)) n = num + 1; } } } return prefix + n.ToString("D3"); }
+        private string GenId(SqlConnection conn, SqlTransaction txn, string table, string column, string prefix)
+        {
+            int nextNumber = 1;
+            using (var cmd = new SqlCommand(string.Format("SELECT MAX({0}) FROM dbo.[{1}]", column, table), conn, txn))
+            {
+                object result = cmd.ExecuteScalar();
+                if (result != null && result != DBNull.Value)
+                {
+                    string lastId = result.ToString();
+                    if (lastId.Length > prefix.Length)
+                    {
+                        string numericPart = lastId.Substring(prefix.Length);
+                        if (int.TryParse(numericPart, out int lastNumber))
+                            nextNumber = lastNumber + 1;
+                    }
+                }
+            }
+            return prefix + nextNumber.ToString("D3");
+        }
         private void ShowMsg(string msg, bool ok) { pnlMessage.Visible = true; divMsg.InnerHtml = msg; iMsgIcon.Attributes["class"] = ok ? "bi bi-check-circle-fill" : "bi bi-exclamation-circle-fill"; }
         protected void BtnCloseMsg_Click(object sender, EventArgs e) { pnlMessage.Visible = false; }
         private void LoadSidebarChildren()

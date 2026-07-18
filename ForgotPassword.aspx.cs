@@ -12,6 +12,8 @@ namespace ScienceBuddy
     public partial class ForgotPassword : Page
     {
         private string ConnStr => ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+
+        // Token expires after 20 minutes; users must wait 2 minutes between reset requests
         private const int TokenExpiryMinutes = 20;
         private const int ThrottleSeconds = 120;
 
@@ -167,21 +169,28 @@ If you did not request this, you can safely ignore this email. Do not share this
             }
         }
 
-        private string GenId(SqlConnection c, SqlTransaction t)
+        private string GenId(SqlConnection conn, SqlTransaction txn)
         {
-            int n = 1;
-            using (var cmd = new SqlCommand("SELECT TOP 1 [tokenId] FROM dbo.[PasswordResetToken] ORDER BY [tokenId] DESC", c, t))
+            int nextNumber = 1;
+            using (SqlCommand cmd = new SqlCommand("SELECT TOP 1 [tokenId] FROM dbo.[PasswordResetToken] ORDER BY [tokenId] DESC", conn, txn))
             {
-                var r = cmd.ExecuteScalar();
-                if (r != null && r != DBNull.Value)
+                object result = cmd.ExecuteScalar();
+                if (result != null && result != DBNull.Value)
                 {
-                    string last = r.ToString();
-                    if (last.Length > 3 && int.TryParse(last.Substring(3), out int num)) n = num + 1;
+                    string lastId = result.ToString();
+                    // Token IDs follow format PRT001, PRT002, etc.
+                    if (lastId.Length > 3 && int.TryParse(lastId.Substring(3), out int lastNumber))
+                        nextNumber = lastNumber + 1;
                 }
             }
-            return "PRT" + n.ToString("D3");
+            return "PRT" + nextNumber.ToString("D3");
         }
 
+        /// <summary>
+        /// Hashes the reset token before storing it in the database.
+        /// Only the hash is stored; the raw token is sent to the user via email.
+        /// This way, even if the database is compromised, tokens cannot be reused.
+        /// </summary>
         private static string ComputeSHA256(string input)
         {
             using (var sha = SHA256.Create())

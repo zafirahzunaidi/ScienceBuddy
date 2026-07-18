@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
@@ -223,6 +224,7 @@ namespace ScienceBuddy.Student
                 pnlResult.Visible = true;
                 pnlError.Visible = false;
                 litPageTitle.Text = T("Quiz Result", "Keputusan Kuiz");
+                litBackToHistory.Text = T("Back to Quiz History", "Kembali ke Sejarah Kuiz");
 
                 // Hero
                 if (passed)
@@ -389,7 +391,130 @@ namespace ScienceBuddy.Student
 
                 // Retry visible for Practice always, or if failed
                 pnlRetry.Visible = (quizType == "Practice" || !passed);
+
+                // ══ LOAD QUESTION REVIEW INLINE ══
+                litReviewTitle.Text = T("Answer Review", "Semakan Jawapan");
+                LoadQuestionReview(connection, resultId);
             }
+        }
+
+        private void LoadQuestionReview(SqlConnection connection, string resultId)
+        {
+            bool isBM = CurrentLanguage == "BM";
+            const string sql = @"
+                SELECT qa.selectedAnswer, qa.isCorrect,
+                       q.questionTextEN, q.questionTextBM,
+                       q.optionA_EN, q.optionA_BM, q.optionB_EN, q.optionB_BM,
+                       q.optionC_EN, q.optionC_BM, q.optionD_EN, q.optionD_BM,
+                       q.correctAnswer, q.correctExplanationEN, q.correctExplanationBM,
+                       q.wrongExplanationEN, q.wrongExplanationBM
+                FROM QuizAnswer qa
+                JOIN Question q ON q.questionId = qa.questionId
+                WHERE qa.resultId = @rid";
+
+            DataTable dt = new DataTable();
+            using (SqlCommand command = new SqlCommand(sql, connection))
+            {
+                command.Parameters.AddWithValue("@rid", resultId);
+                new SqlDataAdapter(command).Fill(dt);
+            }
+
+            List<object> list = new List<object>();
+            int num = 0;
+            foreach (DataRow r in dt.Rows)
+            {
+                num++;
+                bool isCorrect = r["isCorrect"] != DBNull.Value && Convert.ToBoolean(r["isCorrect"]);
+                string qText = isBM ? S(r, "questionTextBM") : S(r, "questionTextEN");
+                if (string.IsNullOrWhiteSpace(qText)) qText = S(r, "questionTextEN");
+
+                string selectedRaw = S(r, "selectedAnswer");
+                string correctRaw = S(r, "correctAnswer");
+
+                // Resolve selected answer to full text
+                string studentAnswerText = ResolveAnswerText(r, selectedRaw, isBM);
+                string correctAnswerText = ResolveAnswerText(r, correctRaw, isBM);
+
+                string explanation = "";
+                if (isCorrect)
+                {
+                    explanation = isBM ? S(r, "correctExplanationBM") : S(r, "correctExplanationEN");
+                    if (string.IsNullOrWhiteSpace(explanation)) explanation = S(r, "correctExplanationEN");
+                }
+                else
+                {
+                    explanation = isBM ? S(r, "wrongExplanationBM") : S(r, "wrongExplanationEN");
+                    if (string.IsNullOrWhiteSpace(explanation)) explanation = S(r, "wrongExplanationEN");
+                }
+
+                list.Add(new
+                {
+                    Num = num,
+                    QuestionText = HttpUtility.HtmlEncode(qText),
+                    StudentAnswer = HttpUtility.HtmlEncode(studentAnswerText),
+                    CorrectAnswer = HttpUtility.HtmlEncode(correctAnswerText),
+                    IsCorrect = isCorrect,
+                    Explanation = HttpUtility.HtmlEncode(explanation),
+                    YourAnswerLabel = T("Your Answer:", "Jawapan Anda:"),
+                    CorrectLabel = T("Correct Answer:", "Jawapan Betul:")
+                });
+            }
+
+            rptReview.DataSource = list;
+            rptReview.DataBind();
+        }
+
+        private string ResolveAnswerText(DataRow r, string answerRaw, bool isBM)
+        {
+            if (string.IsNullOrWhiteSpace(answerRaw)) return "\u2014";
+
+            string[] parts = answerRaw.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            List<string> resolved = new List<string>();
+
+            foreach (string part in parts)
+            {
+                string p = part.Trim();
+                string optText = "";
+                string letter = p.ToUpper();
+
+                if (letter == "A")
+                {
+                    optText = isBM ? GetCol(r, "optionA_BM") : GetCol(r, "optionA_EN");
+                    if (string.IsNullOrWhiteSpace(optText)) optText = GetCol(r, "optionA_EN");
+                    resolved.Add(!string.IsNullOrWhiteSpace(optText) ? "A. " + optText : "A");
+                }
+                else if (letter == "B")
+                {
+                    optText = isBM ? GetCol(r, "optionB_BM") : GetCol(r, "optionB_EN");
+                    if (string.IsNullOrWhiteSpace(optText)) optText = GetCol(r, "optionB_EN");
+                    resolved.Add(!string.IsNullOrWhiteSpace(optText) ? "B. " + optText : "B");
+                }
+                else if (letter == "C")
+                {
+                    optText = isBM ? GetCol(r, "optionC_BM") : GetCol(r, "optionC_EN");
+                    if (string.IsNullOrWhiteSpace(optText)) optText = GetCol(r, "optionC_EN");
+                    resolved.Add(!string.IsNullOrWhiteSpace(optText) ? "C. " + optText : "C");
+                }
+                else if (letter == "D")
+                {
+                    optText = isBM ? GetCol(r, "optionD_BM") : GetCol(r, "optionD_EN");
+                    if (string.IsNullOrWhiteSpace(optText)) optText = GetCol(r, "optionD_EN");
+                    resolved.Add(!string.IsNullOrWhiteSpace(optText) ? "D. " + optText : "D");
+                }
+                else
+                {
+                    resolved.Add(p);
+                }
+            }
+
+            return resolved.Count > 0 ? string.Join(", ", resolved) : answerRaw;
+        }
+
+        private static string GetCol(DataRow r, string col)
+        {
+            if (!r.Table.Columns.Contains(col)) return "";
+            if (r[col] == null || r[col] == DBNull.Value) return "";
+            return r[col].ToString().Trim();
         }
 
         private void ShowError(string msg)

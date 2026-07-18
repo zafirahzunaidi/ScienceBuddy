@@ -26,5 +26,21 @@ namespace ScienceBuddy.Parent
         protected global::System.Web.UI.WebControls.Button btnSave;
         protected global::System.Web.UI.WebControls.Literal litUnreadBadge;
 
+        // Report a Problem controls
+        protected global::System.Web.UI.WebControls.Panel pnlReportSuccess;
+        protected global::System.Web.UI.WebControls.Literal litReportStatus;
+        protected global::System.Web.UI.WebControls.Panel pnlReportError;
+        protected global::System.Web.UI.WebControls.Literal litReportError;
+        protected global::System.Web.UI.WebControls.DropDownList ddlReportCategory;
+        protected global::System.Web.UI.WebControls.TextBox txtReportSubject;
+        protected global::System.Web.UI.WebControls.TextBox txtReportMessage;
+        protected global::System.Web.UI.WebControls.Button btnReportSubmit;
+
+        // Soft Delete Account controls
+        protected global::System.Web.UI.WebControls.Panel pnlDeleteError;
+        protected global::System.Web.UI.WebControls.Literal litDeleteError;
+        protected global::System.Web.UI.WebControls.TextBox txtDeleteReason;
+        protected global::System.Web.UI.WebControls.CheckBox chkDeleteConfirm;
+        protected global::System.Web.UI.WebControls.Button btnDeleteAccount;
     }
 }
