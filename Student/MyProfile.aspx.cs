@@ -3,18 +3,19 @@ using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 
 namespace ScienceBuddy.Student
 {
     public partial class MyProfile1 : Page
     {
-        // ── Connection string ─────────────────────────────────────────
-        private string ConnStr
+        // Connection string
+        private string ConnectionString
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
 
-        // ── Language helper ────────────────────────────────────────────
+        // Language helper
         public string CurrentLanguage = "EN";
 
         public string T(string en, string bm)
@@ -26,7 +27,7 @@ namespace ScienceBuddy.Student
             return en;
         }
 
-        // ── Page Load ─────────────────────────────────────────────────
+        // Page Load
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["userId"] == null || Session["role"] == null ||
@@ -47,7 +48,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── InitLang ──────────────────────────────────────────────────
+        // InitLang
         private void InitLang()
         {
             string lang = Session["preferredLanguage"] as string;
@@ -63,7 +64,7 @@ namespace ScienceBuddy.Student
                 try
                 {
                     const string sql = "SELECT preferredLanguage FROM [User] WHERE userId = @userId";
-                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlConnection connection = new SqlConnection(ConnectionString))
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
                         command.Parameters.AddWithValue("@userId", userId);
@@ -88,7 +89,7 @@ namespace ScienceBuddy.Student
             Session["preferredLanguage"] = "EN";
         }
 
-        // ── SetLabels ─────────────────────────────────────────────────
+        // SetLabels
         private void SetLabels()
         {
             litPageTitle.Text = T("My Profile", "Profil Saya");
@@ -116,12 +117,12 @@ namespace ScienceBuddy.Student
             btnSave.Text = T("Save Changes", "Simpan Perubahan");
         }
 
-        // ── LoadProfile ───────────────────────────────────────────────
+        // LoadProfile
         private void LoadProfile()
         {
             string userId = Session["userId"].ToString();
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -273,7 +274,7 @@ namespace ScienceBuddy.Student
 
                 // Load Level name
                 string levelName = "\u2014";
-                if (!string.IsNullOrEmpty(currentlevelId) && Tbl(connection, "Level"))
+                if (!string.IsNullOrEmpty(currentlevelId) && TableExists(connection, "Level"))
                 {
                     string sqlLevel;
                     if (CurrentLanguage == "BM")
@@ -297,7 +298,7 @@ namespace ScienceBuddy.Student
 
                 // Load Personality
                 string persName = "\u2014", persDesc = "\u2014", persStyle = "\u2014", persAvatar = "", persColour = "";
-                if (!string.IsNullOrEmpty(personalityId) && Tbl(connection, "Personality"))
+                if (!string.IsNullOrEmpty(personalityId) && TableExists(connection, "Personality"))
                 {
                     const string sqlPers = @"SELECT personalityNameEN, personalityNameBM, 
                                                     descriptionEN, descriptionBM,
@@ -345,7 +346,7 @@ namespace ScienceBuddy.Student
                     }
                 }
 
-                // ── Populate Hero ──
+                // Populate Hero
                 string displayName;
                 if (string.IsNullOrWhiteSpace(nickname))
                 {
@@ -367,17 +368,17 @@ namespace ScienceBuddy.Student
                 string initials = GetInitials(displayName);
                 litHeroInitial.Text = System.Web.HttpUtility.HtmlEncode(initials);
 
-                // ── Populate Form ──
+                // Populate Form
                 txtUsername.Text = username;
                 txtName.Text = name;
                 txtNickname.Text = nickname;
                 txtPhone.Text = phoneNumber;
                 txtEmail.Text = email;
 
-                // ── Language dropdown ──
+                // Language dropdown
                 ddlLanguage.SelectedValue = preferredLanguage;
 
-                // ── Personality card ──
+                // Personality card
                 litPersName.Text = System.Web.HttpUtility.HtmlEncode(persName);
                 litPersDesc.Text = System.Web.HttpUtility.HtmlEncode(persDesc);
                 litPersStyle.Text = System.Web.HttpUtility.HtmlEncode(persStyle);
@@ -389,7 +390,7 @@ namespace ScienceBuddy.Student
                         "\" alt=\"Personality\" style=\"width:100%;height:100%;object-fit:cover;\" />";
                 }
 
-                // ── Account Status ──
+                // Account Status
                 litStatusRole.Text = System.Web.HttpUtility.HtmlEncode(role);
                 litStatusStatus.Text = System.Web.HttpUtility.HtmlEncode(status);
                 if (preferredLanguage == "BM")
@@ -410,7 +411,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── btnSave_Click ─────────────────────────────────────────────
+        // btnSave_Click
         protected void btnSave_Click(object sender, EventArgs e)
         {
             InitLang();
@@ -434,7 +435,7 @@ namespace ScienceBuddy.Student
             string phone = txtPhone.Text.Trim();
             string lang = ddlLanguage.SelectedValue;
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -485,7 +486,7 @@ namespace ScienceBuddy.Student
             LoadProfile();
         }
 
-        // ── btnChangePw_Click ──────────────────────────────────────────
+        // btnChangePw_Click
         protected void btnChangePw_Click(object sender, EventArgs e)
         {
             InitLang();
@@ -521,7 +522,7 @@ namespace ScienceBuddy.Student
                 return;
             }
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
                 // Retrieve stored password hash for verification
@@ -561,8 +562,8 @@ namespace ScienceBuddy.Student
             pnlPwSuccess.Visible = true;
         }
 
-        // ── rptParents_ItemCommand (Remove Parent) ────────────────────
-        protected void rptParents_ItemCommand(object source, System.Web.UI.WebControls.RepeaterCommandEventArgs e)
+        // rptParents_ItemCommand (Remove Parent)
+        protected void rptParents_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
             if (e.CommandName != "RemoveParent")
             {
@@ -571,7 +572,7 @@ namespace ScienceBuddy.Student
             InitLang();
             string studentParentId = e.CommandArgument.ToString();
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -608,7 +609,7 @@ namespace ScienceBuddy.Student
             LoadProfile();
         }
 
-        // ── btnDeleteAccount_Click ────────────────────────────────────
+        // btnDeleteAccount_Click
         protected void btnDeleteAccount_Click(object sender, EventArgs e)
         {
             InitLang();
@@ -624,7 +625,7 @@ namespace ScienceBuddy.Student
                 return;
             }
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -655,7 +656,7 @@ namespace ScienceBuddy.Student
                 }
 
                 // Log the deletion
-                if (Tbl(connection, "Log"))
+                if (TableExists(connection, "Log"))
                 {
                     string logId = "LOG001";
                     using (SqlCommand seqCmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(logId,4,LEN(logId)-3) AS INT)),0) FROM Log WHERE logId LIKE 'LOG[0-9]%'", connection))
@@ -682,7 +683,7 @@ namespace ScienceBuddy.Student
             Response.Redirect("~/Login.aspx", false);
         }
 
-        // ── btnSendQuery_Click ────────────────────────────────────────
+        // btnSendQuery_Click
         protected void btnSendQuery_Click(object sender, EventArgs e)
         {
             InitLang();
@@ -746,10 +747,10 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Load linked parents ───────────────────────────────────────
+        // Load linked parents
         private void LoadParents(SqlConnection connection, string studentId)
         {
-            if (!Tbl(connection, "StudentParent") || !Tbl(connection, "Parent"))
+            if (!TableExists(connection, "StudentParent") || !TableExists(connection, "Parent"))
             {
                 pnlParentList.Visible = false;
                 pnlNoParent.Visible = true;
@@ -792,7 +793,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Utility helpers ───────────────────────────────────────────
+        // Utility helpers
 
         private static string GetInitials(string name)
         {
@@ -808,7 +809,7 @@ namespace ScienceBuddy.Student
             return name[0].ToString().ToUpper();
         }
 
-        private static bool Tbl(SqlConnection connection, string tableName)
+        private static bool TableExists(SqlConnection connection, string tableName)
         {
             const string sql = @"
                 SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
@@ -852,7 +853,7 @@ namespace ScienceBuddy.Student
         {
             try
             {
-                using (SqlConnection connection = new SqlConnection(ConnStr))
+                using (SqlConnection connection = new SqlConnection(ConnectionString))
                 {
                     connection.Open();
                     using (SqlCommand command = new SqlCommand("SELECT configValue FROM ConfigurationSetting WHERE configKey=@k", connection))

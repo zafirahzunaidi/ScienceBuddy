@@ -12,7 +12,7 @@ namespace ScienceBuddy.Student
     public partial class ForumThread1 : Page
     {
         // Connection string
-        private string ConnStr
+        private string ConnectionString
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
@@ -66,7 +66,7 @@ namespace ScienceBuddy.Student
                 try
                 {
                     const string sql = "SELECT preferredLanguage FROM [User] WHERE userId = @userId";
-                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlConnection connection = new SqlConnection(ConnectionString))
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
                         command.Parameters.AddWithValue("@userId", userId);
@@ -132,11 +132,11 @@ namespace ScienceBuddy.Student
                 return;
             }
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
-                if (!Tbl(connection, "Forum"))
+                if (!TableExists(connection, "Forum"))
                 {
                     ShowError();
                     return;
@@ -214,7 +214,7 @@ namespace ScienceBuddy.Student
 
                 // Load tags
                 string tagsHtml = "";
-                if (Tbl(connection, "ForumTag") && Tbl(connection, "Tag"))
+                if (TableExists(connection, "ForumTag") && TableExists(connection, "Tag"))
                 {
                     const string tagSql = @"
                         SELECT t.tagName
@@ -238,7 +238,7 @@ namespace ScienceBuddy.Student
                 // Count likes
                 int likeCount = 0;
                 bool isLiked = false;
-                if (Tbl(connection, "ForumLike"))
+                if (TableExists(connection, "ForumLike"))
                 {
                     const string likeSql = "SELECT COUNT(*) FROM ForumLike WHERE forumId = @forumId";
                     using (SqlCommand likeCmd = new SqlCommand(likeSql, connection))
@@ -260,7 +260,7 @@ namespace ScienceBuddy.Student
 
                 // Count replies
                 int replyCount = 0;
-                if (Tbl(connection, "ForumChat"))
+                if (TableExists(connection, "ForumChat"))
                 {
                     const string replySql = "SELECT COUNT(*) FROM ForumChat WHERE forumId = @forumId";
                     using (SqlCommand replyCmd = new SqlCommand(replySql, connection))
@@ -339,7 +339,7 @@ namespace ScienceBuddy.Student
             }
 
             // Case 2: Creator is linked parent
-            if (Tbl(connection, "Student") && Tbl(connection, "StudentParent") && Tbl(connection, "Parent"))
+            if (TableExists(connection, "Student") && TableExists(connection, "StudentParent") && TableExists(connection, "Parent"))
             {
                 const string sql = @"
                     SELECT COUNT(*)
@@ -397,7 +397,7 @@ namespace ScienceBuddy.Student
         // Load Replies
         private void LoadReplies(SqlConnection connection, string forumId)
         {
-            if (!Tbl(connection, "ForumChat"))
+            if (!TableExists(connection, "ForumChat"))
             {
                 pnlNoReplies.Visible = true;
                 return;
@@ -512,11 +512,11 @@ namespace ScienceBuddy.Student
                 return;
             }
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
-                if (!Tbl(connection, "ForumLike"))
+                if (!TableExists(connection, "ForumLike"))
                 {
                     return;
                 }
@@ -609,7 +609,7 @@ namespace ScienceBuddy.Student
 
             if (string.IsNullOrEmpty(forumId)) return;
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -624,7 +624,7 @@ namespace ScienceBuddy.Student
                 }
 
                 // Delete related records
-                if (Tbl(connection, "ForumTag"))
+                if (TableExists(connection, "ForumTag"))
                 {
                     using (SqlCommand command = new SqlCommand("DELETE FROM ForumTag WHERE forumId = @fid", connection))
                     {
@@ -632,7 +632,7 @@ namespace ScienceBuddy.Student
                         command.ExecuteNonQuery();
                     }
                 }
-                if (Tbl(connection, "ForumLike"))
+                if (TableExists(connection, "ForumLike"))
                 {
                     using (SqlCommand command = new SqlCommand("DELETE FROM ForumLike WHERE forumId = @fid", connection))
                     {
@@ -640,7 +640,7 @@ namespace ScienceBuddy.Student
                         command.ExecuteNonQuery();
                     }
                 }
-                if (Tbl(connection, "ForumChat"))
+                if (TableExists(connection, "ForumChat"))
                 {
                     using (SqlCommand command = new SqlCommand("DELETE FROM ForumChat WHERE forumId = @fid", connection))
                     {
@@ -682,11 +682,11 @@ namespace ScienceBuddy.Student
             }
 
             // Re-check access for Private threads before allowing reply
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
-                if (!Tbl(connection, "Forum") || !Tbl(connection, "ForumChat"))
+                if (!TableExists(connection, "Forum") || !TableExists(connection, "ForumChat"))
                 {
                     return;
                 }
@@ -819,7 +819,7 @@ namespace ScienceBuddy.Student
         {
             try
             {
-                if (!Tbl(conn, "XPAction") || !Tbl(conn, "XPTransaction") || !Tbl(conn, "Student"))
+                if (!TableExists(conn, "XPAction") || !TableExists(conn, "XPTransaction") || !TableExists(conn, "Student"))
                     return;
 
                 string studentId = null;
@@ -873,7 +873,7 @@ namespace ScienceBuddy.Student
         {
             try
             {
-                if (!Tbl(conn, "StudentBadge") || !Tbl(conn, "Student")) return;
+                if (!TableExists(conn, "StudentBadge") || !TableExists(conn, "Student")) return;
 
                 string studentId = null;
                 using (SqlCommand cmd = new SqlCommand("SELECT studentId FROM Student WHERE userId=@uid", conn))
@@ -964,7 +964,7 @@ namespace ScienceBuddy.Student
         /// </summary>
         private string GetDisplayName(SqlConnection connection, string userId)
         {
-            if (Tbl(connection, "Student"))
+            if (TableExists(connection, "Student"))
             {
                 const string sql = "SELECT nickname, name FROM Student WHERE userId = @userId";
                 using (SqlCommand command = new SqlCommand(sql, connection))
@@ -999,7 +999,7 @@ namespace ScienceBuddy.Student
                 }
             }
 
-            if (Tbl(connection, "Teacher"))
+            if (TableExists(connection, "Teacher"))
             {
                 const string sql = "SELECT name FROM Teacher WHERE userId = @userId";
                 using (SqlCommand command = new SqlCommand(sql, connection))
@@ -1023,7 +1023,7 @@ namespace ScienceBuddy.Student
                 }
             }
 
-            if (Tbl(connection, "Parent"))
+            if (TableExists(connection, "Parent"))
             {
                 const string sql = "SELECT name FROM Parent WHERE userId = @userId";
                 using (SqlCommand command = new SqlCommand(sql, connection))
@@ -1097,7 +1097,7 @@ namespace ScienceBuddy.Student
             return dt.ToString("d MMM yyyy");
         }
 
-        private static bool Tbl(SqlConnection connection, string tableName)
+        private static bool TableExists(SqlConnection connection, string tableName)
         {
             const string sql = @"
                 SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES

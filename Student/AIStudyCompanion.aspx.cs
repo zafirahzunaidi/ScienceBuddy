@@ -17,7 +17,7 @@ namespace ScienceBuddy.Student
     public partial class AIStudyCompanion1 : Page
     {
         // Connection string
-        private string ConnStr
+        private string ConnectionString
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
@@ -85,7 +85,7 @@ namespace ScienceBuddy.Student
                 try
                 {
                     const string sql = "SELECT preferredLanguage FROM [User] WHERE userId = @userId";
-                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlConnection connection = new SqlConnection(ConnectionString))
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
                         command.Parameters.AddWithValue("@userId", userId);
@@ -144,11 +144,11 @@ namespace ScienceBuddy.Student
         // Load page data
         private void LoadPage()
         {
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
-                if (!Tbl(connection, "Student"))
+                if (!TableExists(connection, "Student"))
                 {
                     ShowEmptyState();
                     return;
@@ -189,7 +189,7 @@ namespace ScienceBuddy.Student
                 // 2. Get personality info
                 string personalityName = "";
                 string learningStyle = "";
-                if (Tbl(connection, "Personality") && !string.IsNullOrEmpty(personalityId))
+                if (TableExists(connection, "Personality") && !string.IsNullOrEmpty(personalityId))
                 {
                     const string sqlP = @"SELECT personalityNameEN, personalityNameBM, 
                                           learningStyleEN, learningStyleBM, avatar, colour 
@@ -241,7 +241,7 @@ namespace ScienceBuddy.Student
 
                 // 3. Get level info
                 string levelName = "";
-                if (Tbl(connection, "Level") && !string.IsNullOrEmpty(currentlevelId))
+                if (TableExists(connection, "Level") && !string.IsNullOrEmpty(currentlevelId))
                 {
                     const string sqlL = "SELECT levelNameEN, levelNameBM FROM Level WHERE levelId = @lid";
                     using (SqlCommand command = new SqlCommand(sqlL, connection))
@@ -273,7 +273,7 @@ namespace ScienceBuddy.Student
                 LearningAnalysisData generatedAnalysis = null;
                 bool hasAnalysis = false;
 
-                if (Tbl(connection, "AILearningAnalysis"))
+                if (TableExists(connection, "AILearningAnalysis"))
                 {
                     const string sqlAI = @"SELECT TOP 1
                                            avgQuizScore, totalQuizAttempts,
@@ -302,7 +302,7 @@ namespace ScienceBuddy.Student
                 }
 
                 // Load quiz metadata if ResultId is available
-                if (generatedAnalysis != null && !string.IsNullOrWhiteSpace(generatedAnalysis.ResultId) && Tbl(connection, "QuizResult"))
+                if (generatedAnalysis != null && !string.IsNullOrWhiteSpace(generatedAnalysis.ResultId) && TableExists(connection, "QuizResult"))
                 {
                     const string sqlQM = @"SELECT q.quizTitleEN, q.quizTitleBM, qr.attemptedDate, qr.percentage 
                                            FROM QuizResult qr INNER JOIN Quiz q ON q.quizId = qr.quizId 
@@ -335,7 +335,7 @@ namespace ScienceBuddy.Student
 
                 if (!hasAnalysis)
                 {
-                    if (Tbl(connection, "QuizResult"))
+                    if (TableExists(connection, "QuizResult"))
                     {
                         const string sqlFallback = @"SELECT AVG(percentage) AS avgPct, COUNT(*) AS cnt 
                                                      FROM QuizResult WHERE studentId = @s";
@@ -354,7 +354,7 @@ namespace ScienceBuddy.Student
                         }
                     }
 
-                    if (Tbl(connection, "LessonProgress"))
+                    if (TableExists(connection, "LessonProgress"))
                     {
                         const string sqlLP = @"SELECT COUNT(*) FROM LessonProgress 
                                                WHERE studentId = @s AND isCompleted = 1";
@@ -368,7 +368,7 @@ namespace ScienceBuddy.Student
                 }
                 else
                 {
-                    if (Tbl(connection, "LessonProgress"))
+                    if (TableExists(connection, "LessonProgress"))
                     {
                         const string sqlLP = @"SELECT COUNT(*) FROM LessonProgress 
                                                WHERE studentId = @s AND isCompleted = 1";
@@ -391,7 +391,7 @@ namespace ScienceBuddy.Student
 
                 pnlEmpty.Visible = false;
 
-                // ═══ SECTION 1: HERO - Progress scores ═══
+                // SECTION 1: HERO - Progress scores
                 if (generatedAnalysis != null)
                 {
                     // Hero headline and celebration
@@ -428,7 +428,7 @@ namespace ScienceBuddy.Student
                 // Total quiz attempts chip
                 litWeakTopics.Text = totalAttempts.ToString();
 
-                // ═══ SECTION 2: AI NOTICED THIS ABOUT YOU ═══
+                // SECTION 2: AI NOTICED THIS ABOUT YOU
                 if (hasAnalysis && generatedAnalysis != null)
                 {
                     pnlStatusRow.Visible = true;
@@ -487,7 +487,7 @@ namespace ScienceBuddy.Student
                     pnlStatusRow.Visible = false;
                 }
 
-                // ═══ SECTION 3: YOUR PLAN FOR TODAY ═══
+                // SECTION 3: YOUR PLAN FOR TODAY
                 List<object> recommendations = BuildRecommendations(
                     generatedAnalysis, personalityId, weakTopics,
                     avgScore, lessonsDone, quizAttempts);
@@ -511,7 +511,7 @@ namespace ScienceBuddy.Student
                     pnlRecommend.Visible = false;
                 }
 
-                // ═══ SECTION 4: PERSONALITY MISSION ═══
+                // SECTION 4: PERSONALITY MISSION
                 List<string> tips;
                 string[] missionLabels = GetMissionLabels(personalityId);
 
@@ -546,7 +546,7 @@ namespace ScienceBuddy.Student
                 litTip2.Text = tips.Count > 1 ? HttpUtility.HtmlEncode(tips[1]) : "";
                 litTip3.Text = tips.Count > 2 ? HttpUtility.HtmlEncode(tips[2]) : "";
 
-                // ═══ SECTION 5: CHATBOT - personalised chips ═══
+                // SECTION 5: CHATBOT - personalised chips
                 string firstWeak = "";
                 if (!string.IsNullOrWhiteSpace(weakTopics))
                 {
@@ -872,7 +872,7 @@ namespace ScienceBuddy.Student
                 INNER JOIN Student s ON s.studentId = ai.studentId
                 WHERE s.userId = @userId AND ai.isLatest = 1";
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             using (SqlCommand command = new SqlCommand(sql, connection))
             {
                 command.Parameters.AddWithValue("@userId", userId);
@@ -884,7 +884,7 @@ namespace ScienceBuddy.Student
         }
 
         // Table exists helper
-        private static bool Tbl(SqlConnection connection, string tableName)
+        private static bool TableExists(SqlConnection connection, string tableName)
         {
             const string sql = @"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
                 WHERE TABLE_NAME = @tableName AND TABLE_TYPE = 'BASE TABLE'";

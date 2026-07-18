@@ -11,7 +11,7 @@ namespace ScienceBuddy.Student
 {
     public partial class Notifications : Page
     {
-        private string ConnStr
+        private string ConnectionString
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
@@ -68,7 +68,7 @@ namespace ScienceBuddy.Student
                 try
                 {
                     const string sql = "SELECT preferredLanguage FROM [User] WHERE userId = @userId";
-                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlConnection connection = new SqlConnection(ConnectionString))
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
                         command.Parameters.AddWithValue("@userId", userId);
@@ -189,7 +189,7 @@ namespace ScienceBuddy.Student
             sql += " ORDER BY createdAt DESC";
 
             DataTable dataTable;
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             using (SqlCommand command = new SqlCommand(sql, connection))
             {
                 command.Parameters.AddWithValue("@userId", userId);
@@ -310,7 +310,7 @@ namespace ScienceBuddy.Student
 
         private int GetGlobalUnreadCount(string userId)
         {
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM Notification WHERE toUserId=@uid AND isRead=0", connection))
             {
                 command.Parameters.AddWithValue("@uid", userId);
@@ -319,7 +319,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Event handlers ────────────────────────────────────────────
+        // Event handlers
 
         protected void btnMarkAllRead_Click(object sender, EventArgs e)
         {
@@ -328,7 +328,7 @@ namespace ScienceBuddy.Student
                 UPDATE Notification SET isRead = 1
                 WHERE  toUserId = @userId AND isRead = 0";
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             using (SqlCommand command = new SqlCommand(sql, connection))
             {
                 command.Parameters.AddWithValue("@userId", userId);
@@ -362,7 +362,7 @@ namespace ScienceBuddy.Student
                     WHERE  notificationId = @notifId
                     AND    toUserId = @userId";
 
-                using (SqlConnection connection = new SqlConnection(ConnStr))
+                using (SqlConnection connection = new SqlConnection(ConnectionString))
                 using (SqlCommand command = new SqlCommand(sql, connection))
                 {
                     command.Parameters.AddWithValue("@notifId", notifId);
@@ -377,7 +377,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Utilities ─────────────────────────────────────────────────
+        // Utilities
 
         private static string GetIcon(string title)
         {
@@ -440,7 +440,7 @@ namespace ScienceBuddy.Student
             const string sql = @"
                 SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
                 WHERE TABLE_NAME = @tableName AND TABLE_TYPE = 'BASE TABLE'";
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             using (SqlCommand command = new SqlCommand(sql, connection))
             {
                 command.Parameters.AddWithValue("@tableName", tableName);

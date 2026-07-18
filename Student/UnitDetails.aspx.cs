@@ -14,7 +14,7 @@ namespace ScienceBuddy.Student
 {
     public partial class UnitDetails : Page
     {
-        private string ConnStr
+        private string ConnectionString
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
@@ -71,7 +71,7 @@ namespace ScienceBuddy.Student
             {
                 try
                 {
-                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlConnection connection = new SqlConnection(ConnectionString))
                     using (SqlCommand command = new SqlCommand("SELECT preferredLanguage FROM [User] WHERE userId=@userId", connection))
                     {
                         command.Parameters.AddWithValue("@userId", uid);
@@ -100,13 +100,13 @@ namespace ScienceBuddy.Student
         {
             string unitId = Request.QueryString["unitId"];
             string userId = Session["userId"].ToString();
-            if (string.IsNullOrEmpty(unitId) || !Tbl("Unit") || !Tbl("Student"))
+            if (string.IsNullOrEmpty(unitId) || !TableExists("Unit") || !TableExists("Student"))
             {
                 ShowLocked(T("Invalid page", "Halaman tidak sah"), T("No unit specified.", "Tiada unit dinyatakan."));
                 return;
             }
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
                 string studentId = null;
@@ -258,7 +258,7 @@ namespace ScienceBuddy.Student
             int virtualLabCount = 0;
             int quizCount = 0;
 
-            if (Tbl("Lesson") && Tbl("Subtopic"))
+            if (TableExists("Lesson") && TableExists("Subtopic"))
             {
                 using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM Lesson ls JOIN Subtopic st ON st.subtopicId=ls.subtopicId WHERE st.unitId=@unitId", connection))
                 {
@@ -266,7 +266,7 @@ namespace ScienceBuddy.Student
                     lessonCount = (int)command.ExecuteScalar();
                 }
             }
-            if (Tbl("Material") && Tbl("Subtopic"))
+            if (TableExists("Material") && TableExists("Subtopic"))
             {
                 using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM Material m JOIN Subtopic st ON st.subtopicId=m.subtopicId WHERE st.unitId=@unitId AND m.status='Approved'", connection))
                 {
@@ -274,7 +274,7 @@ namespace ScienceBuddy.Student
                     materialCount = (int)command.ExecuteScalar();
                 }
             }
-            if (Tbl("VirtualLab"))
+            if (TableExists("VirtualLab"))
             {
                 using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM VirtualLab WHERE unitId=@unitId", connection))
                 {
@@ -282,7 +282,7 @@ namespace ScienceBuddy.Student
                     virtualLabCount = (int)command.ExecuteScalar();
                 }
             }
-            if (Tbl("Quiz"))
+            if (TableExists("Quiz"))
             {
                 using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM Quiz WHERE unitId=@unitId AND quizType='Unit'", connection))
                 {
@@ -308,7 +308,7 @@ namespace ScienceBuddy.Student
         private void BuildLessons(SqlConnection connection, string unitId, string studentId)
         {
             litLessonHd.Text = T("Lessons", "Bahan Belajar");
-            if (!Tbl("Subtopic"))
+            if (!TableExists("Subtopic"))
             {
                 pnlLessons.Visible = false;
                 return;
@@ -316,7 +316,7 @@ namespace ScienceBuddy.Student
 
             bool bm = CurrentLanguage == "BM";
             HashSet<string> doneSet = new HashSet<string>();
-            if (Tbl("LessonProgress"))
+            if (TableExists("LessonProgress"))
             {
                 using (SqlCommand command = new SqlCommand("SELECT lessonId FROM LessonProgress WHERE studentId=@s AND isCompleted=1", connection))
                 {
@@ -346,7 +346,7 @@ namespace ScienceBuddy.Student
             }
 
             DataTable dtLs = new DataTable();
-            if (Tbl("Lesson"))
+            if (TableExists("Lesson"))
             {
                 using (SqlCommand command = new SqlCommand("SELECT ls.lessonId,ls.subtopicId,ls.lessonTitleEN,ls.lessonTitleBM,ls.orderNo FROM Lesson ls JOIN Subtopic st ON st.subtopicId=ls.subtopicId WHERE st.unitId=@unitId ORDER BY ls.orderNo", connection))
                 {
@@ -461,7 +461,7 @@ namespace ScienceBuddy.Student
         {
             litMatHd.Text = T("Materials", "Bahan Sokongan");
 
-            if (!Tbl("Material") || !Tbl("Subtopic"))
+            if (!TableExists("Material") || !TableExists("Subtopic"))
             {
                 pnlMats.Visible = false;
                 return;
@@ -512,7 +512,7 @@ namespace ScienceBuddy.Student
         {
             litLabHd.Text = T("Virtual Lab", "Makmal Maya");
 
-            if (!Tbl("VirtualLab"))
+            if (!TableExists("VirtualLab"))
             {
                 pnlLab.Visible = false;
                 return;
@@ -574,7 +574,7 @@ namespace ScienceBuddy.Student
         {
             litQuizHd.Text = T("Unit Quiz", "Kuiz Unit");
 
-            if (!Tbl("Quiz"))
+            if (!TableExists("Quiz"))
             {
                 pnlQuiz.Visible = false;
                 return;
@@ -618,7 +618,7 @@ namespace ScienceBuddy.Student
                 }
             }
 
-            if (!string.IsNullOrEmpty(quizId) && Tbl("QuizResult"))
+            if (!string.IsNullOrEmpty(quizId) && TableExists("QuizResult"))
             {
                 using (SqlCommand command = new SqlCommand("SELECT TOP 1 resultId FROM QuizResult WHERE studentId=@s AND quizId=@q ORDER BY attemptedDate DESC", connection))
                 {
@@ -748,9 +748,9 @@ namespace ScienceBuddy.Student
             }
         }
 
-        private bool Tbl(string t)
+        private bool TableExists(string t)
         {
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME=@t AND TABLE_TYPE='BASE TABLE'", connection))
             {
                 command.Parameters.AddWithValue("@t", t);
@@ -782,7 +782,7 @@ namespace ScienceBuddy.Student
                     l.orderNo,
                     l.lessonId";
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             using (SqlCommand command = new SqlCommand(sql, connection))
             {
                 command.Parameters.AddWithValue("@unitId",unitId);

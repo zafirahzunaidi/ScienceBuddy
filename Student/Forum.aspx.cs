@@ -12,7 +12,7 @@ namespace ScienceBuddy.Student
     public partial class Forum : Page
     {
         // Connection string
-        private string ConnStr
+        private string ConnectionString
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
@@ -68,7 +68,7 @@ namespace ScienceBuddy.Student
                 try
                 {
                     const string sql = "SELECT preferredLanguage FROM [User] WHERE userId = @userId";
-                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlConnection connection = new SqlConnection(ConnectionString))
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
                         command.Parameters.AddWithValue("@userId", userId);
@@ -199,7 +199,7 @@ namespace ScienceBuddy.Student
         // Build filter dropdowns
         private void BuildFilters()
         {
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -207,7 +207,7 @@ namespace ScienceBuddy.Student
                 ddlTag.Items.Clear();
                 ddlTag.Items.Add(new ListItem(T("All Tags", "Semua Tag"), ""));
 
-                if (Tbl(connection, "Tag"))
+                if (TableExists(connection, "Tag"))
                 {
                     const string sql = "SELECT tagId, tagName FROM Tag ORDER BY tagName";
                     using (SqlCommand command = new SqlCommand(sql, connection))
@@ -232,11 +232,11 @@ namespace ScienceBuddy.Student
             bool isPrivate = hfCategory.Value == "private";
             bool isMy = hfCategory.Value == "my";
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
-                if (!Tbl(connection, "Forum"))
+                if (!TableExists(connection, "Forum"))
                 {
                     ShowEmpty();
                     return;
@@ -294,7 +294,7 @@ namespace ScienceBuddy.Student
                 string orderBy = "ORDER BY f.createdAt DESC";
 
                 // Tag filter
-                if (!string.IsNullOrEmpty(tagFilter) && Tbl(connection, "ForumTag"))
+                if (!string.IsNullOrEmpty(tagFilter) && TableExists(connection, "ForumTag"))
                 {
                     joinTag = "JOIN ForumTag ft ON ft.forumId = f.forumId";
                     whereTag = "AND ft.tagId = @tagId";
@@ -352,7 +352,7 @@ namespace ScienceBuddy.Student
 
                     // Get tags for each forum
                     Dictionary<string, string> forumTags = new Dictionary<string, string>();
-                    if (Tbl(connection, "ForumTag") && Tbl(connection, "Tag"))
+                    if (TableExists(connection, "ForumTag") && TableExists(connection, "Tag"))
                     {
                         const string tagSql = @"
                             SELECT ft.forumId, t.tagName
@@ -498,7 +498,7 @@ namespace ScienceBuddy.Student
         {
             List<string> parentUserIds = new List<string>();
 
-            if (!Tbl(connection, "StudentParent") || !Tbl(connection, "Parent") || !Tbl(connection, "Student"))
+            if (!TableExists(connection, "StudentParent") || !TableExists(connection, "Parent") || !TableExists(connection, "Student"))
             {
                 return parentUserIds;
             }
@@ -551,7 +551,7 @@ namespace ScienceBuddy.Student
             string forumId = e.CommandArgument.ToString();
             string userId = Session["userId"].ToString();
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -620,7 +620,7 @@ namespace ScienceBuddy.Student
         {
             string userId = Session["userId"].ToString();
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -639,7 +639,7 @@ namespace ScienceBuddy.Student
                 }
 
                 // Delete related records first (ForumTag, ForumLike, ForumChat), then Forum
-                if (Tbl(connection, "ForumTag"))
+                if (TableExists(connection, "ForumTag"))
                 {
                     using (SqlCommand cmd = new SqlCommand("DELETE FROM ForumTag WHERE forumId = @fid", connection))
                     {
@@ -648,7 +648,7 @@ namespace ScienceBuddy.Student
                     }
                 }
 
-                if (Tbl(connection, "ForumLike"))
+                if (TableExists(connection, "ForumLike"))
                 {
                     using (SqlCommand cmd = new SqlCommand("DELETE FROM ForumLike WHERE forumId = @fid", connection))
                     {
@@ -657,7 +657,7 @@ namespace ScienceBuddy.Student
                     }
                 }
 
-                if (Tbl(connection, "ForumChat"))
+                if (TableExists(connection, "ForumChat"))
                 {
                     using (SqlCommand cmd = new SqlCommand("DELETE FROM ForumChat WHERE forumId = @fid", connection))
                     {
@@ -714,7 +714,7 @@ namespace ScienceBuddy.Student
         /// Returns true if the given table exists in the current database.
         /// Uses INFORMATION_SCHEMA so it never throws on a missing table.
         /// </summary>
-        private static bool Tbl(SqlConnection connection, string tableName)
+        private static bool TableExists(SqlConnection connection, string tableName)
         {
             const string sql = @"
                 SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES

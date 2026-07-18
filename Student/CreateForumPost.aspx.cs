@@ -12,7 +12,7 @@ namespace ScienceBuddy.Student
     public partial class CreateForumPost1 : Page
     {
         // Connection string
-        private string ConnStr
+        private string ConnectionString
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
@@ -97,7 +97,7 @@ namespace ScienceBuddy.Student
                 try
                 {
                     const string sql = "SELECT preferredLanguage FROM [User] WHERE userId = @userId";
-                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlConnection connection = new SqlConnection(ConnectionString))
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
                         command.Parameters.AddWithValue("@userId", userId);
@@ -190,11 +190,11 @@ namespace ScienceBuddy.Student
         {
             string userId = Session["userId"].ToString();
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
-                if (!Tbl(connection, "Student") || !Tbl(connection, "StudentParent") || !Tbl(connection, "Parent"))
+                if (!TableExists(connection, "Student") || !TableExists(connection, "StudentParent") || !TableExists(connection, "Parent"))
                 {
                     ShowNoParentWarning();
                     return;
@@ -241,11 +241,11 @@ namespace ScienceBuddy.Student
             // Tags checkboxes
             cblTags.Items.Clear();
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
-                if (!Tbl(connection, "Tag"))
+                if (!TableExists(connection, "Tag"))
                 {
                     return;
                 }
@@ -270,7 +270,7 @@ namespace ScienceBuddy.Student
             string userId = Session["userId"].ToString();
             string forumId = EditForumId;
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -307,7 +307,7 @@ namespace ScienceBuddy.Student
                 }
 
                 // Load existing tags and pre-select them
-                if (Tbl(connection, "ForumTag") && Tbl(connection, "Tag"))
+                if (TableExists(connection, "ForumTag") && TableExists(connection, "Tag"))
                 {
                     const string tagSql = "SELECT tagId FROM ForumTag WHERE forumId = @fid";
                     using (SqlCommand tagCmd = new SqlCommand(tagSql, connection))
@@ -379,7 +379,7 @@ namespace ScienceBuddy.Student
                 return;
             }
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -508,7 +508,7 @@ namespace ScienceBuddy.Student
             string userId = Session["userId"].ToString();
             string forumId = EditForumId;
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -540,7 +540,7 @@ namespace ScienceBuddy.Student
                 }
 
                 // Update tags: remove old, add new
-                if (Tbl(connection, "ForumTag"))
+                if (TableExists(connection, "ForumTag"))
                 {
                     using (SqlCommand delCmd = new SqlCommand("DELETE FROM ForumTag WHERE forumId = @fid", connection))
                     {
@@ -586,7 +586,7 @@ namespace ScienceBuddy.Student
         {
             try
             {
-                if (!Tbl(conn, "StudentBadge") || !Tbl(conn, "Student")) return;
+                if (!TableExists(conn, "StudentBadge") || !TableExists(conn, "Student")) return;
 
                 string studentId = null;
                 using (SqlCommand cmd = new SqlCommand("SELECT studentId FROM Student WHERE userId=@uid", conn))
@@ -662,7 +662,7 @@ namespace ScienceBuddy.Student
         {
             try
             {
-                if (!Tbl(conn, "XPAction") || !Tbl(conn, "XPTransaction") || !Tbl(conn, "Student"))
+                if (!TableExists(conn, "XPAction") || !TableExists(conn, "XPTransaction") || !TableExists(conn, "Student"))
                 {
                     return;
                 }
@@ -732,7 +732,7 @@ namespace ScienceBuddy.Student
         }
 
         // Table existence check
-        private static bool Tbl(SqlConnection connection, string tableName)
+        private static bool TableExists(SqlConnection connection, string tableName)
         {
             const string sql = @"
                 SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES

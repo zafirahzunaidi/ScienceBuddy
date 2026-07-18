@@ -12,7 +12,7 @@ namespace ScienceBuddy.Student
 {
     public partial class Dashboard : System.Web.UI.Page
     {
-        private string ConnStr = ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+        private string ConnectionString = ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
         // Language helper
         private string CurrentLanguage = "EN";
@@ -63,7 +63,7 @@ namespace ScienceBuddy.Student
                 try
                 {
                     const string sql = "SELECT preferredLanguage FROM [User] WHERE userId = @userId";
-                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlConnection connection = new SqlConnection(ConnectionString))
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
                         command.Parameters.AddWithValue("@userId", userId);
@@ -92,7 +92,7 @@ namespace ScienceBuddy.Student
         private void LoadDashboard(string userId)
         {
             // All data fetched in a single open connection for efficiency.
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 

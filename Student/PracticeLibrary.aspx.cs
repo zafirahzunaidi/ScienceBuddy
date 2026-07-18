@@ -11,7 +11,7 @@ namespace ScienceBuddy.Student
 {
     public partial class PracticeLibrary : Page
     {
-        private string ConnStr
+        private string ConnectionString
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
@@ -62,7 +62,7 @@ namespace ScienceBuddy.Student
                 try
                 {
                     const string sql = "SELECT preferredLanguage FROM [User] WHERE userId = @userId";
-                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlConnection connection = new SqlConnection(ConnectionString))
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
                         command.Parameters.AddWithValue("@userId", userId);
@@ -99,12 +99,12 @@ namespace ScienceBuddy.Student
 
         private void BuildFilters()
         {
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
                 ddlLevel.Items.Clear();
                 ddlLevel.Items.Add(new ListItem(T("All Levels", "Semua Tahap"), ""));
-                if (Tbl(connection, "Level"))
+                if (TableExists(connection, "Level"))
                 {
                     string sqlLevel;
                     if (CurrentLanguage == "BM")
@@ -126,7 +126,7 @@ namespace ScienceBuddy.Student
                 }
                 ddlUnit.Items.Clear();
                 ddlUnit.Items.Add(new ListItem(T("All Units", "Semua Unit"), ""));
-                if (Tbl(connection, "Unit"))
+                if (TableExists(connection, "Unit"))
                 {
                     string sqlUnit;
                     if (CurrentLanguage == "BM")
@@ -159,10 +159,10 @@ namespace ScienceBuddy.Student
 
         private void LoadQuizzes()
         {
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
-                if (!Tbl(connection, "Quiz"))
+                if (!TableExists(connection, "Quiz"))
                 {
                     pnlGrid.Visible = false;
                     pnlEmpty.Visible = true;
@@ -170,8 +170,8 @@ namespace ScienceBuddy.Student
                 }
 
                 string studentId = GetStudentId(connection);
-                bool hasQuestion = Tbl(connection, "Question");
-                bool hasResult = Tbl(connection, "QuizResult");
+                bool hasQuestion = TableExists(connection, "Question");
+                bool hasResult = TableExists(connection, "QuizResult");
 
                 string sql = @"SELECT q.quizId, q.quizTitleEN, q.quizTitleBM, q.language,
                         l.levelNameEN, l.levelNameBM, l.levelId,
@@ -445,10 +445,10 @@ namespace ScienceBuddy.Student
 
         private void LoadRecommendation()
         {
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
-                if (!Tbl(connection, "AILearningAnalysis"))
+                if (!TableExists(connection, "AILearningAnalysis"))
                 {
                     pnlRecommend.Visible = true;
                     litRecommendTitle.Text = T("Personalised Recommendations", "Cadangan Peribadi");
@@ -495,7 +495,7 @@ namespace ScienceBuddy.Student
 
         private string GetStudentId(SqlConnection conn)
         {
-            if (!Tbl(conn, "Student"))
+            if (!TableExists(conn, "Student"))
             {
                 return null;
             }
@@ -517,7 +517,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        private static bool Tbl(SqlConnection conn, string tableName)
+        private static bool TableExists(SqlConnection conn, string tableName)
         {
             const string sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = @tableName AND TABLE_TYPE = 'BASE TABLE'";
             using (SqlCommand command = new SqlCommand(sql, conn))

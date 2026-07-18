@@ -11,7 +11,7 @@ namespace ScienceBuddy.Student
 {
     public partial class LiveSessions1 : Page
     {
-        private string ConnStr
+        private string ConnectionString
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
@@ -61,7 +61,7 @@ namespace ScienceBuddy.Student
                 try
                 {
                     const string sql = "SELECT preferredLanguage FROM [User] WHERE userId = @userId";
-                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlConnection connection = new SqlConnection(ConnectionString))
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
                         command.Parameters.AddWithValue("@userId", userId);
@@ -142,11 +142,11 @@ namespace ScienceBuddy.Student
 
         private void LoadSessions()
         {
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
-                if (!Tbl(connection, "LiveConsultationSession"))
+                if (!TableExists(connection, "LiveConsultationSession"))
                 {
                     pnlGrid.Visible = false;
                     pnlEmpty.Visible = true;
@@ -166,7 +166,7 @@ namespace ScienceBuddy.Student
                             u.unitNameEN, u.unitNameBM,
                             st.subtopicTitleEN, st.subtopicTitleBM";
 
-                if (!string.IsNullOrEmpty(studentId) && Tbl(connection, "LiveSessionParticipant"))
+                if (!string.IsNullOrEmpty(studentId) && TableExists(connection, "LiveSessionParticipant"))
                 {
                     sql += @",
                             lsp.participantId AS hasJoinedId";
@@ -183,7 +183,7 @@ namespace ScienceBuddy.Student
                     LEFT JOIN Unit u ON u.unitId = s.unitId
                     LEFT JOIN Subtopic st ON st.subtopicId = s.subtopicId";
 
-                if (!string.IsNullOrEmpty(studentId) && Tbl(connection, "LiveSessionParticipant"))
+                if (!string.IsNullOrEmpty(studentId) && TableExists(connection, "LiveSessionParticipant"))
                 {
                     sql += @"
                     LEFT JOIN LiveSessionParticipant lsp ON lsp.sessionId = s.sessionId AND lsp.studentId = @studentId";
@@ -476,7 +476,7 @@ namespace ScienceBuddy.Student
 
             string sessionId = e.CommandArgument.ToString();
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -594,7 +594,7 @@ namespace ScienceBuddy.Student
         private void HandleReminder(string sessionId)
         {
             InitLang();
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -603,7 +603,7 @@ namespace ScienceBuddy.Student
 
                 // Register as participant if not already
                 bool exists = false;
-                if (Tbl(connection, "LiveSessionParticipant"))
+                if (TableExists(connection, "LiveSessionParticipant"))
                 {
                     using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM LiveSessionParticipant WHERE sessionId=@sid AND studentId=@stid", connection))
                     {
@@ -726,7 +726,7 @@ namespace ScienceBuddy.Student
         {
             try
             {
-                if (!Tbl(conn, "XPAction") || !Tbl(conn, "XPTransaction")) return;
+                if (!TableExists(conn, "XPAction") || !TableExists(conn, "XPTransaction")) return;
 
                 int xpAmount = 0;
                 using (SqlCommand cmd = new SqlCommand("SELECT xpValue FROM XPAction WHERE xpActionId='XP008'", conn))
@@ -768,7 +768,7 @@ namespace ScienceBuddy.Student
         // Get studentId for the logged-in user
         private string GetStudentId(SqlConnection conn)
         {
-            if (!Tbl(conn, "Student"))
+            if (!TableExists(conn, "Student"))
             {
                 return null;
             }
@@ -799,7 +799,7 @@ namespace ScienceBuddy.Student
         /// Returns true if the given table exists in the current database.
         /// Uses INFORMATION_SCHEMA so it never throws on a missing table.
         /// </summary>
-        private static bool Tbl(SqlConnection conn, string tableName)
+        private static bool TableExists(SqlConnection conn, string tableName)
         {
             const string sql = @"
                 SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES

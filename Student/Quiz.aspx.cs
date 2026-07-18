@@ -13,7 +13,7 @@ namespace ScienceBuddy.Student
 {
     public partial class Quiz : Page
     {
-        private string ConnStr
+        private string ConnectionString
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
@@ -79,7 +79,7 @@ namespace ScienceBuddy.Student
             {
                 try
                 {
-                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlConnection connection = new SqlConnection(ConnectionString))
                     using (SqlCommand command = new SqlCommand("SELECT preferredLanguage FROM [User] WHERE userId=@u", connection))
                     {
                         command.Parameters.AddWithValue("@u", uid);
@@ -164,7 +164,7 @@ namespace ScienceBuddy.Student
             }
             string userId = Session["userId"].ToString();
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -745,7 +745,7 @@ namespace ScienceBuddy.Student
             string studentId = ViewState["StudentId"] as string;
             string quizType = ViewState["QuizType"] as string;
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
                 LoadMarkSettings(connection);
@@ -889,7 +889,7 @@ namespace ScienceBuddy.Student
                         // Send quiz completed notification
                         try
                         {
-                            using (SqlConnection notifConn = new SqlConnection(ConnStr))
+                            using (SqlConnection notifConn = new SqlConnection(ConnectionString))
                             {
                                 notifConn.Open();
                                 string studentUserId = Session["userId"].ToString();
@@ -907,7 +907,7 @@ namespace ScienceBuddy.Student
                         // Generate the analysis only after the quiz has been saved.
                         try
                         {
-                            StudentLearningAnalysisService analysisService = new StudentLearningAnalysisService(ConnStr);
+                            StudentLearningAnalysisService analysisService = new StudentLearningAnalysisService(ConnectionString);
 
                             analysisService.GenerateAndSaveAnalysis(
                                 studentId,
@@ -1124,7 +1124,7 @@ namespace ScienceBuddy.Student
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(ConnStr))
+                using (SqlConnection conn = new SqlConnection(ConnectionString))
                 {
                     conn.Open();
 

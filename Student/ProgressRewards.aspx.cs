@@ -11,7 +11,7 @@ namespace ScienceBuddy.Student
 {
     public partial class ProgressReward : Page
     {
-        private string ConnStr
+        private string ConnectionString
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
@@ -55,7 +55,7 @@ namespace ScienceBuddy.Student
             {
                 try
                 {
-                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlConnection connection = new SqlConnection(ConnectionString))
                     using (SqlCommand command = new SqlCommand("SELECT preferredLanguage FROM [User] WHERE userId=@u", connection))
                     {
                         command.Parameters.AddWithValue("@u", userId);
@@ -82,7 +82,7 @@ namespace ScienceBuddy.Student
         private void LoadPage()
         {
             SetLabels();
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
                 string studentId = GetStudentId(connection);
@@ -146,7 +146,7 @@ namespace ScienceBuddy.Student
             DateTime weekAgo = today.AddDays(-6);
 
             // Include SPTask if table exists
-            bool hasSPTask = Tbl(conn, "SPTask");
+            bool hasSPTask = TableExists(conn, "SPTask");
             string spTaskUnion = "";
             if (hasSPTask)
             {
@@ -713,7 +713,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        private static bool Tbl(SqlConnection conn, string t)
+        private static bool TableExists(SqlConnection conn, string t)
         {
             using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME=@t AND TABLE_TYPE='BASE TABLE'", conn))
             {

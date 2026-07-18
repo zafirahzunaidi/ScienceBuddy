@@ -10,7 +10,7 @@ namespace ScienceBuddy.Student
 {
     public partial class QuizResult : Page
     {
-        private string ConnStr
+        private string ConnectionString
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
@@ -57,7 +57,7 @@ namespace ScienceBuddy.Student
             {
                 try
                 {
-                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlConnection connection = new SqlConnection(ConnectionString))
                     using (SqlCommand command = new SqlCommand("SELECT preferredLanguage FROM [User] WHERE userId=@uid", connection))
                     {
                         command.Parameters.AddWithValue("@uid", userId);
@@ -93,7 +93,7 @@ namespace ScienceBuddy.Student
 
             string userId = Session["userId"].ToString();
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -220,7 +220,7 @@ namespace ScienceBuddy.Student
                 }
                 int wrongCount = totalQ - correctCount;
 
-                // ══ DISPLAY ══
+                // DISPLAY
                 pnlResult.Visible = true;
                 pnlError.Visible = false;
                 litPageTitle.Text = T("Quiz Result", "Keputusan Kuiz");
@@ -392,7 +392,7 @@ namespace ScienceBuddy.Student
                 // Retry visible for Practice always, or if failed
                 pnlRetry.Visible = (quizType == "Practice" || !passed);
 
-                // ══ LOAD QUESTION REVIEW INLINE ══
+                // LOAD QUESTION REVIEW INLINE
                 litReviewTitle.Text = T("Answer Review", "Semakan Jawapan");
                 LoadQuestionReview(connection, resultId);
             }

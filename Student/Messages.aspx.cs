@@ -12,7 +12,7 @@ namespace ScienceBuddy.Student
     public partial class Messages1 : Page
     {
         // Connection string
-        private string ConnStr
+        private string ConnectionString
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
@@ -66,7 +66,7 @@ namespace ScienceBuddy.Student
                 try
                 {
                     const string sql = "SELECT preferredLanguage FROM [User] WHERE userId = @userId";
-                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlConnection connection = new SqlConnection(ConnectionString))
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
                         command.Parameters.AddWithValue("@userId", userId);
@@ -109,11 +109,11 @@ namespace ScienceBuddy.Student
         {
             string uid = Session["userId"].ToString();
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
-                if (!Tbl(connection, "userChat") || !Tbl(connection, "privateMessage"))
+                if (!TableExists(connection, "userChat") || !TableExists(connection, "privateMessage"))
                 {
                     pnlChatsContent.Visible = false;
                     pnlChatsEmpty.Visible = true;
@@ -291,11 +291,11 @@ namespace ScienceBuddy.Student
         // Load teachers
         private void LoadTeachers()
         {
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
-                if (!Tbl(connection, "Teacher"))
+                if (!TableExists(connection, "Teacher"))
                 {
                     pnlTeachersContent.Visible = false;
                     pnlTeachersEmpty.Visible = true;
@@ -430,11 +430,11 @@ namespace ScienceBuddy.Student
             string teacherUserId = e.CommandArgument.ToString();
             string uid = Session["userId"].ToString();
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
-                if (!Tbl(connection, "userChat"))
+                if (!TableExists(connection, "userChat"))
                 {
                     // Table doesn't exist, can't proceed
                     return;
@@ -551,7 +551,7 @@ namespace ScienceBuddy.Student
         /// Returns true if the given table exists in the current database.
         /// Uses INFORMATION_SCHEMA so it never throws on a missing table.
         /// </summary>
-        private static bool Tbl(SqlConnection connection, string tableName)
+        private static bool TableExists(SqlConnection connection, string tableName)
         {
             const string sql = @"
                 SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
