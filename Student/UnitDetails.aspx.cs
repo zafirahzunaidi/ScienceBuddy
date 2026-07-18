@@ -3,8 +3,12 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Text;
 using System.Web;
 using System.Web.UI;
+using System.IO; //for AI
+using System.Net;
+using System.Web.Script.Serialization;
 
 namespace ScienceBuddy.Student
 {
@@ -16,6 +20,15 @@ namespace ScienceBuddy.Student
         }
 
         private string CurrentLanguage = "EN";
+
+        // Flashcard label properties for Repeater binding
+        protected string FlashcardQuestionLabel { get { return T("KEY IDEA", "IDEA UTAMA"); } }
+        protected string FlashcardAnswerLabel { get { return T("LEARN THIS", "INGAT INI"); } }
+        protected string FlashcardTapToReveal { get { return T("Tap to reveal", "Tekan untuk lihat"); } }
+        protected string FlashcardTapToQuestion { get { return T("Tap to see front", "Tekan untuk lihat depan"); } }
+        protected string FlashcardPrevText { get { return T("Previous", "Sebelum"); } }
+        protected string FlashcardNextText { get { return T("Next", "Seterusnya"); } }
+        protected string FlashcardFinishedText { get { return T("Finished!", "Selesai!"); } }
 
         private string T(string en, string bm)
         {
@@ -36,9 +49,10 @@ namespace ScienceBuddy.Student
 
             ((SiteMaster)Master).LayoutMode = "Sidebar";
 
+            InitLang();
+
             if (!IsPostBack)
             {
-                InitLang();
                 LoadPage();
             }
         }
@@ -224,6 +238,16 @@ namespace ScienceBuddy.Student
             }
             litBack.Text = T("My Learning", "Pembelajaran Saya");
             litBarLbl.Text = T("Unit Progress", "Kemajuan Unit");
+
+            // AI Flashcard labels
+            btnGenerateFlashcards.Text = T("Try AI Study Flashcards!", "Cuba Kad Imbas AI");
+            btnGenerateFlashcards.Attributes["data-creating"] = T("Creating\u2026", "Sedang mencipta\u2026");
+            litFlashcardTitle.Text = T("Quick Cards", "Kad Pantas");
+            litFlashcardDesc.Text = "";
+            btnRegenerateFlashcards.Text = T("Create New Cards", "Cipta Kad Baharu");
+            litFlashcardLoading.Text = T("Creating your flashcards\u2026", "Sedang mencipta kad imbas anda\u2026");
+            litFlashcardLoadingSub.Text = T("This may take a few seconds.", "Proses ini mungkin mengambil beberapa saat.");
+            litFlashcardError.Text = T("Flashcards could not be created. Please try again.", "Kad imbas tidak dapat dicipta. Sila cuba lagi.");
         }
 
         private void BuildPath(SqlConnection connection, string unitId)
@@ -614,6 +638,101 @@ namespace ScienceBuddy.Student
             }
         }
 
+        protected void btnGenerateFlashcards_Click(object sender, EventArgs e)
+        {
+            pnlAIFlashcards.Visible = true;
+            pnlFlashcardError.Visible = false;
+            litFlashcardError.Text = "";
+
+            string unitId =
+                Request.QueryString["unitId"];
+
+            if (string.IsNullOrWhiteSpace(unitId))
+            {
+                pnlFlashcardError.Visible = true;
+
+                litFlashcardError.Text = T(
+                    "The unit could not be identified.",
+                    "Unit tidak dapat dikenal pasti.");
+
+                OpenFlashcardModal();
+                return;
+            }
+
+            try
+            {
+                string lessonContent =
+                    GetLessonContentForFlashcards(unitId);
+
+                if (string.IsNullOrWhiteSpace(lessonContent))
+                {
+                    pnlFlashcardError.Visible = true;
+
+                    litFlashcardError.Text = T(
+                        "No lesson content is available for this unit.",
+                        "Tiada kandungan pelajaran tersedia untuk unit ini.");
+
+                    OpenFlashcardModal();
+                    return;
+                }
+
+                List<AIFlashcard> flashcards = GenerateAIFlashcards(lessonContent);
+
+                rptAIFlashcards.DataSource =flashcards;
+
+                rptAIFlashcards.DataBind();
+
+                pnlFlashcardLoading.Visible = false;
+
+                pnlFlashcardError.Visible = false;
+
+                OpenFlashcardModal();
+            }
+            catch (SqlException ex)
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    "Flashcard database error: " +
+                    ex.Message);
+
+                pnlFlashcardLoading.Visible = false;
+
+                pnlFlashcardError.Visible = true;
+
+                litFlashcardError.Text = T(
+                    "The lesson content could not be loaded.",
+                    "Kandungan pelajaran tidak dapat dimuatkan.");
+
+                OpenFlashcardModal();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    "AI flashcard error: " +
+                    ex.Message);
+
+                pnlFlashcardLoading.Visible =
+                    false;
+
+                pnlFlashcardError.Visible =
+                    true;
+
+                litFlashcardError.Text = T(
+                    "Flashcards could not be created. Please try again.",
+                    "Kad imbas tidak dapat dicipta. Sila cuba lagi.");
+
+                OpenFlashcardModal();
+            }
+        }
+
+        private void OpenFlashcardModal()
+        {
+            ClientScript.RegisterStartupScript(
+                GetType(),
+                "openFlashcardModal",
+                "openFlashcardModal();",
+                true);
+        }
+
         private static int Ord(string id)
         {
             switch (id)
@@ -639,6 +758,479 @@ namespace ScienceBuddy.Student
                 return (int)command.ExecuteScalar() > 0;
             }
         }
+
+        //-AI Flashcard-
+
+        //Lesson-content method
+        private string GetLessonContentForFlashcards(string unitId)
+        {
+            StringBuilder lessonText =
+                new StringBuilder();
+
+            const string sql = @"
+                SELECT
+                    l.lessonTitleEN,
+                    l.lessonTitleBM,
+                    l.lessonContentEN,
+                    l.lessonContentBM
+                FROM Lesson l
+                INNER JOIN Subtopic st
+                    ON st.subtopicId = l.subtopicId
+                WHERE st.unitId = @unitId
+                ORDER BY
+                    st.orderNo,
+                    l.orderNo,
+                    l.lessonId";
+
+            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlCommand command = new SqlCommand(sql, connection))
+            {
+                command.Parameters.AddWithValue("@unitId",unitId);
+
+                connection.Open();
+
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string title = "";
+                        string content = "";
+
+                        if (CurrentLanguage == "BM")
+                        {
+                            if (reader["lessonTitleBM"] != DBNull.Value)
+                            {
+                                title = reader["lessonTitleBM"].ToString();
+                            }
+
+                            if (reader["lessonContentBM"] != DBNull.Value)
+                            {
+                                content = reader["lessonContentBM"].ToString();
+                            }
+
+                            if (string.IsNullOrWhiteSpace(title) &&
+                                reader["lessonTitleEN"] != DBNull.Value)
+                            {
+                                title = reader["lessonTitleEN"].ToString();
+                            }
+
+                            if (string.IsNullOrWhiteSpace(content) &&
+                                reader["lessonContentEN"] != DBNull.Value)
+                            {
+                                content = reader["lessonContentEN"].ToString();
+                            }
+                        }
+                        else
+                        {
+                            if (reader["lessonTitleEN"] != DBNull.Value)
+                            {
+                                title = reader["lessonTitleEN"].ToString();
+                            }
+
+                            if (reader["lessonContentEN"] != DBNull.Value)
+                            {
+                                content = reader["lessonContentEN"].ToString();
+                            }
+                        }
+
+                        content = CleanLessonHtml(content);
+
+                        if (!string.IsNullOrWhiteSpace(content))
+                        {
+                            lessonText.AppendLine(
+                                "LESSON: " + title);
+
+                            lessonText.AppendLine(content);
+                            lessonText.AppendLine();
+                        }
+                    }
+
+                }
+            }
+
+            return lessonText.ToString();
+        }
+
+        //Generate AI Flashcards
+        private List<AIFlashcard> GenerateAIFlashcards(string lessonContent)
+        {
+            string apiKey =
+                ConfigurationManager.AppSettings[
+                    "NvidiaApiKey"];
+
+            string model =
+                ConfigurationManager.AppSettings[
+                    "NvidiaModel"];
+
+            string endpoint =
+                ConfigurationManager.AppSettings[
+                    "NvidiaApiEndpoint"];
+
+            if (string.IsNullOrWhiteSpace(model))
+            {
+                model = "meta/llama-3.1-8b-instruct";
+            }
+
+            if (string.IsNullOrWhiteSpace(endpoint))
+            {
+                endpoint =
+                    "https://integrate.api.nvidia.com/" +
+                    "v1/chat/completions";
+            }
+
+            if (string.IsNullOrWhiteSpace(apiKey) ||
+                apiKey == "YOUR_NVIDIA_API_KEY_HERE")
+            {
+                throw new Exception(
+                    "The NVIDIA API key is missing.");
+            }
+
+            string outputLanguage;
+
+            if (CurrentLanguage == "BM")
+            {
+                outputLanguage = "Bahasa Melayu";
+            }
+            else
+            {
+                outputLanguage = "English";
+            }
+
+            string systemPrompt = @"
+                You create short study flashcards for primary school Science students.
+
+                Use only the lesson content supplied by the system.
+
+                The flashcards are for learning and revision.
+                They should not feel like an examination.
+
+                FLASHCARD STYLE
+                1. Create exactly 6 study flashcards.
+                2. The front of each card should be a short learning cue,
+                   concept name, process name or important idea.
+                3. The front does not need to be written as a question.
+                4. The back should teach or explain the idea clearly
+                   in one or two short sentences.
+                5. Use a useful mixture of:
+                   - important concepts
+                   - simple definitions
+                   - functions
+                   - processes
+                   - examples
+                   - comparisons
+                   - healthy habits or important rules
+                6. Cover different lessons from the unit when possible.
+                7. Use only facts found in the supplied lesson content.
+                8. Do not invent outside information.
+                9. Do not combine quantities from different stages into one misleading total.
+                10. Use simple language suitable for children aged 7 to 12.
+                11. Keep the front below 8 words.
+                12. Keep the back below 30 words.
+                13. Avoid duplicate cards.
+                14. Avoid yes-or-no cards.
+                15. Do not use formal or difficult language.
+                16. Use the requested language.
+
+                Return valid JSON only.
+                Do not include Markdown or code fences.
+
+                Keep exactly these JSON property names because the system
+                uses them:
+
+                [
+                    {
+                        ""Question"": ""Short learning cue for the front"",
+                        ""Answer"": ""Simple explanation for the back""
+                    }
+                ]";
+
+            string userPrompt =
+                "OUTPUT LANGUAGE: " +
+                outputLanguage +
+                "\n\nLESSON CONTENT:\n" +
+                lessonContent;
+
+            List<Dictionary<string, string>> messages =
+                new List<Dictionary<string, string>>();
+
+            messages.Add(
+                new Dictionary<string, string>
+                {
+            { "role", "system" },
+            { "content", systemPrompt }
+                });
+
+            messages.Add(
+                new Dictionary<string, string>
+                {
+            { "role", "user" },
+            { "content", userPrompt }
+                });
+
+            Dictionary<string, object> payload =
+                new Dictionary<string, object>();
+
+            payload["model"] = model;
+            payload["messages"] = messages;
+            payload["temperature"] = 0.5;
+            payload["top_p"] = 0.9;
+            payload["max_tokens"] = 900;
+            payload["stream"] = false;
+
+            JavaScriptSerializer serializer =
+                new JavaScriptSerializer();
+
+            serializer.MaxJsonLength =
+                int.MaxValue;
+
+            string jsonPayload =
+                serializer.Serialize(payload);
+
+            byte[] requestBytes =
+                Encoding.UTF8.GetBytes(jsonPayload);
+
+            HttpWebRequest request =
+                (HttpWebRequest)
+                WebRequest.Create(endpoint);
+
+            request.Method = "POST";
+            request.ContentType = "application/json";
+            request.Accept = "application/json";
+
+            request.Headers["Authorization"] =
+                "Bearer " + apiKey;
+
+            request.Timeout = 60000;
+            request.ContentLength =
+                requestBytes.Length;
+
+            using (Stream requestStream =
+                request.GetRequestStream())
+            {
+                requestStream.Write(
+                    requestBytes,
+                    0,
+                    requestBytes.Length);
+            }
+
+            string responseBody;
+
+            try
+            {
+                using (HttpWebResponse response =
+                    (HttpWebResponse)
+                    request.GetResponse())
+                using (StreamReader reader =
+                    new StreamReader(
+                        response.GetResponseStream(),
+                        Encoding.UTF8))
+                {
+                    responseBody =
+                        reader.ReadToEnd();
+                }
+            }
+            catch (WebException ex)
+            {
+                if (ex.Response != null)
+                {
+                    using (Stream errorStream =
+                        ex.Response.GetResponseStream())
+                    using (StreamReader reader =
+                        new StreamReader(
+                            errorStream,
+                            Encoding.UTF8))
+                    {
+                        string errorBody =
+                            reader.ReadToEnd();
+
+                        System.Diagnostics.Debug.WriteLine(
+                            "NVIDIA flashcard API error: " +
+                            errorBody);
+                    }
+                }
+
+                throw new Exception(
+                    "The AI service could not create flashcards.");
+            }
+
+            Dictionary<string, object> responseData =
+                serializer.DeserializeObject(
+                    responseBody)
+                as Dictionary<string, object>;
+
+            if (responseData == null ||
+                !responseData.ContainsKey("choices"))
+            {
+                throw new Exception(
+                    "The AI response did not contain choices.");
+            }
+
+            object[] choices =
+                responseData["choices"] as object[];
+
+            if (choices == null ||
+                choices.Length == 0)
+            {
+                throw new Exception(
+                    "The AI returned no flashcards.");
+            }
+
+            Dictionary<string, object> firstChoice =
+                choices[0]
+                as Dictionary<string, object>;
+
+            if (firstChoice == null ||
+                !firstChoice.ContainsKey("message"))
+            {
+                throw new Exception(
+                    "The AI response had no message.");
+            }
+
+            Dictionary<string, object> message =
+                firstChoice["message"]
+                as Dictionary<string, object>;
+
+            if (message == null ||
+                !message.ContainsKey("content"))
+            {
+                throw new Exception(
+                    "The AI response had no content.");
+            }
+
+            string aiContent =
+                Convert.ToString(
+                    message["content"]);
+
+            if (string.IsNullOrWhiteSpace(aiContent))
+            {
+                throw new Exception(
+                    "The AI returned empty flashcards.");
+            }
+
+            string cleanJson =
+                RemoveFlashcardCodeFences(aiContent);
+
+            List<AIFlashcard> generatedCards =
+                serializer.Deserialize<
+                    List<AIFlashcard>>(cleanJson);
+
+            if (generatedCards == null)
+            {
+                throw new Exception(
+                    "The flashcard JSON could not be read.");
+            }
+
+            List<AIFlashcard> validCards =
+                new List<AIFlashcard>();
+
+            foreach (AIFlashcard card in generatedCards)
+            {
+                if (card == null)
+                {
+                    continue;
+                }
+
+                if (string.IsNullOrWhiteSpace(
+                        card.Question) ||
+                    string.IsNullOrWhiteSpace(
+                        card.Answer))
+                {
+                    continue;
+                }
+
+                validCards.Add(card);
+
+                if (validCards.Count == 6)
+                {
+                    break;
+                }
+            }
+
+            if (validCards.Count != 6)
+            {
+                throw new Exception(
+                    "The AI did not return exactly six valid flashcards.");
+            }
+
+            for (int index = 0;
+                 index < validCards.Count;
+                 index++)
+            {
+                validCards[index].CardNumber =
+                    index + 1;
+            }
+
+            return validCards;
+        }
+
+        //Code-fence cleaner. Bcs sometimes AI return '''json[...]'''. but serializer needs only [...]
+        private string RemoveFlashcardCodeFences(string text)
+        {
+            string cleanedText =
+                text.Trim();
+
+            if (cleanedText.StartsWith("```"))
+            {
+                int firstNewLine =
+                    cleanedText.IndexOf('\n');
+
+                if (firstNewLine >= 0)
+                {
+                    cleanedText =
+                        cleanedText.Substring(
+                            firstNewLine + 1);
+                }
+
+                int finalFence =
+                    cleanedText.LastIndexOf("```");
+
+                if (finalFence >= 0)
+                {
+                    cleanedText =
+                        cleanedText.Substring(
+                            0,
+                            finalFence);
+                }
+            }
+
+            return cleanedText.Trim();
+        }
+
+        //Flashcard structure
+        public class AIFlashcard
+        {
+            public int CardNumber { get; set; }
+            public string Question { get; set; }
+            public string Answer { get; set; }
+        }
+
+        //To remove HTML from lesson content
+        private string CleanLessonHtml(string html)
+        {
+            if (string.IsNullOrWhiteSpace(html))
+            {
+                return "";
+            }
+
+            string decodedText =
+                HttpUtility.HtmlDecode(html);
+
+            string textWithoutTags =
+                System.Text.RegularExpressions.Regex.Replace(
+                    decodedText,
+                    "<.*?>",
+                    " ");
+
+            string cleanedText =
+                System.Text.RegularExpressions.Regex.Replace(
+                    textWithoutTags,
+                    @"\s+",
+                    " ");
+
+            return cleanedText.Trim();
+        }
+
+
     }
 }
 
