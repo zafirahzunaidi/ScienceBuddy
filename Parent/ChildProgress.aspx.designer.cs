@@ -49,5 +49,17 @@ namespace ScienceBuddy.Parent
         protected global::System.Web.UI.WebControls.Button btnAddTask;
         protected global::System.Web.UI.WebControls.Literal litUnreadBadge;
 
+        // Science Power Map controls
+        protected global::System.Web.UI.WebControls.Panel pnlPowerMap;
+        protected global::System.Web.UI.WebControls.Literal litPowerMapTitle;
+        protected global::System.Web.UI.WebControls.Literal litPowerMapSvg;
+        protected global::System.Web.UI.WebControls.Literal litExplorerType;
+        protected global::System.Web.UI.WebControls.Literal litSuperpower;
+        protected global::System.Web.UI.WebControls.Literal litPowerUp;
+        protected global::System.Web.UI.WebControls.Panel pnlPowerMapAdvice;
+        protected global::System.Web.UI.WebControls.Literal litPowerMapAdvice;
+        protected global::System.Web.UI.WebControls.Literal litPowerMapFooter;
+        protected global::System.Web.UI.WebControls.Literal litSkillDataScript;
+
     }
 }
