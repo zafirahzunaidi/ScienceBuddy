@@ -1,3 +1,4 @@
+
 <%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ChildProgress.aspx.cs"
     Inherits="ScienceBuddy.Parent.ChildProgress" MasterPageFile="~/Site.Master"
     Title="Current Progress" MaintainScrollPositionOnPostback="true" %>
@@ -28,7 +29,8 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
         <a href="<%: ResolveUrl("~/Parent/EnrolledModules.aspx") %>" class="sb-sidebar-item"><i class="bi bi-journal-bookmark item-icon"></i><span class="item-label"><%: T("Learning Journey","Perjalanan Pembelajaran") %></span></a></div>
     <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Child Performance","Prestasi Anak") %></div>
         <a href="<%: ResolveUrl("~/Parent/ChildProgress.aspx") %>" class="sb-sidebar-item active"><i class="bi bi-bar-chart-line item-icon"></i><span class="item-label"><%: T("Current Progress","Kemajuan Semasa") %></span></a>
-        <a href="<%: ResolveUrl("~/Parent/QuizResults.aspx") %>" class="sb-sidebar-item"><i class="bi bi-patch-check item-icon"></i><span class="item-label"><%: T("Quiz Results","Keputusan Kuiz") %></span></a></div>
+        <a href="<%: ResolveUrl("~/Parent/QuizResults.aspx") %>" class="sb-sidebar-item"><i class="bi bi-patch-check item-icon"></i><span class="item-label"><%: T("Quiz Results","Keputusan Kuiz") %></span></a>
+        <a href="<%: ResolveUrl("~/Parent/ParentAICoach.aspx") %>" class="sb-sidebar-item"><i class="bi bi-robot item-icon"></i><span class="item-label"><%: T("AI Parent Coach","Jurulatih AI") %></span></a></div>
     <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Study Plan","Pelan Pembelajaran") %></div>
         <a href="<%: ResolveUrl("~/Parent/StudyPlan.aspx") %>" class="sb-sidebar-item"><i class="bi bi-journal-check item-icon"></i><span class="item-label"><%: T("Study Plan","Pelan Pembelajaran") %></span></a>
         <a href="<%: ResolveUrl("~/Parent/EditStudyPlan.aspx") %>" class="sb-sidebar-item"><i class="bi bi-pencil-square item-icon"></i><span class="item-label"><%: T("Edit Study Plan","Edit Pelan Pembelajaran") %></span></a></div>
@@ -76,6 +78,9 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
             <i class="bi bi-star-fill pt-sparkle" style="bottom:20%;left:30%;animation-delay:0.5s;"></i>
             <h2 class="pt-hero-title"><i class="bi bi-bar-chart-line-fill"></i> <asp:Literal ID="litHeroTitle" runat="server" /></h2>
             <p class="pt-hero-sub"><asp:Literal ID="litHeroSub" runat="server" /></p>
+            <a href="DownloadReport.aspx" class="pt-download-report-btn" target="_blank">
+                <i class="bi bi-file-earmark-pdf-fill"></i> <%: T("Download Progress Report","Muat Turun Laporan Kemajuan") %>
+            </a>
         </div>
 
         <%-- ══ 2. MONTHLY SUMMARY ══ --%>
@@ -207,6 +212,117 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
                     </div>
                 </div>
             </div>
+        </asp:Panel>
+
+        <%-- ══ 6. SCIENCE POWER MAP ══ --%>
+        <asp:Panel ID="pnlPowerMap" runat="server" Visible="false">
+            <div class="pt-power-map-card">
+                <div class="pt-power-map-header">
+                    <span class="pt-power-map-icon"><i class="bi bi-lightning-charge-fill"></i></span>
+                    <h3 class="pt-power-map-title"><asp:Literal ID="litPowerMapTitle" runat="server" /></h3>
+                </div>
+                <p class="pt-power-map-helper"><%: T("Click any skill to understand what it means and how you can support your child.","Klik mana-mana kemahiran untuk memahami maksudnya dan bagaimana anda boleh menyokong anak anda.") %></p>
+
+                <%-- SVG Radar Chart with floating popover --%>
+                <div class="pt-power-map-chart">
+                    <asp:Literal ID="litPowerMapSvg" runat="server" />
+
+                    <%-- Floating popover (positioned absolutely inside chart container) --%>
+                    <div class="pt-power-popover" id="powerPopover">
+                        <button type="button" class="pt-power-popover-close" onclick="closeSkillPanel()" aria-label="Close">&times;</button>
+                        <div class="pt-power-popup-title" id="popupTitle"></div>
+                        <div class="pt-power-popup-status" id="popupStatus"></div>
+                        <div class="pt-power-popup-section">
+                            <span class="pt-power-popup-label"><%: T("What it means:","Apa maksudnya:") %></span>
+                            <span class="pt-power-popup-text" id="popupMeaning"></span>
+                        </div>
+                        <div class="pt-power-popup-section">
+                            <span class="pt-power-popup-label"><%: T("Current progress:","Kemajuan semasa:") %></span>
+                            <span class="pt-power-popup-text" id="popupProgress"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <%-- Explorer Identity --%>
+                <div class="pt-power-map-identity">
+                    <div class="pt-power-map-type">
+                        <i class="bi bi-star-fill"></i>
+                        <asp:Literal ID="litExplorerType" runat="server" />
+                    </div>
+                    <div class="pt-power-map-stats">
+                        <span class="pt-power-stat superpower"><i class="bi bi-lightning-fill"></i> <asp:Literal ID="litSuperpower" runat="server" /></span>
+                        <span class="pt-power-stat powerup"><i class="bi bi-arrow-up-circle-fill"></i> <asp:Literal ID="litPowerUp" runat="server" /></span>
+                    </div>
+                </div>
+
+                <%-- AI advice --%>
+                <asp:Panel ID="pnlPowerMapAdvice" runat="server" Visible="false">
+                    <div class="pt-power-map-advice">
+                        <i class="bi bi-chat-left-heart-fill"></i>
+                        <asp:Literal ID="litPowerMapAdvice" runat="server" />
+                    </div>
+                </asp:Panel>
+
+                <div class="pt-power-map-footer">
+                    <i class="bi bi-info-circle"></i> <asp:Literal ID="litPowerMapFooter" runat="server" />
+                </div>
+            </div>
+
+            <%-- Skill data for JavaScript --%>
+            <asp:Literal ID="litSkillDataScript" runat="server" />
+
+            <script type="text/javascript">
+            var skillData = window._skillData || [];
+            var panelColors = ['#F3E8FF','#CCFBF1','#FFF7ED','#FEE2E2','#EDE9FE','#DCFCE7'];
+            var posClasses = ['pt-power-popover-pos-0','pt-power-popover-pos-1','pt-power-popover-pos-2',
+                              'pt-power-popover-pos-3','pt-power-popover-pos-4','pt-power-popover-pos-5'];
+
+            function openSkillPanel(idx) {
+                if (idx < 0 || idx >= skillData.length) return;
+                var s = skillData[idx];
+                var popover = document.getElementById('powerPopover');
+
+                document.getElementById('popupTitle').textContent = s.name;
+                document.getElementById('popupStatus').textContent = s.status;
+                document.getElementById('popupMeaning').textContent = s.meaning;
+                document.getElementById('popupProgress').textContent = s.progress;
+
+                // Remove all position classes and set the correct one
+                posClasses.forEach(function(c){ popover.classList.remove(c); });
+                popover.classList.add(posClasses[idx] || posClasses[0]);
+
+                // Set pastel background colour
+                popover.style.background = panelColors[idx] || '#F8FAFC';
+
+                // Show with animation
+                popover.classList.add('pt-power-popover-visible');
+
+                // Highlight the active label via SVG class
+                var labels = document.querySelectorAll('.pt-power-skill-btn');
+                labels.forEach(function(l){ l.classList.remove('pt-power-skill-active'); });
+                if (labels[idx]) labels[idx].classList.add('pt-power-skill-active');
+            }
+
+            function closeSkillPanel() {
+                var popover = document.getElementById('powerPopover');
+                popover.classList.remove('pt-power-popover-visible');
+                var labels = document.querySelectorAll('.pt-power-skill-btn');
+                labels.forEach(function(l){ l.classList.remove('pt-power-skill-active'); });
+            }
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') closeSkillPanel();
+            });
+
+            document.addEventListener('click', function(e) {
+                var popover = document.getElementById('powerPopover');
+                if (popover && popover.classList.contains('pt-power-popover-visible')) {
+                    if (!e.target.closest('.pt-power-popover') && !e.target.closest('.pt-power-skill-btn')) {
+                        closeSkillPanel();
+                    }
+                }
+            });
+            </script>
         </asp:Panel>
 
     </asp:Panel><%-- /pnlContent --%>

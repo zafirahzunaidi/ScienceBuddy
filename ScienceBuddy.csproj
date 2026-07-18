@@ -203,6 +203,9 @@
     <Content Include="Parent\ChildProfile.aspx" />
     <Content Include="Parent\EnrolledModules.aspx" />
     <Content Include="Parent\ChildProgress.aspx" />
+    <Content Include="Parent\DownloadReport.aspx" />
+    <Content Include="Parent\NotificationCheck.aspx" />
+    <Content Include="Parent\ParentAICoach.aspx" />
     <Content Include="Parent\QuizResults.aspx" />
     <Content Include="Parent\StudyPlan.aspx" />
     <Content Include="Parent\EditStudyPlan.aspx" />
@@ -596,6 +599,27 @@
     </Compile>
     <Compile Include="Parent\ChildProgress.aspx.designer.cs">
       <DependentUpon>ChildProgress.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Parent\DownloadReport.aspx.cs">
+      <DependentUpon>DownloadReport.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Parent\DownloadReport.aspx.designer.cs">
+      <DependentUpon>DownloadReport.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Parent\NotificationCheck.aspx.cs">
+      <DependentUpon>NotificationCheck.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Parent\NotificationCheck.aspx.designer.cs">
+      <DependentUpon>NotificationCheck.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Parent\ParentAICoach.aspx.cs">
+      <DependentUpon>ParentAICoach.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Parent\ParentAICoach.aspx.designer.cs">
+      <DependentUpon>ParentAICoach.aspx</DependentUpon>
     </Compile>
     <Compile Include="Parent\QuizResults.aspx.cs">
       <DependentUpon>QuizResults.aspx</DependentUpon>

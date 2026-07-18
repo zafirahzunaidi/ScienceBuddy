@@ -23,6 +23,10 @@ namespace ScienceBuddy.Parent
         private static readonly HashSet<string> AllowedDocExt = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx", ".txt" };
         private const int MaxFileSize = 5 * 1024 * 1024; // 5MB
 
+        // Attachment folder paths (new uploads go to NewAttachmentFolder; old files remain in OldAttachmentFolder)
+        private const string NewAttachmentFolder = "~/Images/PrivateMessage/";
+        private const string OldAttachmentFolder = "~/Uploads/ChatAttachments/";
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["userId"] == null || Session["role"] == null || Session["role"].ToString() != "Parent") { Response.Redirect("~/Login.aspx", false); Context.ApplicationInstance.CompleteRequest(); return; }
@@ -191,12 +195,35 @@ namespace ScienceBuddy.Parent
 
         private string RenderAttachment(string filename)
         {
-            string url = ResolveUrl("~/Uploads/ChatAttachments/" + filename);
+            string url = ResolveAttachmentUrl(filename);
+            if (url == null) return "";
+
             string ext = Path.GetExtension(filename).ToLower();
             if (AllowedImageExt.Contains(ext))
                 return string.Format("<div class='pt-attachment-card'><img src='{0}' alt='attachment' style='max-width:220px;border-radius:14px;' onclick=\"window.open('{0}','_blank')\" /></div>", url);
             else
                 return string.Format("<div class='pt-attachment-card'><i class='bi bi-file-earmark-text'></i> <a href='{0}' target='_blank'>{1}</a><a href='{0}' download class='pt-attachment-dl'><i class='bi bi-download'></i> {2}</a></div>", url, Server.HtmlEncode(Path.GetFileName(filename)), T("Download","Muat Turun"));
+        }
+
+        /// <summary>
+        /// Resolves the URL for an attachment file by checking the new folder first,
+        /// then falling back to the old folder for files uploaded before the migration.
+        /// </summary>
+        private string ResolveAttachmentUrl(string filename)
+        {
+            if (string.IsNullOrEmpty(filename)) return null;
+
+            // Check new folder first
+            string newPath = Server.MapPath(NewAttachmentFolder + filename);
+            if (File.Exists(newPath))
+                return ResolveUrl(NewAttachmentFolder + filename);
+
+            // Fallback to old folder for pre-migration files
+            string oldPath = Server.MapPath(OldAttachmentFolder + filename);
+            if (File.Exists(oldPath))
+                return ResolveUrl(OldAttachmentFolder + filename);
+
+            return null;
         }
 
         // ══════════════════════════════════════════════════════════════
@@ -231,7 +258,7 @@ namespace ScienceBuddy.Parent
                     {
                         string sanitized = SanitizeFilename(fuAttachment.FileName);
                         savedFilename = pmId + "_" + sanitized;
-                        string folder = Server.MapPath("~/Uploads/ChatAttachments/");
+                        string folder = Server.MapPath(NewAttachmentFolder);
                         if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
                         fuAttachment.SaveAs(Path.Combine(folder, savedFilename));
                     }
