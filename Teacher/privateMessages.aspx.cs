@@ -26,16 +26,36 @@ namespace ScienceBuddy.Teacher
             {
                 ddlRecipient.Items.Clear();
                 ddlRecipient.Items.Add(new ListItem(T("— Select Recipient —","— Pilih Penerima —"), ""));
+                LoadRecipientsJson();
                 CheckUnreadAndNotify();
                 LoadConversations();
             }
         }
 
+        private void LoadRecipientsJson()
+        {
+            var recipients = new List<object>();
+            try
+            {
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand(@"SELECT u.[userId],u.[role],COALESCE(s.[name],p.[name],u.[username]) AS n
+                        FROM dbo.[User] u LEFT JOIN dbo.[Student] s ON s.[userId]=u.[userId] LEFT JOIN dbo.[Parent] p ON p.[userId]=u.[userId]
+                        WHERE u.[role] IN ('Student','Parent') AND u.[status]='Active' ORDER BY n", conn))
+                    using (var r = cmd.ExecuteReader())
+                        while (r.Read())
+                            recipients.Add(new { id = r["userId"].ToString(), name = r["n"].ToString(), role = r["role"].ToString() });
+                }
+            }
+            catch { }
+            hidRecipientsJson.Value = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(recipients);
+        }
+
         private void LoadConversations()
         {
             string userId = Session["userId"].ToString();
-            string search = txtSearchConv.Text.Trim();
-            string filter = FilterRole;
+            string search = ""; // Search is now handled client-side
             string sql = @"SELECT uc.[chatId],
                 CASE WHEN uc.[userId]=@uid THEN uc.[user2Id] ELSE uc.[userId] END AS otherUserId,
                 u.[role] AS otherRole,
@@ -48,9 +68,6 @@ namespace ScienceBuddy.Teacher
                 LEFT JOIN dbo.[Student] s ON s.[userId]=u.[userId]
                 LEFT JOIN dbo.[Parent] p ON p.[userId]=u.[userId]
                 WHERE (uc.[userId]=@uid OR uc.[user2Id]=@uid) AND u.[role] IN ('Student','Parent')";
-            if (filter == "Student") sql += " AND u.[role]='Student'";
-            else if (filter == "Parent") sql += " AND u.[role]='Parent'";
-            if (!string.IsNullOrEmpty(search)) sql += " AND (COALESCE(s.[name],p.[name],u.[username]) LIKE @s)";
             sql += " ORDER BY lastTime DESC";
 
             var list = new List<object>();
@@ -60,7 +77,6 @@ namespace ScienceBuddy.Teacher
                 using (var cmd = new SqlCommand(sql, conn))
                 {
                     cmd.Parameters.AddWithValue("@uid", userId);
-                    if (!string.IsNullOrEmpty(search)) cmd.Parameters.AddWithValue("@s", "%" + search + "%");
                     using (var r = cmd.ExecuteReader())
                         while (r.Read())
                         {
@@ -126,13 +142,7 @@ namespace ScienceBuddy.Teacher
 
         protected void btnFilter_Click(object sender, EventArgs e)
         {
-            var btn = sender as Button;
-            if (btn != null && !string.IsNullOrEmpty(btn.CommandArgument)) FilterRole = btn.CommandArgument;
-            btnAll.CssClass = "pm-tab" + (FilterRole == "All" ? " active" : "");
-            btnStudents.CssClass = "pm-tab" + (FilterRole == "Student" ? " active" : "");
-            btnParents.CssClass = "pm-tab" + (FilterRole == "Parent" ? " active" : "");
-            if (!string.IsNullOrEmpty(SelectedChatId) && FilterRole != "All")
-            { string r = GetOtherUserRole(SelectedChatId); if (!string.IsNullOrEmpty(r) && r != FilterRole) { SelectedChatId = ""; pnlChat.Visible = false; pnlNoChat.Visible = true; } }
+            // Filtering is now handled client-side; this method is kept for backward compatibility
             LoadConversations();
         }
 
@@ -143,12 +153,32 @@ namespace ScienceBuddy.Teacher
             catch { return null; }
         }
 
+        private static readonly HashSet<string> AllowedAttachExts = new HashSet<string>(
+            StringComparer.OrdinalIgnoreCase) { ".pdf", ".doc", ".docx", ".ppt", ".pptx", ".jpg", ".jpeg", ".png" };
+        private const int MaxAttachSize = 10 * 1024 * 1024;
+
         protected void btnSend_Click(object sender, EventArgs e)
         {
             string msg = txtMessage.Text.Trim(); string chatId = SelectedChatId;
-            if (string.IsNullOrEmpty(msg) || string.IsNullOrEmpty(chatId)) return;
+            string attachFile = null;
+
+            // Handle file attachment
+            if (fuAttachment.HasFile)
+            {
+                string ext = System.IO.Path.GetExtension(fuAttachment.FileName).ToLower();
+                if (!AllowedAttachExts.Contains(ext)) { txtMessage.Text = msg; LoadConversations(); return; }
+                if (fuAttachment.PostedFile.ContentLength > MaxAttachSize) { txtMessage.Text = msg; LoadConversations(); return; }
+                string dir = Server.MapPath("~/Images/PrivateMessage/");
+                if (!System.IO.Directory.Exists(dir)) System.IO.Directory.CreateDirectory(dir);
+                string fn = fuAttachment.FileName; // preserve original filename
+                fuAttachment.SaveAs(System.IO.Path.Combine(dir, fn));
+                attachFile = fn; // store only filename, no path
+            }
+
+            if (string.IsNullOrEmpty(msg) && string.IsNullOrEmpty(attachFile)) return;
+            if (string.IsNullOrEmpty(chatId)) return;
             string userId = Session["userId"].ToString();
-            try { using (var conn = new SqlConnection(ConnStr)) { conn.Open(); VerifyAndSend(conn, chatId, userId, msg); } txtMessage.Text = ""; }
+            try { using (var conn = new SqlConnection(ConnStr)) { conn.Open(); VerifyAndSendWithAttach(conn, chatId, userId, msg, attachFile); } txtMessage.Text = ""; }
             catch { }
             LoadConversations();
         }
@@ -185,8 +215,25 @@ namespace ScienceBuddy.Teacher
             string recipientId = ddlRecipient.SelectedValue;
             string msg = txtComposeMsg.Text.Trim();
             string userId = Session["userId"].ToString();
-            if (string.IsNullOrEmpty(recipientId) || string.IsNullOrEmpty(msg))
-            { pnlComposeVal.Visible = true; litComposeError.Text = string.IsNullOrEmpty(recipientId) ? T("Select a recipient first.","Pilih penerima terlebih dahulu.") : T("Message cannot be empty.","Mesej tidak boleh kosong."); pnlCompose.Visible = true; pnlNoChat.Visible = false; return; }
+
+            // Handle compose attachment
+            string attachFile = null;
+            if (fuComposeAttachment.HasFile)
+            {
+                string ext = System.IO.Path.GetExtension(fuComposeAttachment.FileName).ToLower();
+                if (!AllowedAttachExts.Contains(ext)) { pnlComposeVal.Visible = true; litComposeError.Text = T("File type not allowed.","Jenis fail tidak dibenarkan."); pnlCompose.Visible = true; pnlNoChat.Visible = false; return; }
+                if (fuComposeAttachment.PostedFile.ContentLength > MaxAttachSize) { pnlComposeVal.Visible = true; litComposeError.Text = T("File exceeds 10 MB limit.","Fail melebihi had 10 MB."); pnlCompose.Visible = true; pnlNoChat.Visible = false; return; }
+                string dir = Server.MapPath("~/Images/PrivateMessage/");
+                if (!System.IO.Directory.Exists(dir)) System.IO.Directory.CreateDirectory(dir);
+                string fn = fuComposeAttachment.FileName;
+                fuComposeAttachment.SaveAs(System.IO.Path.Combine(dir, fn));
+                attachFile = fn;
+            }
+
+            if (string.IsNullOrEmpty(recipientId))
+            { pnlComposeVal.Visible = true; litComposeError.Text = T("Select a recipient first.","Pilih penerima terlebih dahulu."); pnlCompose.Visible = true; pnlNoChat.Visible = false; return; }
+            if (string.IsNullOrEmpty(msg) && string.IsNullOrEmpty(attachFile))
+            { pnlComposeVal.Visible = true; litComposeError.Text = T("Message or attachment is required.","Mesej atau lampiran diperlukan."); pnlCompose.Visible = true; pnlNoChat.Visible = false; return; }
 
             try
             {
@@ -203,7 +250,7 @@ namespace ScienceBuddy.Teacher
                         using (var cmd = new SqlCommand("INSERT INTO dbo.[userChat]([chatId],[userId],[user2Id],[createdAt]) VALUES(@c,@u,@r,GETDATE())", conn))
                         { cmd.Parameters.AddWithValue("@c", chatId); cmd.Parameters.AddWithValue("@u", userId); cmd.Parameters.AddWithValue("@r", recipientId); cmd.ExecuteNonQuery(); }
                     }
-                    VerifyAndSend(conn, chatId, userId, msg);
+                    VerifyAndSendWithAttach(conn, chatId, userId, msg, attachFile);
                     SelectedChatId = chatId;
                     txtComposeMsg.Text = "";
                     pnlComposeVal.Visible = false;
@@ -215,13 +262,26 @@ namespace ScienceBuddy.Teacher
 
         private void VerifyAndSend(SqlConnection conn, string chatId, string userId, string msg)
         {
+            VerifyAndSendWithAttach(conn, chatId, userId, msg, null);
+        }
+
+        private void VerifyAndSendWithAttach(SqlConnection conn, string chatId, string userId, string msg, string attachFile)
+        {
             using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.[userChat] WHERE [chatId]=@c AND ([userId]=@u OR [user2Id]=@u)", conn))
             { cmd.Parameters.AddWithValue("@c", chatId); cmd.Parameters.AddWithValue("@u", userId); if (Convert.ToInt32(cmd.ExecuteScalar()) == 0) return; }
             string msgId;
             using (var cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING([privateMsgId],3,LEN([privateMsgId])-2) AS INT)),0) FROM dbo.[privateMessage]", conn))
             { msgId = "PM" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3"); }
-            using (var cmd = new SqlCommand("INSERT INTO dbo.[privateMessage]([privateMsgId],[chatId],[senderUserId],[msgText],[sentAt],[isRead]) VALUES(@id,@c,@u,@m,GETDATE(),0)", conn))
-            { cmd.Parameters.AddWithValue("@id", msgId); cmd.Parameters.AddWithValue("@c", chatId); cmd.Parameters.AddWithValue("@u", userId); cmd.Parameters.AddWithValue("@m", msg); cmd.ExecuteNonQuery(); }
+            string sql = string.IsNullOrEmpty(attachFile)
+                ? "INSERT INTO dbo.[privateMessage]([privateMsgId],[chatId],[senderUserId],[msgText],[sentAt],[isRead]) VALUES(@id,@c,@u,@m,GETDATE(),0)"
+                : "INSERT INTO dbo.[privateMessage]([privateMsgId],[chatId],[senderUserId],[msgText],[attachmentFile],[sentAt],[isRead]) VALUES(@id,@c,@u,@m,@af,GETDATE(),0)";
+            using (var cmd = new SqlCommand(sql, conn))
+            {
+                cmd.Parameters.AddWithValue("@id", msgId); cmd.Parameters.AddWithValue("@c", chatId);
+                cmd.Parameters.AddWithValue("@u", userId); cmd.Parameters.AddWithValue("@m", string.IsNullOrEmpty(msg) ? (object)DBNull.Value : msg);
+                if (!string.IsNullOrEmpty(attachFile)) cmd.Parameters.AddWithValue("@af", attachFile);
+                cmd.ExecuteNonQuery();
+            }
         }
 
         private static string FormatTime(DateTime dt)
@@ -232,6 +292,23 @@ namespace ScienceBuddy.Teacher
             if (span.TotalDays < 1) return (int)span.TotalHours + "h";
             if (span.TotalDays < 7) return (int)span.TotalDays + "d";
             return dt.ToString("d MMM");
+        }
+
+        protected string RenderAttachment(string attachFile)
+        {
+            if (string.IsNullOrEmpty(attachFile)) return "";
+            // Reconstruct the full web path from the stored filename
+            string filePath = attachFile.StartsWith("Images/", StringComparison.OrdinalIgnoreCase)
+                ? attachFile
+                : "Images/PrivateMessage/" + attachFile;
+            string url = ResolveUrl("~/" + filePath);
+            string ext = System.IO.Path.GetExtension(attachFile).ToLower();
+            string fileName = System.IO.Path.GetFileName(attachFile);
+            if (ext == ".jpg" || ext == ".jpeg" || ext == ".png")
+            {
+                return "<a href='" + HttpUtility.HtmlAttributeEncode(url) + "' target='_blank' style='display:block;margin-top:6px;'><img src='" + HttpUtility.HtmlAttributeEncode(url) + "' style='max-width:200px;max-height:150px;border-radius:8px;border:1px solid #E5E7EB;' alt='attachment' /></a>";
+            }
+            return "<a href='" + HttpUtility.HtmlAttributeEncode(url) + "' target='_blank' class='pm-msg-attach'><i class='bi bi-file-earmark'></i> " + HttpUtility.HtmlEncode(fileName) + "</a>";
         }
 
         /// <summary>

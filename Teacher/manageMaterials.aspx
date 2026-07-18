@@ -109,8 +109,11 @@
 .mm-card-desc.expanded .mm-desc-full { display: inline; }
 .mm-view-more { font-size: .78rem; font-weight: 600; color: var(--tc-primary); cursor: pointer; display: inline-block; margin-bottom: 8px; }
 .mm-view-more:hover { color: var(--tc-hover); text-decoration: underline; }
-.mm-card-meta { display: flex; gap: .9rem; flex-wrap: wrap; font-size: .8rem; color: var(--tc-muted); }
-.mm-card-meta span { display: inline-flex; align-items: center; gap: 4px; }
+.mm-card-meta { display: flex; gap: 1.2rem; flex-wrap: wrap; font-size: .8rem; color: #6B7280; margin-top: .75rem; }
+.mm-card-meta span { display: inline-flex; align-items: center; gap: 5px; }
+.mm-card-meta span i { font-size: .92rem; color: #9CA3AF; }
+.mm-card-teacher { display: flex; align-items: center; gap: 5px; font-size: .8rem; color: #6B7280; margin-bottom: 4px; }
+.mm-card-teacher i { font-size: .88rem; color: #9CA3AF; }
 .mm-badge {
     display: inline-block; padding: 4px 12px; border-radius: 50px;
     font-size: .72rem; font-weight: 700; flex-shrink: 0; align-self: flex-start;
@@ -299,9 +302,9 @@
                         <div class="mm-card-desc"><%# (Eval("materialContent")?.ToString() ?? "").Length > 250 ? "<span class='mm-desc-short'>" + HttpUtility.HtmlEncode((Eval("materialContent")?.ToString() ?? "").Substring(0,250)) + "...</span><span class='mm-desc-full'>" + HttpUtility.HtmlEncode(Eval("materialContent")?.ToString() ?? "") + "</span>" : HttpUtility.HtmlEncode(Eval("materialContent")?.ToString() ?? "") %></div>
                         <%# (Eval("materialContent")?.ToString() ?? "").Length > 250 ? "<span class='mm-view-more' onclick='toggleDesc(this)'>View More</span>" : "" %>
                         <div class="mm-card-meta">
-                            <span><i class="bi bi-folder2"></i> <%# HttpUtility.HtmlEncode(Eval("subtopicName")) %></span>
+                            <span><i class="bi bi-folder2-open"></i> <%# HttpUtility.HtmlEncode(Eval("subtopicName")) %></span>
                             <span><i class="bi bi-file-earmark"></i> <%# HttpUtility.HtmlEncode(Eval("materialType")) %></span>
-                            <span><i class="bi bi-calendar3"></i> <%# Eval("createdDate", "{0:d MMM yyyy}") %></span>
+                            <span><i class="bi bi-calendar-event"></i> <%# Eval("createdDate", "{0:d MMM yyyy}") %></span>
                             <span><i class="bi bi-translate"></i> <%# HttpUtility.HtmlEncode(Eval("language")) %></span>
                         </div>
                     </div>
@@ -330,9 +333,11 @@
 <asp:Panel ID="pnlEmpty" runat="server" Visible="false">
     <div class="mm-empty">
         <div style="font-size:3rem;opacity:.5;margin-bottom:.75rem;">📂</div>
-        <div style="font-size:1rem;font-weight:700;color:var(--tc-text);margin-bottom:.25rem;"><%: T("You haven't uploaded any learning materials yet.","Anda belum memuat naik sebarang bahan pembelajaran.") %></div>
-        <div style="font-size:.85rem;margin-bottom:1rem;"><%: T("Click \"Upload Material\" to add your first learning resource.","Klik \"Muat Naik Bahan\" untuk menambah sumber pembelajaran pertama anda.") %></div>
-        <a href="<%: ResolveUrl("~/Teacher/uploadMaterial.aspx") %>" class="mm-btn-upload"><i class="bi bi-plus-lg"></i> <%: T("Upload Material","Muat Naik Bahan") %></a>
+        <div style="font-size:1rem;font-weight:700;color:var(--tc-text);margin-bottom:.25rem;"><asp:Literal ID="litEmptyTitle" runat="server" /></div>
+        <div style="font-size:.85rem;margin-bottom:1rem;"><asp:Literal ID="litEmptyDesc" runat="server" /></div>
+        <asp:Panel ID="pnlEmptyUploadBtn" runat="server">
+            <a href="<%: ResolveUrl("~/Teacher/uploadMaterial.aspx") %>" class="mm-btn-upload"><i class="bi bi-plus-lg"></i> <%: T("Upload Material","Muat Naik Bahan") %></a>
+        </asp:Panel>
     </div>
 </asp:Panel>
 
@@ -345,13 +350,13 @@
                     <div class='mm-card-ico <%# GetIconCss(Eval("materialType").ToString()) %>'><i class='bi <%# GetFileIcon(Eval("materialType").ToString()) %>'></i></div>
                     <div class="mm-card-info">
                         <div class="mm-card-title"><%# HttpUtility.HtmlEncode(Eval("materialTitle")) %></div>
-                        <div style="font-size:.78rem;color:var(--tc-primary);font-weight:600;margin-bottom:4px;"><%: T("By","Oleh") %> <%# HttpUtility.HtmlEncode(Eval("teacherName")) %></div>
+                        <div class="mm-card-teacher"><i class="bi bi-person"></i> <%# HttpUtility.HtmlEncode(Eval("teacherName")) %></div>
                         <div class="mm-card-desc"><%# (Eval("materialContent")?.ToString() ?? "").Length > 250 ? "<span class='mm-desc-short'>" + HttpUtility.HtmlEncode((Eval("materialContent")?.ToString() ?? "").Substring(0,250)) + "...</span><span class='mm-desc-full'>" + HttpUtility.HtmlEncode(Eval("materialContent")?.ToString() ?? "") + "</span>" : HttpUtility.HtmlEncode(Eval("materialContent")?.ToString() ?? "") %></div>
                         <%# (Eval("materialContent")?.ToString() ?? "").Length > 250 ? "<span class='mm-view-more' onclick='toggleDesc(this)'>View More</span>" : "" %>
                         <div class="mm-card-meta">
-                            <span><i class="bi bi-folder2"></i> <%# HttpUtility.HtmlEncode(Eval("subtopicName")) %></span>
+                            <span><i class="bi bi-folder2-open"></i> <%# HttpUtility.HtmlEncode(Eval("subtopicName")) %></span>
                             <span><i class="bi bi-file-earmark"></i> <%# HttpUtility.HtmlEncode(Eval("materialType")) %></span>
-                            <span><i class="bi bi-calendar3"></i> <%# Eval("createdDate", "{0:d MMM yyyy}") %></span>
+                            <span><i class="bi bi-calendar-event"></i> <%# Eval("createdDate", "{0:d MMM yyyy}") %></span>
                             <span><i class="bi bi-translate"></i> <%# HttpUtility.HtmlEncode(Eval("language")) %></span>
                         </div>
                     </div>
@@ -393,6 +398,7 @@
         </div>
         <div class="mm-modal-body">
             <asp:HiddenField ID="hidMaterialId" runat="server" Value="" />
+            <asp:HiddenField ID="hidMaterialStatus" runat="server" Value="" />
             <%-- Hidden fields to store original values for change detection --%>
             <asp:HiddenField ID="hidOrigTitle" runat="server" Value="" />
             <asp:HiddenField ID="hidOrigDesc" runat="server" Value="" />
@@ -411,7 +417,6 @@
                     <asp:DropDownList ID="ddlLanguage" runat="server" CssClass="mm-input">
                         <asp:ListItem Value="EN" Text="English" />
                         <asp:ListItem Value="BM" Text="Bahasa Melayu" />
-                        <asp:ListItem Value="BOTH" Text="Both" />
                     </asp:DropDownList>
                     <div class="mm-val-msg" id="valLang">Language is required.</div>
                 </div>
@@ -456,18 +461,18 @@
 
 <%-- ═══ SAVE CONFIRMATION MODAL ═══ --%>
 <div id="saveConfirmModal" class="mm-modal-overlay" style="display:none;">
-    <div class="mm-modal mm-modal-sm">
-        <div class="mm-modal-header">
-            <h3 class="mm-modal-title"><%: T("Confirm Material Changes","Sahkan Perubahan Bahan") %></h3>
-            <button type="button" class="mm-modal-close" onclick="closeSaveConfirm()">×</button>
+    <div style="background:#fff;border-radius:20px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(17,24,39,.16);border:1px solid #F0F0F0;position:relative;animation:mmFadeIn .2s ease;">
+        <button type="button" onclick="closeSaveConfirm()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:1.3rem;color:#9CA3AF;cursor:pointer;line-height:1;padding:2px;">×</button>
+        <div style="padding:2rem 1.75rem 1.5rem;text-align:center;">
+            <div style="width:56px;height:56px;border-radius:50%;background:#EEF2FF;border:2px solid #C7D2FE;display:inline-flex;align-items:center;justify-content:center;margin-bottom:1rem;">
+                <i class="bi bi-info-circle-fill" style="font-size:1.5rem;color:#6C63FF;"></i>
+            </div>
+            <h3 id="scmTitle" style="font-size:1.1rem;font-weight:800;color:#1E293B;margin:0 0 .5rem;">Confirm Material Changes</h3>
+            <p id="scmMessage" style="font-size:.88rem;color:#6B7280;line-height:1.65;margin:0;">Editing this material will return its status to Pending for review. Are you sure you want to continue?</p>
         </div>
-        <div class="mm-modal-body" style="text-align:center;padding:1.5rem;">
-            <div style="font-size:2.2rem;margin-bottom:.75rem;">⚠️</div>
-            <p style="font-size:.9rem;color:var(--tc-text);line-height:1.6;"><%: T("Editing this material will return its status to Pending for review. Are you sure you want to continue?","Mengemas kini bahan ini akan menukar statusnya kepada Menunggu untuk semakan. Adakah anda pasti mahu meneruskan?") %></p>
-        </div>
-        <div class="mm-modal-footer" style="justify-content:center;">
-            <button type="button" class="mm-btn-cancel" onclick="closeSaveConfirm()"><%: T("Cancel","Batal") %></button>
-            <asp:Button ID="btnSave" runat="server" Text="Confirm Changes" OnClick="btnSave_Click" CausesValidation="false" CssClass="mm-btn-primary" OnClientClick="return disableConfirmBtn();" />
+        <div style="display:flex;gap:.75rem;padding:1rem 1.75rem 1.5rem;justify-content:center;">
+            <button type="button" onclick="closeSaveConfirm()" style="flex:1;max-width:145px;height:42px;border-radius:10px;border:1.5px solid #E5E7EB;background:#fff;font-size:.88rem;font-weight:700;color:#374151;cursor:pointer;transition:border-color .15s,background .15s;"><%: T("Cancel","Batal") %></button>
+            <asp:Button ID="btnSave" runat="server" Text="Confirm" OnClick="btnSave_Click" CausesValidation="false" style="flex:1;max-width:145px;height:42px;border-radius:10px;border:none;background:#6C63FF;font-size:.88rem;font-weight:700;color:#fff;cursor:pointer;transition:background .15s;box-shadow:0 2px 8px rgba(108,99,255,.25);" />
         </div>
     </div>
 </div>
@@ -535,12 +540,20 @@ function openViewModal(btn) {
     var title = btn.dataset.title || '';
     var file = btn.dataset.file || '';
 
+    var resolvedUrl = '<%: ResolveUrl("~/") %>' + file;
+    var ext = file.split('.').pop().toLowerCase();
+
+    // Unsupported preview types — open in new tab instead
+    if (['ppt','pptx','doc','docx','xls','xlsx'].indexOf(ext) >= 0) {
+        showToast('Preview is not available for this file type. Opening in a new tab...');
+        window.open(resolvedUrl, '_blank');
+        return;
+    }
+
     document.getElementById('vmTitle').textContent = title;
 
     // Preview only — no meta, no description
     var preview = document.getElementById('vmPreview');
-    var resolvedUrl = '<%: ResolveUrl("~/") %>' + file;
-    var ext = file.split('.').pop().toLowerCase();
 
     if (ext === 'pdf') {
         preview.innerHTML = '<iframe src="' + resolvedUrl + '" style="width:100%;height:550px;border:1px solid #E5E7EB;border-radius:10px;" frameborder="0"></iframe>';
@@ -549,7 +562,10 @@ function openViewModal(btn) {
     } else if (['mp4','webm','ogg'].indexOf(ext) >= 0) {
         preview.innerHTML = '<video controls style="width:100%;border-radius:10px;"><source src="' + resolvedUrl + '" type="video/' + ext + '">Your browser does not support video.</video>';
     } else {
-        preview.innerHTML = '<div style="text-align:center;padding:2.5rem;background:#F9FAFB;border-radius:12px;border:1.5px dashed #E5E7EB;"><i class="bi bi-file-earmark" style="font-size:2.5rem;color:var(--tc-muted);opacity:.4;"></i><p style="margin:.75rem 0 0;font-size:.88rem;color:var(--tc-muted);">Preview is not available for this file type. Use the Download button to view it.</p></div>';
+        // Any other unknown type — also open in new tab
+        showToast('Preview is not available for this file type. Opening in a new tab...');
+        window.open(resolvedUrl, '_blank');
+        return;
     }
 
     document.getElementById('viewMaterialModal').style.display = 'flex';
@@ -660,24 +676,43 @@ function validateEditForm() {
 }
 
 function openSaveConfirm() {
+    // Dynamically set modal content based on material status
+    var status = document.getElementById('<%=hidMaterialStatus.ClientID%>').value || '';
+    var titleEl = document.getElementById('scmTitle');
+    var msgEl = document.getElementById('scmMessage');
+
+    if (status.toLowerCase() === 'approved') {
+        titleEl.textContent = '<%: T("Confirm Material Changes","Sahkan Perubahan Bahan") %>';
+        msgEl.textContent = '<%: T("This material is currently approved. Editing it will return its status to Pending for review. Are you sure you want to continue?","Bahan ini kini telah diluluskan. Mengemas kininya akan menukar statusnya kepada Menunggu untuk semakan. Adakah anda pasti mahu meneruskan?") %>';
+    } else {
+        titleEl.textContent = '<%: T("Confirm Changes","Sahkan Perubahan") %>';
+        msgEl.textContent = '<%: T("Are you sure you want to save these changes?","Adakah anda pasti mahu menyimpan perubahan ini?") %>';
+    }
+
     document.getElementById('saveConfirmModal').style.display = 'flex';
 }
 function closeSaveConfirm() {
     document.getElementById('saveConfirmModal').style.display = 'none';
-    // Re-enable the confirm button in case it was disabled
+    // Re-enable the confirm button in case it was in loading state
     var btn = document.querySelector('[id$="btnSave"]');
-    if (btn) { btn.disabled = false; btn.value = 'Confirm Changes'; }
+    if (btn) { btn.disabled = false; btn.value = 'Confirm'; btn.style.opacity = ''; btn.style.cursor = ''; btn.removeAttribute('data-saving'); }
 }
 
-function disableConfirmBtn() {
+/* Attach loading state to Confirm Changes button — uses setTimeout to not block postback */
+(function(){
     var btn = document.querySelector('[id$="btnSave"]');
-    if (btn) {
-        if (btn.disabled) return false; // Already processing — block duplicate
-        btn.disabled = true;
-        btn.value = 'Processing...';
-    }
-    return true;
-}
+    if (!btn) return;
+    btn.addEventListener('click', function(e) {
+        if (btn.getAttribute('data-saving') === 'true') { e.preventDefault(); return false; }
+        btn.setAttribute('data-saving', 'true');
+        setTimeout(function(){
+            btn.disabled = true;
+            btn.value = 'Saving...';
+            btn.style.opacity = '0.7';
+            btn.style.cursor = 'not-allowed';
+        }, 0);
+    });
+})();
 
 function openDeleteModal(id, title) {
     document.getElementById('<%=hidDeleteId.ClientID%>').value = id;

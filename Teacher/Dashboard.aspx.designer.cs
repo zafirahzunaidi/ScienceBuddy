@@ -96,138 +96,50 @@ namespace ScienceBuddy.Teacher
         protected global::System.Web.UI.WebControls.Literal litTotalStudents;
 
         /// <summary>
-        /// litCalMonth control.
+        /// pnlPQCards control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litCalMonth;
+        protected global::System.Web.UI.WebControls.Panel pnlPQCards;
 
         /// <summary>
-        /// litCalDays control.
+        /// rptPracticeQuizCards control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litCalDays;
+        protected global::System.Web.UI.WebControls.Repeater rptPracticeQuizCards;
 
         /// <summary>
-        /// pnlSessions control.
+        /// pnlPQEmpty control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlSessions;
+        protected global::System.Web.UI.WebControls.Panel pnlPQEmpty;
 
-        /// <summary>
-        /// litNextDay control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litNextDay;
+        // ── New dashboard cards ──
+        protected global::System.Web.UI.WebControls.Panel pnlTimelineSessions;
+        protected global::System.Web.UI.WebControls.Repeater rptTimelineSessions;
+        protected global::System.Web.UI.WebControls.Panel pnlTimelineEmpty;
+        protected global::System.Web.UI.WebControls.Panel pnlDashNotifs;
+        protected global::System.Web.UI.WebControls.Repeater rptDashNotifs;
+        protected global::System.Web.UI.WebControls.Panel pnlDashNotifsEmpty;
 
-        /// <summary>
-        /// litNextMonth control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litNextMonth;
-
-        /// <summary>
-        /// litNextTitle control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litNextTitle;
-
-        /// <summary>
-        /// litNextTime control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litNextTime;
-
-        /// <summary>
-        /// litNextTopic control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litNextTopic;
-
-        /// <summary>
-        /// pnlSessionsEmpty control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlSessionsEmpty;
-
-        /// <summary>
-        /// pnlNotifs control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlNotifs;
-
-        /// <summary>
-        /// rptNotifs control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptNotifs;
-
-        /// <summary>
-        /// pnlNotifsEmpty control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlNotifsEmpty;
-
-        /// <summary>
-        /// litAvgQuizScore control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litAvgQuizScore;
-
-        /// <summary>
-        /// litLessonCompletionRate control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litLessonCompletionRate;
-
-        /// <summary>
-        /// litCompletedToday control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litCompletedToday;
+        // ── Quiz Contribution ──
+        protected global::System.Web.UI.WebControls.Literal litUnitPct;
+        protected global::System.Web.UI.WebControls.Literal litUnitCount;
+        protected global::System.Web.UI.WebControls.Literal litUnitMyCount;
+        protected global::System.Web.UI.WebControls.Literal litUnitTotal;
+        protected global::System.Web.UI.WebControls.Literal litLevelPct;
+        protected global::System.Web.UI.WebControls.Literal litLevelCount;
+        protected global::System.Web.UI.WebControls.Literal litLevelMyCount;
+        protected global::System.Web.UI.WebControls.Literal litLevelTotal;
+        protected global::System.Web.UI.WebControls.HiddenField hidUnitPct;
+        protected global::System.Web.UI.WebControls.HiddenField hidLevelPct;
     }
 }

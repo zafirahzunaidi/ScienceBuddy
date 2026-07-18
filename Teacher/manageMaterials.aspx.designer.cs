@@ -110,6 +110,21 @@ namespace ScienceBuddy.Teacher
         protected global::System.Web.UI.WebControls.Panel pnlEmpty;
 
         /// <summary>
+        /// litEmptyTitle control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litEmptyTitle;
+
+        /// <summary>
+        /// litEmptyDesc control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litEmptyDesc;
+
+        /// <summary>
+        /// pnlEmptyUploadBtn control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlEmptyUploadBtn;
+
+        /// <summary>
         /// litFormTitle control.
         /// </summary>
         /// <remarks>
@@ -287,5 +302,6 @@ namespace ScienceBuddy.Teacher
         protected global::System.Web.UI.WebControls.HiddenField hidOrigLevel;
         protected global::System.Web.UI.WebControls.HiddenField hidOrigUnit;
         protected global::System.Web.UI.WebControls.HiddenField hidOrigSubtopic;
+        protected global::System.Web.UI.WebControls.HiddenField hidMaterialStatus;
     }
 }

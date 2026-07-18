@@ -1,5 +1,5 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="liveSession.aspx.cs"
-    Inherits="ScienceBuddy.Teacher.liveSession" MasterPageFile="~/Site.Master" Title="Live Sessions" %>
+    Inherits="ScienceBuddy.Teacher.liveSession" MasterPageFile="~/Site.Master" Title="Live Sessions" EnableEventValidation="false" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
 <style>
@@ -81,9 +81,14 @@
 .ls-modal-header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem;border-bottom:1px solid var(--tb);}
 .ls-modal-header h3{font-size:1rem;font-weight:800;color:var(--tt);margin:0;}
 .ls-modal-close{background:none;border:none;font-size:1.4rem;color:var(--tm);cursor:pointer;}.ls-modal-close:hover{color:var(--tt);}
-.ls-modal-body{padding:1.25rem 1.5rem;max-height:60vh;overflow-y:auto;}
+.ls-modal-body{padding:1.25rem 1.5rem;max-height:65vh;overflow-y:auto;}
 .ls-modal-footer{display:flex;gap:.75rem;justify-content:flex-end;padding:1rem 1.5rem;border-top:1px solid var(--tb);}
-.ls-field{margin-bottom:1rem;}.ls-label{font-size:.78rem;font-weight:600;color:var(--tt);display:block;margin-bottom:4px;}
+.ls-field{margin-bottom:1.1rem;}.ls-label{font-size:.84rem;font-weight:700;color:#1E1B4B;display:block;margin-bottom:6px;}
+.ls-field-error{font-size:.72rem;color:var(--te);font-weight:600;margin-top:4px;display:none;}
+.ls-field-error.show{display:block;}
+.ls-input.invalid{border-color:var(--te);}
+.ls-form-error{font-size:.78rem;color:var(--te);font-weight:600;text-align:center;margin-top:.75rem;display:none;}
+.ls-form-error.show{display:block;}
 .ls-input{width:100%;border-radius:10px;border:1.5px solid var(--tb);padding:.55rem .75rem;font-size:.84rem;transition:border-color .2s;}
 .ls-input:focus{border-color:var(--tp);outline:none;}
 .ls-row2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
@@ -99,7 +104,50 @@
 .ls-pending-notice-content{flex:1;min-width:0;}
 .ls-pending-notice-title{font-size:.84rem;font-weight:700;color:#991B1B;margin-bottom:2px;}
 .ls-pending-notice-msg{font-size:.78rem;color:#B91C1C;line-height:1.45;}
+/* Start Live button styles */
+.ls-act-start{background:linear-gradient(135deg,#10B981,#059669);color:#fff;border:none;border-radius:10px;padding:6px 14px;font-weight:700;font-size:.78rem;box-shadow:0 3px 10px rgba(16,185,129,.2);cursor:pointer;transition:transform .15s,box-shadow .15s;}
+.ls-act-start:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(16,185,129,.28);color:#fff;text-decoration:none;}
+.ls-act-start:active{transform:translateY(0);}
+.ls-act-notyet{background:transparent;color:#9CA3AF;border:1.5px solid #E5E7EB;border-radius:10px;padding:6px 14px;font-weight:600;font-size:.78rem;cursor:not-allowed;opacity:.6;}
+.ls-act-notyet:hover{color:#9CA3AF;text-decoration:none;}
+/* View Summary pill button */
+.ls-view-summary{background:#F5F3FF;border:1.5px solid #DDD6FE;color:#6C63FF;font-size:.78rem;font-weight:700;cursor:pointer;padding:6px 14px;border-radius:50px;display:inline-flex;align-items:center;gap:5px;transition:all .2s;text-decoration:none;}
+.ls-view-summary:hover{background:#EDE9FE;transform:translateY(-2px);box-shadow:0 4px 12px rgba(108,99,255,.12);color:#5A52E0;text-decoration:none;}
+.ls-view-summary:active{transform:translateY(0);}
+.ls-badge-expired{background:#F3F4F6;color:#6B7280;}
 .ls-action-card.ls-disabled{opacity:.5;cursor:not-allowed;pointer-events:none;filter:grayscale(.3);}
+/* Live Session Summary Panel */
+.ls-summary-overlay{position:fixed;inset:0;background:rgba(17,24,39,.45);z-index:7999;animation:lsSumOverIn .25s ease;}
+@keyframes lsSumOverIn{from{opacity:0;}to{opacity:1;}}
+.ls-summary-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:480px;max-width:calc(100vw - 32px);max-height:calc(100vh - 40px);background:#fff;border-radius:18px;box-shadow:0 12px 40px rgba(0,0,0,.16),0 2px 8px rgba(0,0,0,.06);overflow-y:auto;display:flex;flex-direction:column;z-index:8000;animation:lsSumIn .3s cubic-bezier(.22,1,.36,1);}
+@keyframes lsSumIn{from{opacity:0;transform:translate(-50%,-48%) scale(.96);}to{opacity:1;transform:translate(-50%,-50%) scale(1);}}
+.ls-summary-hdr{display:flex;align-items:flex-start;gap:12px;padding:1.1rem 1.25rem .85rem;border-bottom:1px solid #F3F4F6;}
+.ls-summary-ico{width:38px;height:38px;border-radius:50%;background:#D1FAE5;color:#059669;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+.ls-summary-hdr-text{}
+.ls-summary-hdr h3{font-size:.92rem;font-weight:800;color:#374151;margin:0 0 2px;}
+.ls-summary-hdr-sub{font-size:.78rem;color:#6B7280;font-weight:500;}
+.ls-summary-body{flex:1;overflow-y:auto;padding:.85rem 1.25rem 0;}
+.ls-summary-body::-webkit-scrollbar{width:4px;}.ls-summary-body::-webkit-scrollbar-thumb{background:#DDD6FE;border-radius:4px;}
+.ls-sum-times{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.75rem;}
+.ls-sum-time{font-size:.8rem;color:#6B7280;background:#F9FAFB;border-radius:9px;padding:.5rem .7rem;}
+.ls-sum-time span{display:block;font-weight:700;color:#374151;font-size:.92rem;margin-top:2px;}
+.ls-sum-stats{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.85rem;}
+.ls-sum-stat{background:#F9FAFB;border:1.5px solid #F0EDF8;border-radius:12px;padding:.65rem .75rem;display:flex;align-items:center;gap:10px;}
+.ls-sum-stat-ico{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;}
+.ls-sum-stat-val{font-size:1.25rem;font-weight:800;color:#1E1B4B;line-height:1.15;}
+.ls-sum-stat-lbl{font-size:.75rem;color:#6B7280;font-weight:600;line-height:1.2;}
+.ls-sum-parts{border-top:1px solid #F3F4F6;padding-top:.75rem;margin-bottom:.75rem;}
+.ls-sum-parts-title{font-size:.85rem;font-weight:700;color:#374151;margin-bottom:.5rem;display:flex;align-items:center;gap:5px;}
+.ls-sum-parts-list{display:flex;flex-direction:column;gap:5px;max-height:140px;overflow-y:auto;}
+.ls-sum-parts-list::-webkit-scrollbar{width:3px;}.ls-sum-parts-list::-webkit-scrollbar-thumb{background:#DDD6FE;border-radius:4px;}
+.ls-sum-part-item{display:flex;align-items:center;gap:8px;padding:.35rem .5rem;border-radius:8px;background:#F9FAFB;}
+.ls-sum-part-av{width:26px;height:26px;border-radius:50%;background:#EDE9FE;color:#7C3AED;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700;flex-shrink:0;}
+.ls-sum-part-name{font-size:.85rem;font-weight:600;color:#374151;}
+.ls-sum-no-parts{text-align:center;font-size:.84rem;color:#9CA3AF;padding:.75rem 0;}
+.ls-summary-ftr{padding:.75rem 1.25rem;border-top:1px solid #F3F4F6;display:flex;justify-content:flex-end;}
+.ls-sum-btn-done{background:linear-gradient(135deg,#6C63FF,#5A52E0);border:none;border-radius:10px;padding:.5rem 1.25rem;font-weight:700;font-size:.82rem;color:#fff;cursor:pointer;box-shadow:0 3px 10px rgba(108,99,255,.2);transition:transform .15s;}
+.ls-sum-btn-done:hover{transform:translateY(-1px);}
+@media(max-width:500px){.ls-summary-panel{width:calc(100vw - 24px);max-height:calc(100vh - 32px);}}
 </style>
 </asp:Content>
 
@@ -187,7 +235,10 @@
                         <span class='ls-badge <%# Eval("badgeCss") %>'><%# Eval("badgeLabel") %></span>
                     </div>
                     <div class="ls-card-actions">
-                        <asp:LinkButton ID="btnReschedule" runat="server" CommandName="Reschedule" CommandArgument='<%# Eval("sessionId") + "|" + Eval("rawStart") + "|" + Eval("rawEnd") + "|" + HttpUtility.HtmlEncode(Eval("title")) %>' CssClass="ls-act ls-act-edit" CausesValidation="false">
+                        <asp:LinkButton ID="btnStartSession" runat="server" CommandName="StartSession" CommandArgument='<%# Eval("sessionId") %>' CssClass='<%# (bool)Eval("canStart") ? "ls-act ls-act-start" : "ls-act ls-act-notyet" %>' CausesValidation="false" Enabled='<%# (bool)Eval("canStart") %>'>
+                            <i class='<%# (bool)Eval("canStart") ? "bi bi-broadcast-pin" : "bi bi-clock" %>'></i> <%# (bool)Eval("canStart") ? T("Start Live","Mula Langsung") : T("Not Started Yet","Belum Bermula") %>
+                        </asp:LinkButton>
+                        <asp:LinkButton ID="btnReschedule" runat="server" CommandName="Reschedule" CommandArgument='<%# Eval("sessionId") + "|" + Eval("rawStart") + "|" + Eval("rawEnd") + "|" + HttpUtility.HtmlEncode(Eval("title")) %>' CssClass="ls-act ls-act-edit" CausesValidation="false" Visible='<%# !(bool)Eval("canStart") %>'>
                             <i class="bi bi-calendar2-plus"></i> <%: T("Reschedule","Jadual Semula") %>
                         </asp:LinkButton>
                         <asp:LinkButton ID="btnDel" runat="server" CommandName="Cancel" CommandArgument='<%# Eval("sessionId") + "|" + HttpUtility.HtmlEncode(Eval("title")) + "|" + Eval("timeRange") %>' CssClass="ls-act ls-act-cancel" CausesValidation="false">
@@ -212,7 +263,7 @@
 <div id="lsTabHistory" style="display:none;">
 <asp:Panel ID="pnlListHistory" runat="server" Visible="false">
     <div class="ls-cards">
-        <asp:Repeater ID="rptHistory" runat="server">
+        <asp:Repeater ID="rptHistory" runat="server" OnItemCommand="rptSessions_ItemCommand">
             <ItemTemplate>
                 <div class="ls-card">
                     <div class="ls-card-date"><span class="ls-card-day"><%# Eval("day") %></span><span class="ls-card-month"><%# Eval("month") %></span></div>
@@ -225,6 +276,11 @@
                             <%# Eval("duration").ToString()!="" ? "<span><i class='bi bi-hourglass-split'></i> " + Eval("duration") + "</span>" : "" %>
                         </div>
                         <span class='ls-badge <%# Eval("badgeCss") %>'><%# Eval("badgeLabel") %></span>
+                    </div>
+                    <div class="ls-card-actions" style='<%# (bool)Eval("isCompleted") ? "" : "display:none;" %>'>
+                        <button type="button" class="ls-view-summary" onclick="viewSessionSummary('<%# Eval("sessionId") %>')">
+                            <i class="bi bi-bar-chart-line"></i> <%: T("View Summary","Lihat Ringkasan") %> →
+                        </button>
                     </div>
                 </div>
             </ItemTemplate>
@@ -243,25 +299,20 @@
 <%-- Start Instant Class Modal --%>
 <div id="instantModal" class="ls-modal-overlay" style="display:none;">
     <div class="ls-modal">
-        <div class="ls-modal-header"><h3><%: T("Start Instant Class","Mulakan Kelas Segera") %></h3><button type="button" class="ls-modal-close" onclick="document.getElementById('instantModal').style.display='none'">×</button></div>
+        <div class="ls-modal-header"><h3 style="font-size:1.1rem;"><%: T("Start Instant Class","Mulakan Kelas Segera") %></h3><button type="button" class="ls-modal-close" onclick="document.getElementById('instantModal').style.display='none'">×</button></div>
         <div class="ls-modal-body">
             <p style="font-size:.82rem;color:var(--tm);margin:0 0 1rem;"><%: T("Create a live class and begin teaching immediately.","Cipta kelas langsung dan mula mengajar serta-merta.") %></p>
-            <div class="ls-field"><label class="ls-label"><%: T("Session Title","Tajuk Sesi") %> *</label><asp:TextBox ID="txtInstantTitle" runat="server" CssClass="ls-input" MaxLength="200" /></div>
+            <div class="ls-field"><label class="ls-label"><%: T("Session Title","Tajuk Sesi") %> <span style="color:var(--te);">*</span></label><asp:TextBox ID="txtInstantTitle" runat="server" CssClass="ls-input" MaxLength="200" /><div class="ls-field-error" id="errInstTitle">Please enter a session title.</div></div>
             <div class="ls-field"><label class="ls-label"><%: T("Description","Penerangan") %></label><asp:TextBox ID="txtInstantDesc" runat="server" CssClass="ls-input" TextMode="MultiLine" Rows="2" /></div>
             <div class="ls-row2">
-                <div class="ls-field"><label class="ls-label"><%: T("Subtopic","Subtopik") %> *</label><asp:DropDownList ID="ddlInstantSubtopic" runat="server" CssClass="ls-input" /></div>
-                <div class="ls-field"><label class="ls-label"><%: T("Platform","Platform") %> *</label>
-                    <asp:DropDownList ID="ddlInstantPlatform" runat="server" CssClass="ls-input">
-                        <asp:ListItem Value="" Text="— Select —" />
-                        <asp:ListItem Value="Google Meet" Text="Google Meet" />
-                        <asp:ListItem Value="Zoom" Text="Zoom" />
-                    </asp:DropDownList></div>
+                <div class="ls-field"><label class="ls-label"><%: T("Unit","Unit") %> <span style="color:var(--te);">*</span></label><asp:DropDownList ID="ddlInstantUnit" runat="server" CssClass="ls-input" /><div class="ls-field-error" id="errInstUnit">Please select a unit.</div></div>
+                <div class="ls-field"><label class="ls-label"><%: T("Subtopic","Subtopik") %> <span style="color:var(--te);">*</span></label><asp:DropDownList ID="ddlInstantSubtopic" runat="server" CssClass="ls-input" /><div class="ls-field-error" id="errInstSub">Please select a subtopic.</div></div>
             </div>
-            <asp:Panel ID="pnlInstantError" runat="server" Visible="false"><div style="font-size:.76rem;color:var(--te);font-weight:600;"><asp:Literal ID="litInstantError" runat="server" /></div></asp:Panel>
+            <asp:Panel ID="pnlInstantError" runat="server" Visible="false"><div style="font-size:.78rem;color:var(--te);font-weight:600;margin-top:.25rem;"><asp:Literal ID="litInstantError" runat="server" /></div></asp:Panel>
         </div>
         <div class="ls-modal-footer">
             <button type="button" class="ls-btn-cancel-modal" onclick="document.getElementById('instantModal').style.display='none'"><%: T("Cancel","Batal") %></button>
-            <asp:Button ID="btnStartLive" runat="server" CssClass="ls-btn-submit" style="background:#DC2626;" OnClick="btnStartLive_Click" CausesValidation="false" />
+            <asp:Button ID="btnStartLive" runat="server" CssClass="ls-btn-submit" style="background:#DC2626;" OnClick="btnStartLive_Click" CausesValidation="false" OnClientClick="return validateInstantForm();" />
         </div>
     </div>
 </div>
@@ -318,46 +369,83 @@
     <div class="ls-modal">
         <div class="ls-modal-header"><h3><%: T("Schedule Live Class","Jadualkan Kelas Langsung") %></h3><button type="button" class="ls-modal-close" onclick="document.getElementById('scheduleModal').style.display='none'">×</button></div>
         <div class="ls-modal-body">
-            <div class="ls-field"><label class="ls-label"><%: T("Class Title","Tajuk Kelas") %> *</label><asp:TextBox ID="txtTitle" runat="server" CssClass="ls-input" MaxLength="200" /></div>
+            <div class="ls-field"><label class="ls-label"><%: T("Class Title","Tajuk Kelas") %> <span style="color:var(--te);">*</span></label><asp:TextBox ID="txtTitle" runat="server" CssClass="ls-input" MaxLength="200" /><div class="ls-field-error" id="errSchTitle">Please enter a class title.</div></div>
+            <div class="ls-field"><label class="ls-label"><%: T("Date","Tarikh") %> <span style="color:var(--te);">*</span></label><asp:TextBox ID="txtDate" runat="server" CssClass="ls-input" TextMode="Date" /><div class="ls-field-error" id="errSchDate">Please select a date.</div></div>
             <div class="ls-row2">
-                <div class="ls-field"><label class="ls-label"><%: T("Date","Tarikh") %> *</label><asp:TextBox ID="txtDate" runat="server" CssClass="ls-input" TextMode="Date" /></div>
-                <div class="ls-field"><label class="ls-label"><%: T("Start Time","Masa Mula") %> *</label><asp:TextBox ID="txtStart" runat="server" CssClass="ls-input" TextMode="Time" /></div>
+                <div class="ls-field"><label class="ls-label"><%: T("Start Time","Masa Mula") %> <span style="color:var(--te);">*</span></label><asp:TextBox ID="txtStart" runat="server" CssClass="ls-input" TextMode="Time" /><div class="ls-field-error" id="errSchStart">Please select a start time.</div></div>
+                <div class="ls-field"><label class="ls-label"><%: T("End Time","Masa Tamat") %> <span style="color:var(--te);">*</span></label><asp:TextBox ID="txtEnd" runat="server" CssClass="ls-input" TextMode="Time" /><div class="ls-field-error" id="errSchEnd">Please select an end time.</div></div>
             </div>
-            <div class="ls-row2">
-                <div class="ls-field"><label class="ls-label"><%: T("End Time","Masa Tamat") %> *</label><asp:TextBox ID="txtEnd" runat="server" CssClass="ls-input" TextMode="Time" /></div>
-                <div class="ls-field"><label class="ls-label"><%: T("Subtopic","Subtopik") %> *</label><asp:DropDownList ID="ddlSubtopic" runat="server" CssClass="ls-input" /></div>
-            </div>
-            <div class="ls-field"><label class="ls-label"><%: T("Meeting Link","Pautan Mesyuarat") %> *</label><asp:TextBox ID="txtLink" runat="server" CssClass="ls-input" MaxLength="255" /></div>
+            <div class="ls-field"><label class="ls-label"><%: T("Unit","Unit") %> <span style="color:var(--te);">*</span></label><asp:DropDownList ID="ddlUnit" runat="server" CssClass="ls-input" /><div class="ls-field-error" id="errSchUnit">Please select a unit.</div></div>
+            <div class="ls-field"><label class="ls-label"><%: T("Subtopic","Subtopik") %> <span style="color:var(--te);">*</span></label><asp:DropDownList ID="ddlSubtopic" runat="server" CssClass="ls-input" /><div class="ls-field-error" id="errSchSub">Please select a subtopic.</div></div>
             <div class="ls-field"><label class="ls-label"><%: T("Description","Penerangan") %></label><asp:TextBox ID="txtDesc" runat="server" CssClass="ls-input" TextMode="MultiLine" Rows="2" /></div>
-            <asp:Panel ID="pnlError" runat="server" Visible="false"><div style="font-size:.76rem;color:var(--te);font-weight:600;"><asp:Literal ID="litError" runat="server" /></div></asp:Panel>
+            <asp:Panel ID="pnlError" runat="server" Visible="false"><div style="font-size:.78rem;color:var(--te);font-weight:600;margin-top:.25rem;"><asp:Literal ID="litError" runat="server" /></div></asp:Panel>
         </div>
         <div class="ls-modal-footer">
             <button type="button" class="ls-btn-cancel-modal" onclick="document.getElementById('scheduleModal').style.display='none'"><%: T("Cancel","Batal") %></button>
-            <asp:Button ID="btnSchedule" runat="server" CssClass="ls-btn-submit" OnClick="btnSchedule_Click" CausesValidation="false" />
+            <asp:Button ID="btnSchedule" runat="server" CssClass="ls-btn-submit" OnClick="btnSchedule_Click" CausesValidation="false" OnClientClick="return validateScheduleForm();" />
         </div>
     </div>
 </div>
 
 <asp:HiddenField ID="hidToast" runat="server" Value="" />
 <asp:HiddenField ID="hidShowModal" runat="server" Value="" />
+<asp:HiddenField ID="hidShowSummary" runat="server" Value="" />
 <div class="ls-toast-wrap" id="lsToast"></div>
 
-<%-- Embedded Live Call --%>
-<asp:Panel ID="pnlLiveRoom" runat="server" Visible="false">
-    <div class="ls-page-header">
-        <div><h1><asp:Literal ID="litLiveRoomTitle" runat="server" /></h1></div>
-        <asp:Button ID="btnEndLive" runat="server" CssClass="ls-btn-primary" style="background:#EF4444;"
-            Text="End Live Session" OnClick="btnEndLive_Click" CausesValidation="false" />
+<%-- Live Session Summary Panel (bottom-right, shown after End Live) --%>
+<asp:Panel ID="pnlSummary" runat="server">
+<div class="ls-summary-overlay" id="lsSummaryOverlay" style="display:none;"></div>
+<div class="ls-summary-panel" id="lsSummaryPanel" style="display:none;">
+    <div class="ls-summary-hdr">
+        <div class="ls-summary-ico"><i class="bi bi-check-lg"></i></div>
+        <div class="ls-summary-hdr-text">
+            <h3><%: T("Live Session Completed","Sesi Langsung Selesai") %></h3>
+            <div class="ls-summary-hdr-sub"><asp:Literal ID="litSumTitle" runat="server" /></div>
+        </div>
     </div>
-    <div id="jitsi-container-teacher" style="width:100%; height:600px; border-radius:16px; overflow:hidden;"></div>
-    <asp:HiddenField ID="hidLiveRoomName" runat="server" />
-    <asp:HiddenField ID="hidLiveDisplayName" runat="server" />
+    <div class="ls-summary-body">
+        <div class="ls-sum-times">
+            <div class="ls-sum-time"><%: T("Start","Mula") %><span><asp:Literal ID="litSumStart" runat="server" /></span></div>
+            <div class="ls-sum-time"><%: T("End","Tamat") %><span><asp:Literal ID="litSumEnd" runat="server" /></span></div>
+        </div>
+        <div class="ls-sum-stats">
+            <div class="ls-sum-stat">
+                <div class="ls-sum-stat-ico" style="background:#EDE9FE;color:#7C3AED;"><i class="bi bi-clock-fill"></i></div>
+                <div><div class="ls-sum-stat-val"><asp:Literal ID="litSumDuration" runat="server" /></div><div class="ls-sum-stat-lbl"><%: T("Duration","Tempoh") %></div></div>
+            </div>
+            <div class="ls-sum-stat">
+                <div class="ls-sum-stat-ico" style="background:#D1FAE5;color:#059669;"><i class="bi bi-people-fill"></i></div>
+                <div><div class="ls-sum-stat-val"><asp:Literal ID="litSumStudents" runat="server" /></div><div class="ls-sum-stat-lbl"><%: T("Students Joined","Pelajar Menyertai") %></div></div>
+            </div>
+        </div>
+        <div class="ls-sum-parts">
+            <div class="ls-sum-parts-title"><i class="bi bi-person-lines-fill" style="color:var(--tp);"></i> <%: T("Participants","Peserta") %></div>
+            <asp:Panel ID="pnlSumPartsList" runat="server">
+                <div class="ls-sum-parts-list">
+                    <asp:Repeater ID="rptSumParticipants" runat="server">
+                        <ItemTemplate>
+                            <div class="ls-sum-part-item">
+                                <div class="ls-sum-part-av"><%# Eval("initials") %></div>
+                                <div class="ls-sum-part-name"><%# HttpUtility.HtmlEncode((string)Eval("name")) %></div>
+                            </div>
+                        </ItemTemplate>
+                    </asp:Repeater>
+                </div>
+            </asp:Panel>
+            <asp:Panel ID="pnlSumNoParticipants" runat="server" style="display:none;">
+                <div class="ls-sum-no-parts"><%: T("No students attended this live session.","Tiada pelajar menghadiri sesi langsung ini.") %></div>
+            </asp:Panel>
+        </div>
+    </div>
+    <div class="ls-summary-ftr">
+        <button type="button" class="ls-sum-btn-done" onclick="closeLsSummary()"><%: T("Close","Tutup") %></button>
+    </div>
+</div>
 </asp:Panel>
 
 </asp:Content>
 
 <asp:Content ID="cScripts" ContentPlaceHolderID="ScriptsContent" runat="server">
-<script src="https://meet.jit.si/external_api.js"></script>  <%-- embedded live session --%>
 <script>
 function switchLsTab(tab){
     var up=document.getElementById('lsTabUpcoming');
@@ -388,6 +476,10 @@ window.addEventListener('load',function(){
     var im=document.getElementById('<%=hidShowInstantModal.ClientID%>');
     if (im && im.value === '1') { document.getElementById('instantModal').style.display = 'flex'; im.value = ''; }
 
+    // Show summary panel if redirected from End Live
+    var ss=document.getElementById('<%=hidShowSummary.ClientID%>');
+    if(ss&&ss.value==='1'){var sp=document.getElementById('lsSummaryPanel');var so=document.getElementById('lsSummaryOverlay');if(so)so.style.display='block';if(sp)sp.style.display='flex';ss.value='';}
+
     // Pending License: show notice + disable action cards
     var lic=document.getElementById('<%=hidLicenseStatus.ClientID%>');
     if(lic&&lic.value==='Pending'){
@@ -396,18 +488,186 @@ window.addEventListener('load',function(){
         for(var i=0;i<cards.length;i++){cards[i].classList.add('ls-disabled');cards[i].removeAttribute('onclick');}
     }
 
-    var jc = document.getElementById('jitsi-container-teacher');  <%-- embedded live session --%>
-    if (jc) {
-        var roomName = document.getElementById('<%= hidLiveRoomName.ClientID %>').value;
-        var displayName = document.getElementById('<%= hidLiveDisplayName.ClientID %>').value;
-        var api = new JitsiMeetExternalAPI("meet.jit.si", {
-            roomName: roomName,
-            width: "100%",
-            height: 600,
-            parentNode: jc,
-            userInfo: { displayName: displayName }
+    // Unit → Subtopic dependency for Schedule modal
+    var ddlUnitEl=document.getElementById('<%=ddlUnit.ClientID%>');
+    var ddlSubEl=document.getElementById('<%=ddlSubtopic.ClientID%>');
+    if(ddlUnitEl&&ddlSubEl){
+        // Initially disable if no unit selected
+        if(!ddlUnitEl.value){ddlSubEl.disabled=true;}
+        ddlUnitEl.addEventListener('change',function(){
+            var unitId=this.value;
+            ddlSubEl.innerHTML='';
+            if(!unitId){
+                ddlSubEl.disabled=true;
+                var opt=document.createElement('option');opt.value='';opt.textContent='— Select Unit First —';ddlSubEl.appendChild(opt);
+                return;
+            }
+            ddlSubEl.disabled=false;
+            var loading=document.createElement('option');loading.value='';loading.textContent='Loading...';ddlSubEl.appendChild(loading);
+            fetch(window.location.pathname+'?handler=subtopicsByUnit&unitId='+encodeURIComponent(unitId))
+            .then(function(r){return r.json();})
+            .then(function(data){
+                ddlSubEl.innerHTML='';
+                var def=document.createElement('option');def.value='';def.textContent='— Select Subtopic —';ddlSubEl.appendChild(def);
+                for(var i=0;i<data.length;i++){
+                    var o=document.createElement('option');o.value=data[i].id;o.textContent=data[i].name;ddlSubEl.appendChild(o);
+                }
+            })
+            .catch(function(){
+                ddlSubEl.innerHTML='';
+                var err=document.createElement('option');err.value='';err.textContent='Error loading';ddlSubEl.appendChild(err);
+            });
         });
     }
+
+    // Unit → Subtopic dependency for Instant modal
+    var ddlInstUnitEl=document.getElementById('<%=ddlInstantUnit.ClientID%>');
+    var ddlInstSubEl=document.getElementById('<%=ddlInstantSubtopic.ClientID%>');
+    if(ddlInstUnitEl&&ddlInstSubEl){
+        if(!ddlInstUnitEl.value){ddlInstSubEl.disabled=true;}
+        ddlInstUnitEl.addEventListener('change',function(){
+            var unitId=this.value;
+            ddlInstSubEl.innerHTML='';
+            if(!unitId){
+                ddlInstSubEl.disabled=true;
+                var opt=document.createElement('option');opt.value='';opt.textContent='— Select Unit First —';ddlInstSubEl.appendChild(opt);
+                return;
+            }
+            ddlInstSubEl.disabled=false;
+            var loading=document.createElement('option');loading.value='';loading.textContent='Loading...';ddlInstSubEl.appendChild(loading);
+            fetch(window.location.pathname+'?handler=subtopicsByUnit&unitId='+encodeURIComponent(unitId))
+            .then(function(r){return r.json();})
+            .then(function(data){
+                ddlInstSubEl.innerHTML='';
+                var def=document.createElement('option');def.value='';def.textContent='— Select Subtopic —';ddlInstSubEl.appendChild(def);
+                for(var i=0;i<data.length;i++){
+                    var o=document.createElement('option');o.value=data[i].id;o.textContent=data[i].name;ddlInstSubEl.appendChild(o);
+                }
+            })
+            .catch(function(){
+                ddlInstSubEl.innerHTML='';
+                var err=document.createElement('option');err.value='';err.textContent='Error loading';ddlInstSubEl.appendChild(err);
+            });
+        });
+    }
+
+    // Enable dropdowns before form submit so values are posted
+    var form=document.getElementById('MainForm');
+    if(form){form.addEventListener('submit',function(){
+        if(ddlSubEl)ddlSubEl.disabled=false;
+        if(ddlInstSubEl)ddlInstSubEl.disabled=false;
+    });}
+
+});
+
+/* ── Summary panel close ── */
+function closeLsSummary(){
+    var p=document.getElementById('lsSummaryPanel');
+    var o=document.getElementById('lsSummaryOverlay');
+    if(p){p.style.transition='opacity .25s ease,transform .25s ease';p.style.opacity='0';p.style.transform='translate(-50%,-48%) scale(.96)';setTimeout(function(){p.style.display='none';},260);}
+    if(o){o.style.transition='opacity .25s ease';o.style.opacity='0';setTimeout(function(){o.style.display='none';},260);}
+    if(window.history&&window.history.replaceState){
+        var url=window.location.pathname;
+        window.history.replaceState({},'',url);
+    }
+}
+
+/* ── View Summary from History (AJAX) ── */
+function viewSessionSummary(sessionId){
+    fetch(window.location.pathname+'?handler=sessionSummary&id='+encodeURIComponent(sessionId))
+    .then(function(r){return r.json();})
+    .then(function(data){
+        if(data.error)return;
+        var titleEl=document.querySelector('#lsSummaryPanel .ls-summary-hdr-sub');
+        var startEl=document.querySelector('#lsSummaryPanel .ls-sum-times .ls-sum-time:first-child span');
+        var endEl=document.querySelector('#lsSummaryPanel .ls-sum-times .ls-sum-time:last-child span');
+        var durEl=document.querySelectorAll('#lsSummaryPanel .ls-sum-stat-val')[0];
+        var studEl=document.querySelectorAll('#lsSummaryPanel .ls-sum-stat-val')[1];
+        if(titleEl)titleEl.textContent=data.title;
+        if(startEl)startEl.textContent=data.startTime;
+        if(endEl)endEl.textContent=data.endTime;
+        if(durEl)durEl.textContent=data.duration;
+        if(studEl)studEl.textContent=data.studentCount.toString();
+        // Participants
+        var listEl=document.querySelector('#lsSummaryPanel .ls-sum-parts-list');
+        var noPartsEl=document.querySelector('#lsSummaryPanel .ls-sum-no-parts');
+        if(listEl){
+            if(data.participants.length>0){
+                var html='';
+                for(var i=0;i<data.participants.length;i++){
+                    html+='<div class="ls-sum-part-item"><div class="ls-sum-part-av">'+data.participants[i].initials+'</div><div class="ls-sum-part-name">'+escHtml(data.participants[i].name)+'</div></div>';
+                }
+                listEl.innerHTML=html;
+                listEl.parentElement.style.display='';
+                if(noPartsEl)noPartsEl.parentElement.style.display='none';
+            }else{
+                listEl.parentElement.style.display='none';
+                if(noPartsEl)noPartsEl.parentElement.style.display='';
+            }
+        }
+        // Show modal
+        var panel=document.getElementById('lsSummaryPanel');
+        var overlay=document.getElementById('lsSummaryOverlay');
+        if(overlay){overlay.style.display='block';overlay.style.opacity='1';}
+        if(panel){panel.style.display='flex';panel.style.opacity='1';panel.style.transform='translate(-50%,-50%) scale(1)';}
+    })
+    .catch(function(){});
+}
+function escHtml(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+
+/* ── Client-side validation ── */
+function validateScheduleForm(){
+    // Enable disabled dropdowns before validation so their values can be read
+    var subEl=document.getElementById('<%=ddlSubtopic.ClientID%>');
+    var fields=[
+        {el:document.getElementById('<%=txtTitle.ClientID%>'),err:'errSchTitle'},
+        {el:document.getElementById('<%=txtDate.ClientID%>'),err:'errSchDate'},
+        {el:document.getElementById('<%=txtStart.ClientID%>'),err:'errSchStart'},
+        {el:document.getElementById('<%=txtEnd.ClientID%>'),err:'errSchEnd'},
+        {el:document.getElementById('<%=ddlUnit.ClientID%>'),err:'errSchUnit'},
+        {el:subEl,err:'errSchSub'}
+    ];
+    var valid=true;
+    for(var i=0;i<fields.length;i++){
+        var f=fields[i],val=f.el?f.el.value.trim():'';
+        var errEl=document.getElementById(f.err);
+        if(!val){valid=false;if(errEl)errEl.classList.add('show');if(f.el)f.el.classList.add('invalid');}
+        else{if(errEl)errEl.classList.remove('show');if(f.el)f.el.classList.remove('invalid');}
+    }
+    var gen=document.getElementById('errSchGeneral');
+    if(gen)gen.style.display='none';
+    // Enable subtopic dropdown before submit so its value is POSTed
+    if(valid&&subEl)subEl.disabled=false;
+    return valid;
+}
+function validateInstantForm(){
+    var instSubEl=document.getElementById('<%=ddlInstantSubtopic.ClientID%>');
+    var fields=[
+        {el:document.getElementById('<%=txtInstantTitle.ClientID%>'),err:'errInstTitle'},
+        {el:document.getElementById('<%=ddlInstantUnit.ClientID%>'),err:'errInstUnit'},
+        {el:instSubEl,err:'errInstSub'}
+    ];
+    var valid=true;
+    for(var i=0;i<fields.length;i++){
+        var f=fields[i],val=f.el?f.el.value.trim():'';
+        var errEl=document.getElementById(f.err);
+        if(!val){valid=false;if(errEl)errEl.classList.add('show');if(f.el)f.el.classList.add('invalid');}
+        else{if(errEl)errEl.classList.remove('show');if(f.el)f.el.classList.remove('invalid');}
+    }
+    var gen=document.getElementById('errInstGeneral');
+    if(gen)gen.style.display='none';
+    // Enable subtopic dropdown before submit so its value is POSTed
+    if(valid&&instSubEl)instSubEl.disabled=false;
+    return valid;
+}
+/* Auto-clear errors on input */
+document.addEventListener('input',function(e){
+    var el=e.target;if(!el.classList.contains('invalid'))return;
+    if(el.value.trim()){el.classList.remove('invalid');var p=el.parentElement;var err=p?p.querySelector('.ls-field-error'):null;if(err)err.classList.remove('show');}
+});
+document.addEventListener('change',function(e){
+    var el=e.target;if(!el.classList.contains('invalid'))return;
+    if(el.value.trim()){el.classList.remove('invalid');var p=el.parentElement;var err=p?p.querySelector('.ls-field-error'):null;if(err)err.classList.remove('show');}
 });
 
 </script>

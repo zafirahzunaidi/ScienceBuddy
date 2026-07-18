@@ -111,22 +111,41 @@ namespace ScienceBuddy.Teacher
                 using (var conn = new SqlConnection(ConnStr))
                 {
                     conn.Open();
-                    string newId = GenId(conn);
-                    using (var cmd = new SqlCommand(@"INSERT INTO dbo.[Material]([materialId],[subtopicId],[createdByUserId],[materialTitle],[materialType],[fileUrl],[materialContent],[createdDate],[status],[language])
-                        VALUES(@id,@sub,@uid,@title,@type,@file,@desc,GETDATE(),'Pending',@lang)", conn))
+                    using (var txn = conn.BeginTransaction())
                     {
-                        cmd.Parameters.AddWithValue("@id", newId);
-                        cmd.Parameters.AddWithValue("@sub", subtopicId);
-                        cmd.Parameters.AddWithValue("@uid", userId);
-                        cmd.Parameters.AddWithValue("@title", title);
-                        cmd.Parameters.AddWithValue("@type", materialType);
-                        cmd.Parameters.AddWithValue("@file", fileName); // filename only
-                        cmd.Parameters.AddWithValue("@desc", string.IsNullOrEmpty(desc) ? (object)DBNull.Value : desc);
-                        cmd.Parameters.AddWithValue("@lang", language);
-                        cmd.ExecuteNonQuery();
+                        string newId = GenId(conn, txn);
+
+                        // Insert Material
+                        using (var cmd = new SqlCommand(@"INSERT INTO dbo.[Material]([materialId],[subtopicId],[createdByUserId],[materialTitle],[materialType],[fileUrl],[materialContent],[createdDate],[status],[language])
+                            VALUES(@id,@sub,@uid,@title,@type,@file,@desc,GETDATE(),'Pending',@lang)", conn, txn))
+                        {
+                            cmd.Parameters.AddWithValue("@id", newId);
+                            cmd.Parameters.AddWithValue("@sub", subtopicId);
+                            cmd.Parameters.AddWithValue("@uid", userId);
+                            cmd.Parameters.AddWithValue("@title", title);
+                            cmd.Parameters.AddWithValue("@type", materialType);
+                            cmd.Parameters.AddWithValue("@file", fileName);
+                            cmd.Parameters.AddWithValue("@desc", string.IsNullOrEmpty(desc) ? (object)DBNull.Value : desc);
+                            cmd.Parameters.AddWithValue("@lang", language);
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        // Insert Log
+                        string logId = GenLogId(conn, txn);
+                        using (var cmd = new SqlCommand(@"INSERT INTO dbo.[Log]([logId],[userId],[action],[description],[logDateTime],[status])
+                            VALUES(@id,@uid,@act,@desc,GETDATE(),'Success')", conn, txn))
+                        {
+                            cmd.Parameters.AddWithValue("@id", logId);
+                            cmd.Parameters.AddWithValue("@uid", userId);
+                            cmd.Parameters.AddWithValue("@act", "Material Uploaded");
+                            cmd.Parameters.AddWithValue("@desc", "Uploaded material " + newId + " for review.");
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        txn.Commit();
                     }
 
-                    // Insert notification for the teacher
+                    // Insert notification for the teacher (outside transaction — non-critical)
                     InsertNotification(conn, userId);
                 }
                 hidToast.Value = T("Material uploaded successfully!", "Bahan berjaya dimuat naik!");
@@ -169,6 +188,18 @@ namespace ScienceBuddy.Teacher
         {
             using (var cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING([materialId],2,LEN([materialId])-1) AS INT)),0) FROM dbo.[Material]", conn))
             { return "M" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3"); }
+        }
+
+        private string GenId(SqlConnection conn, System.Data.SqlClient.SqlTransaction txn)
+        {
+            using (var cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING([materialId],2,LEN([materialId])-1) AS INT)),0) FROM dbo.[Material]", conn, txn))
+            { return "M" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3"); }
+        }
+
+        private string GenLogId(SqlConnection conn, System.Data.SqlClient.SqlTransaction txn)
+        {
+            using (var cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING([logId],4,LEN([logId])-3) AS INT)),0) FROM dbo.[Log]", conn, txn))
+            { return "LOG" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3"); }
         }
 
         private static string GetMaterialType(string ext)
