@@ -549,17 +549,17 @@ namespace ScienceBuddy.Student
                 else
                 {
                     // Like â€” generate sequential ID
-                    string likeId = "FL001";
+                    string likeId = "LIKE001";
                     const string seqSql = @"
-                        SELECT ISNULL(MAX(CAST(SUBSTRING(likeId, 3, LEN(likeId) - 2) AS INT)), 0)
-                        FROM ForumLike WHERE likeId LIKE 'FL[0-9]%'";
+                        SELECT ISNULL(MAX(CAST(SUBSTRING(likeId, 5, LEN(likeId) - 4) AS INT)), 0)
+                        FROM ForumLike WHERE likeId LIKE 'LIKE[0-9]%'";
                     using (SqlCommand seqCmd = new SqlCommand(seqSql, connection))
                     {
                         object lastVal = seqCmd.ExecuteScalar();
                         if (lastVal != null && lastVal != DBNull.Value)
                         {
                             int lastNum = Convert.ToInt32(lastVal);
-                            likeId = "FL" + (lastNum + 1).ToString("D3");
+                            likeId = "LIKE" + (lastNum + 1).ToString("D3");
                         }
                     }
 
@@ -1105,10 +1105,10 @@ namespace ScienceBuddy.Student
         {
             try
             {
-                string nId = "NTF001";
-                using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(notificationId,4,LEN(notificationId)-3) AS INT)),0) FROM Notification WHERE notificationId LIKE 'NTF[0-9]%'", conn))
+                string nId = "N001";
+                using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(notificationId,2,LEN(notificationId)-1) AS INT)),0) FROM Notification WHERE notificationId LIKE 'N[0-9]%'", conn))
                 {
-                    nId = "NTF" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                    nId = "N" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
                 }
                 using (SqlCommand cmd = new SqlCommand("INSERT INTO Notification(notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt) VALUES(@id,@to,@tEN,@tBM,@mEN,@mBM,0,@dt)", conn))
                 {
@@ -1129,4 +1129,6 @@ namespace ScienceBuddy.Student
         }
     }
 }
+
+
 

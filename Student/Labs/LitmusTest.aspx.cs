@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.Web;
@@ -125,9 +125,9 @@ namespace ScienceBuddy.Student.Labs
 
                 if (!exists && Tbl("LabProgress"))
                 {
-                    string pid = "LPR001";
-                    using (var seqCmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(labProgressId,4,LEN(labProgressId)-3) AS INT)),0) FROM LabProgress WHERE labProgressId LIKE 'LPR[0-9]%'", conn))
-                    { int last = Convert.ToInt32(seqCmd.ExecuteScalar()); pid = "LPR" + (last + 1).ToString("D3"); }
+                    string pid = "LABP001";
+                    using (var seqCmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(labProgressId,5,LEN(labProgressId)-4) AS INT)),0) FROM LabProgress WHERE labProgressId LIKE 'LABP[0-9]%'", conn))
+                    { int last = Convert.ToInt32(seqCmd.ExecuteScalar()); pid = "LABP" + (last + 1).ToString("D3"); }
                     using (var cmd = new SqlCommand(@"INSERT INTO LabProgress(labProgressId,studentId,labId,isCompleted,score,completedDate)
                         VALUES(@pid,@s,@l,1,@sc,@dt)", conn))
                     {
@@ -222,10 +222,10 @@ namespace ScienceBuddy.Student.Labs
         {
             try
             {
-                string nId = "NTF001";
-                using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(notificationId,4,LEN(notificationId)-3) AS INT)),0) FROM Notification WHERE notificationId LIKE 'NTF[0-9]%'", conn))
+                string nId = "N001";
+                using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(notificationId,2,LEN(notificationId)-1) AS INT)),0) FROM Notification WHERE notificationId LIKE 'N[0-9]%'", conn))
                 {
-                    nId = "NTF" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                    nId = "N" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
                 }
                 using (SqlCommand cmd = new SqlCommand("INSERT INTO Notification(notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt) VALUES(@id,@to,@tEN,@tBM,@mEN,@mBM,0,@dt)", conn))
                 {
@@ -246,3 +246,4 @@ namespace ScienceBuddy.Student.Labs
         }
     }
 }
+

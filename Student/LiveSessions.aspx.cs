@@ -504,7 +504,11 @@ namespace ScienceBuddy.Student
                 if (!exists)
                 {
                     // Insert new participant
-                    string participantId = "LSP" + now.ToString("yyyyMMddHHmmss");
+                    string participantId = "LIVEP001";
+                    using (SqlCommand seqCmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(participantId,6,LEN(participantId)-5) AS INT)),0) FROM LiveSessionParticipant WHERE participantId LIKE 'LIVEP[0-9]%'", connection))
+                    {
+                        participantId = "LIVEP" + (Convert.ToInt32(seqCmd.ExecuteScalar()) + 1).ToString("D3");
+                    }
                     const string sqlInsert = @"
                         INSERT INTO LiveSessionParticipant(participantId, sessionId, studentId, joinedAt)
                         VALUES(@pid, @sid, @stid, @now)";
@@ -610,7 +614,11 @@ namespace ScienceBuddy.Student
 
                     if (!exists)
                     {
-                        string participantId = "LSP" + DateTime.Now.ToString("yyyyMMddHHmmss");
+                        string participantId = "LIVEP001";
+                        using (SqlCommand seqCmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(participantId,6,LEN(participantId)-5) AS INT)),0) FROM LiveSessionParticipant WHERE participantId LIKE 'LIVEP[0-9]%'", connection))
+                        {
+                            participantId = "LIVEP" + (Convert.ToInt32(seqCmd.ExecuteScalar()) + 1).ToString("D3");
+                        }
                         using (SqlCommand cmd = new SqlCommand("INSERT INTO LiveSessionParticipant(participantId,sessionId,studentId,joinedAt) VALUES(@pid,@sid,@stid,@now)", connection))
                         {
                             cmd.Parameters.AddWithValue("@pid", participantId);

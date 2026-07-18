@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -11,13 +11,13 @@ namespace ScienceBuddy.Student
 {
     public partial class Chat : Page
     {
-        // ── Connection string ─────────────────────────────────────────
+        // â”€â”€ Connection string â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         private string ConnStr
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
 
-        // ── Language helper ────────────────────────────────────────────
+        // â”€â”€ Language helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         public string CurrentLanguage = "EN";
 
         public string T(string en, string bm)
@@ -29,14 +29,14 @@ namespace ScienceBuddy.Student
             return en;
         }
 
-        // ── State ─────────────────────────────────────────────────────
+        // â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         private string ChatId
         {
             get { return ViewState["ChatId"] as string; }
             set { ViewState["ChatId"] = value; }
         }
 
-        // ── Page Load ─────────────────────────────────────────────────
+        // â”€â”€ Page Load â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["userId"] == null || Session["role"] == null ||
@@ -57,7 +57,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Initialize chat from URL params ───────────────────────────
+        // â”€â”€ Initialize chat from URL params â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         private void InitializeChat()
         {
             string uid = Session["userId"].ToString();
@@ -160,7 +160,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Mark teacher messages as read ─────────────────────────────
+        // â”€â”€ Mark teacher messages as read â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         private void MarkAsRead(SqlConnection connection, string uid)
         {
             const string sql = @"
@@ -179,7 +179,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Load chat header (teacher info) ───────────────────────────
+        // â”€â”€ Load chat header (teacher info) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         private void LoadChatHeader(SqlConnection connection, string uid)
         {
             // Get the other user's ID from the chat
@@ -293,7 +293,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Load messages ─────────────────────────────────────────────
+        // â”€â”€ Load messages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         private void LoadMessages(SqlConnection connection, string uid)
         {
             const string sql = @"
@@ -376,7 +376,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Send message ──────────────────────────────────────────────
+        // â”€â”€ Send message â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         protected void btnSend_Click(object sender, EventArgs e)
         {
             string msgText = txtMessage.Text.Trim();
@@ -453,14 +453,14 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Show error ────────────────────────────────────────────────
+        // â”€â”€ Show error â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         private void ShowError()
         {
             pnlError.Visible = true;
             pnlChat.Visible = false;
         }
 
-        // ── Language initialisation ───────────────────────────────────
+        // â”€â”€ Language initialisation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         private void InitLang()
         {
             string lang = Session["preferredLanguage"] as string;
@@ -501,7 +501,7 @@ namespace ScienceBuddy.Student
             Session["preferredLanguage"] = "EN";
         }
 
-        // ── Bilingual labels ──────────────────────────────────────────
+        // â”€â”€ Bilingual labels â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         private void SetLabels()
         {
             litBack.Text = T("Back to Messages", "Kembali ke Mesej");
@@ -512,7 +512,7 @@ namespace ScienceBuddy.Student
             txtMessage.Attributes["placeholder"] = T("Type your message...", "Taip mesej anda...");
         }
 
-        // ── Utility helpers ───────────────────────────────────────────
+        // â”€â”€ Utility helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         private static string GetInitials(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -552,10 +552,10 @@ namespace ScienceBuddy.Student
         {
             try
             {
-                string nId = "NTF001";
-                using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(notificationId,4,LEN(notificationId)-3) AS INT)),0) FROM Notification WHERE notificationId LIKE 'NTF[0-9]%'", conn))
+                string nId = "N001";
+                using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(notificationId,2,LEN(notificationId)-1) AS INT)),0) FROM Notification WHERE notificationId LIKE 'N[0-9]%'", conn))
                 {
-                    nId = "NTF" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                    nId = "N" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
                 }
                 using (SqlCommand cmd = new SqlCommand("INSERT INTO Notification(notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt) VALUES(@id,@to,@tEN,@tBM,@mEN,@mBM,0,@dt)", conn))
                 {
@@ -576,3 +576,4 @@ namespace ScienceBuddy.Student
         }
     }
 }
+

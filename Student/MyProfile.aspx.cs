@@ -806,10 +806,10 @@ namespace ScienceBuddy.Student
         {
             try
             {
-                string nId = "NTF001";
-                using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(notificationId,4,LEN(notificationId)-3) AS INT)),0) FROM Notification WHERE notificationId LIKE 'NTF[0-9]%'", conn))
+                string nId = "N001";
+                using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(notificationId,2,LEN(notificationId)-1) AS INT)),0) FROM Notification WHERE notificationId LIKE 'N[0-9]%'", conn))
                 {
-                    nId = "NTF" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                    nId = "N" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
                 }
                 using (SqlCommand cmd = new SqlCommand("INSERT INTO Notification(notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt) VALUES(@id,@to,@tEN,@tBM,@mEN,@mBM,0,@dt)", conn))
                 {
@@ -855,3 +855,4 @@ namespace ScienceBuddy.Student
         }
     }
 }
+
