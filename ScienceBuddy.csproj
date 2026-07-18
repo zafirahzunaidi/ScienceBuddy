@@ -306,6 +306,7 @@
     <Content Include="Teacher\createPracticeQuiz.aspx" />
     <Content Include="Teacher\Dashboard.aspx" />
     <Content Include="Teacher\ForumReply.aspx" />
+    <Content Include="Teacher\liveClass.aspx" />
     <Content Include="Teacher\manageMaterials.aspx" />
     <Content Include="Teacher\privateMessages.aspx" />
     <Content Include="Teacher\Notifications.aspx" />
@@ -953,6 +954,13 @@
     </Compile>
     <Compile Include="Teacher\ForumReply.aspx.designer.cs">
       <DependentUpon>ForumReply.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Teacher\liveClass.aspx.cs">
+      <DependentUpon>liveClass.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Teacher\liveClass.aspx.designer.cs">
+      <DependentUpon>liveClass.aspx</DependentUpon>
     </Compile>
     <Compile Include="Teacher\manageMaterials.aspx.cs">
       <DependentUpon>manageMaterials.aspx</DependentUpon>

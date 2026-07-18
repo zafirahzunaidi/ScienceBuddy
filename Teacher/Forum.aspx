@@ -286,23 +286,11 @@
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 <asp:HiddenField ID="hidLicenseStatus" runat="server" Value="" />
 
-<%-- Page header with New Post button on right --%>
+<%-- Page header --%>
 <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem;">
     <div class="fr-header" style="margin-bottom:0;">
         <h1><i class="bi bi-chat-dots" style="color:var(--tp);font-size:1.3rem;vertical-align:middle;margin-right:.4rem;"></i><%: T("Forum","Forum") %></h1>
         <p><%: T("Join public discussions, answer student questions, and support the ScienceBuddy community.","Sertai perbincangan awam, jawab soalan pelajar, dan sokong komuniti ScienceBuddy.") %></p>
-    </div>
-    <button type="button" class="fr-new-btn" id="btnNewPost" onclick="openModal()">
-        <i class="bi bi-plus-lg"></i> <%: T("New Post","Catatan Baharu") %>
-    </button>
-</div>
-
-<%-- Pending License Notice (shown only for Pending teachers) --%>
-<div id="frPendingNotice" class="fr-pending-notice" style="display:none;">
-    <div class="fr-pending-notice-icon"><i class="bi bi-shield-exclamation"></i></div>
-    <div class="fr-pending-notice-content">
-        <div class="fr-pending-notice-title"><%: T("Verification Pending","Pengesahan Menunggu") %></div>
-        <div class="fr-pending-notice-msg"><%: T("Your Teaching License is still under review. Creating new forum posts is temporarily unavailable until your verification has been approved.","Lesen Mengajar anda masih dalam semakan. Mencipta catatan forum baharu tidak tersedia buat sementara waktu sehingga pengesahan anda diluluskan.") %></div>
     </div>
 </div>
 
@@ -321,10 +309,7 @@
     <div class="fr-empty">
         <i class="bi bi-chat-square-text"></i>
         <div class="fr-empty-title"><%: T("No public forum discussions yet.","Tiada perbincangan forum awam lagi.") %></div>
-        <div class="fr-empty-sub"><%: T("Start the first discussion and help students learn together.","Mulakan perbincangan pertama dan bantu pelajar belajar bersama.") %></div>
-        <button type="button" class="fr-empty-cta" onclick="openModal()">
-            <i class="bi bi-plus-lg"></i> <%: T("Create New Post","Cipta Catatan Baharu") %>
-        </button>
+        <div class="fr-empty-sub"><%: T("Check back later for new discussions.","Semak kemudian untuk perbincangan baharu.") %></div>
     </div>
 </asp:Panel>
 
@@ -371,33 +356,11 @@
     </div>
 </asp:Panel>
 
-<%-- New Post Modal --%>
-<div id="newPostModal" class="fr-modal-overlay" style="display:none;" onclick="if(event.target===this)closeModal()">
-    <div class="fr-modal">
-        <div class="fr-modal-header">
-            <h3><i class="bi bi-pencil-square" style="color:var(--tp);margin-right:.4rem;"></i><%: T("New Forum Post","Catatan Forum Baharu") %></h3>
-            <button type="button" class="fr-modal-close" onclick="closeModal()">&#215;</button>
-        </div>
-        <div class="fr-modal-body">
-            <div class="fr-field">
-                <label class="fr-label"><%: T("Title","Tajuk") %> *</label>
-                <asp:TextBox ID="txtTitle" runat="server" CssClass="fr-input" MaxLength="200" />
-            </div>
-            <div class="fr-field">
-                <label class="fr-label"><%: T("Message","Mesej") %> *</label>
-                <asp:TextBox ID="txtMessage" runat="server" CssClass="fr-input" TextMode="MultiLine" Rows="5" />
-            </div>
-            <asp:Panel ID="pnlModalVal" runat="server" Visible="false">
-                <div class="fr-modal-val"><i class="bi bi-exclamation-circle-fill"></i> <asp:Literal ID="litModalVal" runat="server" /></div>
-            </asp:Panel>
-        </div>
-        <div class="fr-modal-footer">
-            <button type="button" class="fr-btn-cancel" onclick="closeModal()"><%: T("Cancel","Batal") %></button>
-            <asp:Button ID="btnPost" runat="server" CssClass="fr-btn-post"
-                OnClick="btnPost_Click" CausesValidation="false" />
-        </div>
-    </div>
-</div>
+<%-- Hidden controls (retained for code-behind compatibility) --%>
+<asp:TextBox ID="txtTitle" runat="server" Visible="false" />
+<asp:TextBox ID="txtMessage" runat="server" Visible="false" />
+<asp:Panel ID="pnlModalVal" runat="server" Visible="false"><asp:Literal ID="litModalVal" runat="server" /></asp:Panel>
+<asp:Button ID="btnPost" runat="server" OnClick="btnPost_Click" CausesValidation="false" Visible="false" />
 
 <asp:HiddenField ID="hidToast"     runat="server" Value="" />
 <asp:HiddenField ID="hidShowModal" runat="server" Value="" />
@@ -407,9 +370,6 @@
 <%-- ════ SCRIPTS ════ --%>
 <asp:Content ID="cScripts" ContentPlaceHolderID="ScriptsContent" runat="server">
 <script>
-function openModal()  { document.getElementById('newPostModal').style.display = 'flex'; }
-function closeModal() { document.getElementById('newPostModal').style.display = 'none'; }
-
 // Search on Enter key
 document.addEventListener('DOMContentLoaded', function () {
     var txt = document.getElementById('<%=txtSearch.ClientID%>');
@@ -435,17 +395,6 @@ window.addEventListener('load', function () {
         h.value = '';
         setTimeout(function () { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; }, 2500);
         setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 3000);
-    }
-    // Re-open modal after validation failure
-    var sm = document.getElementById('<%=hidShowModal.ClientID%>');
-    if (sm && sm.value === '1') { openModal(); sm.value = ''; }
-    // Pending License: show notice + disable New Post button
-    var lic = document.getElementById('<%=hidLicenseStatus.ClientID%>');
-    if (lic && lic.value === 'Pending') {
-        var notice = document.getElementById('frPendingNotice');
-        if (notice) notice.style.display = 'flex';
-        var btn = document.getElementById('btnNewPost');
-        if (btn) { btn.classList.add('fr-btn-disabled'); btn.removeAttribute('onclick'); btn.setAttribute('title','<%: T("Creating new posts is unavailable while your Teaching License verification is pending.","Mencipta catatan baharu tidak tersedia semasa pengesahan Lesen Mengajar anda masih menunggu.") %>'); }
     }
 });
 </script>

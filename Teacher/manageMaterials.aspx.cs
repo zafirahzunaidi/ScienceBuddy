@@ -176,6 +176,7 @@ namespace ScienceBuddy.Teacher
                     pnlEmpty.Visible = dt.Rows.Count == 0;
                     pnlDiscover.Visible = false;
                     pnlDiscoverEmpty.Visible = false;
+                    if (dt.Rows.Count == 0) SetEmptyStateContent(status);
                     if (dt.Rows.Count > 0) { rptMaterials.DataSource = dt; rptMaterials.DataBind(); }
                 }
             }
@@ -219,6 +220,34 @@ namespace ScienceBuddy.Teacher
                     pnlEmpty.Visible = false;
                     if (dt.Rows.Count > 0) { rptDiscover.DataSource = dt; rptDiscover.DataBind(); }
                 }
+            }
+        }
+
+        // ── Empty state content ─────────────────────────────────────
+        private void SetEmptyStateContent(string statusFilter)
+        {
+            switch ((statusFilter ?? "").ToLower())
+            {
+                case "approved":
+                    litEmptyTitle.Text = T("No approved materials found.", "Tiada bahan yang diluluskan dijumpai.");
+                    litEmptyDesc.Text = T("You don't have any approved learning materials at the moment.", "Anda tidak mempunyai bahan pembelajaran yang diluluskan buat masa ini.");
+                    pnlEmptyUploadBtn.Visible = false;
+                    break;
+                case "pending":
+                    litEmptyTitle.Text = T("No pending materials found.", "Tiada bahan menunggu dijumpai.");
+                    litEmptyDesc.Text = T("You don't have any learning materials waiting for review.", "Anda tidak mempunyai bahan pembelajaran yang menunggu semakan.");
+                    pnlEmptyUploadBtn.Visible = false;
+                    break;
+                case "rejected":
+                    litEmptyTitle.Text = T("No rejected materials found.", "Tiada bahan ditolak dijumpai.");
+                    litEmptyDesc.Text = T("You don't have any rejected learning materials.", "Anda tidak mempunyai bahan pembelajaran yang ditolak.");
+                    pnlEmptyUploadBtn.Visible = false;
+                    break;
+                default: // "All" or empty
+                    litEmptyTitle.Text = T("You haven't uploaded any learning materials yet.", "Anda belum memuat naik sebarang bahan pembelajaran.");
+                    litEmptyDesc.Text = T("Click \"Upload Material\" to add your first learning resource.", "Klik \"Muat Naik Bahan\" untuk menambah sumber pembelajaran pertama anda.");
+                    pnlEmptyUploadBtn.Visible = true;
+                    break;
             }
         }
 
@@ -302,6 +331,18 @@ namespace ScienceBuddy.Teacher
             return "mm-ico-default";
         }
 
+        protected string GetTypeBadgeCss(string t)
+        {
+            if (string.IsNullOrEmpty(t)) return "mm-meta-badge-default";
+            string l = t.ToLower();
+            if (l.Contains("pdf")) return "mm-meta-badge-pdf";
+            if (l.Contains("doc")) return "mm-meta-badge-doc";
+            if (l.Contains("ppt")) return "mm-meta-badge-ppt";
+            if (l.Contains("image") || l.Contains("jpg") || l.Contains("png")) return "mm-meta-badge-image";
+            if (l.Contains("video")) return "mm-meta-badge-video";
+            return "mm-meta-badge-default";
+        }
+
         // ── Edit modal load ──────────────────────────────────────────
         private void LoadEditForm(string materialId, string userId)
         {
@@ -353,6 +394,7 @@ namespace ScienceBuddy.Teacher
                             bool isResubmit = matStatus.Equals("Rejected", StringComparison.OrdinalIgnoreCase);
                             litFormTitle.Text = isResubmit ? "Resubmit Material" : "Edit Material";
                             litSaveBtnText.Text = "Confirm Changes";
+                            hidMaterialStatus.Value = matStatus;
 
                             hidShowEditModal.Value = "1";
                         }
@@ -419,6 +461,8 @@ namespace ScienceBuddy.Teacher
         // ── Save (update) ────────────────────────────────────────────
         protected void btnSave_Click(object sender, EventArgs e)
         {
+            System.Diagnostics.Debug.WriteLine("[btnSave_Click] START " + DateTime.Now.ToString("HH:mm:ss.fff"));
+
             string materialId = hidMaterialId.Value;
             string userId = Session["userId"].ToString();
             string title = txtTitle.Text.Trim();
@@ -440,6 +484,8 @@ namespace ScienceBuddy.Teacher
             { hidToast.Value = "Unit is required."; hidShowEditModal.Value = "1"; LoadMaterials(); return; }
             if (string.IsNullOrEmpty(subtopicId))
             { hidToast.Value = "Subtopic is required."; hidShowEditModal.Value = "1"; LoadMaterials(); return; }
+
+            System.Diagnostics.Debug.WriteLine("[btnSave_Click] Validation passed " + DateTime.Now.ToString("HH:mm:ss.fff"));
 
             // ── Change detection — compare with original values ──
             string origTitle = hidOrigTitle.Value.Trim();
@@ -468,6 +514,7 @@ namespace ScienceBuddy.Teacher
             string fileUrl = null; string materialType = null;
             if (hasNewFile)
             {
+                System.Diagnostics.Debug.WriteLine("[btnSave_Click] File validation start " + DateTime.Now.ToString("HH:mm:ss.fff"));
                 string ext = Path.GetExtension(fuFile.FileName).ToLower();
                 if (!AllowedExtensions.Contains(ext)) { hidToast.Value = "Invalid file type."; hidShowEditModal.Value = "1"; LoadMaterials(); return; }
                 if (fuFile.PostedFile.ContentLength > MaxFileSize) { hidToast.Value = "File exceeds 10 MB."; hidShowEditModal.Value = "1"; LoadMaterials(); return; }
@@ -475,18 +522,23 @@ namespace ScienceBuddy.Teacher
                 string fn = Guid.NewGuid().ToString("N").Substring(0, 12) + ext;
                 string dir = Server.MapPath("~/Images/Material/");
                 if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                System.Diagnostics.Debug.WriteLine("[btnSave_Click] SaveAs start " + DateTime.Now.ToString("HH:mm:ss.fff"));
                 fuFile.SaveAs(Path.Combine(dir, fn));
+                System.Diagnostics.Debug.WriteLine("[btnSave_Click] SaveAs done " + DateTime.Now.ToString("HH:mm:ss.fff"));
                 fileUrl = fn;
             }
 
             try
             {
+                System.Diagnostics.Debug.WriteLine("[btnSave_Click] DB connection start " + DateTime.Now.ToString("HH:mm:ss.fff"));
                 using (var conn = new SqlConnection(ConnStr))
                 {
                     conn.Open();
+                    System.Diagnostics.Debug.WriteLine("[btnSave_Click] Ownership check " + DateTime.Now.ToString("HH:mm:ss.fff"));
                     if (!VerifyOwnership(conn, materialId, userId)) { hidToast.Value = "Permission denied."; LoadMaterials(); return; }
 
-                    string sql = @"UPDATE dbo.[Material] SET [materialTitle]=@t,[materialContent]=@d,[language]=@l,[subtopicId]=@st,[status]='Pending'"
+                    System.Diagnostics.Debug.WriteLine("[btnSave_Click] SQL UPDATE start " + DateTime.Now.ToString("HH:mm:ss.fff"));
+                    string sql = @"UPDATE dbo.[Material] SET [materialTitle]=@t,[materialContent]=@d,[language]=@l,[subtopicId]=@st,[status]='Pending',[reviewedDate]=NULL"
                         + (fileUrl != null ? ",[fileUrl]=@f,[materialType]=@mt" : "") + " WHERE [materialId]=@id AND [createdByUserId]=@uid";
                     using (var cmd = new SqlCommand(sql, conn))
                     {
@@ -499,11 +551,18 @@ namespace ScienceBuddy.Teacher
                         if (fileUrl != null) { cmd.Parameters.AddWithValue("@f", fileUrl); cmd.Parameters.AddWithValue("@mt", materialType); }
                         cmd.ExecuteNonQuery();
                     }
+                    System.Diagnostics.Debug.WriteLine("[btnSave_Click] SQL UPDATE done " + DateTime.Now.ToString("HH:mm:ss.fff"));
                 }
                 hidToast.Value = T("Material updated successfully and submitted for review.", "Bahan berjaya dikemas kini dan dihantar untuk semakan.");
             }
-            catch { hidToast.Value = "An error occurred. Please try again."; }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("[btnSave_Click] ERROR: " + ex.Message);
+                hidToast.Value = T("An error occurred. Please try again.", "Ralat berlaku. Sila cuba lagi.");
+            }
+            System.Diagnostics.Debug.WriteLine("[btnSave_Click] LoadMaterials start " + DateTime.Now.ToString("HH:mm:ss.fff"));
             LoadMaterials();
+            System.Diagnostics.Debug.WriteLine("[btnSave_Click] END " + DateTime.Now.ToString("HH:mm:ss.fff"));
         }
 
         /// <summary>Checks if a rich-text value is effectively empty (only empty HTML tags or whitespace).</summary>

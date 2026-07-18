@@ -9,9 +9,6 @@ namespace ScienceBuddy.Teacher
     {
         protected global::System.Web.UI.WebControls.TextBox txtSearchConv;
         protected global::System.Web.UI.WebControls.LinkButton btnCompose;
-        protected global::System.Web.UI.WebControls.Button btnAll;
-        protected global::System.Web.UI.WebControls.Button btnStudents;
-        protected global::System.Web.UI.WebControls.Button btnParents;
         protected global::System.Web.UI.WebControls.Panel pnlNoConvs;
         protected global::System.Web.UI.WebControls.Literal litNoConvMsg;
         protected global::System.Web.UI.WebControls.Repeater rptConvs;
@@ -22,15 +19,18 @@ namespace ScienceBuddy.Teacher
         protected global::System.Web.UI.WebControls.Panel pnlComposeVal;
         protected global::System.Web.UI.WebControls.Literal litComposeError;
         protected global::System.Web.UI.WebControls.TextBox txtComposeMsg;
-        protected global::System.Web.UI.WebControls.Button btnComposeSend;
+        protected global::System.Web.UI.WebControls.LinkButton btnComposeSend;
         protected global::System.Web.UI.WebControls.Panel pnlChat;
         protected global::System.Web.UI.WebControls.Literal litChatInitials;
         protected global::System.Web.UI.WebControls.Literal litChatName;
         protected global::System.Web.UI.WebControls.Literal litChatRole;
         protected global::System.Web.UI.WebControls.Repeater rptMessages;
         protected global::System.Web.UI.WebControls.Panel pnlNoMessages;
+        protected global::System.Web.UI.WebControls.FileUpload fuAttachment;
+        protected global::System.Web.UI.WebControls.FileUpload fuComposeAttachment;
         protected global::System.Web.UI.WebControls.TextBox txtMessage;
-        protected global::System.Web.UI.WebControls.Button btnSend;
+        protected global::System.Web.UI.WebControls.LinkButton btnSend;
         protected global::System.Web.UI.WebControls.HiddenField hidSelectedChat;
+        protected global::System.Web.UI.WebControls.HiddenField hidRecipientsJson;
     }
 }
