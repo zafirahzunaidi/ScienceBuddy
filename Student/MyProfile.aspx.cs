@@ -491,6 +491,7 @@ namespace ScienceBuddy.Student
             InitLang();
             pnlPwSuccess.Visible = false;
             pnlPwError.Visible = false;
+
             // Keep the details section open after postback
             ClientScript.RegisterStartupScript(GetType(), "openPw", "document.querySelector('.st-profile-collapsible').open=true;", true);
 
@@ -523,22 +524,31 @@ namespace ScienceBuddy.Student
             using (SqlConnection connection = new SqlConnection(ConnStr))
             {
                 connection.Open();
-                // Verify current password
+                // Retrieve stored password hash for verification
+                string storedPasswordHash = "";
                 using (SqlCommand cmd = new SqlCommand("SELECT password FROM [User] WHERE userId=@uid", connection))
                 {
                     cmd.Parameters.AddWithValue("@uid", userId);
                     object result = cmd.ExecuteScalar();
-                    if (result == null || result.ToString() != currentPw)
+                    if (result != null && result != DBNull.Value)
                     {
-                        litPwError.Text = T("Current password is incorrect.", "Kata laluan semasa tidak betul.");
-                        pnlPwError.Visible = true;
-                        return;
+                        storedPasswordHash = result.ToString();
                     }
                 }
-                // Update password
+
+                // Verify current password using PasswordHelper
+                if (!PasswordHelper.VerifyPassword(currentPw, storedPasswordHash))
+                {
+                    litPwError.Text = T("Current password is incorrect.", "Kata laluan semasa tidak betul.");
+                    pnlPwError.Visible = true;
+                    return;
+                }
+
+                // Hash the new password and save
+                string newPasswordHash = PasswordHelper.HashPassword(newPw);
                 using (SqlCommand cmd = new SqlCommand("UPDATE [User] SET password=@pw WHERE userId=@uid", connection))
                 {
-                    cmd.Parameters.AddWithValue("@pw", newPw);
+                    cmd.Parameters.AddWithValue("@pw", newPasswordHash);
                     cmd.Parameters.AddWithValue("@uid", userId);
                     cmd.ExecuteNonQuery();
                 }
@@ -615,17 +625,23 @@ namespace ScienceBuddy.Student
             {
                 connection.Open();
 
-                // Verify password
+                // Verify password using PasswordHelper
+                string storedPasswordHash = "";
                 using (SqlCommand cmd = new SqlCommand("SELECT password FROM [User] WHERE userId=@uid", connection))
                 {
                     cmd.Parameters.AddWithValue("@uid", userId);
                     object result = cmd.ExecuteScalar();
-                    if (result == null || result.ToString() != password)
+                    if (result != null && result != DBNull.Value)
                     {
-                        litDeleteError.Text = T("Incorrect password.", "Kata laluan tidak betul.");
-                        pnlDeleteError.Visible = true;
-                        return;
+                        storedPasswordHash = result.ToString();
                     }
+                }
+
+                if (!PasswordHelper.VerifyPassword(password, storedPasswordHash))
+                {
+                    litDeleteError.Text = T("Incorrect password.", "Kata laluan tidak betul.");
+                    pnlDeleteError.Visible = true;
+                    return;
                 }
 
                 // Set status to Deleted
