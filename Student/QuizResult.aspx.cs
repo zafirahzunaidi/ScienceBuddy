@@ -351,7 +351,7 @@ namespace ScienceBuddy.Student
                 litRetryBtn.Text = T("Try Again", "Cuba Lagi");
                 litProgressBtn.Text = T("Progress & Rewards", "Kemajuan & Ganjaran");
                 litHistoryBtn.Text = T("Quiz History", "Sejarah Kuiz");
-                lnkReview.HRef = ResolveUrl("~/Student/QuizResult.aspx?resultId=" + resultId).Replace("QuizResult", "QuizReview");
+                lnkReview.HRef = ResolveUrl("~/Student/QuizResult.aspx?resultId=" + resultId + "&review=1");
                 lnkRetry.HRef = ResolveUrl("~/Student/Quiz.aspx?quizId=" + quizId);
 
                 // Back button based on type
@@ -373,10 +373,10 @@ namespace ScienceBuddy.Student
                         }
                         break;
                     case "Level":
-                        litBackBtn.Text = T("Back to Level", "Kembali ke Tahap");
+                        litBackBtn.Text = T("Back to Learning", "Kembali ke Pembelajaran Saya");
                         if (!string.IsNullOrEmpty(levelId))
                         {
-                            lnkBack.HRef = ResolveUrl("~/Student/LevelDetails.aspx?levelId=" + levelId);
+                            lnkBack.HRef = ResolveUrl("~/Student/MyLearning.aspx?levelId=" + levelId);
                         }
                         else
                         {

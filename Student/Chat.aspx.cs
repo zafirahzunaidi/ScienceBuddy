@@ -123,10 +123,15 @@ namespace ScienceBuddy.Student
                     else
                     {
                         // Create new chat
-                        string newChatId = "C" + DateTime.Now.ToString("yyMMddHHmm").Substring(0, 9);
-                        if (newChatId.Length > 10)
+                        string newChatId = "C001";
+                        using (SqlCommand seqCmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(chatId, 2, LEN(chatId) - 1) AS INT)), 0) FROM userChat WHERE chatId LIKE 'C[0-9]%'", connection))
                         {
-                            newChatId = newChatId.Substring(0, 10);
+                            object lastVal = seqCmd.ExecuteScalar();
+                            if (lastVal != null && lastVal != DBNull.Value)
+                            {
+                                int lastNum = Convert.ToInt32(lastVal);
+                                newChatId = "C" + (lastNum + 1).ToString("D3");
+                            }
                         }
 
                         const string insertSql = @"
@@ -297,7 +302,7 @@ namespace ScienceBuddy.Student
         private void LoadMessages(SqlConnection connection, string uid)
         {
             const string sql = @"
-                SELECT pm.privateMsgId, pm.senderUserId, pm.msgText, pm.sentAt
+                SELECT pm.privateMsgId, pm.senderUserId, pm.msgText, pm.attachmentFile, pm.sentAt
                 FROM   privateMessage pm
                 WHERE  pm.chatId = @chatId
                 ORDER BY pm.sentAt ASC";
@@ -318,6 +323,12 @@ namespace ScienceBuddy.Student
                         if (reader["msgText"] != DBNull.Value)
                         {
                             msgText = reader["msgText"].ToString();
+                        }
+
+                        string attachmentFile = "";
+                        if (reader["attachmentFile"] != DBNull.Value)
+                        {
+                            attachmentFile = reader["attachmentFile"].ToString();
                         }
 
                         DateTime sentAt;
@@ -350,9 +361,33 @@ namespace ScienceBuddy.Student
                             senderInitial = (litHeaderInitials.Text.Length > 0) ? litHeaderInitials.Text : "T";
                         }
 
+                        string attachmentHtml = "";
+                        if (!string.IsNullOrEmpty(attachmentFile))
+                        {
+                            string fileUrl = ResolveUrl("~/" + attachmentFile);
+                            string fileName = System.IO.Path.GetFileName(attachmentFile);
+                            string ext = System.IO.Path.GetExtension(attachmentFile).ToLower();
+
+                            if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".gif" || ext == ".webp")
+                            {
+                                attachmentHtml = "<div class=\"st-chat-msg-attachment\">"
+                                    + "<a href=\"" + HttpUtility.HtmlAttributeEncode(fileUrl) + "\" target=\"_blank\">"
+                                    + "<img src=\"" + HttpUtility.HtmlAttributeEncode(fileUrl) + "\" alt=\"" + HttpUtility.HtmlAttributeEncode(fileName) + "\" class=\"st-chat-msg-img\" />"
+                                    + "</a></div>";
+                            }
+                            else
+                            {
+                                attachmentHtml = "<div class=\"st-chat-msg-attachment\">"
+                                    + "<a href=\"" + HttpUtility.HtmlAttributeEncode(fileUrl) + "\" target=\"_blank\" class=\"st-chat-msg-file\">"
+                                    + "<i class=\"bi bi-file-earmark-arrow-down\"></i> " + HttpUtility.HtmlEncode(fileName)
+                                    + "</a></div>";
+                            }
+                        }
+
                         messages.Add(new
                         {
                             MsgText = HttpUtility.HtmlEncode(msgText),
+                            AttachmentHtml = attachmentHtml,
                             SentAt = sentAt.ToString("dd MMM yyyy, h:mm tt"),
                             IsMine = isMine,
                             SenderName = senderName,
@@ -380,7 +415,9 @@ namespace ScienceBuddy.Student
         protected void btnSend_Click(object sender, EventArgs e)
         {
             string msgText = txtMessage.Text.Trim();
-            if (string.IsNullOrEmpty(msgText))
+            bool hasFile = fuAttachment.HasFile;
+
+            if (string.IsNullOrEmpty(msgText) && !hasFile)
             {
                 return;
             }
@@ -390,12 +427,51 @@ namespace ScienceBuddy.Student
             }
 
             string uid = Session["userId"].ToString();
+            string attachmentFile = null;
+
+            // Handle file upload
+            if (hasFile)
+            {
+                string fileName = System.IO.Path.GetFileName(fuAttachment.FileName);
+                string ext = System.IO.Path.GetExtension(fileName).ToLower();
+
+                // Allow common file types
+                string[] allowed = { ".png", ".jpg", ".jpeg", ".gif", ".webp", ".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx", ".txt" };
+                bool isAllowed = false;
+                foreach (string a in allowed)
+                {
+                    if (ext == a) { isAllowed = true; break; }
+                }
+
+                if (isAllowed && fuAttachment.PostedFile.ContentLength <= 10 * 1024 * 1024)
+                {
+                    // Generate unique filename
+                    string uniqueName = uid + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + "_" + fileName;
+                    string savePath = Server.MapPath("~/Images/PrivateMessage/") + uniqueName;
+
+                    // Ensure directory exists
+                    string dir = System.IO.Path.GetDirectoryName(savePath);
+                    if (!System.IO.Directory.Exists(dir))
+                    {
+                        System.IO.Directory.CreateDirectory(dir);
+                    }
+
+                    fuAttachment.SaveAs(savePath);
+                    attachmentFile = "Images/PrivateMessage/" + uniqueName;
+                }
+            }
+
+            // If no text and no valid file, return
+            if (string.IsNullOrEmpty(msgText) && string.IsNullOrEmpty(attachmentFile))
+            {
+                return;
+            }
 
             using (SqlConnection connection = new SqlConnection(ConnStr))
             {
                 connection.Open();
 
-                // Generate unique privateMsgId: "PM" + next sequential 3-digit number (PM001 to PM999)
+                // Generate unique privateMsgId
                 string msgId = "PM001";
                 const string seqSql = @"
                     SELECT ISNULL(MAX(CAST(SUBSTRING(privateMsgId, 3, LEN(privateMsgId) - 2) AS INT)), 0)
@@ -413,19 +489,20 @@ namespace ScienceBuddy.Student
 
                 const string sql = @"
                     INSERT INTO privateMessage (privateMsgId, chatId, senderUserId, msgText, attachmentFile, sentAt, isRead, readAt)
-                    VALUES (@msgId, @chatId, @uid, @msgText, NULL, @sentAt, 0, NULL)";
+                    VALUES (@msgId, @chatId, @uid, @msgText, @attachmentFile, @sentAt, 0, NULL)";
 
                 using (SqlCommand command = new SqlCommand(sql, connection))
                 {
                     command.Parameters.AddWithValue("@msgId", msgId);
                     command.Parameters.AddWithValue("@chatId", ChatId);
                     command.Parameters.AddWithValue("@uid", uid);
-                    command.Parameters.AddWithValue("@msgText", msgText);
+                    command.Parameters.AddWithValue("@msgText", string.IsNullOrEmpty(msgText) ? (object)DBNull.Value : msgText);
+                    command.Parameters.AddWithValue("@attachmentFile", string.IsNullOrEmpty(attachmentFile) ? (object)DBNull.Value : attachmentFile);
                     command.Parameters.AddWithValue("@sentAt", DateTime.Now);
                     command.ExecuteNonQuery();
                 }
 
-                // Notify recipient of new message
+                // Notify recipient
                 try
                 {
                     string recipientUserId = "";
@@ -446,7 +523,7 @@ namespace ScienceBuddy.Student
                     System.Diagnostics.Debug.WriteLine("Chat notification error: " + notifEx.Message);
                 }
 
-                // Clear textbox and reload messages
+                // Clear and reload
                 txtMessage.Text = "";
                 LoadChatHeader(connection, uid);
                 LoadMessages(connection, uid);

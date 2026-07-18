@@ -632,7 +632,7 @@ namespace ScienceBuddy.Student
                         litQuizResultBtn.Text = T("View Last Result", "Lihat Keputusan Terkini");
                         litQuizReviewBtn.Text = T("Review Answers", "Semak Jawapan");
                         lnkQuizResult.HRef = ResolveUrl("~/Student/QuizResult.aspx?resultId=" + rid);
-                        lnkQuizReview.HRef = ResolveUrl("~/Student/QuizReview.aspx?resultId=" + rid);
+                        lnkQuizReview.HRef = ResolveUrl("~/Student/QuizResult.aspx?resultId=" + rid);
                     }
                 }
             }

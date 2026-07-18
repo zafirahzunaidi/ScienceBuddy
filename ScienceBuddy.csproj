@@ -295,7 +295,6 @@
     <Content Include="Student\Labs\MatterStateChanger.aspx" />
     <Content Include="Student\Labs\SinkOrFloatMaster.aspx" />
     <Content Include="Student\Lesson.aspx" />
-    <Content Include="Student\LevelDetails.aspx" />
     <Content Include="Student\LiveSessions.aspx" />
     <Content Include="Student\Messages.aspx" />
     <Content Include="Student\MyLearning.aspx" />
@@ -308,7 +307,6 @@
     <Content Include="Student\Quiz.aspx" />
     <Content Include="Student\QuizHistory.aspx" />
     <Content Include="Student\QuizResult.aspx" />
-    <Content Include="Student\QuizReview.aspx" />
     <Content Include="Student\RevisionPlan.aspx" />
     <Content Include="Student\UnitDetails.aspx" />
     <Content Include="Student\VirtualLab.aspx" />
@@ -818,13 +816,6 @@
     <Compile Include="Student\Lesson.aspx.designer.cs">
       <DependentUpon>Lesson.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Student\LevelDetails.aspx.cs">
-      <DependentUpon>LevelDetails.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\LevelDetails.aspx.designer.cs">
-      <DependentUpon>LevelDetails.aspx</DependentUpon>
-    </Compile>
     <Compile Include="Student\LiveSessions.aspx.cs">
       <DependentUpon>LiveSessions.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -908,13 +899,6 @@
     </Compile>
     <Compile Include="Student\QuizResult.aspx.designer.cs">
       <DependentUpon>QuizResult.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Student\QuizReview.aspx.cs">
-      <DependentUpon>QuizReview.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\QuizReview.aspx.designer.cs">
-      <DependentUpon>QuizReview.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\RevisionPlan.aspx.cs">
       <DependentUpon>RevisionPlan.aspx</DependentUpon>

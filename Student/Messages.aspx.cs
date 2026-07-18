@@ -96,8 +96,8 @@ namespace ScienceBuddy.Student
         {
             litPageTitle.Text = T("Messages", "Mesej");
             litPageSub.Text = T("Chat privately with teachers for learning support.", "Berbual secara peribadi dengan guru untuk sokongan pembelajaran.");
-            litTabChats.Text = T("My Chats", "Chat Saya");
-            litTabTeachers.Text = T("Teachers", "Guru");
+            btnTabChats.Text = "<i class=\"bi bi-chat-left-text\"></i> " + T("My Chats", "Chat Saya");
+            btnTabTeachers.Text = "<i class=\"bi bi-people\"></i> " + T("Teachers", "Guru");
             litChatsEmptyTitle.Text = T("You have not started any teacher chats yet.", "Anda belum memulakan sebarang chat dengan guru.");
             litChatsEmptyDesc.Text = T("Chat privately with teachers for learning support.", "Berbual secara peribadi dengan guru untuk sokongan pembelajaran.");
             litTeachersEmptyTitle.Text = T("No teachers available.", "Tiada guru tersedia.");
@@ -388,7 +388,16 @@ namespace ScienceBuddy.Student
             pnlTeachers.Visible = false;
             btnTabChats.CssClass = "st-messages-tab active";
             btnTabTeachers.CssClass = "st-messages-tab";
-            LoadChats();
+            try
+            {
+                LoadChats();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("LoadChats error: " + ex.Message);
+                pnlChatsContent.Visible = false;
+                pnlChatsEmpty.Visible = true;
+            }
         }
 
         protected void btnTabTeachers_Click(object sender, EventArgs e)
@@ -398,7 +407,16 @@ namespace ScienceBuddy.Student
             pnlTeachers.Visible = true;
             btnTabChats.CssClass = "st-messages-tab";
             btnTabTeachers.CssClass = "st-messages-tab active";
-            LoadTeachers();
+            try
+            {
+                LoadTeachers();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("LoadTeachers error: " + ex.Message);
+                pnlTeachersContent.Visible = false;
+                pnlTeachersEmpty.Visible = true;
+            }
         }
 
         // ── Start Chat command ────────────────────────────────────────

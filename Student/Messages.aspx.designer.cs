@@ -33,15 +33,6 @@ namespace ScienceBuddy.Student
         protected global::System.Web.UI.WebControls.LinkButton btnTabChats;
 
         /// <summary>
-        /// litTabChats control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litTabChats;
-
-        /// <summary>
         /// btnTabTeachers control.
         /// </summary>
         /// <remarks>
@@ -49,15 +40,6 @@ namespace ScienceBuddy.Student
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton btnTabTeachers;
-
-        /// <summary>
-        /// litTabTeachers control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litTabTeachers;
 
         /// <summary>
         /// litPageTitle control.
