@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -11,13 +11,13 @@ namespace ScienceBuddy.Student
 {
     public partial class Messages1 : Page
     {
-        // ── Connection string ─────────────────────────────────────────
+        // Connection string
         private string ConnStr
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
 
-        // ── Language helper ────────────────────────────────────────────
+        // Language helper
         public string CurrentLanguage = "EN";
 
         public string T(string en, string bm)
@@ -29,7 +29,7 @@ namespace ScienceBuddy.Student
             return en;
         }
 
-        // ── Page Load ─────────────────────────────────────────────────
+        // Page Load
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["userId"] == null || Session["role"] == null ||
@@ -50,7 +50,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Language initialisation ───────────────────────────────────
+        // Language initialisation
         private void InitLang()
         {
             string lang = Session["preferredLanguage"] as string;
@@ -91,7 +91,7 @@ namespace ScienceBuddy.Student
             Session["preferredLanguage"] = "EN";
         }
 
-        // ── Bilingual labels ──────────────────────────────────────────
+        // Bilingual labels
         private void SetLabels()
         {
             litPageTitle.Text = T("Messages", "Mesej");
@@ -104,7 +104,7 @@ namespace ScienceBuddy.Student
             litTeachersEmptyDesc.Text = T("Teachers will appear here once they are certified.", "Guru akan muncul di sini setelah mereka bertauliah.");
         }
 
-        // ── Load chats ────────────────────────────────────────────────
+        // Load chats
         private void LoadChats()
         {
             string uid = Session["userId"].ToString();
@@ -288,7 +288,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Load teachers ─────────────────────────────────────────────
+        // Load teachers
         private void LoadTeachers()
         {
             using (SqlConnection connection = new SqlConnection(ConnStr))
@@ -380,7 +380,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Tab switching ─────────────────────────────────────────────
+        // Tab switching
         protected void btnTabChats_Click(object sender, EventArgs e)
         {
             hfTab.Value = "chats";
@@ -419,7 +419,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Start Chat command ────────────────────────────────────────
+        // Start Chat command
         protected void rptTeachers_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
             if (e.CommandName != "StartChat")
@@ -489,7 +489,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Repeater label helpers (called from ASPX) ─────────────────
+        // Repeater label helpers (called from ASPX)
         public string GetOpenChatLabel()
         {
             return T("Open Chat", "Buka Chat");
@@ -510,7 +510,7 @@ namespace ScienceBuddy.Student
             return T("Certified", "Bertauliah");
         }
 
-        // ── Utility helpers ───────────────────────────────────────────
+        // Utility helpers
         private static string GetInitials(string name)
         {
             if (string.IsNullOrWhiteSpace(name))

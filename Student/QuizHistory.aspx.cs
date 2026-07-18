@@ -51,15 +51,15 @@ namespace ScienceBuddy.Student
                 CurrentLanguage = lang;
                 return;
             }
-            string uid = Session["userId"] as string;
-            if (!string.IsNullOrEmpty(uid))
+            string userId = Session["userId"] as string;
+            if (!string.IsNullOrEmpty(userId))
             {
                 try
                 {
                     using (SqlConnection connection = new SqlConnection(ConnStr))
                     using (SqlCommand command = new SqlCommand("SELECT preferredLanguage FROM [User] WHERE userId=@u", connection))
                     {
-                        command.Parameters.AddWithValue("@u", uid);
+                        command.Parameters.AddWithValue("@u", userId);
                         connection.Open();
                         object result = command.ExecuteScalar();
                         if (result != null && result != DBNull.Value)

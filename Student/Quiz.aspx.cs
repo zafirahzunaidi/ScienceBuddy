@@ -1130,10 +1130,10 @@ namespace ScienceBuddy.Student
 
                     // B003 Quiz Starter â€” first quiz attempt ever
                     int quizCount = 0;
-                    using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM QuizResult WHERE studentId=@s", conn))
+                    using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM QuizResult WHERE studentId=@s", conn))
                     {
-                        cmd.Parameters.AddWithValue("@s", studentId);
-                        quizCount = (int)cmd.ExecuteScalar();
+                        command.Parameters.AddWithValue("@s", studentId);
+                        quizCount = (int)command.ExecuteScalar();
                     }
                     if (quizCount == 1)
                     {
@@ -1160,10 +1160,10 @@ namespace ScienceBuddy.Student
 
                     // B010 Consistent Learner â€” 3+ distinct days
                     int distinctDays = 0;
-                    using (SqlCommand cmd = new SqlCommand("SELECT COUNT(DISTINCT CAST(dateEarned AS DATE)) FROM XPTransaction WHERE studentId=@s", conn))
+                    using (SqlCommand command = new SqlCommand("SELECT COUNT(DISTINCT CAST(dateEarned AS DATE)) FROM XPTransaction WHERE studentId=@s", conn))
                     {
-                        cmd.Parameters.AddWithValue("@s", studentId);
-                        distinctDays = (int)cmd.ExecuteScalar();
+                        command.Parameters.AddWithValue("@s", studentId);
+                        distinctDays = (int)command.ExecuteScalar();
                     }
                     if (distinctDays >= 3)
                     {
@@ -1181,53 +1181,53 @@ namespace ScienceBuddy.Student
         {
             // Get unitId from the quiz
             string unitId = null;
-            using (SqlCommand cmd = new SqlCommand("SELECT unitId FROM Quiz WHERE quizId=@q", conn))
+            using (SqlCommand command = new SqlCommand("SELECT unitId FROM Quiz WHERE quizId=@q", conn))
             {
-                cmd.Parameters.AddWithValue("@q", quizId);
-                object r = cmd.ExecuteScalar();
+                command.Parameters.AddWithValue("@q", quizId);
+                object r = command.ExecuteScalar();
                 if (r != null && r != DBNull.Value) unitId = r.ToString();
             }
             if (string.IsNullOrEmpty(unitId)) return;
 
             // Count total lessons in this unit
             int totalLessons = 0;
-            using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM Lesson ls JOIN Subtopic st ON st.subtopicId=ls.subtopicId WHERE st.unitId=@u", conn))
+            using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM Lesson ls JOIN Subtopic st ON st.subtopicId=ls.subtopicId WHERE st.unitId=@u", conn))
             {
-                cmd.Parameters.AddWithValue("@u", unitId);
-                totalLessons = (int)cmd.ExecuteScalar();
+                command.Parameters.AddWithValue("@u", unitId);
+                totalLessons = (int)command.ExecuteScalar();
             }
 
             // Count completed lessons
             int completedLessons = 0;
-            using (SqlCommand cmd = new SqlCommand(@"SELECT COUNT(*) FROM LessonProgress lp 
+            using (SqlCommand command = new SqlCommand(@"SELECT COUNT(*) FROM LessonProgress lp 
                 JOIN Lesson ls ON ls.lessonId=lp.lessonId 
                 JOIN Subtopic st ON st.subtopicId=ls.subtopicId 
                 WHERE st.unitId=@u AND lp.studentId=@s AND lp.isCompleted=1", conn))
             {
-                cmd.Parameters.AddWithValue("@u", unitId);
-                cmd.Parameters.AddWithValue("@s", studentId);
-                completedLessons = (int)cmd.ExecuteScalar();
+                command.Parameters.AddWithValue("@u", unitId);
+                command.Parameters.AddWithValue("@s", studentId);
+                completedLessons = (int)command.ExecuteScalar();
             }
 
             if (completedLessons < totalLessons) return;
 
             // Check lab completion (if unit has a lab)
             int labCount = 0;
-            using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM VirtualLab WHERE unitId=@u", conn))
+            using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM VirtualLab WHERE unitId=@u", conn))
             {
-                cmd.Parameters.AddWithValue("@u", unitId);
-                labCount = (int)cmd.ExecuteScalar();
+                command.Parameters.AddWithValue("@u", unitId);
+                labCount = (int)command.ExecuteScalar();
             }
             if (labCount > 0)
             {
                 int labDone = 0;
-                using (SqlCommand cmd = new SqlCommand(@"SELECT COUNT(*) FROM LabProgress lp 
+                using (SqlCommand command = new SqlCommand(@"SELECT COUNT(*) FROM LabProgress lp 
                     JOIN VirtualLab vl ON vl.labId=lp.labId 
                     WHERE vl.unitId=@u AND lp.studentId=@s AND lp.isCompleted=1", conn))
                 {
-                    cmd.Parameters.AddWithValue("@u", unitId);
-                    cmd.Parameters.AddWithValue("@s", studentId);
-                    labDone = (int)cmd.ExecuteScalar();
+                    command.Parameters.AddWithValue("@u", unitId);
+                    command.Parameters.AddWithValue("@s", studentId);
+                    labDone = (int)command.ExecuteScalar();
                 }
                 if (labDone < labCount) return;
             }
@@ -1240,40 +1240,40 @@ namespace ScienceBuddy.Student
         {
             // Get levelId from the quiz
             string levelId = null;
-            using (SqlCommand cmd = new SqlCommand("SELECT levelId FROM Quiz WHERE quizId=@q", conn))
+            using (SqlCommand command = new SqlCommand("SELECT levelId FROM Quiz WHERE quizId=@q", conn))
             {
-                cmd.Parameters.AddWithValue("@q", quizId);
-                object r = cmd.ExecuteScalar();
+                command.Parameters.AddWithValue("@q", quizId);
+                object r = command.ExecuteScalar();
                 if (r != null && r != DBNull.Value) levelId = r.ToString();
             }
             if (string.IsNullOrEmpty(levelId)) return;
 
             // Check all unit quizzes in this level are passed
             int totalUnitQuizzes = 0;
-            using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM Quiz WHERE levelId=@l AND quizType='Unit'", conn))
+            using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM Quiz WHERE levelId=@l AND quizType='Unit'", conn))
             {
-                cmd.Parameters.AddWithValue("@l", levelId);
+                command.Parameters.AddWithValue("@l", levelId);
                 // Actually unit quizzes use unitId not levelId, so check units in this level
             }
 
             // Better approach: check all units in this level have at least 1 passed Unit quiz result
             int unitsInLevel = 0;
-            using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM Unit WHERE levelId=@l", conn))
+            using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM Unit WHERE levelId=@l", conn))
             {
-                cmd.Parameters.AddWithValue("@l", levelId);
-                unitsInLevel = (int)cmd.ExecuteScalar();
+                command.Parameters.AddWithValue("@l", levelId);
+                unitsInLevel = (int)command.ExecuteScalar();
             }
             if (unitsInLevel == 0) return;
 
             int unitsPassed = 0;
-            using (SqlCommand cmd = new SqlCommand(@"SELECT COUNT(DISTINCT q.unitId) FROM QuizResult qr 
+            using (SqlCommand command = new SqlCommand(@"SELECT COUNT(DISTINCT q.unitId) FROM QuizResult qr 
                 JOIN Quiz q ON q.quizId=qr.quizId 
                 JOIN Unit u ON u.unitId=q.unitId 
                 WHERE u.levelId=@l AND q.quizType='Unit' AND qr.studentId=@s AND qr.resultStatus='Passed'", conn))
             {
-                cmd.Parameters.AddWithValue("@l", levelId);
-                cmd.Parameters.AddWithValue("@s", studentId);
-                unitsPassed = (int)cmd.ExecuteScalar();
+                command.Parameters.AddWithValue("@l", levelId);
+                command.Parameters.AddWithValue("@s", studentId);
+                unitsPassed = (int)command.ExecuteScalar();
             }
 
             if (unitsPassed < unitsInLevel) return;
@@ -1289,26 +1289,26 @@ namespace ScienceBuddy.Student
 
         private void AwardBadgeIfNotEarned(SqlConnection conn, string studentId, string badgeId)
         {
-            using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM StudentBadge WHERE studentId=@s AND badgeId=@b", conn))
+            using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM StudentBadge WHERE studentId=@s AND badgeId=@b", conn))
             {
-                cmd.Parameters.AddWithValue("@s", studentId);
-                cmd.Parameters.AddWithValue("@b", badgeId);
-                if ((int)cmd.ExecuteScalar() > 0) return;
+                command.Parameters.AddWithValue("@s", studentId);
+                command.Parameters.AddWithValue("@b", badgeId);
+                if ((int)command.ExecuteScalar() > 0) return;
             }
 
             string sbId = "SB001";
-            using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(studentBadgeId,3,LEN(studentBadgeId)-2) AS INT)),0) FROM StudentBadge WHERE studentBadgeId LIKE 'SB[0-9]%'", conn))
+            using (SqlCommand command = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(studentBadgeId,3,LEN(studentBadgeId)-2) AS INT)),0) FROM StudentBadge WHERE studentBadgeId LIKE 'SB[0-9]%'", conn))
             {
-                sbId = "SB" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                sbId = "SB" + (Convert.ToInt32(command.ExecuteScalar()) + 1).ToString("D3");
             }
 
-            using (SqlCommand cmd = new SqlCommand("INSERT INTO StudentBadge(studentBadgeId,studentId,badgeId,earnedAt) VALUES(@id,@s,@b,@dt)", conn))
+            using (SqlCommand command = new SqlCommand("INSERT INTO StudentBadge(studentBadgeId,studentId,badgeId,earnedAt) VALUES(@id,@s,@b,@dt)", conn))
             {
-                cmd.Parameters.AddWithValue("@id", sbId);
-                cmd.Parameters.AddWithValue("@s", studentId);
-                cmd.Parameters.AddWithValue("@b", badgeId);
-                cmd.Parameters.AddWithValue("@dt", DateTime.Now);
-                cmd.ExecuteNonQuery();
+                command.Parameters.AddWithValue("@id", sbId);
+                command.Parameters.AddWithValue("@s", studentId);
+                command.Parameters.AddWithValue("@b", badgeId);
+                command.Parameters.AddWithValue("@dt", DateTime.Now);
+                command.ExecuteNonQuery();
             }
         }
 
@@ -1401,10 +1401,10 @@ namespace ScienceBuddy.Student
             {
                 // B003: Quiz Starter â€” first quiz attempt
                 int quizCount = 0;
-                using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM QuizResult WHERE studentId=@s", conn, trans))
+                using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM QuizResult WHERE studentId=@s", conn, trans))
                 {
-                    cmd.Parameters.AddWithValue("@s", studentId);
-                    quizCount = (int)cmd.ExecuteScalar();
+                    command.Parameters.AddWithValue("@s", studentId);
+                    quizCount = (int)command.ExecuteScalar();
                 }
                 if (quizCount == 1)
                 {
@@ -1431,10 +1431,10 @@ namespace ScienceBuddy.Student
 
                 // B010: Consistent Learner
                 int distinctDays = 0;
-                using (SqlCommand cmd = new SqlCommand("SELECT COUNT(DISTINCT CAST(dateEarned AS DATE)) FROM XPTransaction WHERE studentId=@s", conn, trans))
+                using (SqlCommand command = new SqlCommand("SELECT COUNT(DISTINCT CAST(dateEarned AS DATE)) FROM XPTransaction WHERE studentId=@s", conn, trans))
                 {
-                    cmd.Parameters.AddWithValue("@s", studentId);
-                    distinctDays = (int)cmd.ExecuteScalar();
+                    command.Parameters.AddWithValue("@s", studentId);
+                    distinctDays = (int)command.ExecuteScalar();
                 }
                 if (distinctDays >= 3)
                 {
@@ -1451,32 +1451,32 @@ namespace ScienceBuddy.Student
         {
             // Get unitId for this quiz
             string unitId = null;
-            using (SqlCommand cmd = new SqlCommand("SELECT unitId FROM Quiz WHERE quizId=@q", conn, trans))
+            using (SqlCommand command = new SqlCommand("SELECT unitId FROM Quiz WHERE quizId=@q", conn, trans))
             {
-                cmd.Parameters.AddWithValue("@q", quizId);
-                object r = cmd.ExecuteScalar();
+                command.Parameters.AddWithValue("@q", quizId);
+                object r = command.ExecuteScalar();
                 if (r != null && r != DBNull.Value) unitId = r.ToString();
             }
             if (string.IsNullOrEmpty(unitId)) return;
 
             // Count total lessons in this unit
             int totalLessons = 0;
-            using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM Lesson ls JOIN Subtopic st ON st.subtopicId=ls.subtopicId WHERE st.unitId=@u", conn, trans))
+            using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM Lesson ls JOIN Subtopic st ON st.subtopicId=ls.subtopicId WHERE st.unitId=@u", conn, trans))
             {
-                cmd.Parameters.AddWithValue("@u", unitId);
-                totalLessons = (int)cmd.ExecuteScalar();
+                command.Parameters.AddWithValue("@u", unitId);
+                totalLessons = (int)command.ExecuteScalar();
             }
 
             // Count completed lessons by this student in this unit
             int completedLessons = 0;
-            using (SqlCommand cmd = new SqlCommand(@"SELECT COUNT(*) FROM LessonProgress lp 
+            using (SqlCommand command = new SqlCommand(@"SELECT COUNT(*) FROM LessonProgress lp 
                 JOIN Lesson ls ON ls.lessonId=lp.lessonId 
                 JOIN Subtopic st ON st.subtopicId=ls.subtopicId 
                 WHERE st.unitId=@u AND lp.studentId=@s AND lp.isCompleted=1", conn, trans))
             {
-                cmd.Parameters.AddWithValue("@u", unitId);
-                cmd.Parameters.AddWithValue("@s", studentId);
-                completedLessons = (int)cmd.ExecuteScalar();
+                command.Parameters.AddWithValue("@u", unitId);
+                command.Parameters.AddWithValue("@s", studentId);
+                completedLessons = (int)command.ExecuteScalar();
             }
 
             // All lessons must be done
@@ -1484,21 +1484,21 @@ namespace ScienceBuddy.Student
 
             // Check if lab exists for this unit and is completed
             int labCount = 0;
-            using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM VirtualLab WHERE unitId=@u", conn, trans))
+            using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM VirtualLab WHERE unitId=@u", conn, trans))
             {
-                cmd.Parameters.AddWithValue("@u", unitId);
-                labCount = (int)cmd.ExecuteScalar();
+                command.Parameters.AddWithValue("@u", unitId);
+                labCount = (int)command.ExecuteScalar();
             }
             if (labCount > 0)
             {
                 int labDone = 0;
-                using (SqlCommand cmd = new SqlCommand(@"SELECT COUNT(*) FROM LabProgress lbp 
+                using (SqlCommand command = new SqlCommand(@"SELECT COUNT(*) FROM LabProgress lbp 
                     JOIN VirtualLab vl ON vl.labId=lbp.labId 
                     WHERE vl.unitId=@u AND lbp.studentId=@s AND lbp.isCompleted=1", conn, trans))
                 {
-                    cmd.Parameters.AddWithValue("@u", unitId);
-                    cmd.Parameters.AddWithValue("@s", studentId);
-                    labDone = (int)cmd.ExecuteScalar();
+                    command.Parameters.AddWithValue("@u", unitId);
+                    command.Parameters.AddWithValue("@s", studentId);
+                    labDone = (int)command.ExecuteScalar();
                 }
                 if (labDone < labCount) return;
             }
@@ -1511,31 +1511,31 @@ namespace ScienceBuddy.Student
         {
             // Get levelId from the quiz
             string levelId = null;
-            using (SqlCommand cmd = new SqlCommand("SELECT levelId FROM Quiz WHERE quizId=@q", conn, trans))
+            using (SqlCommand command = new SqlCommand("SELECT levelId FROM Quiz WHERE quizId=@q", conn, trans))
             {
-                cmd.Parameters.AddWithValue("@q", quizId);
-                object r = cmd.ExecuteScalar();
+                command.Parameters.AddWithValue("@q", quizId);
+                object r = command.ExecuteScalar();
                 if (r != null && r != DBNull.Value) levelId = r.ToString();
             }
             if (string.IsNullOrEmpty(levelId)) return;
 
             // Check all unit quizzes in this level are passed
             int totalUnitQuizzes = 0;
-            using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM Quiz WHERE unitId IN (SELECT unitId FROM Unit WHERE levelId=@l) AND quizType='Unit'", conn, trans))
+            using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM Quiz WHERE unitId IN (SELECT unitId FROM Unit WHERE levelId=@l) AND quizType='Unit'", conn, trans))
             {
-                cmd.Parameters.AddWithValue("@l", levelId);
-                totalUnitQuizzes = (int)cmd.ExecuteScalar();
+                command.Parameters.AddWithValue("@l", levelId);
+                totalUnitQuizzes = (int)command.ExecuteScalar();
             }
 
             int passedUnitQuizzes = 0;
-            using (SqlCommand cmd = new SqlCommand(@"SELECT COUNT(DISTINCT q.quizId) FROM QuizResult qr 
+            using (SqlCommand command = new SqlCommand(@"SELECT COUNT(DISTINCT q.quizId) FROM QuizResult qr 
                 JOIN Quiz q ON q.quizId=qr.quizId 
                 WHERE qr.studentId=@s AND q.quizType='Unit' AND qr.resultStatus='Passed'
                 AND q.unitId IN (SELECT unitId FROM Unit WHERE levelId=@l)", conn, trans))
             {
-                cmd.Parameters.AddWithValue("@s", studentId);
-                cmd.Parameters.AddWithValue("@l", levelId);
-                passedUnitQuizzes = (int)cmd.ExecuteScalar();
+                command.Parameters.AddWithValue("@s", studentId);
+                command.Parameters.AddWithValue("@l", levelId);
+                passedUnitQuizzes = (int)command.ExecuteScalar();
             }
 
             if (passedUnitQuizzes < totalUnitQuizzes) return;
@@ -1563,20 +1563,20 @@ namespace ScienceBuddy.Student
             try
             {
                 // Check if certificate already exists for this student + level
-                using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM Certificate WHERE studentId=@s AND levelId=@l", conn, trans))
+                using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM Certificate WHERE studentId=@s AND levelId=@l", conn, trans))
                 {
-                    cmd.Parameters.AddWithValue("@s", studentId);
-                    cmd.Parameters.AddWithValue("@l", levelId);
-                    if ((int)cmd.ExecuteScalar() > 0) return; // already has certificate
+                    command.Parameters.AddWithValue("@s", studentId);
+                    command.Parameters.AddWithValue("@l", levelId);
+                    if ((int)command.ExecuteScalar() > 0) return; // already has certificate
                 }
 
                 // Get level name for certificate title
                 string levelNameEN = "Level";
                 string levelNameBM = "Tahap";
-                using (SqlCommand cmd = new SqlCommand("SELECT levelNameEN, levelNameBM FROM Level WHERE levelId=@l", conn, trans))
+                using (SqlCommand command = new SqlCommand("SELECT levelNameEN, levelNameBM FROM Level WHERE levelId=@l", conn, trans))
                 {
-                    cmd.Parameters.AddWithValue("@l", levelId);
-                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    command.Parameters.AddWithValue("@l", levelId);
+                    using (SqlDataReader reader = command.ExecuteReader())
                     {
                         if (reader.Read())
                         {
@@ -1588,9 +1588,9 @@ namespace ScienceBuddy.Student
 
                 // Generate next certificate ID
                 string certId = "CERT001";
-                using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(certificateId,5,LEN(certificateId)-4) AS INT)),0) FROM Certificate WHERE certificateId LIKE 'CERT[0-9]%'", conn, trans))
+                using (SqlCommand command = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(certificateId,5,LEN(certificateId)-4) AS INT)),0) FROM Certificate WHERE certificateId LIKE 'CERT[0-9]%'", conn, trans))
                 {
-                    certId = "CERT" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                    certId = "CERT" + (Convert.ToInt32(command.ExecuteScalar()) + 1).ToString("D3");
                 }
 
                 // Insert certificate
@@ -1599,46 +1599,46 @@ namespace ScienceBuddy.Student
                 string descEN = "Awarded for completing all requirements of the " + levelNameEN + " level.";
                 string descBM = "Dianugerahkan kerana menyelesaikan semua keperluan tahap " + levelNameBM + ".";
 
-                using (SqlCommand cmd = new SqlCommand(@"INSERT INTO Certificate(certificateId,studentId,levelId,certificateTitleEN,certificateTitleBM,
+                using (SqlCommand command = new SqlCommand(@"INSERT INTO Certificate(certificateId,studentId,levelId,certificateTitleEN,certificateTitleBM,
                     certificateDescriptionEN,certificateDescriptionBM,issuedDate,certificateUrl,status) 
                     VALUES(@id,@s,@l,@tEN,@tBM,@dEN,@dBM,@dt,NULL,'Pending')", conn, trans))
                 {
-                    cmd.Parameters.AddWithValue("@id", certId);
-                    cmd.Parameters.AddWithValue("@s", studentId);
-                    cmd.Parameters.AddWithValue("@l", levelId);
-                    cmd.Parameters.AddWithValue("@tEN", titleEN);
-                    cmd.Parameters.AddWithValue("@tBM", titleBM);
-                    cmd.Parameters.AddWithValue("@dEN", descEN);
-                    cmd.Parameters.AddWithValue("@dBM", descBM);
-                    cmd.Parameters.AddWithValue("@dt", DateTime.Now);
-                    cmd.ExecuteNonQuery();
+                    command.Parameters.AddWithValue("@id", certId);
+                    command.Parameters.AddWithValue("@s", studentId);
+                    command.Parameters.AddWithValue("@l", levelId);
+                    command.Parameters.AddWithValue("@tEN", titleEN);
+                    command.Parameters.AddWithValue("@tBM", titleBM);
+                    command.Parameters.AddWithValue("@dEN", descEN);
+                    command.Parameters.AddWithValue("@dBM", descBM);
+                    command.Parameters.AddWithValue("@dt", DateTime.Now);
+                    command.ExecuteNonQuery();
                 }
 
                 // Send notification to student about certificate
                 string userId = "";
-                using (SqlCommand cmd = new SqlCommand("SELECT userId FROM Student WHERE studentId=@s", conn, trans))
+                using (SqlCommand command = new SqlCommand("SELECT userId FROM Student WHERE studentId=@s", conn, trans))
                 {
-                    cmd.Parameters.AddWithValue("@s", studentId);
-                    object r = cmd.ExecuteScalar();
+                    command.Parameters.AddWithValue("@s", studentId);
+                    object r = command.ExecuteScalar();
                     if (r != null && r != DBNull.Value) userId = r.ToString();
                 }
                 if (!string.IsNullOrEmpty(userId))
                 {
                     string nId = "N001";
-                    using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(notificationId,2,LEN(notificationId)-1) AS INT)),0) FROM Notification WHERE notificationId LIKE 'N[0-9]%'", conn, trans))
+                    using (SqlCommand command = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(notificationId,2,LEN(notificationId)-1) AS INT)),0) FROM Notification WHERE notificationId LIKE 'N[0-9]%'", conn, trans))
                     {
-                        nId = "N" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                        nId = "N" + (Convert.ToInt32(command.ExecuteScalar()) + 1).ToString("D3");
                     }
-                    using (SqlCommand cmd = new SqlCommand("INSERT INTO Notification(notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt) VALUES(@id,@to,@tEN,@tBM,@mEN,@mBM,0,@dt)", conn, trans))
+                    using (SqlCommand command = new SqlCommand("INSERT INTO Notification(notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt) VALUES(@id,@to,@tEN,@tBM,@mEN,@mBM,0,@dt)", conn, trans))
                     {
-                        cmd.Parameters.AddWithValue("@id", nId);
-                        cmd.Parameters.AddWithValue("@to", userId);
-                        cmd.Parameters.AddWithValue("@tEN", "Certificate Pending");
-                        cmd.Parameters.AddWithValue("@tBM", "Sijil Dalam Proses");
-                        cmd.Parameters.AddWithValue("@mEN", "You completed the " + levelNameEN + " level. Your certificate is being prepared.");
-                        cmd.Parameters.AddWithValue("@mBM", "Anda telah melengkapkan tahap " + levelNameBM + ". Sijil anda sedang disediakan.");
-                        cmd.Parameters.AddWithValue("@dt", DateTime.Now);
-                        cmd.ExecuteNonQuery();
+                        command.Parameters.AddWithValue("@id", nId);
+                        command.Parameters.AddWithValue("@to", userId);
+                        command.Parameters.AddWithValue("@tEN", "Certificate Pending");
+                        command.Parameters.AddWithValue("@tBM", "Sijil Dalam Proses");
+                        command.Parameters.AddWithValue("@mEN", "You completed the " + levelNameEN + " level. Your certificate is being prepared.");
+                        command.Parameters.AddWithValue("@mBM", "Anda telah melengkapkan tahap " + levelNameBM + ". Sijil anda sedang disediakan.");
+                        command.Parameters.AddWithValue("@dt", DateTime.Now);
+                        command.ExecuteNonQuery();
                     }
                 }
             }
@@ -1650,26 +1650,26 @@ namespace ScienceBuddy.Student
 
         private void AwardBadgeIfNotEarned(SqlConnection conn, SqlTransaction trans, string studentId, string badgeId)
         {
-            using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM StudentBadge WHERE studentId=@s AND badgeId=@b", conn, trans))
+            using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM StudentBadge WHERE studentId=@s AND badgeId=@b", conn, trans))
             {
-                cmd.Parameters.AddWithValue("@s", studentId);
-                cmd.Parameters.AddWithValue("@b", badgeId);
-                if ((int)cmd.ExecuteScalar() > 0) return;
+                command.Parameters.AddWithValue("@s", studentId);
+                command.Parameters.AddWithValue("@b", badgeId);
+                if ((int)command.ExecuteScalar() > 0) return;
             }
 
             string sbId = "SB001";
-            using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(studentBadgeId,3,LEN(studentBadgeId)-2) AS INT)),0) FROM StudentBadge WHERE studentBadgeId LIKE 'SB[0-9]%'", conn, trans))
+            using (SqlCommand command = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(studentBadgeId,3,LEN(studentBadgeId)-2) AS INT)),0) FROM StudentBadge WHERE studentBadgeId LIKE 'SB[0-9]%'", conn, trans))
             {
-                sbId = "SB" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                sbId = "SB" + (Convert.ToInt32(command.ExecuteScalar()) + 1).ToString("D3");
             }
 
-            using (SqlCommand cmd = new SqlCommand("INSERT INTO StudentBadge(studentBadgeId,studentId,badgeId,earnedAt) VALUES(@id,@s,@b,@dt)", conn, trans))
+            using (SqlCommand command = new SqlCommand("INSERT INTO StudentBadge(studentBadgeId,studentId,badgeId,earnedAt) VALUES(@id,@s,@b,@dt)", conn, trans))
             {
-                cmd.Parameters.AddWithValue("@id", sbId);
-                cmd.Parameters.AddWithValue("@s", studentId);
-                cmd.Parameters.AddWithValue("@b", badgeId);
-                cmd.Parameters.AddWithValue("@dt", DateTime.Now);
-                cmd.ExecuteNonQuery();
+                command.Parameters.AddWithValue("@id", sbId);
+                command.Parameters.AddWithValue("@s", studentId);
+                command.Parameters.AddWithValue("@b", badgeId);
+                command.Parameters.AddWithValue("@dt", DateTime.Now);
+                command.ExecuteNonQuery();
             }
         }
 
@@ -1678,20 +1678,20 @@ namespace ScienceBuddy.Student
             try
             {
                 string nId = "N001";
-                using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(notificationId,2,LEN(notificationId)-1) AS INT)),0) FROM Notification WHERE notificationId LIKE 'N[0-9]%'", conn))
+                using (SqlCommand command = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(notificationId,2,LEN(notificationId)-1) AS INT)),0) FROM Notification WHERE notificationId LIKE 'N[0-9]%'", conn))
                 {
-                    nId = "N" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                    nId = "N" + (Convert.ToInt32(command.ExecuteScalar()) + 1).ToString("D3");
                 }
-                using (SqlCommand cmd = new SqlCommand("INSERT INTO Notification(notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt) VALUES(@id,@to,@tEN,@tBM,@mEN,@mBM,0,@dt)", conn))
+                using (SqlCommand command = new SqlCommand("INSERT INTO Notification(notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt) VALUES(@id,@to,@tEN,@tBM,@mEN,@mBM,0,@dt)", conn))
                 {
-                    cmd.Parameters.AddWithValue("@id", nId);
-                    cmd.Parameters.AddWithValue("@to", toUserId);
-                    cmd.Parameters.AddWithValue("@tEN", titleEN);
-                    cmd.Parameters.AddWithValue("@tBM", titleBM);
-                    cmd.Parameters.AddWithValue("@mEN", msgEN);
-                    cmd.Parameters.AddWithValue("@mBM", msgBM);
-                    cmd.Parameters.AddWithValue("@dt", DateTime.Now);
-                    cmd.ExecuteNonQuery();
+                    command.Parameters.AddWithValue("@id", nId);
+                    command.Parameters.AddWithValue("@to", toUserId);
+                    command.Parameters.AddWithValue("@tEN", titleEN);
+                    command.Parameters.AddWithValue("@tBM", titleBM);
+                    command.Parameters.AddWithValue("@mEN", msgEN);
+                    command.Parameters.AddWithValue("@mBM", msgBM);
+                    command.Parameters.AddWithValue("@dt", DateTime.Now);
+                    command.ExecuteNonQuery();
                 }
             }
             catch (Exception ex)

@@ -564,7 +564,10 @@ namespace ScienceBuddy.Student
         // ── rptParents_ItemCommand (Remove Parent) ────────────────────
         protected void rptParents_ItemCommand(object source, System.Web.UI.WebControls.RepeaterCommandEventArgs e)
         {
-            if (e.CommandName != "RemoveParent") return;
+            if (e.CommandName != "RemoveParent")
+            {
+                return;
+            }
             InitLang();
             string studentParentId = e.CommandArgument.ToString();
 
@@ -758,14 +761,14 @@ namespace ScienceBuddy.Student
                 JOIN Student s ON s.studentId=sp.studentId
                 WHERE s.studentId=@sid";
 
-            DataTable dt = new DataTable();
-            using (SqlCommand cmd = new SqlCommand(sql, connection))
+            DataTable parentTable = new DataTable();
+            using (SqlCommand command = new SqlCommand(sql, connection))
             {
-                cmd.Parameters.AddWithValue("@sid", studentId);
-                new SqlDataAdapter(cmd).Fill(dt);
+                command.Parameters.AddWithValue("@sid", studentId);
+                new SqlDataAdapter(command).Fill(parentTable);
             }
 
-            if (dt.Rows.Count == 0)
+            if (parentTable.Rows.Count == 0)
             {
                 pnlParentList.Visible = false;
                 pnlNoParent.Visible = true;
@@ -775,13 +778,13 @@ namespace ScienceBuddy.Student
                 pnlParentList.Visible = true;
                 pnlNoParent.Visible = false;
                 var list = new System.Collections.Generic.List<object>();
-                foreach (DataRow r in dt.Rows)
+                foreach (DataRow row in parentTable.Rows)
                 {
                     list.Add(new
                     {
-                        StudentParentId = r["studentParentId"].ToString(),
-                        ParentName = System.Web.HttpUtility.HtmlEncode(r["parentName"].ToString()),
-                        Relationship = System.Web.HttpUtility.HtmlEncode(r["relationship"].ToString())
+                        StudentParentId = row["studentParentId"].ToString(),
+                        ParentName = System.Web.HttpUtility.HtmlEncode(row["parentName"].ToString()),
+                        Relationship = System.Web.HttpUtility.HtmlEncode(row["relationship"].ToString())
                     });
                 }
                 rptParents.DataSource = list;
@@ -849,13 +852,13 @@ namespace ScienceBuddy.Student
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(ConnStr))
+                using (SqlConnection connection = new SqlConnection(ConnStr))
                 {
-                    conn.Open();
-                    using (SqlCommand cmd = new SqlCommand("SELECT configValue FROM ConfigurationSetting WHERE configKey=@k", conn))
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand("SELECT configValue FROM ConfigurationSetting WHERE configKey=@k", connection))
                     {
-                        cmd.Parameters.AddWithValue("@k", configKey);
-                        object result = cmd.ExecuteScalar();
+                        command.Parameters.AddWithValue("@k", configKey);
+                        object result = command.ExecuteScalar();
                         if (result != null && result != DBNull.Value)
                         {
                             return Convert.ToInt32(result);

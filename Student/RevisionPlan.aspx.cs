@@ -508,7 +508,7 @@ namespace ScienceBuddy.Student
             string pendingLabel = T("Not Completed", "Belum Selesai");
             string btnText = T("Mark as Completed", "Tanda Selesai");
 
-            var taskList = new List<object>();
+            List<object> taskList = new List<object>();
             foreach (DataRow row in tasks.Rows)
             {
                 bool done = row["isCompleted"] != DBNull.Value && Convert.ToBoolean(row["isCompleted"]);
@@ -572,7 +572,7 @@ namespace ScienceBuddy.Student
 
         private void BindRewards(DataTable rewards)
         {
-            var rewardList = new List<object>();
+            List<object> rewardList = new List<object>();
             foreach (DataRow row in rewards.Rows)
             {
                 bool unlocked = row["isUnlocked"] != DBNull.Value && Convert.ToBoolean(row["isUnlocked"]);
@@ -743,7 +743,7 @@ namespace ScienceBuddy.Student
                                 pCmd.Parameters.AddWithValue("@uid", taskStudentUserId);
                                 using (SqlDataReader rdr = pCmd.ExecuteReader())
                                 {
-                                    var parentIds = new System.Collections.Generic.List<string>();
+                                    List<string> parentIds = new System.Collections.Generic.List<string>();
                                     while (rdr.Read()) { parentIds.Add(rdr["userId"].ToString()); }
                                     rdr.Close();
                                     foreach (string pid in parentIds)
@@ -795,34 +795,40 @@ namespace ScienceBuddy.Student
             try
             {
                 int xpAmount = 0;
-                using (SqlCommand cmd = new SqlCommand("SELECT xpValue FROM XPAction WHERE xpActionId='XP009'", conn))
+                using (SqlCommand command = new SqlCommand("SELECT xpValue FROM XPAction WHERE xpActionId='XP009'", conn))
                 {
-                    object r = cmd.ExecuteScalar();
-                    if (r != null && r != DBNull.Value) xpAmount = Convert.ToInt32(r);
+                    object result = command.ExecuteScalar();
+                    if (result != null && result != DBNull.Value)
+                    {
+                        xpAmount = Convert.ToInt32(result);
+                    }
                 }
-                if (xpAmount <= 0) return;
+                if (xpAmount <= 0)
+                {
+                    return;
+                }
 
                 string xtId = "XPT001";
-                using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(xpTransactionId,4,LEN(xpTransactionId)-3) AS INT)),0) FROM XPTransaction WHERE xpTransactionId LIKE 'XPT[0-9]%'", conn))
+                using (SqlCommand command = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(xpTransactionId,4,LEN(xpTransactionId)-3) AS INT)),0) FROM XPTransaction WHERE xpTransactionId LIKE 'XPT[0-9]%'", conn))
                 {
-                    xtId = "XPT" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                    xtId = "XPT" + (Convert.ToInt32(command.ExecuteScalar()) + 1).ToString("D3");
                 }
 
-                using (SqlCommand cmd = new SqlCommand("INSERT INTO XPTransaction(xpTransactionId,studentId,xpActionId,xpAmount,dateEarned) VALUES(@id,@s,@a,@xp,@dt)", conn))
+                using (SqlCommand command = new SqlCommand("INSERT INTO XPTransaction(xpTransactionId,studentId,xpActionId,xpAmount,dateEarned) VALUES(@id,@s,@a,@xp,@dt)", conn))
                 {
-                    cmd.Parameters.AddWithValue("@id", xtId);
-                    cmd.Parameters.AddWithValue("@s", studentId);
-                    cmd.Parameters.AddWithValue("@a", "XP009");
-                    cmd.Parameters.AddWithValue("@xp", xpAmount);
-                    cmd.Parameters.AddWithValue("@dt", DateTime.Today);
-                    cmd.ExecuteNonQuery();
+                    command.Parameters.AddWithValue("@id", xtId);
+                    command.Parameters.AddWithValue("@s", studentId);
+                    command.Parameters.AddWithValue("@a", "XP009");
+                    command.Parameters.AddWithValue("@xp", xpAmount);
+                    command.Parameters.AddWithValue("@dt", DateTime.Today);
+                    command.ExecuteNonQuery();
                 }
 
-                using (SqlCommand cmd = new SqlCommand("UPDATE Student SET XP=ISNULL(XP,0)+@xp WHERE studentId=@s", conn))
+                using (SqlCommand command = new SqlCommand("UPDATE Student SET XP=ISNULL(XP,0)+@xp WHERE studentId=@s", conn))
                 {
-                    cmd.Parameters.AddWithValue("@xp", xpAmount);
-                    cmd.Parameters.AddWithValue("@s", studentId);
-                    cmd.ExecuteNonQuery();
+                    command.Parameters.AddWithValue("@xp", xpAmount);
+                    command.Parameters.AddWithValue("@s", studentId);
+                    command.ExecuteNonQuery();
                 }
             }
             catch (Exception ex)
@@ -836,20 +842,20 @@ namespace ScienceBuddy.Student
             try
             {
                 string nId = "N001";
-                using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(notificationId,2,LEN(notificationId)-1) AS INT)),0) FROM Notification WHERE notificationId LIKE 'N[0-9]%'", conn))
+                using (SqlCommand command = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(notificationId,2,LEN(notificationId)-1) AS INT)),0) FROM Notification WHERE notificationId LIKE 'N[0-9]%'", conn))
                 {
-                    nId = "N" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                    nId = "N" + (Convert.ToInt32(command.ExecuteScalar()) + 1).ToString("D3");
                 }
-                using (SqlCommand cmd = new SqlCommand("INSERT INTO Notification(notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt) VALUES(@id,@to,@tEN,@tBM,@mEN,@mBM,0,@dt)", conn))
+                using (SqlCommand command = new SqlCommand("INSERT INTO Notification(notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt) VALUES(@id,@to,@tEN,@tBM,@mEN,@mBM,0,@dt)", conn))
                 {
-                    cmd.Parameters.AddWithValue("@id", nId);
-                    cmd.Parameters.AddWithValue("@to", toUserId);
-                    cmd.Parameters.AddWithValue("@tEN", titleEN);
-                    cmd.Parameters.AddWithValue("@tBM", titleBM);
-                    cmd.Parameters.AddWithValue("@mEN", msgEN);
-                    cmd.Parameters.AddWithValue("@mBM", msgBM);
-                    cmd.Parameters.AddWithValue("@dt", DateTime.Now);
-                    cmd.ExecuteNonQuery();
+                    command.Parameters.AddWithValue("@id", nId);
+                    command.Parameters.AddWithValue("@to", toUserId);
+                    command.Parameters.AddWithValue("@tEN", titleEN);
+                    command.Parameters.AddWithValue("@tBM", titleBM);
+                    command.Parameters.AddWithValue("@mEN", msgEN);
+                    command.Parameters.AddWithValue("@mBM", msgBM);
+                    command.Parameters.AddWithValue("@dt", DateTime.Now);
+                    command.ExecuteNonQuery();
                 }
             }
             catch (Exception ex)

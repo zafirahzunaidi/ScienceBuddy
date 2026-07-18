@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -16,22 +16,22 @@ namespace ScienceBuddy.Student
 {
     public partial class AIStudyCompanion1 : Page
     {
-        // ── Connection string ─────────────────────────────────────────
+        // Connection string
         private string ConnStr
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
 
-        // ── Personality visual properties ─────────────────────────────
+        // Personality visual properties
         public string PersonalityAvatar = "";
         public string PersonalityColour = "#7C3AED";
 
-        // ── Quiz metadata properties ──────────────────────────────────
+        // Quiz metadata properties
         public string GeneratedQuizTitle = "";
         public string GeneratedQuizDate = "";
         public string GeneratedQuizScore = "";
 
-        // ── Language helper ────────────────────────────────────────────
+        // Language helper
         public string CurrentLanguage = "EN";
 
         public string T(string en, string bm)
@@ -43,7 +43,7 @@ namespace ScienceBuddy.Student
             return en;
         }
 
-        // ── Page Load ─────────────────────────────────────────────────
+        // Page Load
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["userId"] == null || Session["role"] == null ||
@@ -69,7 +69,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Language initialisation ───────────────────────────────────
+        // Language initialisation
         private void InitLang()
         {
             string lang = Session["preferredLanguage"] as string;
@@ -110,7 +110,7 @@ namespace ScienceBuddy.Student
             Session["preferredLanguage"] = "EN";
         }
 
-        // ── Set bilingual labels ──────────────────────────────────────
+        // Set bilingual labels
         private void SetLabels()
         {
             litPageTitle.Text = T("AI Study Companion", "Rakan Pembelajaran AI");
@@ -141,7 +141,7 @@ namespace ScienceBuddy.Student
                                     "Selesaikan lebih banyak kuiz untuk membuka analisis pembelajaran peribadi anda.");
         }
 
-        // ── Load page data ────────────────────────────────────────────
+        // Load page data
         private void LoadPage()
         {
             using (SqlConnection connection = new SqlConnection(ConnStr))
@@ -594,7 +594,7 @@ namespace ScienceBuddy.Student
             } // end using connection
         }
 
-        // ── Mission labels by personality ─────────────────────────────
+        // Mission labels by personality
         private string[] GetMissionLabels(string personalityId)
         {
             switch (personalityId)
@@ -609,7 +609,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Show empty state ──────────────────────────────────────────
+        // Show empty state
         private void ShowEmptyState()
         {
             pnlEmpty.Visible = true;
@@ -619,7 +619,7 @@ namespace ScienceBuddy.Student
             pnlRecommend.Visible = false;
         }
 
-        // ── Format chips ──────────────────────────────────────────────
+        // Format chips
         private string FormatChips(string topics, string color)
         {
             if (string.IsNullOrWhiteSpace(topics)) return "";
@@ -637,7 +637,7 @@ namespace ScienceBuddy.Student
             return htmlBuilder.ToString();
         }
 
-        // ── AI Message based on personality ───────────────────────────
+        // AI Message based on personality
         private string GetAIMessage(string personalityId)
         {
             switch (personalityId)
@@ -659,7 +659,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Build recommendations ─────────────────────────────────────
+        // Build recommendations
         private List<object> BuildRecommendations(
             LearningAnalysisData analysis, string personalityId,
             string weakTopics, decimal avgScore, int lessonsDone, int quizAttempts)
@@ -802,7 +802,7 @@ namespace ScienceBuddy.Student
             return list;
         }
 
-        // ── Study tips based on personality ────────────────────────────
+        // Study tips based on personality
         private List<string> GetStudyTips(string personalityId)
         {
             List<string> tips = new List<string>();
@@ -883,7 +883,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Table exists helper ───────────────────────────────────────
+        // Table exists helper
         private static bool Tbl(SqlConnection connection, string tableName)
         {
             const string sql = @"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES

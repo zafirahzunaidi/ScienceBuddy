@@ -566,13 +566,13 @@ namespace ScienceBuddy.Student
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(ConnStr))
+                using (SqlConnection connection = new SqlConnection(ConnStr))
                 {
-                    conn.Open();
-                    using (SqlCommand cmd = new SqlCommand("SELECT configValue FROM ConfigurationSetting WHERE configKey=@k", conn))
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand("SELECT configValue FROM ConfigurationSetting WHERE configKey=@k", connection))
                     {
-                        cmd.Parameters.AddWithValue("@k", configKey);
-                        object result = cmd.ExecuteScalar();
+                        command.Parameters.AddWithValue("@k", configKey);
+                        object result = command.ExecuteScalar();
                         if (result != null && result != DBNull.Value)
                         {
                             return Convert.ToInt32(result);

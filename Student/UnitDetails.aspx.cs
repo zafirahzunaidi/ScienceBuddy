@@ -187,52 +187,52 @@ namespace ScienceBuddy.Student
                 {
                     if (reader.Read())
                     {
-                        string n;
+                        string unitName;
                         if (bm)
                         {
-                            n = reader["unitNameBM"].ToString();
+                            unitName = reader["unitNameBM"].ToString();
                         }
                         else
                         {
-                            n = reader["unitNameEN"].ToString();
+                            unitName = reader["unitNameEN"].ToString();
                         }
-                        if (string.IsNullOrWhiteSpace(n))
+                        if (string.IsNullOrWhiteSpace(unitName))
                         {
-                            n = reader["unitNameEN"].ToString();
+                            unitName = reader["unitNameEN"].ToString();
                         }
 
-                        string d;
+                        string unitDescription;
                         if (bm)
                         {
-                            d = reader["unitDescriptionBM"].ToString();
+                            unitDescription = reader["unitDescriptionBM"].ToString();
                         }
                         else
                         {
-                            d = reader["unitDescriptionEN"].ToString();
+                            unitDescription = reader["unitDescriptionEN"].ToString();
                         }
-                        if (string.IsNullOrWhiteSpace(d))
+                        if (string.IsNullOrWhiteSpace(unitDescription))
                         {
-                            d = reader["unitDescriptionEN"].ToString();
+                            unitDescription = reader["unitDescriptionEN"].ToString();
                         }
 
-                        string lv;
+                        string levelName;
                         if (bm)
                         {
-                            lv = reader["levelNameBM"].ToString();
+                            levelName = reader["levelNameBM"].ToString();
                         }
                         else
                         {
-                            lv = reader["levelNameEN"].ToString();
+                            levelName = reader["levelNameEN"].ToString();
                         }
-                        if (string.IsNullOrWhiteSpace(lv))
+                        if (string.IsNullOrWhiteSpace(levelName))
                         {
-                            lv = reader["levelNameEN"].ToString();
+                            levelName = reader["levelNameEN"].ToString();
                         }
 
-                        litPageTitle.Text = HttpUtility.HtmlEncode(n);
-                        litUnitName.Text = HttpUtility.HtmlEncode(n);
-                        litUnitDesc.Text = HttpUtility.HtmlEncode(d);
-                        litHeroLevel.Text = HttpUtility.HtmlEncode(lv);
+                        litPageTitle.Text = HttpUtility.HtmlEncode(unitName);
+                        litUnitName.Text = HttpUtility.HtmlEncode(unitName);
+                        litUnitDesc.Text = HttpUtility.HtmlEncode(unitDescription);
+                        litHeroLevel.Text = HttpUtility.HtmlEncode(levelName);
                     }
                 }
             }
@@ -253,17 +253,17 @@ namespace ScienceBuddy.Student
         private void BuildPath(SqlConnection connection, string unitId)
         {
 
-            int lc = 0;
-            int mc = 0;
-            int vc = 0;
-            int qc = 0;
+            int lessonCount = 0;
+            int materialCount = 0;
+            int virtualLabCount = 0;
+            int quizCount = 0;
 
             if (Tbl("Lesson") && Tbl("Subtopic"))
             {
                 using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM Lesson ls JOIN Subtopic st ON st.subtopicId=ls.subtopicId WHERE st.unitId=@unitId", connection))
                 {
                     command.Parameters.AddWithValue("@unitId", unitId);
-                    lc = (int)command.ExecuteScalar();
+                    lessonCount = (int)command.ExecuteScalar();
                 }
             }
             if (Tbl("Material") && Tbl("Subtopic"))
@@ -271,7 +271,7 @@ namespace ScienceBuddy.Student
                 using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM Material m JOIN Subtopic st ON st.subtopicId=m.subtopicId WHERE st.unitId=@unitId AND m.status='Approved'", connection))
                 {
                     command.Parameters.AddWithValue("@unitId", unitId);
-                    mc = (int)command.ExecuteScalar();
+                    materialCount = (int)command.ExecuteScalar();
                 }
             }
             if (Tbl("VirtualLab"))
@@ -279,7 +279,7 @@ namespace ScienceBuddy.Student
                 using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM VirtualLab WHERE unitId=@unitId", connection))
                 {
                     command.Parameters.AddWithValue("@unitId", unitId);
-                    vc = (int)command.ExecuteScalar();
+                    virtualLabCount = (int)command.ExecuteScalar();
                 }
             }
             if (Tbl("Quiz"))
@@ -287,17 +287,17 @@ namespace ScienceBuddy.Student
                 using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM Quiz WHERE unitId=@unitId AND quizType='Unit'", connection))
                 {
                     command.Parameters.AddWithValue("@unitId", unitId);
-                    qc = (int)command.ExecuteScalar();
+                    quizCount = (int)command.ExecuteScalar();
                 }
             }
 
-            if (vc > 0)
+            if (virtualLabCount > 0)
             {
             }
             else
             {
             }
-            if (qc > 0)
+            if (quizCount > 0)
             {
             }
             else
@@ -315,7 +315,7 @@ namespace ScienceBuddy.Student
             }
 
             bool bm = CurrentLanguage == "BM";
-            var doneSet = new HashSet<string>();
+            HashSet<string> doneSet = new HashSet<string>();
             if (Tbl("LessonProgress"))
             {
                 using (SqlCommand command = new SqlCommand("SELECT lessonId FROM LessonProgress WHERE studentId=@s AND isCompleted=1", connection))
@@ -359,7 +359,7 @@ namespace ScienceBuddy.Student
             int totalLessons = dtLs.Rows.Count;
             int doneLessons = 0;
 
-            var subtopics = new List<object>();
+            List<object> subtopics = new List<object>();
             foreach (DataRow st in dtSt.Rows)
             {
                 string stId = st["subtopicId"].ToString();
@@ -391,7 +391,7 @@ namespace ScienceBuddy.Student
                     stDesc = st["subtopicDescriptionEN"].ToString();
                 }
 
-                var lessons = new List<object>();
+                List<object> lessons = new List<object>();
                 foreach (DataRow ls in dtLs.Rows)
                 {
                     if (ls["subtopicId"].ToString() != stId)
@@ -483,7 +483,7 @@ namespace ScienceBuddy.Student
                 return;
             }
 
-            var list = new List<object>();
+            List<object> list = new List<object>();
             foreach (DataRow r in dataTable.Rows)
             {
                 string fileUrl = r["fileUrl"]?.ToString() ?? "";
@@ -529,37 +529,37 @@ namespace ScienceBuddy.Student
                 {
                     if (reader.Read())
                     {
-                        string t;
+                        string labTitle;
                         if (bm)
                         {
-                            t = reader["labTitleBM"].ToString();
+                            labTitle = reader["labTitleBM"].ToString();
                         }
                         else
                         {
-                            t = reader["labTitleEN"].ToString();
+                            labTitle = reader["labTitleEN"].ToString();
                         }
-                        if (string.IsNullOrWhiteSpace(t))
+                        if (string.IsNullOrWhiteSpace(labTitle))
                         {
-                            t = reader["labTitleEN"].ToString();
+                            labTitle = reader["labTitleEN"].ToString();
                         }
 
-                        string d;
+                        string labDescription;
                         if (bm)
                         {
-                            d = reader["labDescriptionBM"].ToString();
+                            labDescription = reader["labDescriptionBM"].ToString();
                         }
                         else
                         {
-                            d = reader["labDescriptionEN"].ToString();
+                            labDescription = reader["labDescriptionEN"].ToString();
                         }
-                        if (string.IsNullOrWhiteSpace(d))
+                        if (string.IsNullOrWhiteSpace(labDescription))
                         {
-                            d = reader["labDescriptionEN"].ToString();
+                            labDescription = reader["labDescriptionEN"].ToString();
                         }
 
                         pnlLab.Visible = true;
-                        litLabTitle.Text = HttpUtility.HtmlEncode(t);
-                        litLabSub.Text = HttpUtility.HtmlEncode(d) + " &bull; " + reader["difficulty"].ToString();
+                        litLabTitle.Text = HttpUtility.HtmlEncode(labTitle);
+                        litLabSub.Text = HttpUtility.HtmlEncode(labDescription) + " &bull; " + reader["difficulty"].ToString();
                         litLabBtn.Text = T("Start Lab", "Mula Makmal");
                     }
                     else
@@ -590,22 +590,22 @@ namespace ScienceBuddy.Student
                     if (reader.Read())
                     {
                         quizId = reader["quizId"].ToString();
-                        string t;
+                        string quizTitle;
                         if (bm)
                         {
-                            t = reader["quizTitleBM"].ToString();
+                            quizTitle = reader["quizTitleBM"].ToString();
                         }
                         else
                         {
-                            t = reader["quizTitleEN"].ToString();
+                            quizTitle = reader["quizTitleEN"].ToString();
                         }
-                        if (string.IsNullOrWhiteSpace(t))
+                        if (string.IsNullOrWhiteSpace(quizTitle))
                         {
-                            t = reader["quizTitleEN"].ToString();
+                            quizTitle = reader["quizTitleEN"].ToString();
                         }
 
                         pnlQuiz.Visible = true;
-                        litQuizTitle.Text = HttpUtility.HtmlEncode(t);
+                        litQuizTitle.Text = HttpUtility.HtmlEncode(quizTitle);
                         litQuizSub.Text = T("Test your understanding of this unit.", "Uji kefahaman anda tentang unit ini.");
                         litQuizBtn.Text = T("Start Quiz", "Mula Kuiz");
                         lnkQuizStart.HRef = ResolveUrl("~/Student/Quiz.aspx?quizId=" + quizId);

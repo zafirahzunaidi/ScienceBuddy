@@ -441,10 +441,10 @@ namespace ScienceBuddy.Student
 
                 // B001 First Step Learner — first lesson completed
                 int lessonCount = 0;
-                using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM LessonProgress WHERE studentId=@s AND isCompleted=1", conn))
+                using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM LessonProgress WHERE studentId=@s AND isCompleted=1", conn))
                 {
-                    cmd.Parameters.AddWithValue("@s", studentId);
-                    lessonCount = (int)cmd.ExecuteScalar();
+                    command.Parameters.AddWithValue("@s", studentId);
+                    lessonCount = (int)command.ExecuteScalar();
                 }
                 if (lessonCount == 1)
                 {
@@ -455,10 +455,10 @@ namespace ScienceBuddy.Student
                 if (Tbl("XPTransaction"))
                 {
                     int distinctDays = 0;
-                    using (SqlCommand cmd = new SqlCommand("SELECT COUNT(DISTINCT CAST(dateEarned AS DATE)) FROM XPTransaction WHERE studentId=@s", conn))
+                    using (SqlCommand command = new SqlCommand("SELECT COUNT(DISTINCT CAST(dateEarned AS DATE)) FROM XPTransaction WHERE studentId=@s", conn))
                     {
-                        cmd.Parameters.AddWithValue("@s", studentId);
-                        distinctDays = (int)cmd.ExecuteScalar();
+                        command.Parameters.AddWithValue("@s", studentId);
+                        distinctDays = (int)command.ExecuteScalar();
                     }
                     if (distinctDays >= 3)
                     {
@@ -474,26 +474,26 @@ namespace ScienceBuddy.Student
 
         private void AwardBadgeIfNotEarned(SqlConnection conn, string studentId, string badgeId)
         {
-            using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM StudentBadge WHERE studentId=@s AND badgeId=@b", conn))
+            using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM StudentBadge WHERE studentId=@s AND badgeId=@b", conn))
             {
-                cmd.Parameters.AddWithValue("@s", studentId);
-                cmd.Parameters.AddWithValue("@b", badgeId);
-                if ((int)cmd.ExecuteScalar() > 0) return;
+                command.Parameters.AddWithValue("@s", studentId);
+                command.Parameters.AddWithValue("@b", badgeId);
+                if ((int)command.ExecuteScalar() > 0) return;
             }
 
             string sbId = "SB001";
-            using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(studentBadgeId,3,LEN(studentBadgeId)-2) AS INT)),0) FROM StudentBadge WHERE studentBadgeId LIKE 'SB[0-9]%'", conn))
+            using (SqlCommand command = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(studentBadgeId,3,LEN(studentBadgeId)-2) AS INT)),0) FROM StudentBadge WHERE studentBadgeId LIKE 'SB[0-9]%'", conn))
             {
-                sbId = "SB" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                sbId = "SB" + (Convert.ToInt32(command.ExecuteScalar()) + 1).ToString("D3");
             }
 
-            using (SqlCommand cmd = new SqlCommand("INSERT INTO StudentBadge(studentBadgeId,studentId,badgeId,earnedAt) VALUES(@id,@s,@b,@dt)", conn))
+            using (SqlCommand command = new SqlCommand("INSERT INTO StudentBadge(studentBadgeId,studentId,badgeId,earnedAt) VALUES(@id,@s,@b,@dt)", conn))
             {
-                cmd.Parameters.AddWithValue("@id", sbId);
-                cmd.Parameters.AddWithValue("@s", studentId);
-                cmd.Parameters.AddWithValue("@b", badgeId);
-                cmd.Parameters.AddWithValue("@dt", DateTime.Now);
-                cmd.ExecuteNonQuery();
+                command.Parameters.AddWithValue("@id", sbId);
+                command.Parameters.AddWithValue("@s", studentId);
+                command.Parameters.AddWithValue("@b", badgeId);
+                command.Parameters.AddWithValue("@dt", DateTime.Now);
+                command.ExecuteNonQuery();
             }
 
             // Send badge earned notification
@@ -648,20 +648,20 @@ namespace ScienceBuddy.Student
             try
             {
                 string nId = "N001";
-                using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(notificationId,2,LEN(notificationId)-1) AS INT)),0) FROM Notification WHERE notificationId LIKE 'N[0-9]%'", conn))
+                using (SqlCommand command = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(notificationId,2,LEN(notificationId)-1) AS INT)),0) FROM Notification WHERE notificationId LIKE 'N[0-9]%'", conn))
                 {
-                    nId = "N" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                    nId = "N" + (Convert.ToInt32(command.ExecuteScalar()) + 1).ToString("D3");
                 }
-                using (SqlCommand cmd = new SqlCommand("INSERT INTO Notification(notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt) VALUES(@id,@to,@tEN,@tBM,@mEN,@mBM,0,@dt)", conn))
+                using (SqlCommand command = new SqlCommand("INSERT INTO Notification(notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt) VALUES(@id,@to,@tEN,@tBM,@mEN,@mBM,0,@dt)", conn))
                 {
-                    cmd.Parameters.AddWithValue("@id", nId);
-                    cmd.Parameters.AddWithValue("@to", toUserId);
-                    cmd.Parameters.AddWithValue("@tEN", titleEN);
-                    cmd.Parameters.AddWithValue("@tBM", titleBM);
-                    cmd.Parameters.AddWithValue("@mEN", msgEN);
-                    cmd.Parameters.AddWithValue("@mBM", msgBM);
-                    cmd.Parameters.AddWithValue("@dt", DateTime.Now);
-                    cmd.ExecuteNonQuery();
+                    command.Parameters.AddWithValue("@id", nId);
+                    command.Parameters.AddWithValue("@to", toUserId);
+                    command.Parameters.AddWithValue("@tEN", titleEN);
+                    command.Parameters.AddWithValue("@tBM", titleBM);
+                    command.Parameters.AddWithValue("@mEN", msgEN);
+                    command.Parameters.AddWithValue("@mBM", msgBM);
+                    command.Parameters.AddWithValue("@dt", DateTime.Now);
+                    command.ExecuteNonQuery();
                 }
             }
             catch (Exception ex)

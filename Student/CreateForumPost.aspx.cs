@@ -11,13 +11,13 @@ namespace ScienceBuddy.Student
 {
     public partial class CreateForumPost1 : Page
     {
-        // ── Connection string ─────────────────────────────────────────
+        // Connection string
         private string ConnStr
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
 
-        // ── Language helper ────────────────────────────────────────────
+        // Language helper
         public string CurrentLanguage = "EN";
 
         public string T(string en, string bm)
@@ -29,7 +29,7 @@ namespace ScienceBuddy.Student
             return en;
         }
 
-        // ── Mode: "Public" or "Private" from URL param ────────────────
+        // Mode: "Public" or "Private" from URL param
         private string PageMode
         {
             get
@@ -43,7 +43,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Edit mode: forumId from URL param ─────────────────────────
+        // Edit mode: forumId from URL param
         private string EditForumId
         {
             get { return Request.QueryString["forumId"]; }
@@ -54,7 +54,7 @@ namespace ScienceBuddy.Student
             get { return !string.IsNullOrEmpty(EditForumId); }
         }
 
-        // ── Page Load ─────────────────────────────────────────────────
+        // Page Load
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["userId"] == null || Session["role"] == null ||
@@ -81,7 +81,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Language initialization ───────────────────────────────────
+        // Language initialization
         private void InitLang()
         {
             string lang = Session["preferredLanguage"] as string;
@@ -122,7 +122,7 @@ namespace ScienceBuddy.Student
             Session["preferredLanguage"] = "EN";
         }
 
-        // ── Set bilingual labels ──────────────────────────────────────
+        // Set bilingual labels
         private void SetLabels()
         {
             bool isPrivate = (PageMode == "Private");
@@ -185,7 +185,7 @@ namespace ScienceBuddy.Student
             txtMessage.Attributes["placeholder"] = T("Write your question or message...", "Tulis soalan atau mesej anda...");
         }
 
-        // ── Check if student has a linked parent ──────────────────────
+        // Check if student has a linked parent
         private void CheckLinkedParent()
         {
             string userId = Session["userId"].ToString();
@@ -227,7 +227,7 @@ namespace ScienceBuddy.Student
                 "Tiada akaun ibu bapa yang dipautkan ditemui. Anda masih boleh mencipta perbincangan ini, tetapi ibu bapa anda mungkin tidak dapat melihatnya sehingga akaun mereka dipautkan.");
         }
 
-        // ── Build form (load type dropdown and tags) ──────────────────
+        // Build form (load type dropdown and tags)
         private void BuildForm()
         {
             // Type dropdown (Public mode only)
@@ -264,7 +264,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Load existing post for editing ───────────────────────────
+        // Load existing post for editing
         private void LoadPostForEdit()
         {
             string userId = Session["userId"].ToString();
@@ -290,7 +290,7 @@ namespace ScienceBuddy.Student
                         string createdBy = reader["createdBy"].ToString();
                         if (createdBy != userId)
                         {
-                            // Not owner — redirect
+                            // Not owner � redirect
                             Response.Redirect("~/Student/Forum.aspx", false);
                             return;
                         }
@@ -328,7 +328,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Submit handler ────────────────────────────────────────────
+        // Submit handler
         protected void btnSubmit_Click(object sender, EventArgs e)
         {
             // Re-init language for postback
@@ -372,7 +372,7 @@ namespace ScienceBuddy.Student
                 return;
             }
 
-            // ── EDIT MODE ──
+            // EDIT MODE
             if (IsEditMode)
             {
                 UpdatePost(title, message, discussionType, selectedTagIds);
@@ -502,7 +502,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Update existing post ──────────────────────────────────────
+        // Update existing post
         private void UpdatePost(string title, string message, string discussionType, List<string> selectedTagIds)
         {
             string userId = Session["userId"].ToString();
@@ -724,14 +724,14 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Show error message ────────────────────────────────────────
+        // Show error message
         private void ShowError(string message)
         {
             pnlError.Visible = true;
             litError.Text = HttpUtility.HtmlEncode(message);
         }
 
-        // ── Table existence check ─────────────────────────────────────
+        // Table existence check
         private static bool Tbl(SqlConnection connection, string tableName)
         {
             const string sql = @"

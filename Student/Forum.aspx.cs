@@ -11,13 +11,13 @@ namespace ScienceBuddy.Student
 {
     public partial class Forum : Page
     {
-        // â”€â”€ Connection string â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Connection string
         private string ConnStr
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
 
-        // â”€â”€ Language helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Language helper
         public string CurrentLanguage = "EN";
 
         public string T(string en, string bm)
@@ -29,7 +29,7 @@ namespace ScienceBuddy.Student
             return en;
         }
 
-        // â”€â”€ Page Load â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Page Load
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["userId"] == null || Session["role"] == null ||
@@ -52,7 +52,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // â”€â”€ Language initialisation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Language initialisation
         private void InitLang()
         {
             string lang = Session["preferredLanguage"] as string;
@@ -93,7 +93,7 @@ namespace ScienceBuddy.Student
             Session["preferredLanguage"] = "EN";
         }
 
-        // â”€â”€ Bilingual labels â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Bilingual labels
         private void SetLabels()
         {
             bool isPrivate = hfCategory.Value == "private";
@@ -174,7 +174,7 @@ namespace ScienceBuddy.Student
                 btnTabPublic.CssClass = "st-forum-cat-tab active";
         }
 
-        // â”€â”€ Tab click handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Tab click handlers
         protected void btnTabPublic_Click(object sender, EventArgs e)
         {
             hfCategory.Value = "public";
@@ -196,7 +196,7 @@ namespace ScienceBuddy.Student
             LoadDiscussions();
         }
 
-        // â”€â”€ Build filter dropdowns â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Build filter dropdowns
         private void BuildFilters()
         {
             using (SqlConnection connection = new SqlConnection(ConnStr))
@@ -222,7 +222,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // â”€â”€ Load discussions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Load discussions
         private void LoadDiscussions()
         {
             string userId = Session["userId"].ToString();
@@ -242,7 +242,7 @@ namespace ScienceBuddy.Student
                     return;
                 }
 
-                // â”€â”€ Build WHERE clause based on category tab â”€â”€
+                // Build WHERE clause based on category tab
                 string categoryWhere;
                 List<SqlParameter> extraParams = new List<SqlParameter>();
 
@@ -422,7 +422,7 @@ namespace ScienceBuddy.Student
                         string preview;
                         if (message.Length > 120)
                         {
-                            preview = message.Substring(0, 120) + "â€¦";
+                            preview = message.Substring(0, 120) + "…";
                         }
                         else
                         {
@@ -493,7 +493,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // â”€â”€ Get linked parent userIds â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Get linked parent userIds
         private List<string> GetLinkedParentUserIds(SqlConnection connection, string userId)
         {
             List<string> parentUserIds = new List<string>();
@@ -528,13 +528,13 @@ namespace ScienceBuddy.Student
             return parentUserIds;
         }
 
-        // â”€â”€ Filter button click â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Filter button click
         protected void btnFilter_Click(object sender, EventArgs e)
         {
             LoadDiscussions();
         }
 
-        // â”€â”€ Like / Unlike â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Like / Unlike
         protected void rptDiscussions_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
             if (e.CommandName == "Delete")
@@ -582,7 +582,7 @@ namespace ScienceBuddy.Student
                 }
                 else
                 {
-                    // Like â€” generate sequential ID (likeId is NVARCHAR(10))
+                    // Like — generate sequential ID (likeId is NVARCHAR(10))
                     string likeId = "LIKE001";
                     const string seqSql = @"
                         SELECT ISNULL(MAX(CAST(SUBSTRING(likeId, 5, LEN(likeId) - 4) AS INT)), 0)
@@ -615,7 +615,7 @@ namespace ScienceBuddy.Student
             LoadDiscussions();
         }
 
-        // â”€â”€ Delete forum post (with ownership check) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Delete forum post (with ownership check)
         private void HandleDelete(string forumId)
         {
             string userId = Session["userId"].ToString();
@@ -632,7 +632,7 @@ namespace ScienceBuddy.Student
                     object result = ownerCmd.ExecuteScalar();
                     if (result == null || result == DBNull.Value || result.ToString() != userId)
                     {
-                        // Not owner â€” do nothing
+                        // Not owner — do nothing
                         LoadDiscussions();
                         return;
                     }
@@ -677,7 +677,7 @@ namespace ScienceBuddy.Student
             LoadDiscussions();
         }
 
-        // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Helpers
 
         private void ShowEmpty()
         {

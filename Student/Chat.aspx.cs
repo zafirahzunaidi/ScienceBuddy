@@ -11,13 +11,13 @@ namespace ScienceBuddy.Student
 {
     public partial class Chat : Page
     {
-        // â”€â”€ Connection string â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Connection string
         private string ConnStr
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
 
-        // â”€â”€ Language helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Language helper
         public string CurrentLanguage = "EN";
 
         public string T(string en, string bm)
@@ -29,14 +29,14 @@ namespace ScienceBuddy.Student
             return en;
         }
 
-        // â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // State
         private string ChatId
         {
             get { return ViewState["ChatId"] as string; }
             set { ViewState["ChatId"] = value; }
         }
 
-        // â”€â”€ Page Load â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Page Load
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["userId"] == null || Session["role"] == null ||
@@ -57,7 +57,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // â”€â”€ Initialize chat from URL params â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Initialize chat from URL params
         private void InitializeChat()
         {
             string uid = Session["userId"].ToString();
@@ -165,7 +165,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // â”€â”€ Mark teacher messages as read â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Mark teacher messages as read
         private void MarkAsRead(SqlConnection connection, string uid)
         {
             const string sql = @"
@@ -184,7 +184,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // â”€â”€ Load chat header (teacher info) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Load chat header (teacher info)
         private void LoadChatHeader(SqlConnection connection, string uid)
         {
             // Get the other user's ID from the chat
@@ -298,7 +298,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // â”€â”€ Load messages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Load messages
         private void LoadMessages(SqlConnection connection, string uid)
         {
             const string sql = @"
@@ -411,7 +411,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // â”€â”€ Send message â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Send message
         protected void btnSend_Click(object sender, EventArgs e)
         {
             string msgText = txtMessage.Text.Trim();
@@ -530,14 +530,14 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // â”€â”€ Show error â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Show error
         private void ShowError()
         {
             pnlError.Visible = true;
             pnlChat.Visible = false;
         }
 
-        // â”€â”€ Language initialisation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Language initialisation
         private void InitLang()
         {
             string lang = Session["preferredLanguage"] as string;
@@ -578,7 +578,7 @@ namespace ScienceBuddy.Student
             Session["preferredLanguage"] = "EN";
         }
 
-        // â”€â”€ Bilingual labels â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Bilingual labels
         private void SetLabels()
         {
             litBack.Text = T("Back to Messages", "Kembali ke Mesej");
@@ -589,7 +589,7 @@ namespace ScienceBuddy.Student
             txtMessage.Attributes["placeholder"] = T("Type your message...", "Taip mesej anda...");
         }
 
-        // â”€â”€ Utility helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Utility helpers
         private static string GetInitials(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
