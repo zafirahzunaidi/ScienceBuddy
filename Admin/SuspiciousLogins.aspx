@@ -82,7 +82,7 @@
     <asp:Panel ID="pnlLogs" runat="server" Visible="false">
         <div class="sb-table-wrapper" style="border:none;border-radius:0;box-shadow:none;overflow-x:auto;">
             <table class="sb-table" style="width:100%;"><thead><tr>
-                <th><%= T("User", "Pengguna") %></th><th><%= T("Action", "Tindakan") %></th><th><%= T("Description", "Penerangan") %></th><th><%= T("Date", "Tarikh") %></th><th style="text-align:center;"><%= T("Status", "Status") %></th>
+                <th><%= T("User", "Pengguna") %></th><th><%= T("Action", "Tindakan") %></th><th><%= T("Description", "Penerangan") %></th><th><%= T("Date", "Tarikh") %></th><th style="text-align:center;min-width:100px;"><%= T("Status", "Status") %></th><th style="text-align:center;"><%= T("Actions", "Tindakan") %></th>
             </tr></thead><tbody>
                 <asp:Repeater ID="rptLogs" runat="server" OnItemCommand="rptLogs_ItemCommand">
                     <ItemTemplate>
@@ -96,7 +96,7 @@
                                 <asp:LinkButton ID="lnkBlock" runat="server" CssClass="sb-btn sb-btn-danger sb-btn-xs"
                                     CommandName="BlockUser" CommandArgument='<%# Eval("userId") %>'
                                     Visible='<%# Convert.ToBoolean(Eval("canBlock")) %>'
-                                    OnClientClick="return confirm('Block this user?');">
+                                    OnClientClick="return swalBlock(this);">
                                     <i class="bi bi-lock"></i> <%= T("Block", "Sekat") %>
                                 </asp:LinkButton>
                             </td>
@@ -131,8 +131,8 @@
                                 <asp:LinkButton ID="lnkUnblock" runat="server" CssClass="sb-btn sb-btn-success sb-btn-xs"
                                     CommandName="UnblockUser" CommandArgument='<%# Eval("userId") %>'
                                     Visible='<%# (bool)Eval("canUnblock") %>'
-                                    OnClientClick="return confirm('Unblock this user?');">
-                                    <i class="bi bi-unlock"></i> <%= T("Unblock", "Nyahsekat") %>
+                                    OnClientClick="return swalUnlock(this);">
+                                    <i class="bi bi-unlock"></i> <%= T("Unlock", "Buka Kunci") %>
                                 </asp:LinkButton>
                             </td>
                         </tr>
@@ -145,4 +145,47 @@
         <div class="ad-suspicious-logins-empty"><div class="ad-suspicious-logins-empty-ico"><i class="bi bi-shield-fill-check"></i></div><div class="ad-suspicious-logins-empty-msg"><%= T("No security actions recorded.", "Tiada tindakan keselamatan direkodkan.") %></div></div>
     </asp:Panel>
 </div>
+
+<script>
+function swalUnlock(btn) {
+    Swal.fire({
+        title: '<%= T("Unlock this account?","Buka kunci akaun ini?") %>',
+        text: '<%= T("The user will be able to log in again.","Pengguna akan dapat log masuk semula.") %>',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#059669',
+        confirmButtonText: '<i class="bi bi-unlock"></i> <%= T("Unlock","Buka Kunci") %>',
+        cancelButtonText: '<%= T("Cancel","Batal") %>',
+        reverseButtons: true
+    }).then(function(r) {
+        if (r.isConfirmed) {
+            var prev = btn.onclick;
+            btn.onclick = null;
+            btn.click();
+            btn.onclick = prev;
+        }
+    });
+    return false;
+}
+function swalBlock(btn) {
+    Swal.fire({
+        title: '<%= T("Block this account?","Sekat akaun ini?") %>',
+        text: '<%= T("The user will not be able to log in.","Pengguna tidak akan dapat log masuk.") %>',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#DC2626',
+        confirmButtonText: '<i class="bi bi-lock"></i> <%= T("Block","Sekat") %>',
+        cancelButtonText: '<%= T("Cancel","Batal") %>',
+        reverseButtons: true
+    }).then(function(r) {
+        if (r.isConfirmed) {
+            var prev = btn.onclick;
+            btn.onclick = null;
+            btn.click();
+            btn.onclick = prev;
+        }
+    });
+    return false;
+}
+</script>
 </asp:Content>

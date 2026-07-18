@@ -465,7 +465,7 @@
 
     .ad-dashboard-snapshot-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(5, 1fr);
         gap: 20px;
     }
 
@@ -3512,8 +3512,8 @@
     /* Card */
     .ad-suspicious-logins-card { background: var(--color-white); border-radius: var(--border-radius-xl); border: 1.5px solid var(--border-color); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: var(--space-xl); }
     .ad-suspicious-logins-card-hdr { padding: var(--space-md) var(--space-lg); border-bottom: 1px solid var(--border-color); font-family: var(--font-primary); font-weight: 800; font-size: .9375rem; display: flex; align-items: center; gap: var(--space-sm); }
-    .ad-suspicious-logins-card .sb-table-wrapper { overflow-x: auto; }
-    .ad-suspicious-logins-card .sb-table { width: 100%; table-layout: auto; }
+    .ad-suspicious-logins-card .sb-table-wrapper { overflow-x: auto; width: 100%; }
+    .ad-suspicious-logins-card .sb-table { width: 100%; min-width: 100%; table-layout: auto; }
     .ad-suspicious-logins-card .sb-table thead th:last-child,
     .ad-suspicious-logins-card .sb-table tbody td:last-child,
     .ad-suspicious-logins-card .col-actions { text-align: center; }
@@ -3984,3 +3984,20 @@
 
     /* Disabled state for account action buttons */
     .ad-details-btn-disabled { opacity: 0.4; pointer-events: none; cursor: not-allowed; }
+
+    /* Recycle Bin */
+    .ad-recycle-bin-header { margin-bottom: var(--space-xl); padding-bottom: var(--space-md); border-bottom: 1.5px solid var(--border-color); }
+    .ad-recycle-bin-title { font-family: var(--font-primary); font-size: 1.75rem; font-weight: 800; color: var(--color-text); margin-bottom: var(--space-xs); display: flex; align-items: center; gap: var(--space-sm); }
+    .ad-recycle-bin-sub { font-size: .9375rem; color: var(--color-text-secondary); max-width: 520px; line-height: 1.5; }
+    .ad-recycle-bin-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-xl); }
+    .ad-recycle-bin-stat { background: var(--color-white); border-radius: var(--border-radius-xl); border: 1.5px solid var(--border-color); box-shadow: var(--shadow-sm); padding: var(--space-lg); display: flex; flex-direction: column; gap: var(--space-xs); }
+    .ad-recycle-bin-stat-ico { font-size: 1.25rem; }
+    .ad-recycle-bin-stat-val { font-family: var(--font-primary); font-size: 1.75rem; font-weight: 800; color: var(--color-text); }
+    .ad-recycle-bin-stat-lbl { font-size: .75rem; color: var(--color-text-muted); font-weight: 600; }
+    .ad-recycle-bin-card { background: var(--color-white); border-radius: var(--border-radius-xl); border: 1.5px solid var(--border-color); box-shadow: var(--shadow-sm); overflow: hidden; }
+    .ad-recycle-bin-card-hdr { padding: var(--space-md) var(--space-lg); border-bottom: 1px solid var(--border-color); font-family: var(--font-primary); font-weight: 800; font-size: .9375rem; display: flex; align-items: center; gap: var(--space-sm); }
+    .ad-recycle-bin-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: var(--space-2xl); }
+    .ad-recycle-bin-empty-ico { font-size: 3rem; margin-bottom: var(--space-md); opacity: .35; color: #DC2626; }
+    .ad-recycle-bin-empty-msg { font-size: 1rem; font-weight: 700; color: var(--color-text-secondary); }
+    @media (max-width: 1279px) { .ad-recycle-bin-stats { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 767px) { .ad-recycle-bin-stats { grid-template-columns: 1fr; } }

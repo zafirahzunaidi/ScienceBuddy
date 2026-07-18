@@ -123,7 +123,6 @@ namespace ScienceBuddy.Admin
                 }
 
                 LoadActivityLog(conn, studentId);
-                LoadSecurityLog(conn, studentId);
             }
         }
 
@@ -151,36 +150,6 @@ namespace ScienceBuddy.Admin
                     }
                     litActivityLog.Text = hasRows ? html
                         : "<div class='qb-empty' style='padding:2rem;'><i class='bi bi-clock-history' style='font-size:2rem;opacity:.4;'></i><div style='margin-top:8px;font-size:.9rem;color:var(--color-text-muted);'>" + T("No activity records.", "Tiada rekod aktiviti.") + "</div></div>";
-                }
-            }
-        }
-
-        private void LoadSecurityLog(SqlConnection conn, string studentId)
-        {
-            string userId = hfUserId.Value;
-            string sql = @"SELECT TOP 15 [actionType],[reason],[actionDate],[performedBy]
-                FROM dbo.[UserStatusAction] WHERE [userId]=@uid ORDER BY [actionDate] DESC";
-
-            using (var cmd = new SqlCommand(sql, conn))
-            {
-                cmd.Parameters.AddWithValue("@uid", userId);
-                using (var rd = cmd.ExecuteReader())
-                {
-                    string html = "";
-                    bool hasRows = false;
-                    while (rd.Read())
-                    {
-                        hasRows = true;
-                        string dt = rd["actionDate"] != DBNull.Value
-                            ? Convert.ToDateTime(rd["actionDate"]).ToString("dd MMM yyyy") : "-";
-                        string icon = NS(rd["actionType"]).Contains("Block") ? "bi-slash-circle"
-                            : NS(rd["actionType"]).Contains("Delete") ? "bi-trash" : "bi-shield-check";
-                        html += "<div class='ad-student-details-log-item'><div class='ad-student-details-log-ico' style='background:#FEE2E2;color:#DC2626;'><i class='bi " + icon + "'></i></div><div class='ad-student-details-log-body'><div class='ad-student-details-log-action'>" +
-                            HttpUtility.HtmlEncode(NS(rd["actionType"])) + "</div><div class='ad-student-details-log-desc'>" +
-                            HttpUtility.HtmlEncode(NS(rd["reason"])) + "</div><div class='ad-student-details-log-time'>" + dt + " | " + T("By: ", "Oleh: ") + HttpUtility.HtmlEncode(NS(rd["performedBy"])) + "</div></div></div>";
-                    }
-                    litSecurityLog.Text = hasRows ? html
-                        : "<div class='qb-empty' style='padding:2rem;'><i class='bi bi-shield-check' style='font-size:2rem;opacity:.4;color:#059669;'></i><div style='margin-top:8px;font-size:.9rem;color:var(--color-text-muted);'>" + T("No security actions recorded.", "Tiada tindakan keselamatan direkodkan.") + "</div></div>";
                 }
             }
         }

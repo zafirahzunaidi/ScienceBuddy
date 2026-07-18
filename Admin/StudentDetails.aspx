@@ -79,7 +79,6 @@
     <div class="ad-student-details-tab active" onclick="switchTab('profile')"><i class="bi bi-person"></i> <%= T("Profile","Profil") %></div>
     <div class="ad-student-details-tab" onclick="switchTab('account')"><i class="bi bi-gear"></i> <%= T("Account","Akaun") %></div>
     <div class="ad-student-details-tab" onclick="switchTab('activity')"><i class="bi bi-clock-history"></i> <%= T("Activity","Aktiviti") %></div>
-    <div class="ad-student-details-tab" onclick="switchTab('security')"><i class="bi bi-shield-lock"></i> <%= T("Security","Keselamatan") %></div>
 </div>
 
 <!-- Profile Tab -->
@@ -105,10 +104,7 @@
     <asp:Literal ID="litActivityLog" runat="server" />
 </div>
 
-<!-- Security Tab -->
-<div class="ad-student-details-panel" id="tab-security">
-    <asp:Literal ID="litSecurityLog" runat="server" />
-</div>
+
 
 <asp:HiddenField ID="hfStudentId" runat="server" />
 <asp:HiddenField ID="hfUserId" runat="server" />

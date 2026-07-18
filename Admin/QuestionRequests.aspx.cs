@@ -33,6 +33,9 @@ namespace ScienceBuddy.Admin
             if (Request.QueryString["handler"] == "ViewQuiz" && Request.HttpMethod == "POST")
             { _isAjax = true; HandleView(); return; }
 
+            if (Request.QueryString["handler"] == "AIAnalyzeQuiz" && Request.HttpMethod == "POST")
+            { _isAjax = true; HandleAIAnalyzeQuiz(); return; }
+
             if (Session["userId"] == null || Session["role"]?.ToString() != "Admin")
             { Response.Redirect("~/Login.aspx", false); return; }
 
@@ -429,6 +432,96 @@ namespace ScienceBuddy.Admin
                 Response.Write("{\"success\":false,\"msg\":\"" + EJ(ex.Message) + "\"}");
             }
             Flush();
+        }
+
+        // --- AI Quiz Analysis ---
+
+        private void HandleAIAnalyzeQuiz()
+        {
+            Response.Clear(); Response.ContentType = "application/json";
+            try
+            {
+                string quizId = Request.Form["quizId"] ?? "";
+                if (string.IsNullOrWhiteSpace(quizId))
+                { Response.Write("{\"success\":false,\"error\":\"Missing quizId\"}"); return; }
+
+                var aiContent = new StringBuilder();
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand("SELECT ISNULL([quizTitleEN],[quizTitleBM]) AS title, [quizType], [language] FROM dbo.[Quiz] WHERE [quizId]=@id", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", quizId);
+                        using (var rd = cmd.ExecuteReader())
+                        {
+                            if (rd.Read())
+                            {
+                                aiContent.AppendLine("Quiz Title: " + (rd["title"]?.ToString() ?? ""));
+                                aiContent.AppendLine("Quiz Type: " + (rd["quizType"]?.ToString() ?? ""));
+                                aiContent.AppendLine("Language: " + (rd["language"]?.ToString() ?? ""));
+                            }
+                        }
+                    }
+                    using (var cmd = new SqlCommand(@"SELECT ISNULL([questionTextEN],[questionTextBM]) AS text, [difficulty],
+                        ISNULL([optionA_EN],[optionA_BM]) AS optA, ISNULL([optionB_EN],[optionB_BM]) AS optB,
+                        ISNULL([optionC_EN],[optionC_BM]) AS optC, ISNULL([optionD_EN],[optionD_BM]) AS optD,
+                        [correctAnswer] FROM dbo.[Question] WHERE [quizId]=@id ORDER BY [questionId]", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", quizId);
+                        using (var rd = cmd.ExecuteReader())
+                        {
+                            int qNum = 1;
+                            while (rd.Read())
+                            {
+                                aiContent.AppendLine("\nQ" + qNum + ": " + (rd["text"]?.ToString() ?? ""));
+                                if (rd["difficulty"] != DBNull.Value) aiContent.AppendLine("Difficulty: " + rd["difficulty"].ToString());
+                                string oA = rd["optA"]?.ToString() ?? "", oB = rd["optB"]?.ToString() ?? "";
+                                string oC = rd["optC"]?.ToString() ?? "", oD = rd["optD"]?.ToString() ?? "";
+                                if (!string.IsNullOrEmpty(oA)) aiContent.AppendLine("A) " + oA);
+                                if (!string.IsNullOrEmpty(oB)) aiContent.AppendLine("B) " + oB);
+                                if (!string.IsNullOrEmpty(oC)) aiContent.AppendLine("C) " + oC);
+                                if (!string.IsNullOrEmpty(oD)) aiContent.AppendLine("D) " + oD);
+                                aiContent.AppendLine("Answer: " + (rd["correctAnswer"]?.ToString() ?? ""));
+                                qNum++;
+                            }
+                        }
+                    }
+                }
+
+                string systemPrompt = @"You are an AI Educational Quiz Reviewer for ScienceBuddy, a Malaysian Primary School Science learning platform.
+Review this science quiz according to the Malaysian Primary School Science Curriculum (KSSR).
+Evaluate: Scientific Accuracy, Correct Answer Accuracy, Duplicate/Similar Questions, Question Clarity.
+If you detect incorrect scientific facts, wrong correct answers, duplicate questions, or unclear wording, mention them in the summary.
+
+Recommendation MUST be one of: Approve, Review Manually, Reject
+Confidence MUST be a percentage.
+Summary MUST NOT exceed 40 words.
+
+Return ONLY valid JSON. No explanations. No markdown.
+{""recommendation"":"""",""confidence"":"""",""scientificAccuracy"":"""",""correctAnswers"":"""",""duplicateQuestions"":"""",""questionClarity"":"""",""summary"":""""}";
+
+                var aiService = new ScienceBuddy.Services.NvidiaAIService();
+                var task = System.Threading.Tasks.Task.Run(async () =>
+                    await aiService.AnalyzeEducationalContentAsync(aiContent.ToString(), systemPrompt, 512));
+                if (!task.Wait(65000))
+                { Response.Write("{\"success\":false,\"error\":\"AI request timed out.\"}"); return; }
+                var result = task.Result;
+
+                if (result.IsSuccess)
+                {
+                    string raw = (result.Response ?? "").Trim();
+                    int s = raw.IndexOf('{'), e = raw.LastIndexOf('}');
+                    if (s < 0 || e <= s)
+                    { Response.Write("{\"success\":false,\"error\":\"No JSON found\",\"rawResponse\":\"" + EJ(raw.Length > 300 ? raw.Substring(0, 300) : raw) + "\"}"); return; }
+                    var parsed = Newtonsoft.Json.JsonConvert.DeserializeObject<System.Collections.Generic.Dictionary<string, string>>(raw.Substring(s, e - s + 1));
+                    string[] keys = { "recommendation", "confidence", "scientificAccuracy", "correctAnswers", "duplicateQuestions", "questionClarity", "summary" };
+                    var clean = new System.Collections.Generic.Dictionary<string, string>();
+                    foreach (var k in keys) { string v = (parsed != null && parsed.ContainsKey(k)) ? (parsed[k] ?? "").Trim() : ""; clean[k] = string.IsNullOrWhiteSpace(v) ? "Not Available" : v; }
+                    Response.Write(Newtonsoft.Json.JsonConvert.SerializeObject(new { success = true, data = clean }));
+                }
+                else { Response.Write("{\"success\":false,\"error\":\"" + EJ(result.ErrorMessage) + "\"}"); }
+            }
+            catch (Exception ex) { Response.Write("{\"success\":false,\"error\":\"" + EJ(ex.Message) + "\"}"); }
         }
 
         // --- Helper Methods ---

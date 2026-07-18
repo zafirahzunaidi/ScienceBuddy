@@ -107,7 +107,7 @@ namespace ScienceBuddy.Admin
                 if (!string.IsNullOrWhiteSpace(diff)) sql += " AND q.[difficulty]=@df";
                 if (!string.IsNullOrWhiteSpace(status)) sql += " AND q.[status]=@st";
                 if (!string.IsNullOrWhiteSpace(search))
-                    sql += " AND (q.[questionTextEN] LIKE @s OR q.[questionTextBM] LIKE @s OR ISNULL(t.[name],'') LIKE @s OR u.[username] LIKE @s OR q.[questionId] LIKE @s OR ISNULL(st.[subtopicTitleEN],'') LIKE @s)";
+                    sql += " AND (q.[questionTextEN] LIKE @s OR q.[questionTextBM] LIKE @s OR ISNULL(t.[name],'') LIKE @s OR u.[username] LIKE @s OR q.[questionId] LIKE @s OR ISNULL(st.[subtopicTitleEN],'') LIKE @s\r\nOR ISNULL(st.[subtopicTitleBM],'') LIKE @s)";
                 sql += " ORDER BY q.[createdAt] DESC";
 
                 using (var cmd = new SqlCommand(sql, conn))
@@ -151,7 +151,6 @@ namespace ScienceBuddy.Admin
                                 status = NS(r, "status"),
                                 teacherName = NS(r, "teacherName"),
                                 subtopicName = sub,
-                                language = NS(r, "status"),
                                 createdAt = r["createdAt"] != DBNull.Value ? Convert.ToDateTime(r["createdAt"]).ToString("d MMM yyyy") : "-",
                                 typeCls = GetTypeCls(NS(r, "questionType")),
                                 diffCls = GetDiffCls(NS(r, "difficulty")),

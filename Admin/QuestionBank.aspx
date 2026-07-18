@@ -92,7 +92,6 @@
                 <span><i class="bi bi-person"></i> <%# Eval("teacherName") %></span>
                 <span><i class="bi bi-bookmark"></i> <%# Eval("subtopicName") %></span>
                 <span><i class="bi bi-calendar3"></i> <%# Eval("createdAt") %></span>
-                <span><i class="bi bi-translate"></i> <%# Eval("language") %></span>
             </div>
             <div class="ad-question-bank-card-actions">
                 <a href="javascript:;" class="ad-question-bank-abtn ad-question-bank-abtn-view" data-json='<%# HttpUtility.HtmlAttributeEncode(Eval("jsonData").ToString()) %>' onclick="viewQ(JSON.parse(this.getAttribute('data-json')))"><i class="bi bi-eye"></i> <%= T("View","Lihat") %></a>
@@ -168,8 +167,8 @@ function editQ(qId){
         h+='<div class="ad-question-bank-info-item"><label class="lbl"><%= T("Difficulty","Kesukaran") %></label><select id="eDiff" style="width:100%;padding:8px;border:1.5px solid var(--border-color);border-radius:8px;"><option value="Easy"'+(q.diff==="Easy"?' selected':'')+'>Easy</option><option value="Medium"'+(q.diff==="Medium"?' selected':'')+'>Medium</option><option value="Hard"'+(q.diff==="Hard"?' selected':'')+'>Hard</option></select></div>';
         h+='</div>';
         h+='<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:14px;border-top:1px solid var(--border-color);">';
-        h+='<button onclick="document.getElementById(\'qbEditModal\').classList.remove(\'active\')" style="padding:9px 20px;border-radius:8px;border:1.5px solid var(--border-color);background:#fff;font-weight:600;cursor:pointer;"><%= T("Cancel","Batal") %></button>';
-        h+='<button onclick="saveEdit(\''+q.id+'\')" style="padding:9px 24px;border-radius:8px;border:none;background:linear-gradient(135deg,#0EA5E9,#0284C7);color:#fff;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(14,165,233,.3);"><i class="bi bi-floppy"></i> <%= T("Save Changes","Simpan Perubahan") %></button>';
+        h+='<button type="button" onclick="document.getElementById(\'qbEditModal\').classList.remove(\'active\')" style="padding:9px 20px;border-radius:8px;border:1.5px solid var(--border-color);background:#fff;font-weight:600;cursor:pointer;"><%= T("Cancel","Batal") %></button>';
+        h+='<button type="button" onclick="saveEdit(\''+q.id+'\')" style="padding:9px 24px;border-radius:8px;border:none;background:linear-gradient(135deg,#0EA5E9,#0284C7);color:#fff;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(14,165,233,.3);"><i class="bi bi-floppy"></i> <%= T("Save Changes","Simpan Perubahan") %></button>';
         h+='</div></div>';
         document.getElementById('qbEditBody').innerHTML=h;
         document.getElementById('qbEditModal').classList.add('active');

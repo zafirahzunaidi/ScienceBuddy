@@ -377,11 +377,10 @@ namespace ScienceBuddy.Admin
         private string GetMaterialPath(string fileName)
         {
             if (string.IsNullOrWhiteSpace(fileName)) return "";
-            // If it already contains the path, use it directly
             if (fileName.StartsWith("Images/") || fileName.StartsWith("~/"))
                 return ResolveUrl("~/" + fileName.TrimStart('~', '/'));
-            // Otherwise, prepend the standard material folder
             return ResolveUrl("~/Images/Material/" + fileName);
         }
+
     }
 }
