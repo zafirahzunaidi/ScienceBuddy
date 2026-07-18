@@ -69,6 +69,11 @@ namespace ScienceBuddy
             if (!PasswordHelper.VerifyPassword(enteredPassword, userRecord.StoredPasswordHash))
             {
                 RecordFailedAttempt();
+                AddLog(userRecord.UserId, "Failed Login", "Incorrect password entered.", "Failed");
+                if ((Session["LoginFailedAttempts"] as int?) >= MaxLoginAttempts)
+                {
+                    AddLog(userRecord.UserId, "Account Locked", "Account temporarily locked due to too many failed attempts.", "Failed");
+                }
                 ShowError("Incorrect username or password.");
                 return;
             }
@@ -90,6 +95,7 @@ namespace ScienceBuddy
 
             // Authentication passed — create session and redirect
             ResetFailedAttempts();
+            AddLog(userRecord.UserId, "Login", "User logged into the system successfully.", "Success");
             CreateUserSession(userRecord.UserId, enteredUsername, userRecord.Role);
             RedirectToDashboard(userRecord.Role);
         }
@@ -312,6 +318,41 @@ namespace ScienceBuddy
             pnlSuccess.Visible = true;
             pnlError.Visible = false;
             litSuccess.Text = Server.HtmlEncode(message);
+        }
+
+        // ────────────────────────────────────────────────────────
+        //  LOGGING
+        // ────────────────────────────────────────────────────────
+
+        private void AddLog(string userId, string action, string description, string status)
+        {
+            try
+            {
+                string connStr = ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+                using (SqlConnection conn = new SqlConnection(connStr))
+                {
+                    conn.Open();
+                    string logId = "LOG001";
+                    using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(logId,4,LEN(logId)-3) AS INT)),0) FROM Log WHERE logId LIKE 'LOG[0-9]%'", conn))
+                    {
+                        logId = "LOG" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                    }
+                    using (SqlCommand cmd = new SqlCommand("INSERT INTO Log(logId,userId,action,description,logDateTime,status) VALUES(@lid,@uid,@act,@desc,@dt,@st)", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@lid", logId);
+                        cmd.Parameters.AddWithValue("@uid", userId);
+                        cmd.Parameters.AddWithValue("@act", action);
+                        cmd.Parameters.AddWithValue("@desc", description);
+                        cmd.Parameters.AddWithValue("@dt", DateTime.Now);
+                        cmd.Parameters.AddWithValue("@st", status);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Log error: " + ex.Message);
+            }
         }
 
         // ────────────────────────────────────────────────────────

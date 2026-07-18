@@ -8,7 +8,7 @@ namespace ScienceBuddy.Student
 {
     public partial class PersonalityTest1 : Page
     {
-        private string ConnStr
+        private string ConnectionString
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
@@ -220,7 +220,7 @@ namespace ScienceBuddy.Student
             }
 
             string userId = Session["userId"].ToString();
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             using (SqlCommand command = new SqlCommand("UPDATE Student SET personalityId=@p WHERE userId=@u", connection))
             {
                 command.Parameters.AddWithValue("@p", pid);

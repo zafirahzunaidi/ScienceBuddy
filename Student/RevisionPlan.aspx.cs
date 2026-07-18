@@ -11,7 +11,7 @@ namespace ScienceBuddy.Student
 {
     public partial class RevisionPlan : Page
     {
-        private string ConnStr
+        private string ConnectionString
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
@@ -73,7 +73,7 @@ namespace ScienceBuddy.Student
             {
                 try
                 {
-                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlConnection connection = new SqlConnection(ConnectionString))
                     using (SqlCommand command = new SqlCommand("SELECT preferredLanguage FROM [User] WHERE userId=@u", connection))
                     {
                         command.Parameters.AddWithValue("@u", userId);
@@ -121,7 +121,7 @@ namespace ScienceBuddy.Student
         {
             string userId = Session["userId"].ToString();
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -508,7 +508,7 @@ namespace ScienceBuddy.Student
             string pendingLabel = T("Not Completed", "Belum Selesai");
             string btnText = T("Mark as Completed", "Tanda Selesai");
 
-            var taskList = new List<object>();
+            List<object> taskList = new List<object>();
             foreach (DataRow row in tasks.Rows)
             {
                 bool done = row["isCompleted"] != DBNull.Value && Convert.ToBoolean(row["isCompleted"]);
@@ -572,7 +572,7 @@ namespace ScienceBuddy.Student
 
         private void BindRewards(DataTable rewards)
         {
-            var rewardList = new List<object>();
+            List<object> rewardList = new List<object>();
             foreach (DataRow row in rewards.Rows)
             {
                 bool unlocked = row["isUnlocked"] != DBNull.Value && Convert.ToBoolean(row["isUnlocked"]);
@@ -670,7 +670,7 @@ namespace ScienceBuddy.Student
                 return;
             }
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
                 using (SqlTransaction trans = connection.BeginTransaction())
@@ -726,6 +726,38 @@ namespace ScienceBuddy.Student
                         }
 
                         trans.Commit();
+
+                        // Award XP for completing task (XP009)
+                        string studentId = ViewState["StudentId"] as string;
+                        if (!string.IsNullOrEmpty(studentId))
+                        {
+                            AwardTaskXp(connection, studentId);
+                        }
+
+                        // Notify parent(s) of task completion
+                        try
+                        {
+                            string taskStudentUserId = Session["userId"].ToString();
+                            using (SqlCommand pCmd = new SqlCommand("SELECT p.userId FROM Parent p JOIN StudentParent sp ON sp.parentId=p.parentId JOIN Student s ON s.studentId=sp.studentId WHERE s.userId=@uid", connection))
+                            {
+                                pCmd.Parameters.AddWithValue("@uid", taskStudentUserId);
+                                using (SqlDataReader rdr = pCmd.ExecuteReader())
+                                {
+                                    List<string> parentIds = new System.Collections.Generic.List<string>();
+                                    while (rdr.Read()) { parentIds.Add(rdr["userId"].ToString()); }
+                                    rdr.Close();
+                                    foreach (string pid in parentIds)
+                                    {
+                                        SendNotification(connection, pid, "Study Plan Progress", "Kemajuan Pelan Belajar", "Your child completed a revision task.", "Anak anda menyelesaikan tugasan ulang kaji.");
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception notifEx)
+                        {
+                            System.Diagnostics.Debug.WriteLine("Task notification error: " + notifEx.Message);
+                        }
+
                         pnlSuccess.Visible = true;
                         litSuccess.Text = T("Task completed! Keep going!", "Tugasan selesai! Teruskan!");
                     }
@@ -756,5 +788,81 @@ namespace ScienceBuddy.Student
             }
             return "<i class='" + fallbackIcon + "'></i>";
         }
+
+        // Award XP for completing study plan task (XP009)
+        private void AwardTaskXp(SqlConnection conn, string studentId)
+        {
+            try
+            {
+                int xpAmount = 0;
+                using (SqlCommand command = new SqlCommand("SELECT xpValue FROM XPAction WHERE xpActionId='XP009'", conn))
+                {
+                    object result = command.ExecuteScalar();
+                    if (result != null && result != DBNull.Value)
+                    {
+                        xpAmount = Convert.ToInt32(result);
+                    }
+                }
+                if (xpAmount <= 0)
+                {
+                    return;
+                }
+
+                string xtId = "XPT001";
+                using (SqlCommand command = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(xpTransactionId,4,LEN(xpTransactionId)-3) AS INT)),0) FROM XPTransaction WHERE xpTransactionId LIKE 'XPT[0-9]%'", conn))
+                {
+                    xtId = "XPT" + (Convert.ToInt32(command.ExecuteScalar()) + 1).ToString("D3");
+                }
+
+                using (SqlCommand command = new SqlCommand("INSERT INTO XPTransaction(xpTransactionId,studentId,xpActionId,xpAmount,dateEarned) VALUES(@id,@s,@a,@xp,@dt)", conn))
+                {
+                    command.Parameters.AddWithValue("@id", xtId);
+                    command.Parameters.AddWithValue("@s", studentId);
+                    command.Parameters.AddWithValue("@a", "XP009");
+                    command.Parameters.AddWithValue("@xp", xpAmount);
+                    command.Parameters.AddWithValue("@dt", DateTime.Today);
+                    command.ExecuteNonQuery();
+                }
+
+                using (SqlCommand command = new SqlCommand("UPDATE Student SET XP=ISNULL(XP,0)+@xp WHERE studentId=@s", conn))
+                {
+                    command.Parameters.AddWithValue("@xp", xpAmount);
+                    command.Parameters.AddWithValue("@s", studentId);
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Task XP error: " + ex.Message);
+            }
+        }
+
+        private void SendNotification(SqlConnection conn, string toUserId, string titleEN, string titleBM, string msgEN, string msgBM)
+        {
+            try
+            {
+                string nId = "N001";
+                using (SqlCommand command = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(notificationId,2,LEN(notificationId)-1) AS INT)),0) FROM Notification WHERE notificationId LIKE 'N[0-9]%'", conn))
+                {
+                    nId = "N" + (Convert.ToInt32(command.ExecuteScalar()) + 1).ToString("D3");
+                }
+                using (SqlCommand command = new SqlCommand("INSERT INTO Notification(notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt) VALUES(@id,@to,@tEN,@tBM,@mEN,@mBM,0,@dt)", conn))
+                {
+                    command.Parameters.AddWithValue("@id", nId);
+                    command.Parameters.AddWithValue("@to", toUserId);
+                    command.Parameters.AddWithValue("@tEN", titleEN);
+                    command.Parameters.AddWithValue("@tBM", titleBM);
+                    command.Parameters.AddWithValue("@mEN", msgEN);
+                    command.Parameters.AddWithValue("@mBM", msgBM);
+                    command.Parameters.AddWithValue("@dt", DateTime.Now);
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Notification error: " + ex.Message);
+            }
+        }
     }
 }
+

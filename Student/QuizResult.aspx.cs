@@ -10,7 +10,7 @@ namespace ScienceBuddy.Student
 {
     public partial class QuizResult : Page
     {
-        private string ConnStr
+        private string ConnectionString
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
@@ -57,7 +57,7 @@ namespace ScienceBuddy.Student
             {
                 try
                 {
-                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlConnection connection = new SqlConnection(ConnectionString))
                     using (SqlCommand command = new SqlCommand("SELECT preferredLanguage FROM [User] WHERE userId=@uid", connection))
                     {
                         command.Parameters.AddWithValue("@uid", userId);
@@ -93,7 +93,7 @@ namespace ScienceBuddy.Student
 
             string userId = Session["userId"].ToString();
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -220,7 +220,7 @@ namespace ScienceBuddy.Student
                 }
                 int wrongCount = totalQ - correctCount;
 
-                // ══ DISPLAY ══
+                // DISPLAY
                 pnlResult.Visible = true;
                 pnlError.Visible = false;
                 litPageTitle.Text = T("Quiz Result", "Keputusan Kuiz");
@@ -351,7 +351,7 @@ namespace ScienceBuddy.Student
                 litRetryBtn.Text = T("Try Again", "Cuba Lagi");
                 litProgressBtn.Text = T("Progress & Rewards", "Kemajuan & Ganjaran");
                 litHistoryBtn.Text = T("Quiz History", "Sejarah Kuiz");
-                lnkReview.HRef = ResolveUrl("~/Student/QuizResult.aspx?resultId=" + resultId).Replace("QuizResult", "QuizReview");
+                lnkReview.HRef = ResolveUrl("~/Student/QuizResult.aspx?resultId=" + resultId + "&review=1");
                 lnkRetry.HRef = ResolveUrl("~/Student/Quiz.aspx?quizId=" + quizId);
 
                 // Back button based on type
@@ -373,10 +373,10 @@ namespace ScienceBuddy.Student
                         }
                         break;
                     case "Level":
-                        litBackBtn.Text = T("Back to Level", "Kembali ke Tahap");
+                        litBackBtn.Text = T("Back to Learning", "Kembali ke Pembelajaran Saya");
                         if (!string.IsNullOrEmpty(levelId))
                         {
-                            lnkBack.HRef = ResolveUrl("~/Student/LevelDetails.aspx?levelId=" + levelId);
+                            lnkBack.HRef = ResolveUrl("~/Student/MyLearning.aspx?levelId=" + levelId);
                         }
                         else
                         {
@@ -392,7 +392,7 @@ namespace ScienceBuddy.Student
                 // Retry visible for Practice always, or if failed
                 pnlRetry.Visible = (quizType == "Practice" || !passed);
 
-                // ══ LOAD QUESTION REVIEW INLINE ══
+                // LOAD QUESTION REVIEW INLINE
                 litReviewTitle.Text = T("Answer Review", "Semakan Jawapan");
                 LoadQuestionReview(connection, resultId);
             }
@@ -412,44 +412,53 @@ namespace ScienceBuddy.Student
                 JOIN Question q ON q.questionId = qa.questionId
                 WHERE qa.resultId = @rid";
 
-            DataTable dt = new DataTable();
+            DataTable reviewTable = new DataTable();
             using (SqlCommand command = new SqlCommand(sql, connection))
             {
                 command.Parameters.AddWithValue("@rid", resultId);
-                new SqlDataAdapter(command).Fill(dt);
+                new SqlDataAdapter(command).Fill(reviewTable);
             }
 
             List<object> list = new List<object>();
-            int num = 0;
-            foreach (DataRow r in dt.Rows)
+            int questionNumber = 0;
+            foreach (DataRow row in reviewTable.Rows)
             {
-                num++;
-                bool isCorrect = r["isCorrect"] != DBNull.Value && Convert.ToBoolean(r["isCorrect"]);
-                string qText = isBM ? S(r, "questionTextBM") : S(r, "questionTextEN");
-                if (string.IsNullOrWhiteSpace(qText)) qText = S(r, "questionTextEN");
+                questionNumber++;
+                bool isCorrect = row["isCorrect"] != DBNull.Value && Convert.ToBoolean(row["isCorrect"]);
+                string qText = isBM ? S(row, "questionTextBM") : S(row, "questionTextEN");
+                if (string.IsNullOrWhiteSpace(qText))
+                {
+                    qText = S(row, "questionTextEN");
+                }
 
-                string selectedRaw = S(r, "selectedAnswer");
-                string correctRaw = S(r, "correctAnswer");
+                string selectedRaw = S(row, "selectedAnswer");
+                string correctRaw = S(row, "correctAnswer");
 
                 // Resolve selected answer to full text
-                string studentAnswerText = ResolveAnswerText(r, selectedRaw, isBM);
-                string correctAnswerText = ResolveAnswerText(r, correctRaw, isBM);
+                string studentAnswerText = ResolveAnswerText(row, selectedRaw, isBM);
+                string correctAnswerText = ResolveAnswerText(row, correctRaw, isBM);
 
                 string explanation = "";
                 if (isCorrect)
                 {
-                    explanation = isBM ? S(r, "correctExplanationBM") : S(r, "correctExplanationEN");
-                    if (string.IsNullOrWhiteSpace(explanation)) explanation = S(r, "correctExplanationEN");
+                    explanation = isBM ? S(row, "correctExplanationBM") : S(row, "correctExplanationEN");
+                    if (string.IsNullOrWhiteSpace(explanation))
+                    {
+                        explanation = S(row, "correctExplanationEN");
+                    }
                 }
                 else
                 {
-                    explanation = isBM ? S(r, "wrongExplanationBM") : S(r, "wrongExplanationEN");
-                    if (string.IsNullOrWhiteSpace(explanation)) explanation = S(r, "wrongExplanationEN");
+                    explanation = isBM ? S(row, "wrongExplanationBM") : S(row, "wrongExplanationEN");
+                    if (string.IsNullOrWhiteSpace(explanation))
+                    {
+                        explanation = S(row, "wrongExplanationEN");
+                    }
                 }
 
                 list.Add(new
                 {
-                    Num = num,
+                    Num = questionNumber,
                     QuestionText = HttpUtility.HtmlEncode(qText),
                     StudentAnswer = HttpUtility.HtmlEncode(studentAnswerText),
                     CorrectAnswer = HttpUtility.HtmlEncode(correctAnswerText),
@@ -466,7 +475,10 @@ namespace ScienceBuddy.Student
 
         private string ResolveAnswerText(DataRow r, string answerRaw, bool isBM)
         {
-            if (string.IsNullOrWhiteSpace(answerRaw)) return "\u2014";
+            if (string.IsNullOrWhiteSpace(answerRaw))
+            {
+                return "\u2014";
+            }
 
             string[] parts = answerRaw.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             List<string> resolved = new List<string>();
@@ -480,25 +492,37 @@ namespace ScienceBuddy.Student
                 if (letter == "A")
                 {
                     optText = isBM ? GetCol(r, "optionA_BM") : GetCol(r, "optionA_EN");
-                    if (string.IsNullOrWhiteSpace(optText)) optText = GetCol(r, "optionA_EN");
+                    if (string.IsNullOrWhiteSpace(optText))
+                    {
+                        optText = GetCol(r, "optionA_EN");
+                    }
                     resolved.Add(!string.IsNullOrWhiteSpace(optText) ? "A. " + optText : "A");
                 }
                 else if (letter == "B")
                 {
                     optText = isBM ? GetCol(r, "optionB_BM") : GetCol(r, "optionB_EN");
-                    if (string.IsNullOrWhiteSpace(optText)) optText = GetCol(r, "optionB_EN");
+                    if (string.IsNullOrWhiteSpace(optText))
+                    {
+                        optText = GetCol(r, "optionB_EN");
+                    }
                     resolved.Add(!string.IsNullOrWhiteSpace(optText) ? "B. " + optText : "B");
                 }
                 else if (letter == "C")
                 {
                     optText = isBM ? GetCol(r, "optionC_BM") : GetCol(r, "optionC_EN");
-                    if (string.IsNullOrWhiteSpace(optText)) optText = GetCol(r, "optionC_EN");
+                    if (string.IsNullOrWhiteSpace(optText))
+                    {
+                        optText = GetCol(r, "optionC_EN");
+                    }
                     resolved.Add(!string.IsNullOrWhiteSpace(optText) ? "C. " + optText : "C");
                 }
                 else if (letter == "D")
                 {
                     optText = isBM ? GetCol(r, "optionD_BM") : GetCol(r, "optionD_EN");
-                    if (string.IsNullOrWhiteSpace(optText)) optText = GetCol(r, "optionD_EN");
+                    if (string.IsNullOrWhiteSpace(optText))
+                    {
+                        optText = GetCol(r, "optionD_EN");
+                    }
                     resolved.Add(!string.IsNullOrWhiteSpace(optText) ? "D. " + optText : "D");
                 }
                 else
@@ -512,8 +536,14 @@ namespace ScienceBuddy.Student
 
         private static string GetCol(DataRow r, string col)
         {
-            if (!r.Table.Columns.Contains(col)) return "";
-            if (r[col] == null || r[col] == DBNull.Value) return "";
+            if (!r.Table.Columns.Contains(col))
+            {
+                return "";
+            }
+            if (r[col] == null || r[col] == DBNull.Value)
+            {
+                return "";
+            }
             return r[col].ToString().Trim();
         }
 

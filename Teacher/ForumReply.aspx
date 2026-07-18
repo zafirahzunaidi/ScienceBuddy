@@ -38,15 +38,13 @@
 .frd-like-btn.notliked{color:var(--tm);border-color:var(--tb);}
 .frd-like-btn.notliked:hover{color:var(--te);border-color:#FEE2E2;background:#FEF2F2;}
 /* ── Reply composer ── */
-.frd-composer-wrap{background:var(--tc);border:1.5px solid var(--tb);border-radius:16px;padding:1.1rem 1.25rem;box-shadow:0 2px 8px rgba(0,0,0,.03);margin-bottom:1.5rem;}
-.frd-composer-inner{display:flex;align-items:flex-start;gap:10px;}
-.frd-composer-avatar{width:36px;height:36px;border-radius:50%;background:#EDE9FE;color:var(--tp);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;flex-shrink:0;}
-.frd-composer-right{flex:1;min-width:0;}
-.frd-composer-ta{width:100%;border-radius:12px;border:1.5px solid var(--tb);padding:.65rem .85rem;font-size:.85rem;line-height:1.6;resize:none;min-height:80px;font-family:inherit;transition:border-color .2s,box-shadow .2s;box-sizing:border-box;}
+.frd-composer-wrap{background:var(--tc);border:1.5px solid var(--tb);border-radius:16px;padding:1rem 1.25rem;box-shadow:0 2px 8px rgba(0,0,0,.03);margin-bottom:1.5rem;}
+.frd-composer-row{display:flex;align-items:center;gap:10px;}
+.frd-composer-ta{flex:1;min-width:0;border-radius:12px;border:1.5px solid var(--tb);padding:.6rem .85rem;font-size:.85rem;line-height:1.5;resize:none;min-height:42px;max-height:120px;font-family:inherit;transition:border-color .2s,box-shadow .2s;box-sizing:border-box;}
 .frd-composer-ta:focus{border-color:var(--tp);outline:none;box-shadow:0 0 0 3px rgba(108,99,255,.08);}
-.frd-composer-actions{display:flex;align-items:center;justify-content:space-between;margin-top:.6rem;flex-wrap:wrap;gap:.4rem;}
+.frd-composer-val{margin-top:.4rem;}
 .frd-val-msg{font-size:.75rem;color:var(--te);font-weight:600;display:flex;align-items:center;gap:4px;}
-.frd-send-btn{width:36px;height:36px;border-radius:50%;background:var(--tp);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;transition:background .2s,transform .15s,box-shadow .2s;box-shadow:0 2px 8px rgba(108,99,255,.22);}
+.frd-send-btn{width:42px;height:42px;border-radius:50%;background:var(--tp);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex-shrink:0;transition:background .2s,transform .15s,box-shadow .2s;box-shadow:0 2px 8px rgba(108,99,255,.22);}
 .frd-send-btn:hover{background:var(--th);transform:scale(1.08);box-shadow:0 4px 14px rgba(108,99,255,.32);}
 /* ── Comments ── */
 .frd-comments-hd{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;}
@@ -185,18 +183,16 @@
 
             <%-- Reply composer --%>
             <div class="frd-composer-wrap">
-                <div class="frd-composer-right" style="width:100%;">
-                    <asp:TextBox ID="txtReply" runat="server" CssClass="frd-composer-ta" TextMode="MultiLine" Rows="3" />
-                    <div class="frd-composer-actions">
-                        <asp:Panel ID="pnlReplyVal" runat="server" Visible="false">
-                            <span class="frd-val-msg"><i class="bi bi-exclamation-circle-fill"></i> <asp:Literal ID="litReplyVal" runat="server" /></span>
-                        </asp:Panel>
-                        <span></span>
-                        <asp:Button ID="btnPostReply" runat="server" CssClass="frd-send-btn"
-                            OnClick="btnPostReply_Click" CausesValidation="false"
-                            Text="&#9992;" />
-                    </div>
+                <div class="frd-composer-row">
+                    <asp:TextBox ID="txtReply" runat="server" CssClass="frd-composer-ta" TextMode="MultiLine" Rows="1" placeholder="Write a reply..." />
+                    <asp:LinkButton ID="btnPostReply" runat="server" CssClass="frd-send-btn"
+                        OnClick="btnPostReply_Click" CausesValidation="false">
+                        <i class="bi bi-send-fill"></i>
+                    </asp:LinkButton>
                 </div>
+                <asp:Panel ID="pnlReplyVal" runat="server" Visible="false" CssClass="frd-composer-val">
+                    <span class="frd-val-msg"><i class="bi bi-exclamation-circle-fill"></i> <asp:Literal ID="litReplyVal" runat="server" /></span>
+                </asp:Panel>
             </div>
 
             <%-- Comments heading --%>

@@ -21,7 +21,7 @@ namespace ScienceBuddy.Teacher
         protected global::System.Web.UI.WebControls.TextBox txtReply;
         protected global::System.Web.UI.WebControls.Panel pnlReplyVal;
         protected global::System.Web.UI.WebControls.Literal litReplyVal;
-        protected global::System.Web.UI.WebControls.Button btnPostReply;
+        protected global::System.Web.UI.WebControls.LinkButton btnPostReply;
         protected global::System.Web.UI.WebControls.Literal litRepliesBadge;
         protected global::System.Web.UI.WebControls.Panel pnlReplies;
         protected global::System.Web.UI.WebControls.Repeater rptReplies;

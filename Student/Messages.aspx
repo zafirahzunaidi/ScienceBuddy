@@ -78,12 +78,8 @@
 <!-- Tabs -->
 <asp:HiddenField ID="hfTab" runat="server" Value="chats" />
 <div class="st-messages-tabs">
-    <asp:LinkButton ID="btnTabChats" runat="server" CssClass="st-messages-tab active" OnClick="btnTabChats_Click">
-        <i class="bi bi-chat-left-text"></i> <asp:Literal ID="litTabChats" runat="server" Text="My Chats" />
-    </asp:LinkButton>
-    <asp:LinkButton ID="btnTabTeachers" runat="server" CssClass="st-messages-tab" OnClick="btnTabTeachers_Click">
-        <i class="bi bi-people"></i> <asp:Literal ID="litTabTeachers" runat="server" Text="Teachers" />
-    </asp:LinkButton>
+    <asp:LinkButton ID="btnTabChats" runat="server" CssClass="st-messages-tab active" OnClick="btnTabChats_Click" />
+    <asp:LinkButton ID="btnTabTeachers" runat="server" CssClass="st-messages-tab" OnClick="btnTabTeachers_Click" />
 </div>
 
 <!-- My Chats Panel -->

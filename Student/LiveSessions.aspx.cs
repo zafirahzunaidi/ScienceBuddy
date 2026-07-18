@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -11,7 +11,7 @@ namespace ScienceBuddy.Student
 {
     public partial class LiveSessions1 : Page
     {
-        private string ConnStr
+        private string ConnectionString
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
@@ -61,7 +61,7 @@ namespace ScienceBuddy.Student
                 try
                 {
                     const string sql = "SELECT preferredLanguage FROM [User] WHERE userId = @userId";
-                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlConnection connection = new SqlConnection(ConnectionString))
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
                         command.Parameters.AddWithValue("@userId", userId);
@@ -142,11 +142,11 @@ namespace ScienceBuddy.Student
 
         private void LoadSessions()
         {
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
-                if (!Tbl(connection, "LiveConsultationSession"))
+                if (!TableExists(connection, "LiveConsultationSession"))
                 {
                     pnlGrid.Visible = false;
                     pnlEmpty.Visible = true;
@@ -166,7 +166,7 @@ namespace ScienceBuddy.Student
                             u.unitNameEN, u.unitNameBM,
                             st.subtopicTitleEN, st.subtopicTitleBM";
 
-                if (!string.IsNullOrEmpty(studentId) && Tbl(connection, "LiveSessionParticipant"))
+                if (!string.IsNullOrEmpty(studentId) && TableExists(connection, "LiveSessionParticipant"))
                 {
                     sql += @",
                             lsp.participantId AS hasJoinedId";
@@ -183,7 +183,7 @@ namespace ScienceBuddy.Student
                     LEFT JOIN Unit u ON u.unitId = s.unitId
                     LEFT JOIN Subtopic st ON st.subtopicId = s.subtopicId";
 
-                if (!string.IsNullOrEmpty(studentId) && Tbl(connection, "LiveSessionParticipant"))
+                if (!string.IsNullOrEmpty(studentId) && TableExists(connection, "LiveSessionParticipant"))
                 {
                     sql += @"
                     LEFT JOIN LiveSessionParticipant lsp ON lsp.sessionId = s.sessionId AND lsp.studentId = @studentId";
@@ -227,8 +227,8 @@ namespace ScienceBuddy.Student
                     string upcomingLabel = T("Upcoming", "Akan Datang");
                     string ongoingLabel = T("Ongoing", "Sedang Berlangsung");
                     string completedLabel = T("Completed", "Selesai");
-                    string getReminderLabel = T("Get Reminder", "Dapat Peringatan");
-                    string reminderSentLabel = T("Reminder Sent", "Peringatan Dihantar");
+                    string getReminderLabel = T("Remind Me", "Ingatkan");
+                    string reminderSentLabel = T("Sent", "Dihantar");
 
                     int countUpcoming = 0, countJoined = 0, countCompleted = 0;
                     string filter = hfFilter.Value;
@@ -476,7 +476,7 @@ namespace ScienceBuddy.Student
 
             string sessionId = e.CommandArgument.ToString();
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -504,7 +504,11 @@ namespace ScienceBuddy.Student
                 if (!exists)
                 {
                     // Insert new participant
-                    string participantId = "LSP" + now.ToString("yyyyMMddHHmmss");
+                    string participantId = "LIVEP001";
+                    using (SqlCommand seqCmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(participantId,6,LEN(participantId)-5) AS INT)),0) FROM LiveSessionParticipant WHERE participantId LIKE 'LIVEP[0-9]%'", connection))
+                    {
+                        participantId = "LIVEP" + (Convert.ToInt32(seqCmd.ExecuteScalar()) + 1).ToString("D3");
+                    }
                     const string sqlInsert = @"
                         INSERT INTO LiveSessionParticipant(participantId, sessionId, studentId, joinedAt)
                         VALUES(@pid, @sid, @stid, @now)";
@@ -516,6 +520,9 @@ namespace ScienceBuddy.Student
                         command.Parameters.AddWithValue("@now", now);
                         command.ExecuteNonQuery();
                     }
+
+                    // Award XP for attending live session (XP008) â€” first join only
+                    AwardSessionXp(connection, studentId);
                 }
                 else
                 {
@@ -583,11 +590,11 @@ namespace ScienceBuddy.Student
             LoadSessions();
         }
 
-        // ── Handle Reminder (register + send email) ─────────────────
+        // â”€â”€ Handle Reminder (register + send email) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         private void HandleReminder(string sessionId)
         {
             InitLang();
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -596,7 +603,7 @@ namespace ScienceBuddy.Student
 
                 // Register as participant if not already
                 bool exists = false;
-                if (Tbl(connection, "LiveSessionParticipant"))
+                if (TableExists(connection, "LiveSessionParticipant"))
                 {
                     using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM LiveSessionParticipant WHERE sessionId=@sid AND studentId=@stid", connection))
                     {
@@ -607,7 +614,11 @@ namespace ScienceBuddy.Student
 
                     if (!exists)
                     {
-                        string participantId = "LSP" + DateTime.Now.ToString("yyyyMMddHHmmss");
+                        string participantId = "LIVEP001";
+                        using (SqlCommand seqCmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(participantId,6,LEN(participantId)-5) AS INT)),0) FROM LiveSessionParticipant WHERE participantId LIKE 'LIVEP[0-9]%'", connection))
+                        {
+                            participantId = "LIVEP" + (Convert.ToInt32(seqCmd.ExecuteScalar()) + 1).ToString("D3");
+                        }
                         using (SqlCommand cmd = new SqlCommand("INSERT INTO LiveSessionParticipant(participantId,sessionId,studentId,joinedAt) VALUES(@pid,@sid,@stid,@now)", connection))
                         {
                             cmd.Parameters.AddWithValue("@pid", participantId);
@@ -710,10 +721,54 @@ namespace ScienceBuddy.Student
             }
         }
 
+        // Award XP for attending live session (XP008)
+        private void AwardSessionXp(SqlConnection conn, string studentId)
+        {
+            try
+            {
+                if (!TableExists(conn, "XPAction") || !TableExists(conn, "XPTransaction")) return;
+
+                int xpAmount = 0;
+                using (SqlCommand cmd = new SqlCommand("SELECT xpValue FROM XPAction WHERE xpActionId='XP008'", conn))
+                {
+                    object r = cmd.ExecuteScalar();
+                    if (r != null && r != DBNull.Value) xpAmount = Convert.ToInt32(r);
+                }
+                if (xpAmount <= 0) return;
+
+                string xtId = "XPT001";
+                using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(xpTransactionId,4,LEN(xpTransactionId)-3) AS INT)),0) FROM XPTransaction WHERE xpTransactionId LIKE 'XPT[0-9]%'", conn))
+                {
+                    xtId = "XPT" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                }
+
+                using (SqlCommand cmd = new SqlCommand("INSERT INTO XPTransaction(xpTransactionId,studentId,xpActionId,xpAmount,dateEarned) VALUES(@id,@s,@a,@xp,@dt)", conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", xtId);
+                    cmd.Parameters.AddWithValue("@s", studentId);
+                    cmd.Parameters.AddWithValue("@a", "XP008");
+                    cmd.Parameters.AddWithValue("@xp", xpAmount);
+                    cmd.Parameters.AddWithValue("@dt", DateTime.Today);
+                    cmd.ExecuteNonQuery();
+                }
+
+                using (SqlCommand cmd = new SqlCommand("UPDATE Student SET XP=ISNULL(XP,0)+@xp WHERE studentId=@s", conn))
+                {
+                    cmd.Parameters.AddWithValue("@xp", xpAmount);
+                    cmd.Parameters.AddWithValue("@s", studentId);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Session XP error: " + ex.Message);
+            }
+        }
+
         // Get studentId for the logged-in user
         private string GetStudentId(SqlConnection conn)
         {
-            if (!Tbl(conn, "Student"))
+            if (!TableExists(conn, "Student"))
             {
                 return null;
             }
@@ -744,7 +799,7 @@ namespace ScienceBuddy.Student
         /// Returns true if the given table exists in the current database.
         /// Uses INFORMATION_SCHEMA so it never throws on a missing table.
         /// </summary>
-        private static bool Tbl(SqlConnection conn, string tableName)
+        private static bool TableExists(SqlConnection conn, string tableName)
         {
             const string sql = @"
                 SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
@@ -759,3 +814,4 @@ namespace ScienceBuddy.Student
 
     }
 }
+

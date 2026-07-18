@@ -115,13 +115,13 @@ namespace ScienceBuddy.Teacher
         protected global::System.Web.UI.WebControls.DropDownList ddlInstantSubtopic;
 
         /// <summary>
-        /// ddlInstantPlatform control.
+        /// ddlInstantUnit control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlInstantPlatform;
+        protected global::System.Web.UI.WebControls.DropDownList ddlInstantUnit;
 
         /// <summary>
         /// pnlInstantError control.
@@ -340,13 +340,13 @@ namespace ScienceBuddy.Teacher
         protected global::System.Web.UI.WebControls.DropDownList ddlSubtopic;
 
         /// <summary>
-        /// txtLink control.
+        /// ddlUnit control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtLink;
+        protected global::System.Web.UI.WebControls.DropDownList ddlUnit;
 
         /// <summary>
         /// txtDesc control.
@@ -402,51 +402,19 @@ namespace ScienceBuddy.Teacher
         /// </remarks>
         protected global::System.Web.UI.WebControls.HiddenField hidShowModal;
 
-        /// <summary>
-        /// pnlLiveRoom control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlLiveRoom;
-
-        /// <summary>
-        /// litLiveRoomTitle control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litLiveRoomTitle;
-
-        /// <summary>
-        /// btnEndLive control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnEndLive;
-
-        /// <summary>
-        /// hidLiveRoomName control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.HiddenField hidLiveRoomName;
-
-        /// <summary>
-        /// hidLiveDisplayName control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.HiddenField hidLiveDisplayName;
+        protected global::System.Web.UI.WebControls.HiddenField hidShowSummary;
 
         protected global::System.Web.UI.WebControls.HiddenField hidLicenseStatus;
+
+        // Summary panel controls
+        protected global::System.Web.UI.WebControls.Panel pnlSummary;
+        protected global::System.Web.UI.WebControls.Literal litSumTitle;
+        protected global::System.Web.UI.WebControls.Literal litSumStart;
+        protected global::System.Web.UI.WebControls.Literal litSumEnd;
+        protected global::System.Web.UI.WebControls.Literal litSumDuration;
+        protected global::System.Web.UI.WebControls.Literal litSumStudents;
+        protected global::System.Web.UI.WebControls.Panel pnlSumPartsList;
+        protected global::System.Web.UI.WebControls.Repeater rptSumParticipants;
+        protected global::System.Web.UI.WebControls.Panel pnlSumNoParticipants;
     }
 }

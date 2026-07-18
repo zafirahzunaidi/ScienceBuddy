@@ -104,6 +104,7 @@
                         <div class="st-chat-msg-avatar"><%# Eval("SenderInitial") %></div>
                         <div class="st-chat-msg-content">
                             <div class="st-chat-msg-bubble"><%# Eval("MsgText") %></div>
+                            <%# Eval("AttachmentHtml") %>
                             <div class="st-chat-msg-meta"><i class="bi bi-clock"></i> <%# Eval("SentAt") %></div>
                         </div>
                     </div>
@@ -121,10 +122,18 @@
 
     <!-- Input area -->
     <div class="st-chat-input">
+        <label for="<%= fuAttachment.ClientID %>" class="st-chat-attach-btn" title="Attach file">
+            <i class="bi bi-paperclip"></i>
+        </label>
+        <asp:FileUpload ID="fuAttachment" runat="server" CssClass="st-chat-attach-input" />
         <asp:TextBox ID="txtMessage" runat="server" CssClass="st-chat-input-text"
             placeholder="Type your message..." MaxLength="4000" />
         <asp:LinkButton ID="btnSend" runat="server" CssClass="st-chat-input-btn"
             OnClick="btnSend_Click"><i class="bi bi-send-fill"></i></asp:LinkButton>
+    </div>
+    <div id="attachmentPreview" class="st-chat-attach-preview" style="display:none;">
+        <span id="attachmentFileName"></span>
+        <button type="button" class="st-chat-attach-remove" onclick="removeAttachment();"><i class="bi bi-x"></i></button>
     </div>
 
 </asp:Panel>
@@ -133,6 +142,26 @@
     // Auto-scroll to bottom of messages
     var msgDiv = document.getElementById('divMessages');
     if (msgDiv) { msgDiv.scrollTop = msgDiv.scrollHeight; }
+
+    // Attachment preview
+    var fuInput = document.getElementById('<%= fuAttachment.ClientID %>');
+    if (fuInput) {
+        fuInput.addEventListener('change', function () {
+            var preview = document.getElementById('attachmentPreview');
+            var nameSpan = document.getElementById('attachmentFileName');
+            if (this.files && this.files.length > 0) {
+                nameSpan.textContent = this.files[0].name;
+                preview.style.display = 'flex';
+            } else {
+                preview.style.display = 'none';
+            }
+        });
+    }
+    function removeAttachment() {
+        var fuInput = document.getElementById('<%= fuAttachment.ClientID %>');
+        if (fuInput) { fuInput.value = ''; }
+        document.getElementById('attachmentPreview').style.display = 'none';
+    }
 </script>
 
 </asp:Content>

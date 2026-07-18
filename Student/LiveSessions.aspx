@@ -64,7 +64,7 @@
 <asp:Content ID="LiveSessionsMainContent" ContentPlaceHolderID="MainContentSidebar" runat="server">
 
 <div class="st-livesessions-header">
-    <div class="st-livesessions-title"><asp:Literal ID="litTitle" runat="server" Text="Live Sessions" /></div>
+    <div class="st-livesessions-title"><i class="bi bi-camera-video-fill" style="color:#2563EB;"></i> <asp:Literal ID="litTitle" runat="server" Text="Live Sessions" /></div>
     <div class="st-livesessions-subtitle"><asp:Literal ID="litSubtitle" runat="server" Text="Join teacher-led learning sessions and ask questions in real time." /></div>
 </div>
 
@@ -105,7 +105,7 @@
                     </div>
                     <div class="st-livesessions-card-footer">
                         <%# !(bool)Eval("HasLink") ? "<span class='st-livesessions-card-btn disabled'><i class=\"bi bi-link-45deg\"></i> " + Eval("NoLinkText") + "</span>" :
-                            Eval("Status").ToString() == Eval("CompletedLabel").ToString() ? "<a href='#' class='st-livesessions-card-btn secondary'><i class=\"bi bi-eye\"></i> " + Eval("ViewDetailsText") + "</a>" :
+                            Eval("Status").ToString() == Eval("CompletedLabel").ToString() ? "" :
                             "" %>
                         <asp:LinkButton runat="server" CommandName="Join" CommandArgument='<%# Eval("SessionId") %>'
                             CssClass="st-livesessions-card-btn"
