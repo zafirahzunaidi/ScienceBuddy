@@ -13,7 +13,7 @@ namespace ScienceBuddy.Parent
 {
     public partial class ChildProgress : Page
     {
-        private string DatabaseConnectionString =>
+        private string ConnStr =>
             ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
         protected string CurrentLanguage = "EN";
@@ -23,34 +23,31 @@ namespace ScienceBuddy.Parent
             return CurrentLanguage == "BM" ? bm : en;
         }
 
-        private string _parentRecordId = "";
-        private string _authenticatedUserId = "";
-        private string _selectedChildId = "";
-        private string _selectedChildName = "";
-        private string _studentParentLinkId = "";
+        private string _parentId = "";
+        private string _userId = "";
+        private string _childId = "";
+        private string _childName = "";
+        private string _spId = "";
 
-        // ══════════════════════════════════════════════════════════════
-        //  PAGE LIFECYCLE
-        // ══════════════════════════════════════════════════════════════
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!ValidateParentSession())
+            if (!CheckAuth())
             {
                 return;
             }
 
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
-            LoadLanguagePreference();
-            LoadUnreadNotificationBadge();
-            _authenticatedUserId = Session["userId"].ToString();
-            LoadParentRecordId();
+            LoadLang();
+            LoadUnreadBadge();
+            _userId = Session["userId"].ToString();
+            LoadParentId();
 
             if (!IsPostBack)
             {
-                ApplyPageLabels();
+                SetLabels();
                 LoadLinkedChildrenDropdown();
 
-                if (!string.IsNullOrEmpty(_selectedChildId))
+                if (!string.IsNullOrEmpty(_childId))
                 {
                     pnlContent.Visible = true;
                     pnlNoChild.Visible = false;
@@ -64,15 +61,15 @@ namespace ScienceBuddy.Parent
             }
             else
             {
-                ApplyPageLabels();
+                SetLabels();
                 // On postback, dropdown items persist via ViewState
-                _selectedChildId = ddlSidebarChild.SelectedValue;
-                _selectedChildName = ddlSidebarChild.SelectedItem != null
+                _childId = ddlSidebarChild.SelectedValue;
+                _childName = ddlSidebarChild.SelectedItem != null
                     ? ddlSidebarChild.SelectedItem.Text
                     : "";
-                LoadStudentParentLinkId();
+                LoadSpId();
 
-                if (!string.IsNullOrEmpty(_selectedChildId))
+                if (!string.IsNullOrEmpty(_childId))
                 {
                     pnlContent.Visible = true;
                     pnlNoChild.Visible = false;
@@ -81,10 +78,7 @@ namespace ScienceBuddy.Parent
             }
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  AUTHORIZATION & LANGUAGE
-        // ══════════════════════════════════════════════════════════════
-        private bool ValidateParentSession()
+        private bool CheckAuth()
         {
             if (Session["userId"] == null || Session["role"] == null ||
                 Session["role"].ToString() != "Parent")
@@ -96,7 +90,7 @@ namespace ScienceBuddy.Parent
             return true;
         }
 
-        private void LoadLanguagePreference()
+        private void LoadLang()
         {
             string cachedLanguage = Session["preferredLanguage"] as string;
             if (!string.IsNullOrEmpty(cachedLanguage))
@@ -107,7 +101,7 @@ namespace ScienceBuddy.Parent
 
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(
                     "SELECT preferredLanguage FROM dbo.[User] WHERE userId=@uid", connection))
                 {
@@ -126,22 +120,22 @@ namespace ScienceBuddy.Parent
             catch { }
         }
 
-        private void LoadParentRecordId()
+        private void LoadParentId()
         {
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(
                     "SELECT parentId, name FROM dbo.[Parent] WHERE userId=@uid", connection))
                 {
-                    command.Parameters.AddWithValue("@uid", _authenticatedUserId);
+                    command.Parameters.AddWithValue("@uid", _userId);
                     connection.Open();
 
                     using (var reader = command.ExecuteReader())
                     {
                         if (reader.Read())
                         {
-                            _parentRecordId = reader["parentId"].ToString();
+                            _parentId = reader["parentId"].ToString();
                         }
                     }
                 }
@@ -149,9 +143,6 @@ namespace ScienceBuddy.Parent
             catch { }
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  LINKED CHILDREN
-        // ══════════════════════════════════════════════════════════════
         private void LoadLinkedChildrenDropdown()
         {
             ddlSidebarChild.Items.Clear();
@@ -164,10 +155,10 @@ namespace ScienceBuddy.Parent
                     INNER JOIN dbo.Student s ON sp.studentId = s.studentId
                     WHERE sp.parentId = @parentId ORDER BY s.name";
 
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(childListQuery, connection))
                 {
-                    command.Parameters.AddWithValue("@parentId", _parentRecordId);
+                    command.Parameters.AddWithValue("@parentId", _parentId);
                     connection.Open();
 
                     using (var reader = command.ExecuteReader())
@@ -196,29 +187,29 @@ namespace ScienceBuddy.Parent
                     Session["selectedChildId"] = ddlSidebarChild.Items[0].Value;
                 }
 
-                _selectedChildId = ddlSidebarChild.SelectedValue;
-                _selectedChildName = ddlSidebarChild.SelectedItem.Text;
-                LoadStudentParentLinkId();
+                _childId = ddlSidebarChild.SelectedValue;
+                _childName = ddlSidebarChild.SelectedItem.Text;
+                LoadSpId();
             }
         }
 
-        private void LoadStudentParentLinkId()
+        private void LoadSpId()
         {
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(
                     "SELECT studentParentId FROM dbo.StudentParent WHERE parentId=@pid AND studentId=@sid",
                     connection))
                 {
-                    command.Parameters.AddWithValue("@pid", _parentRecordId);
-                    command.Parameters.AddWithValue("@sid", _selectedChildId);
+                    command.Parameters.AddWithValue("@pid", _parentId);
+                    command.Parameters.AddWithValue("@sid", _childId);
                     connection.Open();
                     object result = command.ExecuteScalar();
 
                     if (result != null)
                     {
-                        _studentParentLinkId = result.ToString();
+                        _spId = result.ToString();
                     }
                 }
             }
@@ -228,9 +219,9 @@ namespace ScienceBuddy.Parent
         protected void SidebarChildChanged(object sender, EventArgs e)
         {
             Session["selectedChildId"] = ddlSidebarChild.SelectedValue;
-            _selectedChildId = ddlSidebarChild.SelectedValue;
-            _selectedChildName = ddlSidebarChild.SelectedItem.Text;
-            LoadStudentParentLinkId();
+            _childId = ddlSidebarChild.SelectedValue;
+            _childName = ddlSidebarChild.SelectedItem.Text;
+            LoadSpId();
             pnlContent.Visible = true;
             pnlNoChild.Visible = false;
             pnlDailyModal.Visible = false;
@@ -247,10 +238,7 @@ namespace ScienceBuddy.Parent
                 "Tiada anak dipautkan. Sila pautkan akaun anak terlebih dahulu.");
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  LABELS
-        // ══════════════════════════════════════════════════════════════
-        private void ApplyPageLabels()
+        private void SetLabels()
         {
             litHeatmapTitle.Text = T("Learning Calendar", "Kalendar Pembelajaran");
             litCoachTitle.Text = T("Be a Coach!", "Jadi Pembimbing!");
@@ -265,9 +253,6 @@ namespace ScienceBuddy.Parent
                 "Tiada aktiviti pembelajaran direkodkan pada hari ini.");
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  MONTH SELECTOR
-        // ══════════════════════════════════════════════════════════════
         private void PopulateMonthSelector()
         {
             ddlMonth.Items.Clear();
@@ -298,33 +283,30 @@ namespace ScienceBuddy.Parent
             return new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  MAIN DATA ORCHESTRATOR
-        // ══════════════════════════════════════════════════════════════
         private void RefreshAllPageData()
         {
-            if (string.IsNullOrEmpty(_selectedChildId))
+            if (string.IsNullOrEmpty(_childId))
             {
-                _selectedChildId = ddlSidebarChild.SelectedValue;
-                _selectedChildName = ddlSidebarChild.SelectedItem != null
+                _childId = ddlSidebarChild.SelectedValue;
+                _childName = ddlSidebarChild.SelectedItem != null
                     ? ddlSidebarChild.SelectedItem.Text : "";
-                LoadStudentParentLinkId();
+                LoadSpId();
             }
 
             // Fetch fresh nickname from database
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(
                     "SELECT ISNULL(nickname, name) FROM dbo.Student WHERE studentId=@sid", connection))
                 {
-                    command.Parameters.AddWithValue("@sid", _selectedChildId);
+                    command.Parameters.AddWithValue("@sid", _childId);
                     connection.Open();
                     object result = command.ExecuteScalar();
 
                     if (result != null && result != DBNull.Value)
                     {
-                        _selectedChildName = result.ToString();
+                        _childName = result.ToString();
                     }
                 }
             }
@@ -332,27 +314,19 @@ namespace ScienceBuddy.Parent
 
             // Hero section
             litHeroTitle.Text = string.Format(
-                T("{0}'s Learning Progress", "Kemajuan Pembelajaran {0}"), _selectedChildName);
+                T("{0}'s Learning Progress", "Kemajuan Pembelajaran {0}"), _childName);
             litHeroSub.Text = T(
                 "How is your child doing this month?",
                 "Bagaimana perkembangan anak anda bulan ini?");
             litTaskModalSub.Text = string.Format(
                 T("Help {0} continue learning today.", "Bantu {0} teruskan pembelajaran hari ini."),
-                _selectedChildName);
+                _childName);
 
             BuildLearningHeatmap();
             BuildCoachingSection();
             BuildSciencePowerMap();
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  LEARNING HEATMAP
-        // ══════════════════════════════════════════════════════════════
-
-        /// <summary>
-        /// Builds the monthly heatmap calendar showing daily activity intensity.
-        /// Color grades: none (grey), low (1 activity), medium (2-3), high (4+).
-        /// </summary>
         private void BuildLearningHeatmap()
         {
             DateTime monthStart = GetSelectedMonthStart();
@@ -377,7 +351,7 @@ namespace ScienceBuddy.Parent
             try
             {
                 DateTime monthEnd = monthStart.AddMonths(1).AddDays(-1);
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 {
                     connection.Open();
 
@@ -386,7 +360,7 @@ namespace ScienceBuddy.Parent
                         WHERE studentId=@sid AND isCompleted=1 
                         AND completedDate>=@start AND completedDate<=@end", connection))
                     {
-                        command.Parameters.AddWithValue("@sid", _selectedChildId);
+                        command.Parameters.AddWithValue("@sid", _childId);
                         command.Parameters.AddWithValue("@start", monthStart);
                         command.Parameters.AddWithValue("@end", monthEnd);
                         lessonsCompletedCount = (int)command.ExecuteScalar();
@@ -397,7 +371,7 @@ namespace ScienceBuddy.Parent
                         WHERE studentId=@sid AND attemptDate>=@start AND attemptDate<=@end",
                         connection))
                     {
-                        command.Parameters.AddWithValue("@sid", _selectedChildId);
+                        command.Parameters.AddWithValue("@sid", _childId);
                         command.Parameters.AddWithValue("@start", monthStart);
                         command.Parameters.AddWithValue("@end", monthEnd);
                         quizAttemptCount = (int)command.ExecuteScalar();
@@ -410,7 +384,7 @@ namespace ScienceBuddy.Parent
             int currentStreak = 0;
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 {
                     connection.Open();
                     currentStreak = CalculateLearningStreak(connection);
@@ -499,11 +473,6 @@ namespace ScienceBuddy.Parent
 
             return cssClass;
         }
-
-        /// <summary>
-        /// Aggregates activity counts from multiple learning sources (lessons, labs,
-        /// study plan tasks, live sessions, XP transactions) into a per-day dictionary.
-        /// </summary>
         private Dictionary<int, int> FetchActivityCountsForMonth(DateTime monthStart)
         {
             var dailyCounts = new Dictionary<int, int>();
@@ -535,11 +504,11 @@ namespace ScienceBuddy.Parent
                             AND dateEarned >= @start AND dateEarned <= @end GROUP BY CAST(dateEarned AS DATE)
                     ) AS combined GROUP BY actDate";
 
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(aggregateQuery, connection))
                 {
-                    command.Parameters.AddWithValue("@sid", _selectedChildId);
-                    command.Parameters.AddWithValue("@spid", _studentParentLinkId);
+                    command.Parameters.AddWithValue("@sid", _childId);
+                    command.Parameters.AddWithValue("@spid", _spId);
                     command.Parameters.AddWithValue("@start", monthStart);
                     command.Parameters.AddWithValue("@end", monthEnd);
                     connection.Open();
@@ -562,9 +531,6 @@ namespace ScienceBuddy.Parent
             return dailyCounts;
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  DAILY ACTIVITY DETAIL POPUP
-        // ══════════════════════════════════════════════════════════════
         protected void BtnDayClick_Click(object sender, EventArgs e)
         {
             string dateString = hidSelectedDate.Value;
@@ -651,7 +617,7 @@ namespace ScienceBuddy.Parent
 
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 {
                     connection.Open();
                     FetchCompletedLessonsForDate(connection, targetDate, activityList);
@@ -676,7 +642,7 @@ namespace ScienceBuddy.Parent
 
             using (var command = new SqlCommand(lessonQuery, connection))
             {
-                command.Parameters.AddWithValue("@sid", _selectedChildId);
+                command.Parameters.AddWithValue("@sid", _childId);
                 command.Parameters.AddWithValue("@d", targetDate.Date);
 
                 using (var reader = command.ExecuteReader())
@@ -704,7 +670,7 @@ namespace ScienceBuddy.Parent
 
             using (var command = new SqlCommand(labQuery, connection))
             {
-                command.Parameters.AddWithValue("@sid", _selectedChildId);
+                command.Parameters.AddWithValue("@sid", _childId);
                 command.Parameters.AddWithValue("@d", targetDate.Date);
 
                 using (var reader = command.ExecuteReader())
@@ -731,7 +697,7 @@ namespace ScienceBuddy.Parent
 
             using (var command = new SqlCommand(taskQuery, connection))
             {
-                command.Parameters.AddWithValue("@spid", _studentParentLinkId);
+                command.Parameters.AddWithValue("@spid", _spId);
                 command.Parameters.AddWithValue("@d", targetDate.Date);
 
                 using (var reader = command.ExecuteReader())
@@ -756,7 +722,7 @@ namespace ScienceBuddy.Parent
 
             using (var command = new SqlCommand(sessionQuery, connection))
             {
-                command.Parameters.AddWithValue("@sid", _selectedChildId);
+                command.Parameters.AddWithValue("@sid", _childId);
                 command.Parameters.AddWithValue("@d", targetDate.Date);
 
                 using (var reader = command.ExecuteReader())
@@ -778,7 +744,7 @@ namespace ScienceBuddy.Parent
                 @"SELECT COUNT(*) FROM dbo.QuizResult
                 WHERE studentId=@sid AND CAST(attemptedDate AS DATE)=@d", connection))
             {
-                command.Parameters.AddWithValue("@sid", _selectedChildId);
+                command.Parameters.AddWithValue("@sid", _childId);
                 command.Parameters.AddWithValue("@d", targetDate.Date);
                 int quizCount = (int)command.ExecuteScalar();
 
@@ -803,14 +769,7 @@ namespace ScienceBuddy.Parent
             }
         }
 
-        // ══════════════════════════════════════════════════════════════
         //  COACHING SECTION ("Be a Coach!")
-        // ══════════════════════════════════════════════════════════════
-
-        /// <summary>
-        /// Analyzes child activity patterns to determine engagement level (none/slow/good/amazing)
-        /// and renders personalized coaching advice with a matching illustration.
-        /// </summary>
         private void BuildCoachingSection()
         {
             DateTime now = DateTime.Now;
@@ -827,7 +786,7 @@ namespace ScienceBuddy.Parent
 
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 {
                     connection.Open();
 
@@ -857,8 +816,8 @@ namespace ScienceBuddy.Parent
                     WHERE sp.studentParentId=@spid AND t.isCompleted=1 AND t.completedAt>=@ws
                 ) x", connection))
             {
-                command.Parameters.AddWithValue("@sid", _selectedChildId);
-                command.Parameters.AddWithValue("@spid", _studentParentLinkId);
+                command.Parameters.AddWithValue("@sid", _childId);
+                command.Parameters.AddWithValue("@spid", _spId);
                 command.Parameters.AddWithValue("@ws", sinceDate);
                 return (int)command.ExecuteScalar();
             }
@@ -877,8 +836,8 @@ namespace ScienceBuddy.Parent
                     WHERE sp.studentParentId=@spid AND t.isCompleted=1 AND t.completedAt>=@ms
             ) x", connection))
             {
-                command.Parameters.AddWithValue("@sid", _selectedChildId);
-                command.Parameters.AddWithValue("@spid", _studentParentLinkId);
+                command.Parameters.AddWithValue("@sid", _childId);
+                command.Parameters.AddWithValue("@spid", _spId);
                 command.Parameters.AddWithValue("@ms", monthStart);
 
                 using (var reader = command.ExecuteReader())
@@ -899,7 +858,7 @@ namespace ScienceBuddy.Parent
                 UNION ALL SELECT MAX(completedDate) FROM dbo.LabProgress WHERE studentId=@sid AND isCompleted=1
             ) x", connection))
             {
-                command.Parameters.AddWithValue("@sid", _selectedChildId);
+                command.Parameters.AddWithValue("@sid", _childId);
                 object result = command.ExecuteScalar();
 
                 if (result != null && result != DBNull.Value)
@@ -917,7 +876,7 @@ namespace ScienceBuddy.Parent
                 WHERE sp.studentParentId=@spid AND t.isCompleted=0 AND sp.endDate < @today",
                 connection))
             {
-                command.Parameters.AddWithValue("@spid", _studentParentLinkId);
+                command.Parameters.AddWithValue("@spid", _spId);
                 command.Parameters.AddWithValue("@today", DateTime.Today);
                 return (int)command.ExecuteScalar();
             }
@@ -976,7 +935,7 @@ namespace ScienceBuddy.Parent
                 litCoachMessage.Text = string.Format(
                     T("{0} has not been active for a while. A gentle reminder might help restart their learning!",
                       "{0} tidak aktif sejak sekian lama. Peringatan lembut mungkin membantu memulakan semula pembelajaran!"),
-                    _selectedChildName);
+                    _childName);
                 pnlCoachTip.Visible = true;
                 litCoachTip.Text = T(
                     "Try setting a small daily goal or exploring a new topic together.",
@@ -989,7 +948,7 @@ namespace ScienceBuddy.Parent
                 litCoachMessage.Text = string.Format(
                     T("{0} needs a little encouragement. Activity has been low this month.",
                       "{0} memerlukan sedikit galakan. Aktiviti masih rendah bulan ini."),
-                    _selectedChildName);
+                    _childName);
                 pnlCoachTip.Visible = true;
                 litCoachTip.Text = personalizedTip;
                 pnlAddStudyPlanBtn.Visible = true;
@@ -999,7 +958,7 @@ namespace ScienceBuddy.Parent
                 litCoachMessage.Text = string.Format(
                     T("Amazing! {0} has completed {1} learning activities this month. Keep the streak going!",
                       "Luar biasa! {0} telah menyelesaikan {1} aktiviti pembelajaran bulan ini. Teruskan momentum!"),
-                    _selectedChildName, monthlyActivityCount);
+                    _childName, monthlyActivityCount);
                 pnlCoachTip.Visible = false;
                 pnlAddStudyPlanBtn.Visible = false;
             }
@@ -1008,16 +967,11 @@ namespace ScienceBuddy.Parent
                 litCoachMessage.Text = string.Format(
                     T("Good progress! {0} is building a steady learning habit with {1} activities this month.",
                       "Kemajuan baik! {0} sedang membina tabiat pembelajaran yang stabil dengan {1} aktiviti bulan ini."),
-                    _selectedChildName, monthlyActivityCount);
+                    _childName, monthlyActivityCount);
                 pnlCoachTip.Visible = false;
                 pnlAddStudyPlanBtn.Visible = false;
             }
         }
-
-        /// <summary>
-        /// Calculates consecutive days with learning activity, ending today or yesterday.
-        /// Used for the streak display in the monthly summary.
-        /// </summary>
         private int CalculateLearningStreak(SqlConnection connection)
         {
             int streakCount = 0;
@@ -1029,7 +983,7 @@ namespace ScienceBuddy.Parent
                     UNION ALL SELECT completedDate FROM dbo.LabProgress WHERE studentId=@sid AND isCompleted=1 AND completedDate >= @start
                 ) x ORDER BY actDate DESC", connection))
                 {
-                    command.Parameters.AddWithValue("@sid", _selectedChildId);
+                    command.Parameters.AddWithValue("@sid", _childId);
                     command.Parameters.AddWithValue("@start", DateTime.Today.AddDays(-30));
 
                     using (var reader = command.ExecuteReader())
@@ -1070,18 +1024,13 @@ namespace ScienceBuddy.Parent
 
             return streakCount;
         }
-
-        /// <summary>
-        /// Generates a personalized learning recommendation based on priority:
-        /// 1. AI-identified weak topics, 2. Next unfinished lesson, 3. Generic advice.
-        /// </summary>
         private string BuildPersonalizedRecommendation()
         {
             string recommendation = "";
 
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 {
                     connection.Open();
 
@@ -1091,7 +1040,7 @@ namespace ScienceBuddy.Parent
                         WHERE studentId=@sid AND isLatest=1 AND weakTopics IS NOT NULL AND weakTopics <> ''",
                         connection))
                     {
-                        command.Parameters.AddWithValue("@sid", _selectedChildId);
+                        command.Parameters.AddWithValue("@sid", _childId);
                         object result = command.ExecuteScalar();
 
                         if (result != null && result != DBNull.Value)
@@ -1104,7 +1053,7 @@ namespace ScienceBuddy.Parent
                             recommendation = string.Format(
                                 T("Try asking {0} to spend 20 minutes reviewing: {1}",
                                   "Cuba minta {0} luangkan 20 minit mengulangkaji: {1}"),
-                                _selectedChildName, topWeakTopic);
+                                _childName, topWeakTopic);
                             return recommendation;
                         }
                     }
@@ -1118,7 +1067,7 @@ namespace ScienceBuddy.Parent
                         WHERE l.lessonId NOT IN (SELECT lessonId FROM dbo.LessonProgress WHERE studentId=@sid AND isCompleted=1)
                         ORDER BY u.orderNo, st.orderNo, l.orderNo", connection))
                     {
-                        command.Parameters.AddWithValue("@sid", _selectedChildId);
+                        command.Parameters.AddWithValue("@sid", _childId);
 
                         using (var reader = command.ExecuteReader())
                         {
@@ -1131,7 +1080,7 @@ namespace ScienceBuddy.Parent
                                 recommendation = string.Format(
                                     T("Try asking {0} to spend 15 minutes reviewing {1}.",
                                       "Cuba minta {0} luangkan 15 minit mengulangkaji {1}."),
-                                    _selectedChildName, unitName);
+                                    _childName, unitName);
                                 return recommendation;
                             }
                         }
@@ -1146,27 +1095,17 @@ namespace ScienceBuddy.Parent
                 recommendation = string.Format(
                     T("Try asking {0} to spend 15 minutes on a science revision activity.",
                       "Cuba minta {0} luangkan 15 minit untuk aktiviti ulangkaji sains."),
-                    _selectedChildName);
+                    _childName);
             }
 
             return recommendation;
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  SCIENCE POWER MAP (radar chart with gamified learning stats)
-        // ══════════════════════════════════════════════════════════════
-
-        /// <summary>
-        /// Calculates 6 "power" scores from real activity data and renders
-        /// an SVG hexagonal radar chart with an explorer identity.
-        /// Scores: Brain Power, Mission Streak, Explorer Energy, Challenge Courage,
-        /// Bounce-Back Power, Team Spirit — all derived from observable system data.
-        /// </summary>
         private void BuildSciencePowerMap()
         {
             pnlPowerMap.Visible = false;
 
-            if (string.IsNullOrEmpty(_selectedChildId))
+            if (string.IsNullOrEmpty(_childId))
                 return;
 
             int brainPower = 0, missionStreak = 0, explorerEnergy = 0;
@@ -1174,7 +1113,7 @@ namespace ScienceBuddy.Parent
 
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 {
                     connection.Open();
                     brainPower = CalculateBrainPower(connection);
@@ -1188,13 +1127,13 @@ namespace ScienceBuddy.Parent
             catch { }
 
             // Show the chart even with low scores — only hide if there's literally no child selected
-            if (string.IsNullOrEmpty(_selectedChildId))
+            if (string.IsNullOrEmpty(_childId))
                 return;
 
             // Render the section
             pnlPowerMap.Visible = true;
             litPowerMapTitle.Text = string.Format(
-                T("{0}'s Science Power Map", "Peta Kuasa Sains {0}"), _selectedChildName);
+                T("{0}'s Science Power Map", "Peta Kuasa Sains {0}"), _childName);
             litPowerMapFooter.Text = T(
                 "Scores are calculated from real learning activity — not invented by AI.",
                 "Skor dikira daripada aktiviti pembelajaran sebenar — bukan rekaan AI.");
@@ -1238,17 +1177,17 @@ namespace ScienceBuddy.Parent
 
             string[] helpTips = {
                 string.Format(T("Ask {0} to explain one lesson idea in her own words after completing a topic.",
-                    "Minta {0} menerangkan satu idea pelajaran dengan ayat sendiri selepas selesai satu topik."), _selectedChildName),
+                    "Minta {0} menerangkan satu idea pelajaran dengan ayat sendiri selepas selesai satu topik."), _childName),
                 string.Format(T("Set a simple routine: 15 minutes of ScienceBuddy on three evenings this week.",
-                    "Tetapkan rutin mudah: 15 minit ScienceBuddy pada tiga malam minggu ini."), _selectedChildName),
+                    "Tetapkan rutin mudah: 15 minit ScienceBuddy pada tiga malam minggu ini."), _childName),
                 string.Format(T("Encourage {0} to open a new lesson or try a virtual lab they haven't seen yet.",
-                    "Galakkan {0} membuka pelajaran baru atau mencuba makmal maya yang belum pernah dicuba."), _selectedChildName),
+                    "Galakkan {0} membuka pelajaran baru atau mencuba makmal maya yang belum pernah dicuba."), _childName),
                 T("Praise the effort of trying, not just the result. Say \"I'm proud you gave it a go!\"",
                     "Puji usaha mencuba, bukan hanya hasilnya. Katakan \"Saya bangga kamu mencuba!\""),
                 string.Format(T("After a low result, say \"Let's look at which questions were tricky — we can figure them out together.\"",
-                    "Selepas keputusan rendah, katakan \"Jom tengok soalan mana yang susah — kita boleh selesaikan bersama.\""), _selectedChildName),
+                    "Selepas keputusan rendah, katakan \"Jom tengok soalan mana yang susah — kita boleh selesaikan bersama.\""), _childName),
                 string.Format(T("Ask {0} to share one thing they learned this week in the forum or with their teacher.",
-                    "Minta {0} berkongsi satu perkara yang dipelajari minggu ini di forum atau dengan guru."), _selectedChildName)
+                    "Minta {0} berkongsi satu perkara yang dipelajari minggu ini di forum atau dengan guru."), _childName)
             };
 
             var sb = new System.Text.StringBuilder();
@@ -1284,12 +1223,12 @@ namespace ScienceBuddy.Parent
         private string GetProgressSentence(int score)
         {
             if (score >= 71)
-                return string.Format(T("{0} is showing real confidence in this area!", "{0} menunjukkan keyakinan sebenar dalam bidang ini!"), _selectedChildName);
+                return string.Format(T("{0} is showing real confidence in this area!", "{0} menunjukkan keyakinan sebenar dalam bidang ini!"), _childName);
             if (score >= 46)
-                return string.Format(T("{0} is practising this skill regularly and making progress.", "{0} sedang mengamalkan kemahiran ini secara tetap dan menunjukkan kemajuan."), _selectedChildName);
+                return string.Format(T("{0} is practising this skill regularly and making progress.", "{0} sedang mengamalkan kemahiran ini secara tetap dan menunjukkan kemajuan."), _childName);
             if (score >= 21)
-                return string.Format(T("{0} is beginning to show this skill and building confidence.", "{0} mula menunjukkan kemahiran ini dan membina keyakinan."), _selectedChildName);
-            return string.Format(T("{0} is just getting started with this skill.", "{0} baru sahaja bermula dengan kemahiran ini."), _selectedChildName);
+                return string.Format(T("{0} is beginning to show this skill and building confidence.", "{0} mula menunjukkan kemahiran ini dan membina keyakinan."), _childName);
+            return string.Format(T("{0} is just getting started with this skill.", "{0} baru sahaja bermula dengan kemahiran ini."), _childName);
         }
 
         private string JavaScriptStringEncode(string value)
@@ -1306,7 +1245,7 @@ namespace ScienceBuddy.Parent
             using (var cmd = new SqlCommand(
                 "SELECT AVG(percentage) FROM dbo.QuizResult WHERE studentId = @sid", conn))
             {
-                cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                cmd.Parameters.AddWithValue("@sid", _childId);
                 object result = cmd.ExecuteScalar();
                 if (result != null && result != DBNull.Value)
                     return Math.Min(100, (int)Math.Round(Convert.ToDecimal(result)));
@@ -1326,7 +1265,7 @@ namespace ScienceBuddy.Parent
                     WHERE studentId=@sid AND isCompleted=1 AND completedDate>=@since
                 ) x", conn))
             {
-                cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                cmd.Parameters.AddWithValue("@sid", _childId);
                 cmd.Parameters.AddWithValue("@since", since);
                 int activeDays = (int)cmd.ExecuteScalar();
                 return Math.Min(100, (int)Math.Round((double)activeDays / 20 * 100));
@@ -1340,7 +1279,7 @@ namespace ScienceBuddy.Parent
             using (var cmd = new SqlCommand(
                 "SELECT COUNT(*) FROM dbo.LessonProgress WHERE studentId=@sid AND isCompleted=1", conn))
             {
-                cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                cmd.Parameters.AddWithValue("@sid", _childId);
                 completed = (int)cmd.ExecuteScalar();
             }
             using (var cmd = new SqlCommand(
@@ -1350,7 +1289,7 @@ namespace ScienceBuddy.Parent
                 INNER JOIN dbo.Lesson l ON l.subtopicId=st.subtopicId
                 WHERE e.studentId=@sid", conn))
             {
-                cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                cmd.Parameters.AddWithValue("@sid", _childId);
                 total = (int)cmd.ExecuteScalar();
             }
             if (total == 0) return 0;
@@ -1364,7 +1303,7 @@ namespace ScienceBuddy.Parent
             using (var cmd = new SqlCommand(
                 "SELECT COUNT(DISTINCT quizId) FROM dbo.QuizResult WHERE studentId=@sid", conn))
             {
-                cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                cmd.Parameters.AddWithValue("@sid", _childId);
                 attempted = (int)cmd.ExecuteScalar();
             }
             using (var cmd = new SqlCommand(
@@ -1372,7 +1311,7 @@ namespace ScienceBuddy.Parent
                 INNER JOIN dbo.Unit u ON q.unitId=u.unitId
                 INNER JOIN dbo.Enrollment e ON e.levelId=u.levelId AND e.studentId=@sid", conn))
             {
-                cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                cmd.Parameters.AddWithValue("@sid", _childId);
                 available = (int)cmd.ExecuteScalar();
             }
             if (available == 0) return 0;
@@ -1387,7 +1326,7 @@ namespace ScienceBuddy.Parent
             using (var cmd = new SqlCommand(
                 "SELECT COUNT(*) FROM dbo.QuizResult WHERE studentId=@sid", conn))
             {
-                cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                cmd.Parameters.AddWithValue("@sid", _childId);
                 attemptCount = (int)cmd.ExecuteScalar();
             }
             if (attemptCount < 2) return 0;
@@ -1399,7 +1338,7 @@ namespace ScienceBuddy.Parent
                     WHERE studentId=@sid ORDER BY attemptedDate ASC
                 ) x", conn))
             {
-                cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                cmd.Parameters.AddWithValue("@sid", _childId);
                 object r = cmd.ExecuteScalar();
                 if (r != null && r != DBNull.Value) firstAvg = Convert.ToDecimal(r);
             }
@@ -1411,7 +1350,7 @@ namespace ScienceBuddy.Parent
                     WHERE studentId=@sid ORDER BY attemptedDate DESC
                 ) x", conn))
             {
-                cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                cmd.Parameters.AddWithValue("@sid", _childId);
                 object r = cmd.ExecuteScalar();
                 if (r != null && r != DBNull.Value) latestAvg = Convert.ToDecimal(r);
             }
@@ -1432,7 +1371,7 @@ namespace ScienceBuddy.Parent
             using (var cmd = new SqlCommand(
                 "SELECT userId FROM dbo.Student WHERE studentId=@sid", conn))
             {
-                cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                cmd.Parameters.AddWithValue("@sid", _childId);
                 object r = cmd.ExecuteScalar();
                 if (r != null && r != DBNull.Value) childUserId = r.ToString();
             }
@@ -1634,12 +1573,12 @@ namespace ScienceBuddy.Parent
             // Try to read ParentGuidance from analysisJson first
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(
                     "SELECT TOP 1 analysisJson FROM dbo.AILearningAnalysis WHERE studentId=@sid AND isLatest=1",
                     connection))
                 {
-                    command.Parameters.AddWithValue("@sid", _selectedChildId);
+                    command.Parameters.AddWithValue("@sid", _childId);
                     connection.Open();
                     object result = command.ExecuteScalar();
                     if (result != null && result != DBNull.Value)
@@ -1661,39 +1600,36 @@ namespace ScienceBuddy.Parent
             return Server.HtmlEncode(string.Format(
                 T("{0} is a {1}! Their strongest power is {2}. To grow their {3}, try setting short daily learning missions this week.",
                   "{0} ialah {1}! Kuasa terkuat mereka ialah {2}. Untuk mengembangkan {3}, cuba tetapkan misi pembelajaran harian pendek minggu ini."),
-                _selectedChildName, explorerType, superpower, powerUp));
+                _childName, explorerType, superpower, powerUp));
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  ADD TASK TO STUDY PLAN
-        // ══════════════════════════════════════════════════════════════
         protected void BtnAddTask_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(txtTaskName.Text))
             {
-                ShowFeedbackMessage(
+                ShowMsg(
                     T("Please enter a task name.", "Sila masukkan nama tugasan."), false);
                 return;
             }
 
-            if (string.IsNullOrEmpty(_selectedChildId))
+            if (string.IsNullOrEmpty(_childId))
             {
-                _selectedChildId = ddlSidebarChild.SelectedValue;
-                _selectedChildName = ddlSidebarChild.SelectedItem != null
+                _childId = ddlSidebarChild.SelectedValue;
+                _childName = ddlSidebarChild.SelectedItem != null
                     ? ddlSidebarChild.SelectedItem.Text : "";
-                LoadStudentParentLinkId();
+                LoadSpId();
             }
 
-            if (string.IsNullOrEmpty(_studentParentLinkId))
+            if (string.IsNullOrEmpty(_spId))
             {
-                ShowFeedbackMessage(
+                ShowMsg(
                     T("Unable to find child link.", "Tidak dapat mencari pautan anak."), false);
                 return;
             }
 
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 {
                     connection.Open();
 
@@ -1728,7 +1664,7 @@ namespace ScienceBuddy.Parent
                             txtTaskName.Text = "";
                             txtSuggestedAction.Text = "";
                             pnlTaskModal.CssClass = "pt-task-modal-overlay pt-task-modal-hidden";
-                            ShowFeedbackMessage(
+                            ShowMsg(
                                 T("The task has been added to the study plan.",
                                   "Tugasan telah ditambah ke pelan belajar."), true);
                             BuildLearningHeatmap();
@@ -1744,7 +1680,7 @@ namespace ScienceBuddy.Parent
             }
             catch
             {
-                ShowFeedbackMessage(
+                ShowMsg(
                     T("An error occurred while adding the task.",
                       "Ralat berlaku semasa menambah tugasan."), false);
             }
@@ -1757,7 +1693,7 @@ namespace ScienceBuddy.Parent
                 WHERE studentParentId=@spid AND status='Ongoing' ORDER BY createdAt DESC",
                 connection))
             {
-                command.Parameters.AddWithValue("@spid", _studentParentLinkId);
+                command.Parameters.AddWithValue("@spid", _spId);
                 object result = command.ExecuteScalar();
 
                 if (result != null && result != DBNull.Value)
@@ -1778,8 +1714,8 @@ namespace ScienceBuddy.Parent
                 connection, transaction))
             {
                 command.Parameters.AddWithValue("@id", planId);
-                command.Parameters.AddWithValue("@spid", _studentParentLinkId);
-                command.Parameters.AddWithValue("@uid", _authenticatedUserId);
+                command.Parameters.AddWithValue("@spid", _spId);
+                command.Parameters.AddWithValue("@uid", _userId);
                 command.Parameters.AddWithValue("@title", "Quick Support Plan");
                 command.Parameters.AddWithValue("@start", DateTime.Today);
                 command.Parameters.AddWithValue("@end", DateTime.Today.AddDays(7));
@@ -1830,9 +1766,6 @@ namespace ScienceBuddy.Parent
                 "Ibu bapa anda menambah tugasan belajar baharu: " + txtTaskName.Text.Trim() + ".");
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  SHARED UTILITIES
-        // ══════════════════════════════════════════════════════════════
         private string GenerateSequentialId(SqlConnection connection, SqlTransaction transaction,
             string tableName, string columnName, string prefix)
         {
@@ -1894,7 +1827,7 @@ namespace ScienceBuddy.Parent
                     INNER JOIN dbo.[User] u ON s.userId=u.userId 
                     WHERE s.studentId=@sid", connection, transaction))
                 {
-                    command.Parameters.AddWithValue("@sid", _selectedChildId);
+                    command.Parameters.AddWithValue("@sid", _childId);
                     var result = command.ExecuteScalar();
 
                     if (result != null && result != DBNull.Value)
@@ -1907,7 +1840,7 @@ namespace ScienceBuddy.Parent
             return null;
         }
 
-        private void ShowFeedbackMessage(string messageText, bool isSuccess)
+        private void ShowMsg(string messageText, bool isSuccess)
         {
             pnlMessage.Visible = true;
             divMessage.InnerHtml = messageText;
@@ -1922,11 +1855,11 @@ namespace ScienceBuddy.Parent
             BuildLearningHeatmap();
         }
 
-        private void LoadUnreadNotificationBadge()
+        private void LoadUnreadBadge()
         {
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(
                     "SELECT COUNT(*) FROM dbo.Notification WHERE toUserId=@uid AND isRead=0",
                     connection))

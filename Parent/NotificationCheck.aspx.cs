@@ -5,11 +5,7 @@ using System.Web.UI;
 
 namespace ScienceBuddy.Parent
 {
-    /// <summary>
-    /// Lightweight endpoint polled by JavaScript to check for new notifications.
-    /// Returns JSON: {"count":3,"latest":"New message from teacher"}
-    /// Used by the real-time notification toast on Parent pages.
-    /// </summary>
+    // Lightweight JSON endpoint polled by JS for real-time notification toasts
     public partial class NotificationCheck : Page
     {
         protected void Page_Load(object sender, EventArgs e)
@@ -17,7 +13,6 @@ namespace ScienceBuddy.Parent
             Response.Clear();
             Response.ContentType = "application/json";
 
-            // Authorization check
             if (Session["userId"] == null || Session["role"] == null ||
                 Session["role"].ToString() != "Parent")
             {
@@ -32,32 +27,30 @@ namespace ScienceBuddy.Parent
 
             try
             {
-                string connectionString = ConfigurationManager
+                string connStr = ConfigurationManager
                     .ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
-                using (var connection = new SqlConnection(connectionString))
+                using (var conn = new SqlConnection(connStr))
                 {
-                    connection.Open();
+                    conn.Open();
 
-                    // Get unread notification count
-                    using (var command = new SqlCommand(
+                    using (var cmd = new SqlCommand(
                         "SELECT COUNT(*) FROM dbo.Notification WHERE toUserId = @uid AND isRead = 0",
-                        connection))
+                        conn))
                     {
-                        command.Parameters.AddWithValue("@uid", userId);
-                        unreadCount = (int)command.ExecuteScalar();
+                        cmd.Parameters.AddWithValue("@uid", userId);
+                        unreadCount = (int)cmd.ExecuteScalar();
                     }
 
-                    // Get the title of the most recent unread notification
                     if (unreadCount > 0)
                     {
-                        using (var command = new SqlCommand(
+                        using (var cmd = new SqlCommand(
                             @"SELECT TOP 1 titleEN FROM dbo.Notification 
                             WHERE toUserId = @uid AND isRead = 0 
-                            ORDER BY createdAt DESC", connection))
+                            ORDER BY createdAt DESC", conn))
                         {
-                            command.Parameters.AddWithValue("@uid", userId);
-                            object result = command.ExecuteScalar();
+                            cmd.Parameters.AddWithValue("@uid", userId);
+                            object result = cmd.ExecuteScalar();
                             if (result != null && result != DBNull.Value)
                                 latestTitle = result.ToString();
                         }
@@ -66,7 +59,6 @@ namespace ScienceBuddy.Parent
             }
             catch { }
 
-            // Escape quotes in title for safe JSON
             latestTitle = latestTitle.Replace("\\", "\\\\").Replace("\"", "\\\"");
 
             Response.Write(string.Format(

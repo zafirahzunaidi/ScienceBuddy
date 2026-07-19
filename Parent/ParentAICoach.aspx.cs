@@ -14,19 +14,19 @@ namespace ScienceBuddy.Parent
 {
     public partial class ParentAICoach : Page
     {
-        private string DatabaseConnectionString =>
+        private string ConnStr =>
             ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
         protected string CurrentLanguage = "EN";
         protected string T(string en, string bm) { return CurrentLanguage == "BM" ? bm : en; }
 
-        private string _parentUserId = "";
-        private string _parentRecordId = "";
+        private string _userId = "";
+        private string _parentId = "";
         private string _selectedChildId = "";
         private string _childName = "";
         private string _currentTopic = "";
 
-        // Session-based chat history (cleared on refresh or child switch)
+        // Chat history stored in session
         private List<Dictionary<string, string>> ChatHistory
         {
             get { return Session["ParentAIChatHistory"] as List<Dictionary<string, string>>; }
@@ -39,24 +39,22 @@ namespace ScienceBuddy.Parent
             set { Session["ParentAIChatChildId"] = value; }
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  PAGE LIFECYCLE
-        // ══════════════════════════════════════════════════════════════
+        // --- Page Load ---
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!ValidateParentSession()) return;
+            if (!CheckAuth()) return;
 
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
-            LoadLanguagePreference();
+            LoadLang();
             LoadUnreadBadge();
-            _parentUserId = Session["userId"].ToString();
-            LoadParentRecordId();
+            _userId = Session["userId"].ToString();
+            LoadParentId();
 
             if (!IsPostBack)
             {
-                PopulateSidebarChildren();
-                InitialiseForSelectedChild();
+                LoadChildren();
+                InitChild();
             }
             else
             {
@@ -65,7 +63,7 @@ namespace ScienceBuddy.Parent
             }
         }
 
-        private bool ValidateParentSession()
+        private bool CheckAuth()
         {
             if (Session["userId"] == null || Session["role"] == null ||
                 Session["role"].ToString() != "Parent")
@@ -80,13 +78,13 @@ namespace ScienceBuddy.Parent
         protected void SidebarChildChanged(object sender, EventArgs e)
         {
             Session["selectedChildId"] = ddlSidebarChild.SelectedValue;
-            // Clear chat when child changes — prevents cross-child data leaks
+            // Clear chat when child changes to prevent cross-child data leaks
             ChatHistory = null;
             ChatChildId = "";
-            InitialiseForSelectedChild();
+            InitChild();
         }
 
-        private void InitialiseForSelectedChild()
+        private void InitChild()
         {
             string savedChild = Session["selectedChildId"] as string;
             if (!string.IsNullOrEmpty(savedChild) &&
@@ -102,7 +100,6 @@ namespace ScienceBuddy.Parent
 
             _selectedChildId = ddlSidebarChild.SelectedValue;
 
-            // If child changed, clear chat
             if (ChatChildId != _selectedChildId)
             {
                 ChatHistory = null;
@@ -115,9 +112,7 @@ namespace ScienceBuddy.Parent
             RenderChatMessages();
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  CHILD CONTEXT LOADING
-        // ══════════════════════════════════════════════════════════════
+        // --- Load Child Info ---
 
         private void LoadChildContext()
         {
@@ -125,7 +120,7 @@ namespace ScienceBuddy.Parent
 
             try
             {
-                using (var conn = new SqlConnection(DatabaseConnectionString))
+                using (var conn = new SqlConnection(ConnStr))
                 {
                     conn.Open();
 
@@ -138,7 +133,7 @@ namespace ScienceBuddy.Parent
                             _childName = result.ToString();
                     }
 
-                    // Get the most relevant current topic (weakest or most recent)
+                    // Get weakest or most recent topic
                     using (var cmd = new SqlCommand(
                         @"SELECT TOP 1 weakTopics FROM dbo.AILearningAnalysis
                           WHERE studentId = @sid AND isLatest = 1 AND weakTopics IS NOT NULL AND weakTopics <> ''", conn))
@@ -152,7 +147,7 @@ namespace ScienceBuddy.Parent
                         }
                     }
 
-                    // Fallback: use the latest unit name if no weak topics
+                    // Fallback: use latest unit name
                     if (string.IsNullOrEmpty(_currentTopic))
                     {
                         using (var cmd = new SqlCommand(
@@ -174,9 +169,7 @@ namespace ScienceBuddy.Parent
                 _currentTopic = T("Science", "Sains");
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  COACHING PLAN (3 steps)
-        // ══════════════════════════════════════════════════════════════
+        // --- Coaching Plan ---
 
         private void BuildCoachingPlan()
         {
@@ -188,16 +181,13 @@ namespace ScienceBuddy.Parent
 
             pnlCoachingPlan.Visible = true;
 
-            // Step 1: How You Can Help — based on weak topic
             string step1Text = string.Format(
                 T("Ask {0} what they already know about {1} before their next lesson. This helps activate prior knowledge.",
                   "Tanya {0} apa yang mereka sudah tahu tentang {1} sebelum pelajaran seterusnya. Ini membantu mengaktifkan pengetahuan sedia ada."),
                 _childName, _currentTopic);
 
-            // Step 2: Recommended Goal — find next pending task or lesson
             string step2Text = GetRecommendedGoal();
 
-            // Step 3: Fun Family Activity — topic-based suggestion
             string step3Text = string.Format(
                 T("Try a fun activity with {0}: find three real-life examples of {1} around the house or neighbourhood together!",
                   "Cuba aktiviti menarik dengan {0}: cari tiga contoh {1} dalam kehidupan sebenar di sekitar rumah atau kejiranan bersama-sama!"),
@@ -210,18 +200,18 @@ namespace ScienceBuddy.Parent
 
         private string GetRecommendedGoal()
         {
-            // Try to find an incomplete study plan task
             try
             {
-                using (var conn = new SqlConnection(DatabaseConnectionString))
+                using (var conn = new SqlConnection(ConnStr))
                 {
                     conn.Open();
 
+                    // Check parent-child link first
                     string spId = "";
                     using (var cmd = new SqlCommand(
                         "SELECT studentParentId FROM dbo.StudentParent WHERE parentId=@pid AND studentId=@sid", conn))
                     {
-                        cmd.Parameters.AddWithValue("@pid", _parentRecordId);
+                        cmd.Parameters.AddWithValue("@pid", _parentId);
                         cmd.Parameters.AddWithValue("@sid", _selectedChildId);
                         object r = cmd.ExecuteScalar();
                         if (r != null && r != DBNull.Value) spId = r.ToString();
@@ -249,16 +239,13 @@ namespace ScienceBuddy.Parent
             }
             catch { }
 
-            // Fallback: generic goal
             return string.Format(
                 T("Complete at least one lesson in {0} this week and try the unit quiz.",
                   "Selesaikan sekurang-kurangnya satu pelajaran {0} minggu ini dan cuba kuiz unit."),
                 _currentTopic);
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  QUICK CHIPS
-        // ══════════════════════════════════════════════════════════════
+        // --- Quick Chips ---
 
         private void BuildChips()
         {
@@ -280,30 +267,24 @@ namespace ScienceBuddy.Parent
             litChips.Text = sb.ToString();
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  CHAT — SEND MESSAGE & RENDER
-        // ══════════════════════════════════════════════════════════════
+        // --- Chat Send & Render ---
 
         protected void BtnSend_Click(object sender, EventArgs e)
         {
             string userMessage = txtMessage.Text.Trim();
             if (string.IsNullOrEmpty(userMessage)) return;
 
-            // Ensure history exists
             if (ChatHistory == null)
                 ChatHistory = new List<Dictionary<string, string>>();
 
-            // Add user message
             ChatHistory.Add(new Dictionary<string, string> { { "role", "user" }, { "content", userMessage } });
 
-            // Get AI response
-            string aiReply = CallParentCoachAI(userMessage);
+            string aiReply = GetAIResponse(userMessage);
             ChatHistory.Add(new Dictionary<string, string> { { "role", "assistant" }, { "content", aiReply } });
 
             txtMessage.Text = "";
             RenderChatMessages();
 
-            // Scroll to bottom via client script
             ScriptManager.RegisterStartupScript(this, GetType(), "ScrollChat",
                 "setTimeout(function(){ var a=document.getElementById('chatArea'); if(a) a.scrollTop=a.scrollHeight; },100);", true);
         }
@@ -313,7 +294,6 @@ namespace ScienceBuddy.Parent
             pnlChatMessages.Controls.Clear();
             var sb = new StringBuilder();
 
-            // Always show greeting first
             string greeting = string.Format(
                 T("Hi! I am ScienceBuddy Coach. I know {0}'s latest results — ask me how to help!",
                   "Hi! Saya Jurulatih ScienceBuddy. Saya tahu keputusan terkini {0} — tanya saya bagaimana untuk membantu!"),
@@ -323,7 +303,6 @@ namespace ScienceBuddy.Parent
             sb.Append(Server.HtmlEncode(greeting));
             sb.Append("</div>");
 
-            // Render history
             var history = ChatHistory;
             if (history != null)
             {
@@ -337,11 +316,9 @@ namespace ScienceBuddy.Parent
                     }
                     else
                     {
-                        // AI bubble — format structured response into readable HTML
                         sb.Append("<div class='pt-ai-coach-bubble pt-ai-coach-bubble-ai'>");
                         sb.Append(FormatAIResponse(msg["content"]));
 
-                        // Show action chips INSIDE the AI bubble
                         string actionChips = BuildActionChips(msg["content"]);
                         if (!string.IsNullOrEmpty(actionChips))
                         {
@@ -349,7 +326,7 @@ namespace ScienceBuddy.Parent
                             sb.Append(actionChips);
                             sb.Append("</div>");
                         }
-                        sb.Append("</div>"); // close AI bubble
+                        sb.Append("</div>");
                     }
                 }
             }
@@ -357,34 +334,26 @@ namespace ScienceBuddy.Parent
             pnlChatMessages.Controls.Add(new LiteralControl(sb.ToString()));
         }
 
-        /// <summary>
-        /// Safely formats the AI structured response into readable HTML.
-        /// HTML-encodes first (safety), then applies formatting for known patterns:
-        /// emoji headings, numbered steps, bullet points, and line breaks.
-        /// </summary>
+        // Formats AI response into readable HTML (encodes first for safety, then applies formatting)
         private string FormatAIResponse(string rawResponse)
         {
             if (string.IsNullOrEmpty(rawResponse)) return "";
 
-            // Step 1: HTML encode the entire response to prevent injection
             string safe = Server.HtmlEncode(rawResponse);
 
-            // Step 2: Strip any markdown bold/italic that the AI might have generated
-            // After HTML encoding, ** becomes ** (literal text) — remove them
+            // Strip markdown bold/italic
             safe = safe.Replace("**", "");
             safe = safe.Replace("__", "");
             safe = safe.Replace("*", "");
             safe = safe.Replace("_", " ");
 
-            // Step 3: Replace double newlines with paragraph breaks
+            // Paragraph breaks
             safe = safe.Replace("\r\n\r\n", "<br/><br/>");
             safe = safe.Replace("\n\n", "<br/><br/>");
-
-            // Step 4: Replace single newlines with line breaks
             safe = safe.Replace("\r\n", "<br/>");
             safe = safe.Replace("\n", "<br/>");
 
-            // Step 5: Format numbered steps
+            // Format numbered steps
             for (int i = 1; i <= 6; i++)
             {
                 string pattern = "<br/>" + i + ". ";
@@ -392,12 +361,10 @@ namespace ScienceBuddy.Parent
                 safe = safe.Replace(pattern, replacement);
             }
 
-            // Step 6: Format bullet points (- text)
+            // Bullet points
             safe = safe.Replace("<br/>- ", "<br/><span class='pt-ai-bullet'>• </span>");
 
-            // Step 7: Bold ONLY the emoji section headings
             safe = CleanHeadingFormatting(safe);
-
             return safe;
         }
 
@@ -417,14 +384,10 @@ namespace ScienceBuddy.Parent
                     int pos = html.IndexOf(encoded, startIdx);
                     if (pos < 0) break;
 
-                    // Find end of this heading line (next <br/>)
                     int endPos = html.IndexOf("<br/>", pos);
                     if (endPos < 0) endPos = html.Length;
 
-                    // Extract the heading text
                     string headingText = html.Substring(pos, endPos - pos);
-
-                    // Wrap it in bold with styling — only the heading line gets bold
                     string replacement = "<strong class='pt-ai-section-heading'>"
                         + headingText + "</strong>";
 
@@ -436,11 +399,7 @@ namespace ScienceBuddy.Parent
             return html;
         }
 
-        /// <summary>
-        /// Scans the AI response text for keywords and returns relevant action
-        /// link buttons that let parents take real actions in the system.
-        /// Shows a maximum of 3 actions per response to avoid clutter.
-        /// </summary>
+        // Scans AI response for keywords and returns relevant action links (max 3)
         private string BuildActionChips(string aiResponse)
         {
             if (string.IsNullOrEmpty(aiResponse)) return "";
@@ -448,58 +407,36 @@ namespace ScienceBuddy.Parent
             string responseLower = aiResponse.ToLower();
             var actions = new List<string>();
 
-            // Check keywords and add matching action links (max 3)
             if (responseLower.Contains("study plan") || responseLower.Contains("task") || responseLower.Contains("plan"))
-            {
                 actions.Add(MakeActionChip("bi-journal-plus", T("Add to Study Plan", "Tambah ke Pelan"), "~/Parent/EditStudyPlan.aspx"));
-            }
 
             if (responseLower.Contains("quiz") || responseLower.Contains("score") || responseLower.Contains("test"))
-            {
                 actions.Add(MakeActionChip("bi-patch-check", T("View Quiz Results", "Lihat Keputusan Kuiz"), "~/Parent/QuizResults.aspx"));
-            }
 
             if (responseLower.Contains("reward") || responseLower.Contains("celebrate") || responseLower.Contains("motivat"))
-            {
                 actions.Add(MakeActionChip("bi-gift-fill", T("Add Reward", "Tambah Ganjaran"), "~/Parent/EditStudyPlan.aspx"));
-            }
 
             if (responseLower.Contains("progress") || responseLower.Contains("improve") || responseLower.Contains("streak"))
-            {
                 actions.Add(MakeActionChip("bi-bar-chart-line", T("View Progress", "Lihat Kemajuan"), "~/Parent/ChildProgress.aspx"));
-            }
 
             if (responseLower.Contains("lesson") || responseLower.Contains("topic") || responseLower.Contains("module") || responseLower.Contains("unit"))
-            {
                 actions.Add(MakeActionChip("bi-journal-bookmark", T("View Learning Journey", "Lihat Perjalanan"), "~/Parent/EnrolledModules.aspx"));
-            }
 
             if (responseLower.Contains("contact teacher") || responseLower.Contains("speak to teacher") || responseLower.Contains("ask the teacher"))
-            {
                 actions.Add(MakeActionChip("bi-chat-dots-fill", T("Chat with Teacher", "Sembang dengan Guru"), "~/Parent/ParentTeacherCommunication.aspx"));
-            }
 
             if (responseLower.Contains("badge") || responseLower.Contains("achievement") || responseLower.Contains("earn"))
-            {
                 actions.Add(MakeActionChip("bi-award-fill", T("View Child Profile", "Lihat Profil Anak"), "~/Parent/ChildProfile.aspx"));
-            }
 
             if (responseLower.Contains("forum") || responseLower.Contains("community") || responseLower.Contains("parent"))
-            {
                 actions.Add(MakeActionChip("bi-people-fill", T("Visit Forum", "Lawati Forum"), "~/Parent/Forum.aspx"));
-            }
 
             if (responseLower.Contains("report") || responseLower.Contains("download") || responseLower.Contains("pdf"))
-            {
                 actions.Add(MakeActionChip("bi-file-earmark-pdf", T("Download Report", "Muat Turun Laporan"), "~/Parent/DownloadReport.aspx"));
-            }
 
             if (responseLower.Contains("notification") || responseLower.Contains("alert") || responseLower.Contains("message"))
-            {
                 actions.Add(MakeActionChip("bi-bell-fill", T("Check Notifications", "Semak Notifikasi"), "~/Parent/ParentNotifications.aspx"));
-            }
 
-            // Return max 3 actions
             if (actions.Count == 0) return "";
             if (actions.Count > 3) actions = actions.GetRange(0, 3);
             return string.Join("", actions);
@@ -513,11 +450,9 @@ namespace ScienceBuddy.Parent
                 resolvedUrl, icon, Server.HtmlEncode(label));
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  NVIDIA AI API CALL
-        // ══════════════════════════════════════════════════════════════
+        // --- AI API Call ---
 
-        private string CallParentCoachAI(string userMessage)
+        private string GetAIResponse(string userMessage)
         {
             try
             {
@@ -529,10 +464,8 @@ namespace ScienceBuddy.Parent
                 if (string.IsNullOrEmpty(apiKey) || apiKey == "YOUR_NVIDIA_API_KEY_HERE")
                     return T("AI service is not available right now.", "Perkhidmatan AI tidak tersedia sekarang.");
 
-                // Build learning context from database
                 string learningContext = BuildLearningContext();
 
-                // Build message list with system prompt + context + history + new user message
                 var messages = new List<Dictionary<string, string>>();
 
                 messages.Add(new Dictionary<string, string>
@@ -633,18 +566,15 @@ IMPORTANT:
                     });
                 }
 
-                // Include recent history for conversation continuity (last 6 messages max)
+                // Include last 6 messages for conversation continuity
                 var history = ChatHistory;
                 if (history != null)
                 {
                     int startIdx = Math.Max(0, history.Count - 6);
                     for (int i = startIdx; i < history.Count - 1; i++)
-                    {
                         messages.Add(history[i]);
-                    }
                 }
 
-                // Current user message
                 messages.Add(new Dictionary<string, string>
                 {
                     { "role", "user" },
@@ -655,7 +585,6 @@ IMPORTANT:
                 {
                     { "model", model },
                     { "messages", messages },
-                    { "temperature", 0.7 },
                     { "max_tokens", 500 },
                     { "stream", false }
                 };
@@ -693,18 +622,18 @@ IMPORTANT:
             }
         }
 
+        // --- Build Learning Context for AI ---
+
         private string BuildLearningContext()
         {
             var sb = new StringBuilder();
             try
             {
-                using (var conn = new SqlConnection(DatabaseConnectionString))
+                using (var conn = new SqlConnection(ConnStr))
                 {
                     conn.Open();
-
                     sb.AppendFormat("Child name: {0}\n", _childName);
 
-                    // Level + XP
                     using (var cmd = new SqlCommand(
                         @"SELECT s.XP, ISNULL(l.levelNameEN,'-') AS lvl
                           FROM dbo.Student s LEFT JOIN dbo.[Level] l ON l.levelId=s.currentLevelId
@@ -721,7 +650,6 @@ IMPORTANT:
                         }
                     }
 
-                    // Quiz average
                     using (var cmd = new SqlCommand(
                         "SELECT AVG(percentage) FROM dbo.QuizResult WHERE studentId=@sid", conn))
                     {
@@ -731,7 +659,6 @@ IMPORTANT:
                             sb.AppendFormat("Quiz average: {0:F0}%\n", Convert.ToDecimal(r));
                     }
 
-                    // Lessons completed
                     using (var cmd = new SqlCommand(
                         "SELECT COUNT(*) FROM dbo.LessonProgress WHERE studentId=@sid AND isCompleted=1", conn))
                     {
@@ -739,7 +666,6 @@ IMPORTANT:
                         sb.AppendFormat("Lessons completed: {0}\n", (int)cmd.ExecuteScalar());
                     }
 
-                    // AI analysis topics
                     using (var cmd = new SqlCommand(
                         @"SELECT TOP 1 weakTopics, strongTopics, overallSummary
                           FROM dbo.AILearningAnalysis WHERE studentId=@sid AND isLatest=1", conn))
@@ -749,17 +675,16 @@ IMPORTANT:
                         {
                             if (r.Read())
                             {
-                                string weak   = r["weakTopics"]     != DBNull.Value ? r["weakTopics"].ToString()     : "";
-                                string strong = r["strongTopics"]   != DBNull.Value ? r["strongTopics"].ToString()    : "";
+                                string weak = r["weakTopics"] != DBNull.Value ? r["weakTopics"].ToString() : "";
+                                string strong = r["strongTopics"] != DBNull.Value ? r["strongTopics"].ToString() : "";
                                 string summary = r["overallSummary"] != DBNull.Value ? r["overallSummary"].ToString() : "";
                                 if (!string.IsNullOrEmpty(strong)) sb.AppendFormat("Strong topics: {0}\n", strong);
-                                if (!string.IsNullOrEmpty(weak))   sb.AppendFormat("Weak topics: {0}\n", weak);
+                                if (!string.IsNullOrEmpty(weak)) sb.AppendFormat("Weak topics: {0}\n", weak);
                                 if (!string.IsNullOrEmpty(summary)) sb.AppendFormat("Summary: {0}\n", summary);
                             }
                         }
                     }
 
-                    // Badges
                     using (var cmd = new SqlCommand(
                         "SELECT COUNT(*) FROM dbo.StudentBadge WHERE studentId=@sid", conn))
                     {
@@ -767,8 +692,6 @@ IMPORTANT:
                         sb.AppendFormat("Badges earned: {0}\n", (int)cmd.ExecuteScalar());
                     }
 
-                    // ── CURRICULUM CONTEXT: current + previous + next lesson ──
-                    // Find the child's current lesson (first incomplete, or most recently completed)
                     sb.Append("\n--- CURRICULUM CONTENT (use this as primary source of truth) ---\n");
                     AppendLessonContext(conn, sb);
                 }
@@ -777,17 +700,13 @@ IMPORTANT:
             return sb.ToString();
         }
 
-        /// <summary>
-        /// Retrieves the current lesson (first incomplete) plus its neighbours
-        /// (previous and next in the learning path) and appends their content
-        /// to the AI context. This gives the AI real curriculum knowledge.
-        /// </summary>
+        // Gets current lesson + neighbours and appends to AI context
         private void AppendLessonContext(SqlConnection conn, StringBuilder sb)
         {
-            // Find the current lesson: first lesson NOT completed by this child, in curriculum order
             string currentLessonId = "";
             string currentSubtopicId = "";
 
+            // Find first incomplete lesson in curriculum order
             using (var cmd = new SqlCommand(@"
                 SELECT TOP 1 l.lessonId, l.subtopicId
                 FROM dbo.Lesson l
@@ -811,7 +730,7 @@ IMPORTANT:
                 }
             }
 
-            // If all lessons are complete, use the last completed one
+            // If all done, use last completed
             if (string.IsNullOrEmpty(currentLessonId))
             {
                 using (var cmd = new SqlCommand(@"
@@ -839,7 +758,7 @@ IMPORTANT:
                 return;
             }
 
-            // Get current + neighbouring lessons (previous, current, next) in curriculum order
+            // Get current + prev + next lessons in order
             using (var cmd = new SqlCommand(@"
                 SELECT l.lessonId, l.lessonTitleEN, l.lessonContentEN, l.orderNo,
                        st.subtopicTitleEN, u.unitNameEN
@@ -867,9 +786,7 @@ IMPORTANT:
                         string unit = r["unitNameEN"] != DBNull.Value ? r["unitNameEN"].ToString() : "";
                         string subtopic = r["subtopicTitleEN"] != DBNull.Value ? r["subtopicTitleEN"].ToString() : "";
 
-                        // Strip HTML from lesson content for AI readability
                         content = StripHtmlTags(content);
-                        // Truncate very long content to keep context manageable
                         if (content.Length > 600) content = content.Substring(0, 600) + "...";
 
                         if (thisId == currentLessonId)
@@ -893,7 +810,6 @@ IMPORTANT:
                         }
                     }
 
-                    // Output the curriculum context
                     sb.AppendFormat("Current Unit: {0}\n", currUnit);
                     sb.AppendFormat("Current Subtopic: {0}\n", currSubtopic);
                     sb.AppendFormat("\n[CURRENT LESSON] {0}\n{1}\n", currTitle, currContent);
@@ -906,10 +822,7 @@ IMPORTANT:
                 }
             }
 
-            // Also include relevant quiz questions for the current subtopic
             AppendQuizContext(conn, sb, currentSubtopicId);
-
-            // Include teacher materials if available
             AppendMaterialContext(conn, sb, currentSubtopicId);
         }
 
@@ -937,7 +850,6 @@ IMPORTANT:
                         string question = r["questionTextEN"] != DBNull.Value ? r["questionTextEN"].ToString() : "";
                         string answer = r["correctAnswer"] != DBNull.Value ? r["correctAnswer"].ToString() : "";
                         string explanation = r["correctExplanationEN"] != DBNull.Value ? r["correctExplanationEN"].ToString() : "";
-
                         sb.AppendFormat("Q: {0}\nA: {1}\nExplanation: {2}\n\n", question, answer, explanation);
                     }
                 }
@@ -971,31 +883,23 @@ IMPORTANT:
             }
         }
 
-        /// <summary>
-        /// Strips HTML tags from lesson content so the AI receives clean readable text.
-        /// </summary>
         private string StripHtmlTags(string html)
         {
             if (string.IsNullOrEmpty(html)) return "";
-
-            // Remove HTML tags
             string result = System.Text.RegularExpressions.Regex.Replace(html, "<[^>]+>", " ");
-            // Collapse multiple spaces
             result = System.Text.RegularExpressions.Regex.Replace(result, @"\s+", " ");
             return result.Trim();
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  SHARED INFRASTRUCTURE
-        // ══════════════════════════════════════════════════════════════
+        // --- Shared Helpers ---
 
-        private void LoadLanguagePreference()
+        private void LoadLang()
         {
             string lang = Session["preferredLanguage"] as string;
             if (!string.IsNullOrEmpty(lang)) { CurrentLanguage = lang; return; }
             try
             {
-                using (var conn = new SqlConnection(DatabaseConnectionString))
+                using (var conn = new SqlConnection(ConnStr))
                 using (var cmd = new SqlCommand(
                     "SELECT preferredLanguage FROM dbo.[User] WHERE userId=@uid", conn))
                 {
@@ -1012,36 +916,36 @@ IMPORTANT:
             catch { }
         }
 
-        private void LoadParentRecordId()
+        private void LoadParentId()
         {
             try
             {
-                using (var conn = new SqlConnection(DatabaseConnectionString))
+                using (var conn = new SqlConnection(ConnStr))
                 using (var cmd = new SqlCommand(
                     "SELECT parentId FROM dbo.[Parent] WHERE userId=@uid", conn))
                 {
-                    cmd.Parameters.AddWithValue("@uid", _parentUserId);
+                    cmd.Parameters.AddWithValue("@uid", _userId);
                     conn.Open();
                     object r = cmd.ExecuteScalar();
                     if (r != null && r != DBNull.Value)
-                        _parentRecordId = r.ToString();
+                        _parentId = r.ToString();
                 }
             }
             catch { }
         }
 
-        private void PopulateSidebarChildren()
+        private void LoadChildren()
         {
             ddlSidebarChild.Items.Clear();
             try
             {
-                using (var conn = new SqlConnection(DatabaseConnectionString))
+                using (var conn = new SqlConnection(ConnStr))
                 using (var cmd = new SqlCommand(
                     @"SELECT s.studentId, ISNULL(s.nickname,s.name) AS displayName
                       FROM dbo.StudentParent sp INNER JOIN dbo.Student s ON sp.studentId=s.studentId
                       WHERE sp.parentId=@pid ORDER BY s.name", conn))
                 {
-                    cmd.Parameters.AddWithValue("@pid", _parentRecordId);
+                    cmd.Parameters.AddWithValue("@pid", _parentId);
                     conn.Open();
                     using (var r = cmd.ExecuteReader())
                     {
@@ -1060,7 +964,7 @@ IMPORTANT:
         {
             try
             {
-                using (var conn = new SqlConnection(DatabaseConnectionString))
+                using (var conn = new SqlConnection(ConnStr))
                 using (var cmd = new SqlCommand(
                     "SELECT COUNT(*) FROM dbo.Notification WHERE toUserId=@uid AND isRead=0", conn))
                 {

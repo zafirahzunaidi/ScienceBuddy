@@ -10,7 +10,7 @@ namespace ScienceBuddy.Parent
 {
     public partial class ParentProfile : Page
     {
-        private string DatabaseConnectionString =>
+        private string ConnStr =>
             ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
         protected string CurrentLanguage = "EN";
@@ -20,42 +20,36 @@ namespace ScienceBuddy.Parent
             return CurrentLanguage == "BM" ? bm : en;
         }
 
-        private string _authenticatedUserId = "";
-        private string _parentRecordId = "";
+        private string _userId = "";
+        private string _parentId = "";
 
-        // ══════════════════════════════════════════════════════════════
-        //  PAGE LIFECYCLE
-        // ══════════════════════════════════════════════════════════════
+        // --- Page Load ---
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!ValidateParentSession())
+            if (!CheckAuth())
             {
                 return;
             }
 
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
-            LoadLanguagePreference();
-            LoadUnreadNotificationBadge();
-            _authenticatedUserId = Session["userId"].ToString();
-            ResolveParentRecordId();
+            LoadLang();
+            LoadUnreadBadge();
+            _userId = Session["userId"].ToString();
+            LoadParentId();
 
             if (!IsPostBack)
             {
-                ApplyPageLabels();
-                PopulateSidebarChildren();
+                SetLabels();
+                LoadChildren();
                 LoadProfileData();
             }
             else
             {
-                ApplyPageLabels();
+                SetLabels();
             }
         }
 
-        /// <summary>
-        /// Validates that the current session belongs to an authenticated parent.
-        /// Redirects to login if session is missing or role mismatch.
-        /// </summary>
-        private bool ValidateParentSession()
+        private bool CheckAuth()
         {
             if (Session["userId"] == null || Session["role"] == null ||
                 Session["role"].ToString() != "Parent")
@@ -67,24 +61,24 @@ namespace ScienceBuddy.Parent
             return true;
         }
 
-        private void LoadLanguagePreference()
+        private void LoadLang()
         {
-            string cachedLanguage = Session["preferredLanguage"] as string;
-            if (!string.IsNullOrEmpty(cachedLanguage))
+            string cached = Session["preferredLanguage"] as string;
+            if (!string.IsNullOrEmpty(cached))
             {
-                CurrentLanguage = cachedLanguage;
+                CurrentLanguage = cached;
                 return;
             }
 
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
-                using (var command = new SqlCommand(
-                    "SELECT preferredLanguage FROM dbo.[User] WHERE userId = @userId", connection))
+                using (var conn = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand(
+                    "SELECT preferredLanguage FROM dbo.[User] WHERE userId = @userId", conn))
                 {
-                    command.Parameters.AddWithValue("@userId", Session["userId"].ToString());
-                    connection.Open();
-                    object result = command.ExecuteScalar();
+                    cmd.Parameters.AddWithValue("@userId", Session["userId"].ToString());
+                    conn.Open();
+                    object result = cmd.ExecuteScalar();
 
                     if (result != null && result != DBNull.Value)
                     {
@@ -96,48 +90,46 @@ namespace ScienceBuddy.Parent
             catch { }
         }
 
-        private void ResolveParentRecordId()
+        private void LoadParentId()
         {
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
-                using (var command = new SqlCommand(
-                    "SELECT parentId FROM dbo.[Parent] WHERE userId = @userId", connection))
+                using (var conn = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand(
+                    "SELECT parentId FROM dbo.[Parent] WHERE userId = @userId", conn))
                 {
-                    command.Parameters.AddWithValue("@userId", _authenticatedUserId);
-                    connection.Open();
-                    object result = command.ExecuteScalar();
+                    cmd.Parameters.AddWithValue("@userId", _userId);
+                    conn.Open();
+                    object result = cmd.ExecuteScalar();
 
                     if (result != null)
                     {
-                        _parentRecordId = result.ToString();
+                        _parentId = result.ToString();
                     }
                 }
             }
             catch { }
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  SIDEBAR CHILDREN DROPDOWN
-        // ══════════════════════════════════════════════════════════════
-        private void PopulateSidebarChildren()
+        // --- Sidebar Children ---
+        private void LoadChildren()
         {
             ddlSidebarChild.Items.Clear();
 
             try
             {
-                const string childQuery = @"SELECT s.studentId, ISNULL(s.nickname, s.name) AS displayName 
+                const string sql = @"SELECT s.studentId, ISNULL(s.nickname, s.name) AS displayName 
                     FROM dbo.StudentParent sp 
                     INNER JOIN dbo.Student s ON sp.studentId = s.studentId 
                     WHERE sp.parentId = @parentId ORDER BY s.name";
 
-                using (var connection = new SqlConnection(DatabaseConnectionString))
-                using (var command = new SqlCommand(childQuery, connection))
+                using (var conn = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand(sql, conn))
                 {
-                    command.Parameters.AddWithValue("@parentId", _parentRecordId);
-                    connection.Open();
+                    cmd.Parameters.AddWithValue("@parentId", _parentId);
+                    conn.Open();
 
-                    using (var reader = command.ExecuteReader())
+                    using (var reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
@@ -170,25 +162,19 @@ namespace ScienceBuddy.Parent
             Session["selectedChildId"] = ddlSidebarChild.SelectedValue;
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  PAGE LABELS & REPORT CATEGORY DROPDOWN
-        // ══════════════════════════════════════════════════════════════
-        private void ApplyPageLabels()
+        // --- Labels & Report Category ---
+        private void SetLabels()
         {
             btnSave.Text = T("Save Profile Changes", "Simpan Perubahan Profil");
             btnChangePwd.Text = T("Change Password", "Tukar Kata Laluan");
             btnReportSubmit.Text = T("Submit Report", "Hantar Laporan");
             btnDeleteAccount.Text = T("Confirm Close Account", "Sahkan Tutup Akaun");
-            PopulateReportCategoryDropdown();
+            LoadReportCategories();
         }
 
-        /// <summary>
-        /// Populates the issue category dropdown with translated display text
-        /// while keeping stable internal values for validation and email.
-        /// </summary>
-        private void PopulateReportCategoryDropdown()
+        private void LoadReportCategories()
         {
-            string previouslySelected = ddlReportCategory.SelectedValue;
+            string prev = ddlReportCategory.SelectedValue;
             ddlReportCategory.Items.Clear();
 
             ddlReportCategory.Items.Add(new ListItem(T("-- Select --", "-- Pilih --"), ""));
@@ -201,36 +187,32 @@ namespace ScienceBuddy.Parent
             ddlReportCategory.Items.Add(new ListItem(T("Technical problem", "Masalah teknikal"), "Technical"));
             ddlReportCategory.Items.Add(new ListItem(T("Other", "Lain-lain"), "Other"));
 
-            // Restore selection on postback so dropdown doesn't reset
-            if (!string.IsNullOrEmpty(previouslySelected) &&
-                ddlReportCategory.Items.FindByValue(previouslySelected) != null)
+            if (!string.IsNullOrEmpty(prev) &&
+                ddlReportCategory.Items.FindByValue(prev) != null)
             {
-                ddlReportCategory.SelectedValue = previouslySelected;
+                ddlReportCategory.SelectedValue = prev;
             }
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  LOAD PROFILE DATA
-        // ══════════════════════════════════════════════════════════════
+        // --- Load Profile ---
         private void LoadProfileData()
         {
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var conn = new SqlConnection(ConnStr))
                 {
-                    connection.Open();
+                    conn.Open();
 
-                    // User account details
                     string username = "", email = "", accountRole = "";
-                    string accountStatus = "", languagePref = "";
+                    string accountStatus = "", langPref = "";
 
-                    using (var command = new SqlCommand(
+                    using (var cmd = new SqlCommand(
                         "SELECT username, email, role, status, preferredLanguage FROM dbo.[User] WHERE userId = @userId",
-                        connection))
+                        conn))
                     {
-                        command.Parameters.AddWithValue("@userId", _authenticatedUserId);
+                        cmd.Parameters.AddWithValue("@userId", _userId);
 
-                        using (var reader = command.ExecuteReader())
+                        using (var reader = cmd.ExecuteReader())
                         {
                             if (reader.Read())
                             {
@@ -238,240 +220,221 @@ namespace ScienceBuddy.Parent
                                 email = reader["email"] != DBNull.Value ? reader["email"].ToString() : "";
                                 accountRole = reader["role"] != DBNull.Value ? reader["role"].ToString() : "";
                                 accountStatus = reader["status"] != DBNull.Value ? reader["status"].ToString() : "";
-                                languagePref = reader["preferredLanguage"] != DBNull.Value ? reader["preferredLanguage"].ToString() : "EN";
+                                langPref = reader["preferredLanguage"] != DBNull.Value ? reader["preferredLanguage"].ToString() : "EN";
                             }
                         }
                     }
 
-                    // Parent personal details
-                    string parentFullName = "";
+                    string parentName = "";
                     string parentPhone = "";
 
-                    using (var command = new SqlCommand(
-                        "SELECT name, phoneNumber FROM dbo.[Parent] WHERE parentId = @parentId", connection))
+                    using (var cmd = new SqlCommand(
+                        "SELECT name, phoneNumber FROM dbo.[Parent] WHERE parentId = @parentId", conn))
                     {
-                        command.Parameters.AddWithValue("@parentId", _parentRecordId);
+                        cmd.Parameters.AddWithValue("@parentId", _parentId);
 
-                        using (var reader = command.ExecuteReader())
+                        using (var reader = cmd.ExecuteReader())
                         {
                             if (reader.Read())
                             {
-                                parentFullName = reader["name"] != DBNull.Value ? reader["name"].ToString() : "";
+                                parentName = reader["name"] != DBNull.Value ? reader["name"].ToString() : "";
                                 parentPhone = reader["phoneNumber"] != DBNull.Value ? reader["phoneNumber"].ToString() : "";
                             }
                         }
                     }
 
-                    // Linked children count for the hero card
-                    int linkedChildCount = 0;
-                    using (var command = new SqlCommand(
-                        "SELECT COUNT(*) FROM dbo.StudentParent WHERE parentId = @parentId", connection))
+                    int childCount = 0;
+                    using (var cmd = new SqlCommand(
+                        "SELECT COUNT(*) FROM dbo.StudentParent WHERE parentId = @parentId", conn))
                     {
-                        command.Parameters.AddWithValue("@parentId", _parentRecordId);
-                        linkedChildCount = (int)command.ExecuteScalar();
+                        cmd.Parameters.AddWithValue("@parentId", _parentId);
+                        childCount = (int)cmd.ExecuteScalar();
                     }
 
-                    // Populate form fields
                     txtUsername.Text = username;
-                    txtName.Text = parentFullName;
+                    txtName.Text = parentName;
                     txtEmail.Text = email;
                     txtPhone.Text = parentPhone;
 
-                    if (ddlLang.Items.FindByValue(languagePref) != null)
+                    if (ddlLang.Items.FindByValue(langPref) != null)
                     {
-                        ddlLang.SelectedValue = languagePref;
+                        ddlLang.SelectedValue = langPref;
                     }
 
-                    // Hero section
-                    litHeroName.Text = Server.HtmlEncode(parentFullName);
-                    litInitials.Text = BuildNameInitials(parentFullName);
+                    litHeroName.Text = Server.HtmlEncode(parentName);
+                    litInitials.Text = GetInitials(parentName);
                     litHeroEmail.Text = Server.HtmlEncode(email);
                     litChildrenCount.Text = string.Format(
-                        T("{0} child(ren) linked", "{0} anak dipautkan"), linkedChildCount);
+                        T("{0} child(ren) linked", "{0} anak dipautkan"), childCount);
 
-                    // Account status chips
                     litStatusRole.Text = accountRole;
                     litStatusStatus.Text = accountStatus;
-                    litStatusLang.Text = languagePref == "BM" ? "Bahasa Melayu" : "English";
+                    litStatusLang.Text = langPref == "BM" ? "Bahasa Melayu" : "English";
                 }
             }
             catch { }
         }
 
-        private string BuildNameInitials(string fullName)
+        private string GetInitials(string fullName)
         {
             if (string.IsNullOrEmpty(fullName))
             {
                 return "P";
             }
 
-            string[] nameParts = fullName.Trim().Split(' ');
-            if (nameParts.Length >= 2)
+            string[] parts = fullName.Trim().Split(' ');
+            if (parts.Length >= 2)
             {
-                return (nameParts[0][0].ToString() + nameParts[nameParts.Length - 1][0].ToString()).ToUpper();
+                return (parts[0][0].ToString() + parts[parts.Length - 1][0].ToString()).ToUpper();
             }
 
-            return nameParts[0][0].ToString().ToUpper();
+            return parts[0][0].ToString().ToUpper();
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  SAVE PROFILE CHANGES
-        // ══════════════════════════════════════════════════════════════
+        // --- Save Profile ---
         protected void BtnSave_Click(object sender, EventArgs e)
         {
-            string updatedName = txtName.Text.Trim();
-            string updatedEmail = txtEmail.Text.Trim();
-            string updatedPhone = txtPhone.Text.Trim();
-            string selectedLanguage = ddlLang.SelectedValue;
+            string name = txtName.Text.Trim();
+            string email = txtEmail.Text.Trim();
+            string phone = txtPhone.Text.Trim();
+            string lang = ddlLang.SelectedValue;
 
-            if (string.IsNullOrEmpty(updatedName))
+            if (string.IsNullOrEmpty(name))
             {
-                ShowFeedbackMessage(T("Name cannot be empty.", "Nama tidak boleh kosong."), false);
+                ShowMsg(T("Name cannot be empty.", "Nama tidak boleh kosong."), false);
                 return;
             }
-            if (string.IsNullOrEmpty(updatedEmail))
+            if (string.IsNullOrEmpty(email))
             {
-                ShowFeedbackMessage(T("Email cannot be empty.", "E-mel tidak boleh kosong."), false);
+                ShowMsg(T("Email cannot be empty.", "E-mel tidak boleh kosong."), false);
                 return;
             }
 
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var conn = new SqlConnection(ConnStr))
                 {
-                    connection.Open();
+                    conn.Open();
 
-                    // Update parent personal info
-                    using (var command = new SqlCommand(
+                    using (var cmd = new SqlCommand(
                         "UPDATE dbo.[Parent] SET name = @name, phoneNumber = @phone WHERE parentId = @parentId",
-                        connection))
+                        conn))
                     {
-                        command.Parameters.AddWithValue("@name", updatedName);
-                        command.Parameters.AddWithValue("@phone", (object)updatedPhone ?? DBNull.Value);
-                        command.Parameters.AddWithValue("@parentId", _parentRecordId);
-                        command.ExecuteNonQuery();
+                        cmd.Parameters.AddWithValue("@name", name);
+                        cmd.Parameters.AddWithValue("@phone", (object)phone ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@parentId", _parentId);
+                        cmd.ExecuteNonQuery();
                     }
 
-                    // Update user account settings (email + language preference)
-                    using (var command = new SqlCommand(
+                    using (var cmd = new SqlCommand(
                         "UPDATE dbo.[User] SET email = @email, preferredLanguage = @lang WHERE userId = @userId",
-                        connection))
+                        conn))
                     {
-                        command.Parameters.AddWithValue("@email", updatedEmail);
-                        command.Parameters.AddWithValue("@lang", selectedLanguage);
-                        command.Parameters.AddWithValue("@userId", _authenticatedUserId);
-                        command.ExecuteNonQuery();
+                        cmd.Parameters.AddWithValue("@email", email);
+                        cmd.Parameters.AddWithValue("@lang", lang);
+                        cmd.Parameters.AddWithValue("@userId", _userId);
+                        cmd.ExecuteNonQuery();
                     }
                 }
 
-                // Apply language change immediately
-                Session["preferredLanguage"] = selectedLanguage;
-                CurrentLanguage = selectedLanguage;
+                Session["preferredLanguage"] = lang;
+                CurrentLanguage = lang;
 
-                ShowFeedbackMessage(T("Profile updated successfully!", "Profil berjaya dikemas kini!"), true);
+                ShowMsg(T("Profile updated successfully!", "Profil berjaya dikemas kini!"), true);
                 LoadProfileData();
             }
             catch
             {
-                ShowFeedbackMessage(T("An error occurred while saving.", "Ralat berlaku semasa menyimpan."), false);
+                ShowMsg(T("An error occurred while saving.", "Ralat berlaku semasa menyimpan."), false);
             }
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  CHANGE PASSWORD
-        // ══════════════════════════════════════════════════════════════
+        // --- Change Password ---
         protected void BtnChangePwd_Click(object sender, EventArgs e)
         {
-            string currentPassword = txtCurrentPwd.Text;
-            string newPassword = txtNewPwd.Text;
-            string confirmPassword = txtConfirmPwd.Text;
+            string currentPwd = txtCurrentPwd.Text;
+            string newPwd = txtNewPwd.Text;
+            string confirmPwd = txtConfirmPwd.Text;
 
-            // Validation: all fields required, minimum length, match check
-            if (string.IsNullOrEmpty(currentPassword))
+            if (string.IsNullOrEmpty(currentPwd))
             {
-                ShowFeedbackMessage(T("Please enter your current password.",
+                ShowMsg(T("Please enter your current password.",
                     "Sila masukkan kata laluan semasa anda."), false);
                 return;
             }
-            if (string.IsNullOrEmpty(newPassword))
+            if (string.IsNullOrEmpty(newPwd))
             {
-                ShowFeedbackMessage(T("Please enter a new password.",
+                ShowMsg(T("Please enter a new password.",
                     "Sila masukkan kata laluan baharu."), false);
                 return;
             }
-            if (newPassword.Length < 6)
+            if (newPwd.Length < 6)
             {
-                ShowFeedbackMessage(T("New password must be at least 6 characters.",
+                ShowMsg(T("New password must be at least 6 characters.",
                     "Kata laluan baharu mesti sekurang-kurangnya 6 aksara."), false);
                 return;
             }
-            if (newPassword != confirmPassword)
+            if (newPwd != confirmPwd)
             {
-                ShowFeedbackMessage(T("New passwords do not match.",
+                ShowMsg(T("New passwords do not match.",
                     "Kata laluan baharu tidak sepadan."), false);
                 return;
             }
 
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var conn = new SqlConnection(ConnStr))
                 {
-                    connection.Open();
+                    conn.Open();
 
-                    // Retrieve the stored hash for BCrypt verification
-                    string storedPasswordHash = "";
-                    using (var command = new SqlCommand(
-                        "SELECT password FROM dbo.[User] WHERE userId = @userId", connection))
+                    string storedHash = "";
+                    using (var cmd = new SqlCommand(
+                        "SELECT password FROM dbo.[User] WHERE userId = @userId", conn))
                     {
-                        command.Parameters.AddWithValue("@userId", _authenticatedUserId);
-                        object result = command.ExecuteScalar();
+                        cmd.Parameters.AddWithValue("@userId", _userId);
+                        object result = cmd.ExecuteScalar();
 
                         if (result != null && result != DBNull.Value)
                         {
-                            storedPasswordHash = result.ToString();
+                            storedHash = result.ToString();
                         }
                     }
 
-                    // Verify current password matches before allowing change
-                    if (!PasswordHelper.VerifyPassword(currentPassword, storedPasswordHash))
+                    if (!PasswordHelper.VerifyPassword(currentPwd, storedHash))
                     {
-                        ShowFeedbackMessage(T("Current password is incorrect.",
+                        ShowMsg(T("Current password is incorrect.",
                             "Kata laluan semasa tidak betul."), false);
                         return;
                     }
 
-                    // Hash the new password and persist it
-                    string newPasswordHash = PasswordHelper.HashPassword(newPassword);
-                    using (var command = new SqlCommand(
-                        "UPDATE dbo.[User] SET password = @newHash WHERE userId = @userId", connection))
+                    string newHash = PasswordHelper.HashPassword(newPwd);
+                    using (var cmd = new SqlCommand(
+                        "UPDATE dbo.[User] SET password = @newHash WHERE userId = @userId", conn))
                     {
-                        command.Parameters.AddWithValue("@newHash", newPasswordHash);
-                        command.Parameters.AddWithValue("@userId", _authenticatedUserId);
-                        command.ExecuteNonQuery();
+                        cmd.Parameters.AddWithValue("@newHash", newHash);
+                        cmd.Parameters.AddWithValue("@userId", _userId);
+                        cmd.ExecuteNonQuery();
                     }
                 }
 
-                // Clear the password fields after successful change
                 txtCurrentPwd.Text = "";
                 txtNewPwd.Text = "";
                 txtConfirmPwd.Text = "";
-                ShowFeedbackMessage(T("Password changed successfully!",
+                ShowMsg(T("Password changed successfully!",
                     "Kata laluan berjaya ditukar!"), true);
             }
             catch
             {
-                ShowFeedbackMessage(T("An error occurred while changing password.",
+                ShowMsg(T("An error occurred while changing password.",
                     "Ralat berlaku semasa menukar kata laluan."), false);
             }
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  FEEDBACK MESSAGE POPUP
-        // ══════════════════════════════════════════════════════════════
-        private void ShowFeedbackMessage(string messageText, bool isSuccess)
+        // --- Feedback Message ---
+        private void ShowMsg(string text, bool isSuccess)
         {
             pnlMessage.Visible = true;
-            divMsg.InnerHtml = messageText;
+            divMsg.InnerHtml = text;
             iMsgIcon.Attributes["class"] = isSuccess
                 ? "bi bi-check-circle-fill"
                 : "bi bi-exclamation-circle-fill";
@@ -482,9 +445,7 @@ namespace ScienceBuddy.Parent
             pnlMessage.Visible = false;
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  REPORT A PROBLEM (email to admin)
-        // ══════════════════════════════════════════════════════════════
+        // --- Report a Problem ---
 
         private static readonly string[] AllowedCategoryKeys = {
             "Account", "ChildLinking", "StudyPlan",
@@ -497,58 +458,78 @@ namespace ScienceBuddy.Parent
             pnlReportSuccess.Visible = false;
             pnlReportError.Visible = false;
 
-            string selectedCategoryKey = ddlReportCategory.SelectedValue;
+            string categoryKey = ddlReportCategory.SelectedValue;
             string categoryLabel = ddlReportCategory.SelectedItem != null
                 ? ddlReportCategory.SelectedItem.Text
                 : "";
-            string reportSubject = txtReportSubject.Text.Trim();
-            string reportMessage = txtReportMessage.Text.Trim();
+            string subject = txtReportSubject.Text.Trim();
+            string message = txtReportMessage.Text.Trim();
 
-            // Validate the category is one of the allowed internal keys
-            if (string.IsNullOrEmpty(selectedCategoryKey) ||
-                Array.IndexOf(AllowedCategoryKeys, selectedCategoryKey) < 0)
+            if (string.IsNullOrEmpty(categoryKey) ||
+                Array.IndexOf(AllowedCategoryKeys, categoryKey) < 0)
             {
                 ShowReportError(T("Please select an issue category.", "Sila pilih kategori isu."));
                 return;
             }
 
-            if (string.IsNullOrEmpty(reportSubject))
+            if (string.IsNullOrEmpty(subject))
             {
                 ShowReportError(T("Please enter a subject.", "Sila masukkan subjek."));
                 return;
             }
-            if (reportSubject.Length > 100)
+            if (subject.Length > 100)
             {
                 ShowReportError(T("Subject must not exceed 100 characters.",
                     "Subjek tidak boleh melebihi 100 aksara."));
                 return;
             }
 
-            if (string.IsNullOrEmpty(reportMessage))
+            if (string.IsNullOrEmpty(message))
             {
                 ShowReportError(T("Please enter a message.", "Sila masukkan mesej."));
                 return;
             }
-            if (reportMessage.Length > 1000)
+            if (message.Length > 1000)
             {
                 ShowReportError(T("Message must not exceed 1000 characters.",
                     "Mesej tidak boleh melebihi 1000 aksara."));
                 return;
             }
 
-            // Fetch parent name and email for the report body
-            string parentFullName = "";
-            string parentEmailAddress = "";
-            FetchParentContactDetails(out parentFullName, out parentEmailAddress);
+            // Get parent contact info for the email
+            string parentName = "";
+            string parentEmail = "";
+            try
+            {
+                const string sql = @"SELECT p.name, u.email 
+                    FROM dbo.[Parent] p 
+                    INNER JOIN dbo.[User] u ON p.userId = u.userId 
+                    WHERE p.parentId = @parentId";
 
-            // Sanitize subject to prevent email header injection
-            reportSubject = reportSubject.Replace("\r", "").Replace("\n", "");
+                using (var conn = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@parentId", _parentId);
+                    conn.Open();
 
-            // Send the report via SMTP
-            bool emailSent = SendReportEmail(categoryLabel, reportSubject, reportMessage,
-                parentFullName, parentEmailAddress);
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            parentName = reader["name"] != DBNull.Value ? reader["name"].ToString() : "";
+                            parentEmail = reader["email"] != DBNull.Value ? reader["email"].ToString() : "";
+                        }
+                    }
+                }
+            }
+            catch { }
 
-            if (emailSent)
+            // Prevent email header injection
+            subject = subject.Replace("\r", "").Replace("\n", "");
+
+            bool sent = SendEmail(categoryLabel, subject, message, parentName, parentEmail);
+
+            if (sent)
             {
                 ddlReportCategory.SelectedIndex = 0;
                 txtReportSubject.Text = "";
@@ -559,42 +540,7 @@ namespace ScienceBuddy.Parent
             }
         }
 
-        private void FetchParentContactDetails(out string name, out string email)
-        {
-            name = "";
-            email = "";
-
-            try
-            {
-                const string contactQuery = @"SELECT p.name, u.email 
-                    FROM dbo.[Parent] p 
-                    INNER JOIN dbo.[User] u ON p.userId = u.userId 
-                    WHERE p.parentId = @parentId";
-
-                using (var connection = new SqlConnection(DatabaseConnectionString))
-                using (var command = new SqlCommand(contactQuery, connection))
-                {
-                    command.Parameters.AddWithValue("@parentId", _parentRecordId);
-                    connection.Open();
-
-                    using (var reader = command.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            name = reader["name"] != DBNull.Value ? reader["name"].ToString() : "";
-                            email = reader["email"] != DBNull.Value ? reader["email"].ToString() : "";
-                        }
-                    }
-                }
-            }
-            catch { }
-        }
-
-        /// <summary>
-        /// Sends the problem report email using the same SMTP configuration
-        /// as the public Contact page. Returns true on success.
-        /// </summary>
-        private bool SendReportEmail(string categoryText, string subject, string message,
+        private bool SendEmail(string categoryText, string subject, string message,
             string parentName, string parentEmail)
         {
             try
@@ -604,7 +550,7 @@ namespace ScienceBuddy.Parent
                 string smtpUser = ConfigurationManager.AppSettings["SmtpUsername"] ?? "";
                 string smtpPass = ConfigurationManager.AppSettings["SmtpPassword"] ?? "";
                 bool smtpSsl = bool.Parse(ConfigurationManager.AppSettings["SmtpEnableSsl"] ?? "true");
-                string recipientAddress = ConfigurationManager.AppSettings["ContactRecipientEmail"]
+                string recipient = ConfigurationManager.AppSettings["ContactRecipientEmail"]
                     ?? "najihahazmi26@gmail.com";
 
                 if (string.IsNullOrEmpty(smtpUser) || string.IsNullOrEmpty(smtpPass))
@@ -617,28 +563,28 @@ namespace ScienceBuddy.Parent
                 string emailSubject = "[ScienceBuddy Parent Report] " + categoryText + " - " + subject;
                 string emailBody = string.Format(
                     "Parent Name: {0}\nParent userId: {1}\nParent Email: {2}\nCategory: {3}\nSubject: {4}\n\nMessage:\n{5}\n\nDate/Time: {6}",
-                    parentName, _authenticatedUserId, parentEmail, categoryText, subject, message,
+                    parentName, _userId, parentEmail, categoryText, subject, message,
                     DateTime.Now.ToString("dd MMM yyyy HH:mm:ss"));
 
-                using (var mailMessage = new MailMessage())
+                using (var mail = new MailMessage())
                 {
-                    mailMessage.From = new MailAddress(smtpUser, "ScienceBuddy Parent Report");
-                    mailMessage.To.Add(recipientAddress);
+                    mail.From = new MailAddress(smtpUser, "ScienceBuddy Parent Report");
+                    mail.To.Add(recipient);
 
                     if (!string.IsNullOrEmpty(parentEmail))
                     {
-                        mailMessage.ReplyToList.Add(new MailAddress(parentEmail, parentName));
+                        mail.ReplyToList.Add(new MailAddress(parentEmail, parentName));
                     }
 
-                    mailMessage.Subject = emailSubject;
-                    mailMessage.Body = emailBody;
-                    mailMessage.IsBodyHtml = false;
+                    mail.Subject = emailSubject;
+                    mail.Body = emailBody;
+                    mail.IsBodyHtml = false;
 
-                    using (var smtpClient = new SmtpClient(smtpHost, smtpPort))
+                    using (var smtp = new SmtpClient(smtpHost, smtpPort))
                     {
-                        smtpClient.Credentials = new NetworkCredential(smtpUser, smtpPass);
-                        smtpClient.EnableSsl = smtpSsl;
-                        smtpClient.Send(mailMessage);
+                        smtp.Credentials = new NetworkCredential(smtpUser, smtpPass);
+                        smtp.EnableSsl = smtpSsl;
+                        smtp.Send(mail);
                     }
                 }
 
@@ -652,21 +598,18 @@ namespace ScienceBuddy.Parent
             }
         }
 
-        private void ShowReportError(string errorText)
+        private void ShowReportError(string text)
         {
             pnlReportError.Visible = true;
-            litReportError.Text = errorText;
+            litReportError.Text = text;
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  SOFT DELETE ACCOUNT (mark as Deleted, log action, end session)
-        // ══════════════════════════════════════════════════════════════
+        // --- Soft Delete Account ---
 
         protected void BtnDeleteAccount_Click(object sender, EventArgs e)
         {
             pnlDeleteError.Visible = false;
 
-            // Confirmation checkbox must be ticked
             if (!chkDeleteConfirm.Checked)
             {
                 ShowDeleteError(T("Please tick the confirmation checkbox before deleting your account.",
@@ -674,22 +617,21 @@ namespace ScienceBuddy.Parent
                 return;
             }
 
-            // Optional reason with length cap
-            string deletionReason = txtDeleteReason.Text.Trim();
-            if (deletionReason.Length > 300)
+            string reason = txtDeleteReason.Text.Trim();
+            if (reason.Length > 300)
             {
                 ShowDeleteError(T("Reason must not exceed 300 characters.",
                     "Sebab tidak boleh melebihi 300 aksara."));
                 return;
             }
-            if (string.IsNullOrEmpty(deletionReason))
+            if (string.IsNullOrEmpty(reason))
             {
-                deletionReason = "Parent requested account deletion.";
+                reason = "Parent requested account deletion.";
             }
 
             // Security: only use session userId, never from query string or form
-            string sessionUserId = Session["userId"] != null ? Session["userId"].ToString() : "";
-            if (string.IsNullOrEmpty(sessionUserId) ||
+            string sessUserId = Session["userId"] != null ? Session["userId"].ToString() : "";
+            if (string.IsNullOrEmpty(sessUserId) ||
                 Session["role"] == null ||
                 Session["role"].ToString() != "Parent")
             {
@@ -700,22 +642,19 @@ namespace ScienceBuddy.Parent
 
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var conn = new SqlConnection(ConnStr))
                 {
-                    connection.Open();
+                    conn.Open();
 
-                    // Verify this account exists, is a parent, and is not already deleted
-                    string existingStatus = VerifyAccountBeforeDeletion(connection, sessionUserId);
-                    if (existingStatus == null)
+                    string status = CheckBeforeDelete(conn, sessUserId);
+                    if (status == null)
                     {
-                        return; // error already shown inside helper
+                        return;
                     }
 
-                    // Execute soft delete in a transaction
-                    PerformSoftDeleteTransaction(connection, sessionUserId, deletionReason);
+                    DoSoftDelete(conn, sessUserId, reason);
                 }
 
-                // End session and redirect to login
                 Session.Clear();
                 Session.Abandon();
                 Response.Redirect("~/Login.aspx?msg=accountDeleted", false);
@@ -728,18 +667,14 @@ namespace ScienceBuddy.Parent
             }
         }
 
-        /// <summary>
-        /// Checks that the parent account exists and is not already marked as Deleted.
-        /// Returns the current status string, or null if validation fails.
-        /// </summary>
-        private string VerifyAccountBeforeDeletion(SqlConnection connection, string userId)
+        private string CheckBeforeDelete(SqlConnection conn, string userId)
         {
-            using (var command = new SqlCommand(
+            using (var cmd = new SqlCommand(
                 "SELECT status FROM dbo.[User] WHERE userId = @userId AND role = 'Parent'",
-                connection))
+                conn))
             {
-                command.Parameters.AddWithValue("@userId", userId);
-                object result = command.ExecuteScalar();
+                cmd.Parameters.AddWithValue("@userId", userId);
+                object result = cmd.ExecuteScalar();
 
                 if (result == null || result == DBNull.Value)
                 {
@@ -759,39 +694,32 @@ namespace ScienceBuddy.Parent
             }
         }
 
-        /// <summary>
-        /// Updates User.status to 'Deleted' and inserts a UserStatusAction log entry
-        /// inside a single transaction to ensure atomicity.
-        /// </summary>
-        private void PerformSoftDeleteTransaction(SqlConnection connection,
-            string userId, string reason)
+        private void DoSoftDelete(SqlConnection conn, string userId, string reason)
         {
-            using (var transaction = connection.BeginTransaction())
+            using (var transaction = conn.BeginTransaction())
             {
                 try
                 {
-                    // Mark account as Deleted
-                    using (var command = new SqlCommand(
+                    using (var cmd = new SqlCommand(
                         "UPDATE dbo.[User] SET [status] = N'Deleted' WHERE userId = @userId AND [role] = N'Parent'",
-                        connection, transaction))
+                        conn, transaction))
                     {
-                        command.Parameters.AddWithValue("@userId", userId);
-                        command.ExecuteNonQuery();
+                        cmd.Parameters.AddWithValue("@userId", userId);
+                        cmd.ExecuteNonQuery();
                     }
 
-                    // Log this action in UserStatusAction table
-                    string actionId = GenerateNextStatusActionId(connection, transaction);
-                    using (var command = new SqlCommand(
+                    string actionId = GenActionId(conn, transaction);
+                    using (var cmd = new SqlCommand(
                         @"INSERT INTO dbo.[UserStatusAction]([actionId],[userId],[actionType],[reason],[actionDate],[performedBy])
                           VALUES(@actionId, @userId, N'Deleted', @reason, @actionDate, @performedBy)",
-                        connection, transaction))
+                        conn, transaction))
                     {
-                        command.Parameters.AddWithValue("@actionId", actionId);
-                        command.Parameters.AddWithValue("@userId", userId);
-                        command.Parameters.AddWithValue("@reason", reason);
-                        command.Parameters.AddWithValue("@actionDate", DateTime.Now);
-                        command.Parameters.AddWithValue("@performedBy", userId);
-                        command.ExecuteNonQuery();
+                        cmd.Parameters.AddWithValue("@actionId", actionId);
+                        cmd.Parameters.AddWithValue("@userId", userId);
+                        cmd.Parameters.AddWithValue("@reason", reason);
+                        cmd.Parameters.AddWithValue("@actionDate", DateTime.Now);
+                        cmd.Parameters.AddWithValue("@performedBy", userId);
+                        cmd.ExecuteNonQuery();
                     }
 
                     transaction.Commit();
@@ -804,70 +732,64 @@ namespace ScienceBuddy.Parent
             }
         }
 
-        /// <summary>
-        /// Generates the next sequential actionId for UserStatusAction using the USA prefix.
-        /// Handles both "USA" prefix (current standard) and legacy "US" prefix records.
-        /// </summary>
-        private string GenerateNextStatusActionId(SqlConnection connection, SqlTransaction transaction)
+        // Handles both "USA" prefix (current) and legacy "US" prefix
+        private string GenActionId(SqlConnection conn, SqlTransaction transaction)
         {
-            int nextSequenceNumber = 1;
+            int next = 1;
 
-            using (var command = new SqlCommand(
-                "SELECT MAX(actionId) FROM dbo.[UserStatusAction]", connection, transaction))
+            using (var cmd = new SqlCommand(
+                "SELECT MAX(actionId) FROM dbo.[UserStatusAction]", conn, transaction))
             {
-                object result = command.ExecuteScalar();
+                object result = cmd.ExecuteScalar();
 
                 if (result != null && result != DBNull.Value)
                 {
-                    string lastActionId = result.ToString();
+                    string lastId = result.ToString();
 
-                    if (lastActionId.StartsWith("USA") && lastActionId.Length > 3)
+                    if (lastId.StartsWith("USA") && lastId.Length > 3)
                     {
-                        int numericPart;
-                        if (int.TryParse(lastActionId.Substring(3), out numericPart))
+                        int num;
+                        if (int.TryParse(lastId.Substring(3), out num))
                         {
-                            nextSequenceNumber = numericPart + 1;
+                            next = num + 1;
                         }
                     }
-                    else if (lastActionId.StartsWith("US") && lastActionId.Length > 2)
+                    else if (lastId.StartsWith("US") && lastId.Length > 2)
                     {
-                        // Fallback for legacy records with shorter "US" prefix
-                        int numericPart;
-                        if (int.TryParse(lastActionId.Substring(2), out numericPart))
+                        int num;
+                        if (int.TryParse(lastId.Substring(2), out num))
                         {
-                            nextSequenceNumber = numericPart + 1;
+                            next = num + 1;
                         }
                     }
                 }
             }
 
-            return "USA" + nextSequenceNumber.ToString("D3");
+            return "USA" + next.ToString("D3");
         }
 
-        private void ShowDeleteError(string errorText)
+        private void ShowDeleteError(string text)
         {
             pnlDeleteError.Visible = true;
-            litDeleteError.Text = errorText;
+            litDeleteError.Text = text;
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  NOTIFICATION BADGE
-        // ══════════════════════════════════════════════════════════════
-        private void LoadUnreadNotificationBadge()
+        // --- Notification Badge ---
+        private void LoadUnreadBadge()
         {
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
-                using (var command = new SqlCommand(
+                using (var conn = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand(
                     "SELECT COUNT(*) FROM dbo.Notification WHERE toUserId = @userId AND isRead = 0",
-                    connection))
+                    conn))
                 {
-                    command.Parameters.AddWithValue("@userId", Session["userId"].ToString());
-                    connection.Open();
-                    int unreadCount = (int)command.ExecuteScalar();
+                    cmd.Parameters.AddWithValue("@userId", Session["userId"].ToString());
+                    conn.Open();
+                    int count = (int)cmd.ExecuteScalar();
 
-                    litUnreadBadge.Text = unreadCount > 0
-                        ? "<span class='pt-sidebar-badge'>" + unreadCount + "</span>"
+                    litUnreadBadge.Text = count > 0
+                        ? "<span class='pt-sidebar-badge'>" + count + "</span>"
                         : "";
                 }
             }

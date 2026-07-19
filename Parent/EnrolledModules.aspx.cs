@@ -9,7 +9,7 @@ namespace ScienceBuddy.Parent
 {
     public partial class EnrolledModules : Page
     {
-        private string DatabaseConnectionString =>
+        private string ConnStr =>
             ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
         protected string CurrentLanguage = "EN";
@@ -19,39 +19,38 @@ namespace ScienceBuddy.Parent
             return CurrentLanguage == "BM" ? bm : en;
         }
 
-        private string _authenticatedUserId = "";
-        private string _parentRecordId = "";
-        private string _viewedStudentId = "";
+        private string _userId = "";
+        private string _parentId = "";
+        private string _studentId = "";
 
-        // ══════════════════════════════════════════════════════════════
-        //  PAGE LIFECYCLE
-        // ══════════════════════════════════════════════════════════════
+        // --- Page Lifecycle ---
+
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!ValidateParentSession())
+            if (!CheckAuth())
             {
                 return;
             }
 
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
-            _authenticatedUserId = Session["userId"].ToString();
-            LoadLanguagePreference();
-            LoadParentRecordId();
-            ResolveActiveChild();
-            LoadUnreadNotificationBadge();
+            _userId = Session["userId"].ToString();
+            LoadLang();
+            LoadParentId();
+            LoadSelectedChild();
+            LoadUnreadBadge();
 
             if (!IsPostBack)
             {
-                PopulateSidebarChildDropdown();
-                DetermineAndRenderView();
+                LoadChildren();
+                RenderView();
             }
             else
             {
-                DetermineAndRenderView();
+                RenderView();
             }
         }
 
-        private bool ValidateParentSession()
+        private bool CheckAuth()
         {
             if (Session["userId"] == null || Session["role"] == null ||
                 Session["role"].ToString() != "Parent")
@@ -66,26 +65,23 @@ namespace ScienceBuddy.Parent
         protected void SidebarChildChanged(object sender, EventArgs e)
         {
             string selectedStudentId = ddlSidebarChild.SelectedValue;
-            if (!string.IsNullOrEmpty(selectedStudentId) && IsChildLinkedToParent(selectedStudentId))
+            if (!string.IsNullOrEmpty(selectedStudentId) && IsLinked(selectedStudentId))
             {
                 Session["selectedChildId"] = selectedStudentId;
-                _viewedStudentId = selectedStudentId;
+                _studentId = selectedStudentId;
             }
-            DetermineAndRenderView();
+            RenderView();
         }
 
-        /// <summary>
-        /// Routes to the appropriate view based on query string parameters.
-        /// Supports three navigation depths: all levels, level detail, and unit detail.
-        /// </summary>
-        private void DetermineAndRenderView()
+        // Routes to correct view based on query string (levels / level detail / unit detail)
+        private void RenderView()
         {
             pnlLevels.Visible = false;
             pnlLevelDetail.Visible = false;
             pnlUnitDetail.Visible = false;
             pnlNoChild.Visible = false;
 
-            if (string.IsNullOrEmpty(_viewedStudentId))
+            if (string.IsNullOrEmpty(_studentId))
             {
                 pnlNoChild.Visible = true;
                 return;
@@ -108,9 +104,8 @@ namespace ScienceBuddy.Parent
             }
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  ALL LEVELS VIEW
-        // ══════════════════════════════════════════════════════════════
+        // --- All Levels View ---
+
         private void RenderAllLevelsView()
         {
             pnlLevels.Visible = true;
@@ -122,7 +117,7 @@ namespace ScienceBuddy.Parent
 
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 {
                     connection.Open();
 
@@ -211,9 +206,8 @@ namespace ScienceBuddy.Parent
                   "Tahap ini belum dibuka oleh anak anda."));
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  LEVEL DETAIL VIEW
-        // ══════════════════════════════════════════════════════════════
+        // --- Level Detail View ---
+
         private void RenderLevelDetailView(string levelId)
         {
             if (!IsLevelAccessibleByChild(levelId))
@@ -240,7 +234,7 @@ namespace ScienceBuddy.Parent
                     levelDescriptionEN, levelDescriptionBM 
                     FROM dbo.[Level] WHERE levelId = @levelId";
 
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(heroQuery, connection))
                 {
                     command.Parameters.AddWithValue("@levelId", levelId);
@@ -282,7 +276,7 @@ namespace ScienceBuddy.Parent
                     unitDescriptionEN, unitDescriptionBM, orderNo 
                     FROM dbo.[Unit] WHERE levelId = @levelId ORDER BY orderNo";
 
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(unitsQuery, connection))
                 {
                     command.Parameters.AddWithValue("@levelId", levelId);
@@ -363,9 +357,8 @@ namespace ScienceBuddy.Parent
             }
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  UNIT DETAIL VIEW
-        // ══════════════════════════════════════════════════════════════
+        // --- Unit Detail View ---
+
         private void RenderUnitDetailView(string unitId, string levelId)
         {
             if (!IsLevelAccessibleByChild(levelId))
@@ -390,7 +383,7 @@ namespace ScienceBuddy.Parent
                     unitDescriptionEN, unitDescriptionBM 
                     FROM dbo.[Unit] WHERE unitId = @unitId";
 
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(unitHeroQuery, connection))
                 {
                     command.Parameters.AddWithValue("@unitId", unitId);
@@ -458,7 +451,7 @@ namespace ScienceBuddy.Parent
                     subtopicDescriptionEN, subtopicDescriptionBM 
                     FROM dbo.[Subtopic] WHERE unitId = @unitId ORDER BY subtopicId";
 
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(subtopicsQuery, connection))
                 {
                     command.Parameters.AddWithValue("@unitId", unitId);
@@ -508,7 +501,7 @@ namespace ScienceBuddy.Parent
                                 materialCount, T("Materials", "Bahan"));
                         }
 
-                        // Append quiz card at the end if quizzes exist for this unit
+                        // Show quiz card if quizzes exist for this unit
                         if (hasSubtopics && quizCountForUnit > 0)
                         {
                             subtopicsHtml.AppendFormat(@"<div class='pt-subtopic-card' style='--card-bg:#FCE4EC;'>
@@ -538,28 +531,22 @@ namespace ScienceBuddy.Parent
             }
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  DATA ACCESS HELPERS
-        // ══════════════════════════════════════════════════════════════
+        // --- Data Access Helpers ---
 
-        /// <summary>
-        /// Checks if a level is accessible by the child through either their current level
-        /// assignment or an active enrollment record.
-        /// </summary>
+        // Checks if level is at/below child's current level OR has active enrollment
         private bool IsLevelAccessibleByChild(string levelId)
         {
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 {
                     connection.Open();
 
-                    // Check if level is at or below child's current assigned level
                     using (var command = new SqlCommand(
                         "SELECT currentLevelId FROM dbo.[Student] WHERE studentId = @studentId",
                         connection))
                     {
-                        command.Parameters.AddWithValue("@studentId", _viewedStudentId);
+                        command.Parameters.AddWithValue("@studentId", _studentId);
                         var result = command.ExecuteScalar();
 
                         if (result != null && result != DBNull.Value)
@@ -572,12 +559,12 @@ namespace ScienceBuddy.Parent
                         }
                     }
 
-                    // Also check active enrollment as a fallback
+                    // Fallback: check active enrollment record
                     using (var command = new SqlCommand(
                         "SELECT COUNT(*) FROM dbo.[Enrollment] WHERE studentId = @studentId AND levelId = @levelId AND status = 'Active'",
                         connection))
                     {
-                        command.Parameters.AddWithValue("@studentId", _viewedStudentId);
+                        command.Parameters.AddWithValue("@studentId", _studentId);
                         command.Parameters.AddWithValue("@levelId", levelId);
                         return (int)command.ExecuteScalar() > 0;
                     }
@@ -593,7 +580,7 @@ namespace ScienceBuddy.Parent
         {
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(
                     "SELECT COUNT(*) FROM dbo.[Unit] WHERE levelId = @levelId", connection))
                 {
@@ -612,7 +599,7 @@ namespace ScienceBuddy.Parent
         {
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(
                     "SELECT COUNT(*) FROM dbo.[Subtopic] WHERE unitId = @unitId", connection))
                 {
@@ -631,7 +618,7 @@ namespace ScienceBuddy.Parent
         {
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(
                     @"SELECT COUNT(*) FROM dbo.[Lesson] l 
                     INNER JOIN dbo.[Subtopic] s ON l.subtopicId = s.subtopicId 
@@ -652,7 +639,7 @@ namespace ScienceBuddy.Parent
         {
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(
                     @"SELECT COUNT(*) FROM dbo.[LessonProgress] lp 
                     INNER JOIN dbo.[Lesson] l ON lp.lessonId = l.lessonId 
@@ -661,7 +648,7 @@ namespace ScienceBuddy.Parent
                     connection))
                 {
                     command.Parameters.AddWithValue("@unitId", unitId);
-                    command.Parameters.AddWithValue("@studentId", _viewedStudentId);
+                    command.Parameters.AddWithValue("@studentId", _studentId);
                     connection.Open();
                     return (int)command.ExecuteScalar();
                 }
@@ -676,7 +663,7 @@ namespace ScienceBuddy.Parent
         {
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(
                     "SELECT COUNT(*) FROM dbo.[Lesson] WHERE subtopicId = @subtopicId", connection))
                 {
@@ -695,7 +682,7 @@ namespace ScienceBuddy.Parent
         {
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(
                     "SELECT COUNT(*) FROM dbo.[Material] WHERE subtopicId = @subtopicId", connection))
                 {
@@ -714,7 +701,7 @@ namespace ScienceBuddy.Parent
         {
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(
                     "SELECT COUNT(*) FROM dbo.[Quiz] WHERE unitId = @unitId", connection))
                 {
@@ -729,10 +716,9 @@ namespace ScienceBuddy.Parent
             }
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  SHARED INFRASTRUCTURE
-        // ══════════════════════════════════════════════════════════════
-        private void LoadLanguagePreference()
+        // --- Shared Infrastructure ---
+
+        private void LoadLang()
         {
             string cachedLanguage = Session["preferredLanguage"] as string;
             if (!string.IsNullOrEmpty(cachedLanguage))
@@ -743,11 +729,11 @@ namespace ScienceBuddy.Parent
 
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(
                     "SELECT preferredLanguage FROM dbo.[User] WHERE userId = @userId", connection))
                 {
-                    command.Parameters.AddWithValue("@userId", _authenticatedUserId);
+                    command.Parameters.AddWithValue("@userId", _userId);
                     connection.Open();
                     var result = command.ExecuteScalar();
 
@@ -761,77 +747,79 @@ namespace ScienceBuddy.Parent
             catch { }
         }
 
-        private void LoadParentRecordId()
+        private void LoadParentId()
         {
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(
                     "SELECT parentId FROM dbo.[Parent] WHERE userId = @userId", connection))
                 {
-                    command.Parameters.AddWithValue("@userId", _authenticatedUserId);
+                    command.Parameters.AddWithValue("@userId", _userId);
                     connection.Open();
                     var result = command.ExecuteScalar();
 
                     if (result != null)
                     {
-                        _parentRecordId = result.ToString();
+                        _parentId = result.ToString();
                     }
                 }
             }
             catch { }
         }
 
-        private void ResolveActiveChild()
+        private void LoadSelectedChild()
         {
             string savedChildId = Session["selectedChildId"] as string;
-            if (!string.IsNullOrEmpty(savedChildId) && IsChildLinkedToParent(savedChildId))
+            if (!string.IsNullOrEmpty(savedChildId) && IsLinked(savedChildId))
             {
-                _viewedStudentId = savedChildId;
+                _studentId = savedChildId;
                 return;
             }
 
-            if (string.IsNullOrEmpty(_parentRecordId))
+            if (string.IsNullOrEmpty(_parentId))
             {
                 return;
             }
 
+            // Default to first linked child
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(
                     "SELECT TOP 1 studentId FROM dbo.[StudentParent] WHERE parentId = @parentId",
                     connection))
                 {
-                    command.Parameters.AddWithValue("@parentId", _parentRecordId);
+                    command.Parameters.AddWithValue("@parentId", _parentId);
                     connection.Open();
                     var result = command.ExecuteScalar();
 
                     if (result != null && result != DBNull.Value)
                     {
-                        _viewedStudentId = result.ToString();
-                        Session["selectedChildId"] = _viewedStudentId;
+                        _studentId = result.ToString();
+                        Session["selectedChildId"] = _studentId;
                     }
                 }
             }
             catch { }
         }
 
-        private bool IsChildLinkedToParent(string studentId)
+        // Security check: ensure child belongs to this parent
+        private bool IsLinked(string studentId)
         {
-            if (string.IsNullOrEmpty(_parentRecordId))
+            if (string.IsNullOrEmpty(_parentId))
             {
                 return false;
             }
 
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(
                     "SELECT COUNT(*) FROM dbo.[StudentParent] WHERE parentId = @parentId AND studentId = @studentId",
                     connection))
                 {
-                    command.Parameters.AddWithValue("@parentId", _parentRecordId);
+                    command.Parameters.AddWithValue("@parentId", _parentId);
                     command.Parameters.AddWithValue("@studentId", studentId);
                     connection.Open();
                     return (int)command.ExecuteScalar() > 0;
@@ -843,7 +831,7 @@ namespace ScienceBuddy.Parent
             }
         }
 
-        private void PopulateSidebarChildDropdown()
+        private void LoadChildren()
         {
             ddlSidebarChild.Items.Clear();
 
@@ -854,10 +842,10 @@ namespace ScienceBuddy.Parent
                     INNER JOIN dbo.Student s ON sp.studentId = s.studentId 
                     WHERE sp.parentId = @parentId ORDER BY s.name";
 
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(childListQuery, connection))
                 {
-                    command.Parameters.AddWithValue("@parentId", _parentRecordId);
+                    command.Parameters.AddWithValue("@parentId", _parentId);
                     connection.Open();
 
                     using (var reader = command.ExecuteReader())
@@ -875,24 +863,24 @@ namespace ScienceBuddy.Parent
 
             if (ddlSidebarChild.Items.Count > 0)
             {
-                if (!string.IsNullOrEmpty(_viewedStudentId) &&
-                    ddlSidebarChild.Items.FindByValue(_viewedStudentId) != null)
+                if (!string.IsNullOrEmpty(_studentId) &&
+                    ddlSidebarChild.Items.FindByValue(_studentId) != null)
                 {
-                    ddlSidebarChild.SelectedValue = _viewedStudentId;
+                    ddlSidebarChild.SelectedValue = _studentId;
                 }
             }
         }
 
-        private void LoadUnreadNotificationBadge()
+        private void LoadUnreadBadge()
         {
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(
                     "SELECT COUNT(*) FROM dbo.Notification WHERE toUserId = @userId AND isRead = 0",
                     connection))
                 {
-                    command.Parameters.AddWithValue("@userId", _authenticatedUserId);
+                    command.Parameters.AddWithValue("@userId", _userId);
                     connection.Open();
                     int unreadCount = (int)command.ExecuteScalar();
 
