@@ -18,12 +18,23 @@ namespace ScienceBuddy.Teacher
         protected global::System.Web.UI.WebControls.Literal litUnitAvg;
         protected global::System.Web.UI.WebControls.Literal litLevelAvg;
         protected global::System.Web.UI.WebControls.Repeater rptLessons;
+        protected global::System.Web.UI.WebControls.Panel pnlLessonTable;
+        protected global::System.Web.UI.WebControls.Panel pnlLessonEmpty;
         protected global::System.Web.UI.WebControls.Repeater rptUnitQuiz;
+        protected global::System.Web.UI.WebControls.Panel pnlUnitQuizTable;
+        protected global::System.Web.UI.WebControls.Panel pnlUnitQuizEmpty;
         protected global::System.Web.UI.WebControls.Repeater rptLevelQuiz;
+        protected global::System.Web.UI.WebControls.Panel pnlLevelQuizTable;
+        protected global::System.Web.UI.WebControls.Panel pnlLevelQuizEmpty;
         protected global::System.Web.UI.WebControls.Panel pnlWeakEmpty;
+        protected global::System.Web.UI.WebControls.Panel pnlWeakNoAttempts;
         protected global::System.Web.UI.WebControls.Repeater rptWeak;
         protected global::System.Web.UI.WebControls.Panel pnlCertEmpty;
         protected global::System.Web.UI.WebControls.Repeater rptCerts;
         protected global::System.Web.UI.WebControls.Literal litInsight;
+        protected global::System.Web.UI.WebControls.Literal litInsLessons;
+        protected global::System.Web.UI.WebControls.Literal litInsWeakUnit;
+        protected global::System.Web.UI.WebControls.Literal litInsWeakLevel;
+        protected global::System.Web.UI.WebControls.Literal litInsCerts;
     }
 }

@@ -51,13 +51,31 @@ namespace ScienceBuddy.Teacher
         protected global::System.Web.UI.WebControls.Literal litTeacherId;
 
         /// <summary>
-        /// litBioPreview control.
+        /// pnlAvatarVerified control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litBioPreview;
+        protected global::System.Web.UI.WebControls.Panel pnlAvatarVerified;
+
+        /// <summary>
+        /// litProfileStatus control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litProfileStatus;
+
+        /// <summary>
+        /// litMemberId control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litMemberId;
 
         /// <summary>
         /// litPct control.

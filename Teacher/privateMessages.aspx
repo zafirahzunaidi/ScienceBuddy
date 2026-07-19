@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="privateMessages.aspx.cs"
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="privateMessages.aspx.cs"
     Inherits="ScienceBuddy.Teacher.privateMessages" MasterPageFile="~/Site.Master"
     Title="Private Messages" %>
 
@@ -79,7 +79,7 @@
 .pm-mbtn-primary{background:linear-gradient(135deg,var(--tp),var(--tp2));border:none;border-radius:10px;padding:.5rem 1.25rem;font-weight:700;font-size:.82rem;color:#fff;cursor:pointer;transition:box-shadow .2s;}
 .pm-mbtn-primary:hover{box-shadow:0 4px 14px rgba(108,99,255,.3);}
 @media(max-width:768px){.pm-wrap{grid-template-columns:1fr;height:auto;}.pm-left{max-height:300px;}}
-/* Emoji picker — positioned relative to .pm-composer-bottom */
+/* Emoji picker � positioned relative to .pm-composer-bottom */
 .pm-emoji-picker{position:absolute;bottom:100%;left:46px;margin-bottom:6px;background:#fff;border:1.5px solid var(--tb);border-radius:12px;padding:.6rem;box-shadow:0 8px 24px rgba(0,0,0,.12);display:flex;flex-wrap:wrap;gap:4px;max-width:260px;z-index:200;}
 .pm-emoji-picker span{font-size:1.3rem;cursor:pointer;padding:4px 5px;border-radius:6px;transition:background .12s;line-height:1;}
 .pm-emoji-picker span:hover{background:#F3F4F6;}
@@ -99,7 +99,8 @@
 
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
     <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Main","Utama") %></div>
-        <a href="<%: ResolveUrl("~/Teacher/Dashboard.aspx") %>" class="sb-sidebar-item"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label"><%: T("Dashboard","Papan Pemuka") %></span></a></div>
+        <a href="<%: ResolveUrl("~/Teacher/Dashboard.aspx") %>" class="sb-sidebar-item"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label"><%: T("Dashboard","Papan Pemuka") %></span></a>
+        <a href="<%: ResolveUrl("~/Teacher/Notifications.aspx") %>" class="sb-sidebar-item"><i class="bi bi-bell item-icon"></i><span class="item-label"><%: T("Notifications","Notifikasi") %></span></a></div>
     <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Teaching","Pengajaran") %></div>
         <a href="<%: ResolveUrl("~/Teacher/manageMaterials.aspx") %>" class="sb-sidebar-item"><i class="bi bi-book item-icon"></i><span class="item-label"><%: T("Manage Materials","Bahan Pembelajaran") %></span></a>
         <a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx") %>" class="sb-sidebar-item"><i class="bi bi-patch-question item-icon"></i><span class="item-label"><%: T("Manage Quiz","Kuiz") %></span></a>
@@ -169,7 +170,7 @@
             <div style="display:flex;align-items:center;gap:8px;flex:1;">
                 <span style="font-size:.82rem;font-weight:700;color:var(--tm);"><%: T("To:","Kepada:") %></span>
                 <select id="ddlRecipientTypeClient" class="pm-compose-select" onchange="pmRecipientTypeChanged()">
-                    <option value="">— Type —</option>
+                    <option value="">� Type �</option>
                     <option value="Student">Student</option>
                     <option value="Parent">Parent</option>
                 </select>
@@ -208,7 +209,7 @@
             </div>
             <%-- Compose emoji picker --%>
             <div class="pm-emoji-picker" id="pmComposeEmojiPicker" style="display:none;">
-                <span onclick="pmComposeInsertEmoji('😀')">😀</span><span onclick="pmComposeInsertEmoji('😄')">😄</span><span onclick="pmComposeInsertEmoji('😂')">😂</span><span onclick="pmComposeInsertEmoji('😊')">😊</span><span onclick="pmComposeInsertEmoji('😍')">😍</span><span onclick="pmComposeInsertEmoji('😢')">😢</span><span onclick="pmComposeInsertEmoji('😭')">😭</span><span onclick="pmComposeInsertEmoji('👍')">👍</span><span onclick="pmComposeInsertEmoji('👏')">👏</span><span onclick="pmComposeInsertEmoji('🙏')">🙏</span><span onclick="pmComposeInsertEmoji('❤️')">❤️</span><span onclick="pmComposeInsertEmoji('🎉')">🎉</span><span onclick="pmComposeInsertEmoji('✅')">✅</span><span onclick="pmComposeInsertEmoji('🔥')">🔥</span><span onclick="pmComposeInsertEmoji('💯')">💯</span><span onclick="pmComposeInsertEmoji('😎')">😎</span><span onclick="pmComposeInsertEmoji('🤔')">🤔</span><span onclick="pmComposeInsertEmoji('👀')">👀</span>
+                <span onclick="pmComposeInsertEmoji('??')">??</span><span onclick="pmComposeInsertEmoji('??')">??</span><span onclick="pmComposeInsertEmoji('??')">??</span><span onclick="pmComposeInsertEmoji('??')">??</span><span onclick="pmComposeInsertEmoji('??')">??</span><span onclick="pmComposeInsertEmoji('??')">??</span><span onclick="pmComposeInsertEmoji('??')">??</span><span onclick="pmComposeInsertEmoji('??')">??</span><span onclick="pmComposeInsertEmoji('??')">??</span><span onclick="pmComposeInsertEmoji('??')">??</span><span onclick="pmComposeInsertEmoji('??')">??</span><span onclick="pmComposeInsertEmoji('??')">??</span><span onclick="pmComposeInsertEmoji('?')">?</span><span onclick="pmComposeInsertEmoji('??')">??</span><span onclick="pmComposeInsertEmoji('??')">??</span><span onclick="pmComposeInsertEmoji('??')">??</span><span onclick="pmComposeInsertEmoji('??')">??</span><span onclick="pmComposeInsertEmoji('??')">??</span>
             </div>
         </div>
     </asp:Panel>
@@ -226,7 +227,7 @@
                     <div class='pm-msg <%# Eval("isSent").ToString()=="True"?"sent":"received" %>'>
                         <div class="pm-bubble"><%# HttpUtility.HtmlEncode(Eval("msgText")) %></div>
                         <%# RenderAttachment(Eval("attachmentFile")?.ToString()) %>
-                        <div class="pm-msg-time"><%# Eval("timeStr") %><%# Convert.ToBoolean(Eval("isSent")) ? (Convert.ToBoolean(Eval("isRead")) ? "<span class='pm-tick read'>✓</span>" : "<span class='pm-tick sent'>✓</span>") : "" %></div>
+                        <div class="pm-msg-time"><%# Eval("timeStr") %><%# Convert.ToBoolean(Eval("isSent")) ? (Convert.ToBoolean(Eval("isRead")) ? "<span class='pm-tick read'>?</span>" : "<span class='pm-tick sent'>?</span>") : "" %></div>
                     </div>
                 </ItemTemplate>
             </asp:Repeater>
@@ -256,7 +257,7 @@
             </div>
             <%-- Emoji picker --%>
             <div class="pm-emoji-picker" id="pmEmojiPicker" style="display:none;">
-                <span onclick="pmInsertEmoji('😀')">😀</span><span onclick="pmInsertEmoji('😄')">😄</span><span onclick="pmInsertEmoji('😂')">😂</span><span onclick="pmInsertEmoji('😊')">😊</span><span onclick="pmInsertEmoji('😍')">😍</span><span onclick="pmInsertEmoji('😢')">😢</span><span onclick="pmInsertEmoji('😭')">😭</span><span onclick="pmInsertEmoji('👍')">👍</span><span onclick="pmInsertEmoji('👏')">👏</span><span onclick="pmInsertEmoji('🙏')">🙏</span><span onclick="pmInsertEmoji('❤️')">❤️</span><span onclick="pmInsertEmoji('🎉')">🎉</span><span onclick="pmInsertEmoji('✅')">✅</span><span onclick="pmInsertEmoji('🔥')">🔥</span><span onclick="pmInsertEmoji('💯')">💯</span><span onclick="pmInsertEmoji('😎')">😎</span><span onclick="pmInsertEmoji('🤔')">🤔</span><span onclick="pmInsertEmoji('👀')">👀</span>
+                <span onclick="pmInsertEmoji('??')">??</span><span onclick="pmInsertEmoji('??')">??</span><span onclick="pmInsertEmoji('??')">??</span><span onclick="pmInsertEmoji('??')">??</span><span onclick="pmInsertEmoji('??')">??</span><span onclick="pmInsertEmoji('??')">??</span><span onclick="pmInsertEmoji('??')">??</span><span onclick="pmInsertEmoji('??')">??</span><span onclick="pmInsertEmoji('??')">??</span><span onclick="pmInsertEmoji('??')">??</span><span onclick="pmInsertEmoji('??')">??</span><span onclick="pmInsertEmoji('??')">??</span><span onclick="pmInsertEmoji('?')">?</span><span onclick="pmInsertEmoji('??')">??</span><span onclick="pmInsertEmoji('??')">??</span><span onclick="pmInsertEmoji('??')">??</span><span onclick="pmInsertEmoji('??')">??</span><span onclick="pmInsertEmoji('??')">??</span>
             </div>
         </div>
     </asp:Panel>
@@ -273,7 +274,7 @@
 <script>
 window.addEventListener('load',function(){var m=document.getElementById('msgArea');if(m)m.scrollTop=m.scrollHeight;});
 
-/* ══ Client-side Search & Category Filter ══ */
+/* -- Client-side Search & Category Filter -- */
 var pmActiveTab = 'All';
 function pmSetTab(tab){
     pmActiveTab = tab;
@@ -335,7 +336,7 @@ function pmClearRightPanel(){
     }
 })();
 
-/* ══ Client-side Recipient Type Switching ══ */
+/* -- Client-side Recipient Type Switching -- */
 function pmRecipientTypeChanged(){
     var typeSelect = document.getElementById('ddlRecipientTypeClient');
     var recipientDdl = document.querySelector('[id$="ddlRecipient"]');
@@ -346,7 +347,7 @@ function pmRecipientTypeChanged(){
     if (hiddenTypeDdl) hiddenTypeDdl.value = selectedType;
 
     // Clear and repopulate recipient dropdown
-    recipientDdl.innerHTML = '<option value="">— Select Recipient —</option>';
+    recipientDdl.innerHTML = '<option value="">� Select Recipient �</option>';
     if (!selectedType) return;
 
     // Get recipients from hidden JSON field
@@ -364,7 +365,7 @@ function pmRecipientTypeChanged(){
     } catch(e){}
 }
 
-/* ── Emoji Picker ── */
+/* -- Emoji Picker -- */
 function pmToggleEmoji(){
     var p=document.getElementById('pmEmojiPicker');
     p.style.display=p.style.display==='none'?'flex':'none';
@@ -381,7 +382,7 @@ function pmInsertEmoji(em){
     ta.focus();
 }
 
-/* ── Compose Emoji Picker ── */
+/* -- Compose Emoji Picker -- */
 function pmComposeToggleEmoji(){
     var p=document.getElementById('pmComposeEmojiPicker');
     p.style.display=p.style.display==='none'?'flex':'none';
@@ -412,7 +413,7 @@ document.addEventListener('click',function(e){
     }
 });
 
-/* ── File Attachment Preview ── */
+/* -- File Attachment Preview -- */
 (function(){
     var fu=document.querySelector('[id$="fuAttachment"]');
     if(!fu)return;
@@ -447,7 +448,7 @@ function pmRemoveFile(){
     var icon=document.getElementById('pmFileIcon');if(icon)icon.style.display='';
 }
 
-/* ── Compose File Attachment Preview ── */
+/* -- Compose File Attachment Preview -- */
 (function(){
     var fu=document.querySelector('[id$="fuComposeAttachment"]');
     if(!fu)return;

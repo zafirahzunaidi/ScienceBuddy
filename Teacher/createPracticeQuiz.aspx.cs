@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.Web;
+using System.Web.Services;
 using System.Web.UI;
 
 namespace ScienceBuddy.Teacher
@@ -34,6 +36,11 @@ namespace ScienceBuddy.Teacher
             {
                 if (!AuthorizeTeacher()) return;
                 ValidateAndLoad();
+            }
+            else
+            {
+                // Keep main panel visible on postback so controls retain values
+                pnlMain.Visible = true;
             }
         }
 
@@ -223,6 +230,280 @@ namespace ScienceBuddy.Teacher
         {
             litInvalidMsg.Text = HttpUtility.HtmlEncode(message);
             pnlInvalid.Visible = true;
+        }
+
+        // ── Submit Practice Quiz ──────────────────────────────────────
+        protected void btnSubmitPQ_Click(object sender, EventArgs e)
+        {
+            string userId     = Session["userId"]?.ToString() ?? "";
+            string levelId    = hidLevelId.Value;
+            string unitId     = hidUnitId.Value;
+            string subtopicId = hidSubtopicId.Value;
+            string language   = hidLanguage.Value;
+            string quizTitle  = (hidQuizTitle.Value ?? "").Trim();
+            string questionsJson = hidQuestionsJson.Value ?? "[]";
+
+            if (string.IsNullOrEmpty(quizTitle) || string.IsNullOrEmpty(subtopicId) ||
+                string.IsNullOrEmpty(unitId) || string.IsNullOrEmpty(language))
+            {
+                ShowInvalid(T("Missing required data. Please try again.", "Data yang diperlukan tiada. Sila cuba lagi.")
+                    + " [DEBUG: title=" + (quizTitle ?? "NULL") + " sub=" + (subtopicId ?? "NULL") + " unit=" + (unitId ?? "NULL") + " lang=" + (language ?? "NULL") + "]");
+                return;
+            }
+
+            // Parse questions from JSON
+            System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, object>> questions;
+            try
+            {
+                questions = Newtonsoft.Json.JsonConvert.DeserializeObject<
+                    System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, object>>>(questionsJson);
+            }
+            catch
+            {
+                ShowInvalid(T("Invalid question data.", "Data soalan tidak sah."));
+                return;
+            }
+
+            if (questions == null || questions.Count == 0)
+            {
+                ShowInvalid(T("At least one question is required.", "Sekurang-kurangnya satu soalan diperlukan."));
+                return;
+            }
+
+            bool isEN = language == "EN";
+            string titleEN = isEN ? quizTitle : null;
+            string titleBM = isEN ? null : quizTitle;
+
+            using (var conn = new SqlConnection(ConnStr))
+            {
+                conn.Open();
+                using (var txn = conn.BeginTransaction())
+                {
+                    try
+                    {
+                        // Generate Quiz ID
+                        int maxQuizNum = 0;
+                        using (var cmd = new SqlCommand(
+                            "SELECT ISNULL(MAX(CAST(SUBSTRING([quizId],2,LEN([quizId])-1) AS INT)),0) FROM dbo.[Quiz] WHERE [quizId] LIKE 'Q%' AND ISNUMERIC(SUBSTRING([quizId],2,LEN([quizId])-1))=1",
+                            conn, txn))
+                        { maxQuizNum = Convert.ToInt32(cmd.ExecuteScalar()); }
+                        maxQuizNum++;
+                        string quizId = "Q" + maxQuizNum.ToString("D3");
+
+                        // Insert Quiz record
+                        const string quizSql = @"INSERT INTO dbo.[Quiz]
+                            ([quizId],[quizType],[quizTitleEN],[quizTitleBM],
+                             [unitId],[levelId],[language],
+                             [createdByUserId],[status],[createdAt])
+                            VALUES
+                            (@qid,'Practice',@tEN,@tBM,
+                             @uid,@lid,@lang,
+                             @userId,'Pending',GETDATE())";
+
+                        using (var cmd = new SqlCommand(quizSql, conn, txn))
+                        {
+                            cmd.Parameters.AddWithValue("@qid", quizId);
+                            cmd.Parameters.AddWithValue("@tEN", (object)titleEN ?? DBNull.Value);
+                            cmd.Parameters.AddWithValue("@tBM", (object)titleBM ?? DBNull.Value);
+                            cmd.Parameters.AddWithValue("@uid", unitId);
+                            cmd.Parameters.AddWithValue("@lid", levelId);
+                            cmd.Parameters.AddWithValue("@lang", language);
+                            cmd.Parameters.AddWithValue("@userId", userId);
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        // Generate Question IDs
+                        int maxQstNum = 0;
+                        using (var cmd = new SqlCommand(
+                            "SELECT ISNULL(MAX(CAST(SUBSTRING([questionId],4,LEN([questionId])-3) AS INT)),0) FROM dbo.[Question] WHERE [questionId] LIKE 'QST%'",
+                            conn, txn))
+                        { maxQstNum = Convert.ToInt32(cmd.ExecuteScalar()); }
+
+                        string qSuf = isEN ? "EN" : "BM";
+                        string otherSuf = isEN ? "BM" : "EN";
+
+                        foreach (var qDict in questions)
+                        {
+                            maxQstNum++;
+                            string qid = "QST" + maxQstNum.ToString("D3");
+
+                            string G(string key) { object v; return qDict.TryGetValue(key, out v) && v != null ? v.ToString() : ""; }
+                            string Nv(string s) { return string.IsNullOrWhiteSpace(s) ? null : s.Trim(); }
+
+                            string qType = G("type");
+                            if (string.IsNullOrEmpty(qType)) qType = "MCQ";
+                            // Normalize to English standard values
+                            switch (qType) { case "MCQ": case "True/False": case "Multiselect": case "Drag & Drop": break; default: qType = "MCQ"; break; }
+
+                            string difficulty = G("diff");
+                            switch (difficulty) { case "Easy": case "Medium": case "Hard": break; default: difficulty = "Medium"; break; }
+
+                            // Question text — stored in the content language slot
+                            string textContent = G("q" + qSuf);
+                            string textEN = isEN ? textContent : "";
+                            string textBM = isEN ? "" : textContent;
+
+                            // Options — resolve per type
+                            string aEN, aBM, bEN, bBM, cEN, cBM, dEN, dBM;
+                            if (qType == "Multiselect")
+                            {
+                                string msA = G("msA" + qSuf), msB = G("msB" + qSuf), msC = G("msC" + qSuf), msD = G("msD" + qSuf);
+                                if (isEN) { aEN = msA; bEN = msB; cEN = msC; dEN = msD; aBM = null; bBM = null; cBM = null; dBM = null; }
+                                else { aBM = msA; bBM = msB; cBM = msC; dBM = msD; aEN = null; bEN = null; cEN = null; dEN = null; }
+                            }
+                            else if (qType == "True/False")
+                            {
+                                aEN = "True"; aBM = "Betul"; bEN = "False"; bBM = "Salah";
+                                cEN = null; cBM = null; dEN = null; dBM = null;
+                            }
+                            else if (qType == "Drag & Drop")
+                            {
+                                string[] fib = new string[4];
+                                var fibKey = "fib" + qSuf;
+                                if (qDict.ContainsKey(fibKey) && qDict[fibKey] is Newtonsoft.Json.Linq.JArray jarr)
+                                {
+                                    for (int fi = 0; fi < Math.Min(4, jarr.Count); fi++)
+                                        fib[fi] = jarr[fi]?.ToString() ?? "";
+                                }
+                                if (isEN) { aEN = fib[0]; bEN = fib[1]; cEN = fib[2]; dEN = fib[3]; aBM = null; bBM = null; cBM = null; dBM = null; }
+                                else { aBM = fib[0]; bBM = fib[1]; cBM = fib[2]; dBM = fib[3]; aEN = null; bEN = null; cEN = null; dEN = null; }
+
+                                // Replace blank markers with _____
+                                var blankPattern = new System.Text.RegularExpressions.Regex(@"\[Blank \d+\]");
+                                textEN = blankPattern.Replace(textEN, "_____");
+                                textBM = blankPattern.Replace(textBM, "_____");
+                            }
+                            else // MCQ
+                            {
+                                string a = G("a" + qSuf), b = G("b" + qSuf), c = G("c" + qSuf), d = G("d" + qSuf);
+                                if (isEN) { aEN = a; bEN = b; cEN = c; dEN = d; aBM = null; bBM = null; cBM = null; dBM = null; }
+                                else { aBM = a; bBM = b; cBM = c; dBM = d; aEN = null; bEN = null; cEN = null; dEN = null; }
+                            }
+
+                            // Correct answer
+                            string correctAnswer = G("correct");
+                            if (qType == "Multiselect") correctAnswer = G("msChk");
+
+                            // Explanations
+                            string ceContent = G("ce" + qSuf), weContent = G("we" + qSuf);
+                            string ceEN = isEN ? ceContent : null;
+                            string ceBM = isEN ? null : ceContent;
+                            string weEN = isEN ? weContent : null;
+                            string weBM = isEN ? null : weContent;
+
+                            const string sql = @"INSERT INTO dbo.[Question]
+                                ([questionId],[quizId],[subtopicId],[createdByUserId],
+                                 [questionTextEN],[questionTextBM],[questionType],
+                                 [questionImageUrl],
+                                 [optionA_EN],[optionA_BM],[optionB_EN],[optionB_BM],
+                                 [optionC_EN],[optionC_BM],[optionD_EN],[optionD_BM],
+                                 [correctAnswer],
+                                 [correctExplanationEN],[correctExplanationBM],
+                                 [wrongExplanationEN],[wrongExplanationBM],
+                                 [difficulty],[status],[createdAt],[reviewedDate])
+                                VALUES
+                                (@qid,@quiz,@sub,@uid,
+                                 @tEN,@tBM,@type,
+                                 @imgUrl,
+                                 @aEN,@aBM,@bEN,@bBM,
+                                 @cEN,@cBM,@dEN,@dBM,
+                                 @ans,
+                                 @ceEN,@ceBM,
+                                 @weEN,@weBM,
+                                 @diff,'Pending',GETDATE(),NULL)";
+
+                            using (var cmd = new SqlCommand(sql, conn, txn))
+                            {
+                                cmd.Parameters.AddWithValue("@qid", qid);
+                                cmd.Parameters.AddWithValue("@quiz", quizId);
+                                cmd.Parameters.AddWithValue("@sub", subtopicId);
+                                cmd.Parameters.AddWithValue("@uid", userId);
+                                cmd.Parameters.AddWithValue("@tEN", (object)Nv(textEN) ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@tBM", (object)Nv(textBM) ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@type", qType);
+                                cmd.Parameters.AddWithValue("@imgUrl", DBNull.Value);
+                                cmd.Parameters.AddWithValue("@aEN", (object)Nv(aEN) ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@aBM", (object)Nv(aBM) ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@bEN", (object)Nv(bEN) ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@bBM", (object)Nv(bBM) ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@cEN", (object)Nv(cEN) ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@cBM", (object)Nv(cBM) ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@dEN", (object)Nv(dEN) ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@dBM", (object)Nv(dBM) ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@ans", (object)Nv(correctAnswer) ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@ceEN", (object)Nv(ceEN) ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@ceBM", (object)Nv(ceBM) ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@weEN", (object)Nv(weEN) ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@weBM", (object)Nv(weBM) ?? DBNull.Value);
+                                cmd.Parameters.AddWithValue("@diff", difficulty);
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+
+                        // Insert Log record (inside transaction — only persists if commit succeeds)
+                        int maxLogNum = 0;
+                        using (var logCmd = new SqlCommand(
+                            "SELECT ISNULL(MAX(CAST(SUBSTRING([logId],4,LEN([logId])-3) AS INT)),0) FROM dbo.[Log]",
+                            conn, txn))
+                        { maxLogNum = Convert.ToInt32(logCmd.ExecuteScalar()); }
+                        string logId = "LOG" + (maxLogNum + 1).ToString("D3");
+                        using (var logCmd = new SqlCommand(
+                            "INSERT INTO dbo.[Log]([logId],[userId],[action],[description],[logDateTime],[status]) VALUES(@id,@uid,@act,@desc,GETDATE(),'Success')",
+                            conn, txn))
+                        {
+                            logCmd.Parameters.AddWithValue("@id", logId);
+                            logCmd.Parameters.AddWithValue("@uid", userId);
+                            logCmd.Parameters.AddWithValue("@act", "Quiz Submitted");
+                            logCmd.Parameters.AddWithValue("@desc", "Submitted quiz " + quizId + " for review.");
+                            logCmd.ExecuteNonQuery();
+                        }
+
+                        txn.Commit();
+
+                        // Flag success for client-side toast + redirect
+                        hidSubmitSuccess.Value = "1";
+                    }
+                    catch (Exception ex)
+                    {
+                        txn.Rollback();
+                        System.Diagnostics.Debug.WriteLine("[PracticeQuiz Save Error] " + ex.ToString());
+                        ShowInvalid(T("The quiz could not be saved. Please try again.",
+                                      "Kuiz tidak dapat disimpan. Sila cuba lagi.") + " [DEBUG: " + ex.Message + "]");
+                    }
+                }
+            }
+        }
+
+        // ── WebMethod: Switch language without page reload ────────────
+        [WebMethod(EnableSession = true)]
+        public static object SetLanguage(string lang)
+        {
+            lang = (lang ?? "").Trim().ToUpper();
+            if (lang != "EN" && lang != "BM") lang = "EN";
+
+            HttpContext.Current.Session["preferredLanguage"] = lang;
+
+            string userId = HttpContext.Current.Session["userId"] as string;
+            if (!string.IsNullOrEmpty(userId))
+            {
+                try
+                {
+                    string connStr = ConfigurationManager
+                        .ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+                    const string sql = "UPDATE [User] SET preferredLanguage = @lang WHERE userId = @userId";
+                    using (var conn = new SqlConnection(connStr))
+                    using (var cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@lang", lang);
+                        cmd.Parameters.AddWithValue("@userId", userId);
+                        conn.Open();
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                catch (SqlException) { /* session already updated */ }
+            }
+
+            return new { ok = true, lang = lang };
         }
     }
 }

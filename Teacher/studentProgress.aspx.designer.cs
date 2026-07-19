@@ -11,8 +11,6 @@ namespace ScienceBuddy.Teacher
         protected global::System.Web.UI.WebControls.Panel pnlContent;
         protected global::System.Web.UI.WebControls.TextBox txtSearch;
         protected global::System.Web.UI.WebControls.DropDownList ddlSort;
-        protected global::System.Web.UI.WebControls.Button btnSearch;
-        protected global::System.Web.UI.WebControls.Button btnReset;
         protected global::System.Web.UI.WebControls.Panel pnlPodium;
         protected global::System.Web.UI.WebControls.Repeater rptPodium;
         protected global::System.Web.UI.WebControls.Panel pnlRankingEmpty;

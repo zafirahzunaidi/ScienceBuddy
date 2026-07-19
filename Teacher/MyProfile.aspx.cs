@@ -25,6 +25,21 @@ namespace ScienceBuddy.Teacher
             if (Session["userId"] == null || Session["role"]?.ToString() != "Teacher")
             { Response.Redirect("~/Login.aspx", false); Context.ApplicationInstance.CompleteRequest(); return; }
 
+            // AJAX handlers — use Response.End() to prevent page rendering
+            string handler = Request.QueryString["handler"];
+            if (!string.IsNullOrEmpty(handler))
+            {
+                try
+                {
+                    if (handler == "savelang") HandleSaveLanguage();
+                    else if (handler == "changepw") HandleChangePassword();
+                    else if (handler == "deleteaccount") HandleDeleteAccount();
+                    Response.End();
+                }
+                catch (System.Threading.ThreadAbortException) { /* Expected from Response.End */ }
+                return;
+            }
+
             var master = (ScienceBuddy.SiteMaster)Master;
             master.LayoutMode = "Sidebar";
 
@@ -74,14 +89,16 @@ namespace ScienceBuddy.Teacher
                         litInitials.Text = HttpUtility.HtmlEncode(initials);
                         litName.Text = HttpUtility.HtmlEncode(name);
                         litTeacherId.Text = HttpUtility.HtmlEncode(tid);
-                        litBioPreview.Text = HttpUtility.HtmlEncode(bio.Length > 100 ? bio.Substring(0, 100) + "…" : bio);
+                        litMemberId.Text = HttpUtility.HtmlEncode(tid);
 
                         // Status badge
                         string badgeCss = "mp-badge-grey", statusLabel = T("Status Unavailable","Status Tidak Tersedia");
-                        if (IsCertified) { badgeCss = "mp-badge-green"; statusLabel = T("Verified Educator","Pendidik Disahkan"); }
-                        else if (isPending) { badgeCss = "mp-badge-orange"; statusLabel = T("Unverified Teacher","Guru Belum Disahkan"); }
-                        else if (isRejected) { badgeCss = "mp-badge-red"; statusLabel = T("Verification Rejected","Pengesahan Ditolak"); }
-                        litStatusBadge.Text = "<span class='mp-badge " + badgeCss + "'><i class='bi bi-circle-fill' style='font-size:.5rem;'></i> " + HttpUtility.HtmlEncode(statusLabel) + "</span>";
+                        string profileStatusText = T("Active","Aktif");
+                        if (IsCertified) { badgeCss = "mp-badge-green"; statusLabel = T("Verified Educator","Pendidik Disahkan"); profileStatusText = T("Verified","Disahkan"); pnlAvatarVerified.Visible = true; }
+                        else if (isPending) { badgeCss = "mp-badge-orange"; statusLabel = T("Unverified Teacher","Guru Belum Disahkan"); profileStatusText = T("Pending","Menunggu"); }
+                        else if (isRejected) { badgeCss = "mp-badge-red"; statusLabel = T("Verification Rejected","Pengesahan Ditolak"); profileStatusText = T("Rejected","Ditolak"); }
+                        litStatusBadge.Text = "<span class='mp-badge " + badgeCss + "'><i class='bi bi-patch-check-fill' style='font-size:.7rem;'></i> " + HttpUtility.HtmlEncode(statusLabel) + "</span>";
+                        litProfileStatus.Text = HttpUtility.HtmlEncode(profileStatusText);
 
                         // Personal info
                         txtName.Text = name;
@@ -127,8 +144,8 @@ namespace ScienceBuddy.Teacher
                         if (!string.IsNullOrEmpty(cert)) filled++;
                         if (!string.IsNullOrEmpty(status)) filled++;
                         int pct = (int)Math.Round((double)filled / total * 100);
-                        litPct.Text = pct.ToString();
-                        litProgressMsg.Text = pct >= 80 ? T("Your profile looks great!", "Profil anda kelihatan hebat!") :
+                        if (litPct != null) litPct.Text = pct.ToString();
+                        if (litProgressMsg != null) litProgressMsg.Text = pct >= 80 ? T("Your profile looks great!", "Profil anda kelihatan hebat!") :
                             T("Complete your profile for a better experience.", "Lengkapkan profil anda untuk pengalaman yang lebih baik.");
 
                         // Button text
@@ -220,6 +237,130 @@ namespace ScienceBuddy.Teacher
             sb.AppendFormat(
                 "<li class=\"{0}\"><span class=\"mp-perm-ico\"><i class=\"{1}\"></i></span><span class=\"mp-perm-name\">{2}</span><span class=\"{3}\">{4}</span></li>",
                 liClass, icon, HttpUtility.HtmlEncode(name), statusCss, statusLabel);
+        }
+
+        private void HandleSaveLanguage()
+        {
+            Response.Clear(); Response.ContentType = "text/plain";
+            string lang = (Request.QueryString["lang"] ?? "EN").Trim();
+            if (lang != "EN" && lang != "BM") lang = "EN";
+            Session["preferredLanguage"] = lang;
+            try
+            {
+                string userId = Session["userId"]?.ToString() ?? "";
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand("UPDATE dbo.[User] SET [preferredLanguage]=@l WHERE [userId]=@uid", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@l", lang);
+                        cmd.Parameters.AddWithValue("@uid", userId);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                Response.Write("OK");
+            }
+            catch { Response.StatusCode = 500; Response.Write("Error"); }
+        }
+
+        private void HandleChangePassword()
+        {
+            Response.Clear(); Response.ContentType = "text/plain";
+            string userId = Session["userId"]?.ToString() ?? "";
+            string current = Request.Form["current"] ?? "";
+            string newPw = Request.Form["newpw"] ?? "";
+            if (string.IsNullOrEmpty(current) || string.IsNullOrEmpty(newPw) || newPw.Length < 6)
+            { Response.StatusCode = 400; Response.Write(T("Invalid input.", "Input tidak sah.")); return; }
+            try
+            {
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    // Verify current password
+                    string storedHash = "";
+                    using (var cmd = new SqlCommand("SELECT [password] FROM dbo.[User] WHERE [userId]=@uid", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@uid", userId);
+                        var result = cmd.ExecuteScalar();
+                        storedHash = result?.ToString() ?? "";
+                    }
+                    if (string.IsNullOrEmpty(storedHash) || !PasswordHelper.VerifyPassword(current, storedHash))
+                    { Response.StatusCode = 400; Response.Write(T("Current password is incorrect.", "Kata laluan semasa tidak betul.")); return; }
+                    // Update password with hash
+                    string newHash = PasswordHelper.HashPassword(newPw);
+                    using (var cmd2 = new SqlCommand("UPDATE dbo.[User] SET [password]=@pw WHERE [userId]=@uid", conn))
+                    {
+                        cmd2.Parameters.AddWithValue("@pw", newHash);
+                        cmd2.Parameters.AddWithValue("@uid", userId);
+                        cmd2.ExecuteNonQuery();
+                    }
+                    Response.Write("OK");
+                }
+            }
+            catch (Exception ex)
+            {
+                if (!(ex is System.Threading.ThreadAbortException))
+                { Response.StatusCode = 500; Response.Write(T("Error changing password.", "Ralat menukar kata laluan.")); }
+            }
+        }
+
+        private void HandleDeleteAccount()
+        {
+            Response.Clear(); Response.ContentType = "text/plain";
+            string userId = Session["userId"]?.ToString() ?? "";
+            if (string.IsNullOrEmpty(userId))
+            { Response.StatusCode = 400; Response.Write("Invalid session."); return; }
+
+            string reason = Request.Form["reason"] ?? "";
+            string detail = Request.Form["detail"] ?? "";
+            // Build description
+            string reasonText = reason;
+            if (reason == "other" && !string.IsNullOrEmpty(detail)) reasonText = detail;
+            else if (reason == "no_longer_use") reasonText = "I no longer use ScienceBuddy";
+            else if (reason == "another_account") reasonText = "I created another account";
+            else if (reason == "privacy") reasonText = "I have privacy concerns";
+            else if (reason == "technical") reasonText = "I am experiencing technical issues";
+            else if (reason == "not_meet_needs") reasonText = "The platform does not meet my needs";
+            string description = "Account deleted. Reason: " + reasonText;
+
+            try
+            {
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    using (var txn = conn.BeginTransaction())
+                    {
+                        try
+                        {
+                            // 1. Update user status to Deleted
+                            using (var cmd = new SqlCommand("UPDATE dbo.[User] SET [status]='Deleted' WHERE [userId]=@uid", conn, txn))
+                            {
+                                cmd.Parameters.AddWithValue("@uid", userId);
+                                cmd.ExecuteNonQuery();
+                            }
+                            // 2. Generate log ID and insert Log record
+                            string logId;
+                            using (var cmd2 = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING([logId],4,LEN([logId])-3) AS INT)),0) FROM dbo.[Log]", conn, txn))
+                            { logId = "LOG" + (Convert.ToInt32(cmd2.ExecuteScalar()) + 1).ToString("D3"); }
+                            using (var cmd3 = new SqlCommand(@"INSERT INTO dbo.[Log]([logId],[userId],[action],[description],[logDateTime],[status])
+                                VALUES(@id,@uid,@act,@desc,GETDATE(),'Success')", conn, txn))
+                            {
+                                cmd3.Parameters.AddWithValue("@id", logId);
+                                cmd3.Parameters.AddWithValue("@uid", userId);
+                                cmd3.Parameters.AddWithValue("@act", "Delete Account");
+                                cmd3.Parameters.AddWithValue("@desc", description);
+                                cmd3.ExecuteNonQuery();
+                            }
+                            txn.Commit();
+                        }
+                        catch { txn.Rollback(); throw; }
+                    }
+                }
+                Session.Clear();
+                Session.Abandon();
+                Response.Write("OK");
+            }
+            catch { Response.StatusCode = 500; Response.Write(T("Error deleting account.", "Ralat memadam akaun.")); }
         }
     }
 }

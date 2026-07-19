@@ -153,7 +153,8 @@
 
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
     <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Main","Utama") %></div>
-        <a href="<%: ResolveUrl("~/Teacher/Dashboard.aspx") %>" class="sb-sidebar-item"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label"><%: T("Dashboard","Papan Pemuka") %></span></a></div>
+        <a href="<%: ResolveUrl("~/Teacher/Dashboard.aspx") %>" class="sb-sidebar-item"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label"><%: T("Dashboard","Papan Pemuka") %></span></a>
+        <a href="<%: ResolveUrl("~/Teacher/Notifications.aspx") %>" class="sb-sidebar-item"><i class="bi bi-bell item-icon"></i><span class="item-label"><%: T("Notifications","Notifikasi") %></span></a></div>
     <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Teaching","Pengajaran") %></div>
         <a href="<%: ResolveUrl("~/Teacher/manageMaterials.aspx") %>" class="sb-sidebar-item"><i class="bi bi-book item-icon"></i><span class="item-label"><%: T("Manage Materials","Bahan Pembelajaran") %></span></a>
         <a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx") %>" class="sb-sidebar-item"><i class="bi bi-patch-question item-icon"></i><span class="item-label"><%: T("Manage Quiz","Kuiz") %></span></a>
@@ -279,7 +280,7 @@
                     </div>
                     <div class="ls-card-actions" style='<%# (bool)Eval("isCompleted") ? "" : "display:none;" %>'>
                         <button type="button" class="ls-view-summary" onclick="viewSessionSummary('<%# Eval("sessionId") %>')">
-                            <i class="bi bi-bar-chart-line"></i> <%: T("View Summary","Lihat Ringkasan") %> →
+                            <i class="bi bi-bar-chart-line"></i> <%: T("View Summary","Lihat Ringkasan") %> ?
                         </button>
                     </div>
                 </div>
@@ -375,6 +376,7 @@
                 <div class="ls-field"><label class="ls-label"><%: T("Start Time","Masa Mula") %> <span style="color:var(--te);">*</span></label><asp:TextBox ID="txtStart" runat="server" CssClass="ls-input" TextMode="Time" /><div class="ls-field-error" id="errSchStart">Please select a start time.</div></div>
                 <div class="ls-field"><label class="ls-label"><%: T("End Time","Masa Tamat") %> <span style="color:var(--te);">*</span></label><asp:TextBox ID="txtEnd" runat="server" CssClass="ls-input" TextMode="Time" /><div class="ls-field-error" id="errSchEnd">Please select an end time.</div></div>
             </div>
+            <div class="ls-field-error" id="errSchDuration" style="margin-top:-0.5rem;margin-bottom:.75rem;"></div>
             <div class="ls-field"><label class="ls-label"><%: T("Unit","Unit") %> <span style="color:var(--te);">*</span></label><asp:DropDownList ID="ddlUnit" runat="server" CssClass="ls-input" /><div class="ls-field-error" id="errSchUnit">Please select a unit.</div></div>
             <div class="ls-field"><label class="ls-label"><%: T("Subtopic","Subtopik") %> <span style="color:var(--te);">*</span></label><asp:DropDownList ID="ddlSubtopic" runat="server" CssClass="ls-input" /><div class="ls-field-error" id="errSchSub">Please select a subtopic.</div></div>
             <div class="ls-field"><label class="ls-label"><%: T("Description","Penerangan") %></label><asp:TextBox ID="txtDesc" runat="server" CssClass="ls-input" TextMode="MultiLine" Rows="2" /></div>
@@ -432,9 +434,10 @@
                     </asp:Repeater>
                 </div>
             </asp:Panel>
-            <asp:Panel ID="pnlSumNoParticipants" runat="server" style="display:none;">
+            <asp:Panel ID="pnlSumNoParticipants" runat="server" Visible="false">
                 <div class="ls-sum-no-parts"><%: T("No students attended this live session.","Tiada pelajar menghadiri sesi langsung ini.") %></div>
             </asp:Panel>
+            <div class="ls-sum-no-parts" id="lsSumNoPartsJs" style="display:none;"><%: T("No students attended this live session.","Tiada pelajar menghadiri sesi langsung ini.") %></div>
         </div>
     </div>
     <div class="ls-summary-ftr">
@@ -488,7 +491,7 @@ window.addEventListener('load',function(){
         for(var i=0;i<cards.length;i++){cards[i].classList.add('ls-disabled');cards[i].removeAttribute('onclick');}
     }
 
-    // Unit → Subtopic dependency for Schedule modal
+    // Unit ? Subtopic dependency for Schedule modal
     var ddlUnitEl=document.getElementById('<%=ddlUnit.ClientID%>');
     var ddlSubEl=document.getElementById('<%=ddlSubtopic.ClientID%>');
     if(ddlUnitEl&&ddlSubEl){
@@ -499,7 +502,7 @@ window.addEventListener('load',function(){
             ddlSubEl.innerHTML='';
             if(!unitId){
                 ddlSubEl.disabled=true;
-                var opt=document.createElement('option');opt.value='';opt.textContent='— Select Unit First —';ddlSubEl.appendChild(opt);
+                var opt=document.createElement('option');opt.value='';opt.textContent='-- Select Unit First --';ddlSubEl.appendChild(opt);
                 return;
             }
             ddlSubEl.disabled=false;
@@ -508,7 +511,7 @@ window.addEventListener('load',function(){
             .then(function(r){return r.json();})
             .then(function(data){
                 ddlSubEl.innerHTML='';
-                var def=document.createElement('option');def.value='';def.textContent='— Select Subtopic —';ddlSubEl.appendChild(def);
+                var def=document.createElement('option');def.value='';def.textContent='-- Select Subtopic --';ddlSubEl.appendChild(def);
                 for(var i=0;i<data.length;i++){
                     var o=document.createElement('option');o.value=data[i].id;o.textContent=data[i].name;ddlSubEl.appendChild(o);
                 }
@@ -520,7 +523,7 @@ window.addEventListener('load',function(){
         });
     }
 
-    // Unit → Subtopic dependency for Instant modal
+    // Unit ? Subtopic dependency for Instant modal
     var ddlInstUnitEl=document.getElementById('<%=ddlInstantUnit.ClientID%>');
     var ddlInstSubEl=document.getElementById('<%=ddlInstantSubtopic.ClientID%>');
     if(ddlInstUnitEl&&ddlInstSubEl){
@@ -530,7 +533,7 @@ window.addEventListener('load',function(){
             ddlInstSubEl.innerHTML='';
             if(!unitId){
                 ddlInstSubEl.disabled=true;
-                var opt=document.createElement('option');opt.value='';opt.textContent='— Select Unit First —';ddlInstSubEl.appendChild(opt);
+                var opt=document.createElement('option');opt.value='';opt.textContent='-- Select Unit First --';ddlInstSubEl.appendChild(opt);
                 return;
             }
             ddlInstSubEl.disabled=false;
@@ -539,7 +542,7 @@ window.addEventListener('load',function(){
             .then(function(r){return r.json();})
             .then(function(data){
                 ddlInstSubEl.innerHTML='';
-                var def=document.createElement('option');def.value='';def.textContent='— Select Subtopic —';ddlInstSubEl.appendChild(def);
+                var def=document.createElement('option');def.value='';def.textContent='-- Select Subtopic --';ddlInstSubEl.appendChild(def);
                 for(var i=0;i<data.length;i++){
                     var o=document.createElement('option');o.value=data[i].id;o.textContent=data[i].name;ddlInstSubEl.appendChild(o);
                 }
@@ -560,7 +563,7 @@ window.addEventListener('load',function(){
 
 });
 
-/* ── Summary panel close ── */
+/* -- Summary panel close -- */
 function closeLsSummary(){
     var p=document.getElementById('lsSummaryPanel');
     var o=document.getElementById('lsSummaryOverlay');
@@ -572,7 +575,7 @@ function closeLsSummary(){
     }
 }
 
-/* ── View Summary from History (AJAX) ── */
+/* -- View Summary from History (AJAX) -- */
 function viewSessionSummary(sessionId){
     fetch(window.location.pathname+'?handler=sessionSummary&id='+encodeURIComponent(sessionId))
     .then(function(r){return r.json();})
@@ -590,7 +593,7 @@ function viewSessionSummary(sessionId){
         if(studEl)studEl.textContent=data.studentCount.toString();
         // Participants
         var listEl=document.querySelector('#lsSummaryPanel .ls-sum-parts-list');
-        var noPartsEl=document.querySelector('#lsSummaryPanel .ls-sum-no-parts');
+        var noPartsEl=document.getElementById('lsSumNoPartsJs');
         if(listEl){
             if(data.participants.length>0){
                 var html='';
@@ -599,10 +602,10 @@ function viewSessionSummary(sessionId){
                 }
                 listEl.innerHTML=html;
                 listEl.parentElement.style.display='';
-                if(noPartsEl)noPartsEl.parentElement.style.display='none';
+                if(noPartsEl)noPartsEl.style.display='none';
             }else{
                 listEl.parentElement.style.display='none';
-                if(noPartsEl)noPartsEl.parentElement.style.display='';
+                if(noPartsEl)noPartsEl.style.display='';
             }
         }
         // Show modal
@@ -615,7 +618,11 @@ function viewSessionSummary(sessionId){
 }
 function escHtml(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 
-/* ── Client-side validation ── */
+/* -- Client-side validation -- */
+var __LS_MIN_DURATION=<%= MinSessionDuration %>;
+var __LS_LANG='<%= CurrentLanguage %>';
+function _lsT(en,bm){return __LS_LANG==='BM'?bm:en;}
+
 function validateScheduleForm(){
     // Enable disabled dropdowns before validation so their values can be read
     var subEl=document.getElementById('<%=ddlSubtopic.ClientID%>');
@@ -633,6 +640,28 @@ function validateScheduleForm(){
         var errEl=document.getElementById(f.err);
         if(!val){valid=false;if(errEl)errEl.classList.add('show');if(f.el)f.el.classList.add('invalid');}
         else{if(errEl)errEl.classList.remove('show');if(f.el)f.el.classList.remove('invalid');}
+    }
+    /* Duration validation (CONFIG014) */
+    var durErr=document.getElementById('errSchDuration');
+    if(durErr)durErr.classList.remove('show');
+    if(valid){
+        var dateVal=document.getElementById('<%=txtDate.ClientID%>').value;
+        var startVal=document.getElementById('<%=txtStart.ClientID%>').value;
+        var endVal=document.getElementById('<%=txtEnd.ClientID%>').value;
+        if(dateVal&&startVal&&endVal){
+            var startDt=new Date(dateVal+'T'+startVal);
+            var endDt=new Date(dateVal+'T'+endVal);
+            var diffMin=(endDt-startDt)/(1000*60);
+            if(diffMin<__LS_MIN_DURATION){
+                valid=false;
+                if(durErr){
+                    durErr.textContent=_lsT(
+                        'The live session duration must be at least '+__LS_MIN_DURATION+' minutes.',
+                        'Tempoh sesi langsung mestilah sekurang-kurangnya '+__LS_MIN_DURATION+' minit.');
+                    durErr.classList.add('show');
+                }
+            }
+        }
     }
     var gen=document.getElementById('errSchGeneral');
     if(gen)gen.style.display='none';
@@ -666,8 +695,21 @@ document.addEventListener('input',function(e){
     if(el.value.trim()){el.classList.remove('invalid');var p=el.parentElement;var err=p?p.querySelector('.ls-field-error'):null;if(err)err.classList.remove('show');}
 });
 document.addEventListener('change',function(e){
-    var el=e.target;if(!el.classList.contains('invalid'))return;
-    if(el.value.trim()){el.classList.remove('invalid');var p=el.parentElement;var err=p?p.querySelector('.ls-field-error'):null;if(err)err.classList.remove('show');}
+    var el=e.target;
+    if(el.classList.contains('invalid')&&el.value.trim()){el.classList.remove('invalid');var p=el.parentElement;var err=p?p.querySelector('.ls-field-error'):null;if(err)err.classList.remove('show');}
+    /* Auto-clear duration error when start/end time changes */
+    var startEl=document.getElementById('<%=txtStart.ClientID%>');
+    var endEl=document.getElementById('<%=txtEnd.ClientID%>');
+    var dateEl=document.getElementById('<%=txtDate.ClientID%>');
+    if(el===startEl||el===endEl||el===dateEl){
+        var durErr=document.getElementById('errSchDuration');
+        if(durErr&&startEl&&endEl&&dateEl&&startEl.value&&endEl.value&&dateEl.value){
+            var s=new Date(dateEl.value+'T'+startEl.value);
+            var en=new Date(dateEl.value+'T'+endEl.value);
+            var diff=(en-s)/(1000*60);
+            if(diff>=__LS_MIN_DURATION)durErr.classList.remove('show');
+        }
+    }
 });
 
 </script>

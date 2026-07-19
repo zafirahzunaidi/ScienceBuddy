@@ -1,21 +1,21 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Forum.aspx.cs"
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Forum.aspx.cs"
     Inherits="ScienceBuddy.Teacher.Forum" MasterPageFile="~/Site.Master" Title="Forum" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
 <style>
-/* ── CSS variables ── */
+/* -- CSS variables -- */
 :root {
     --tp:#6C63FF; --th:#5A52E0; --tl:#F5F3FF;
     --tc:#FFF;    --tb:#E5E7EB; --tt:#374151;
     --tm:#6B7280; --ts:#10B981; --te:#EF4444;
 }
 
-/* ── Page header ── */
+/* -- Page header -- */
 .fr-header { margin-bottom: 1.75rem; }
 .fr-header h1 { font-size: 1.5rem; font-weight: 800; color: var(--tt); margin: 0 0 .25rem; }
 .fr-header p  { font-size: .85rem; color: var(--tm); margin: 0; line-height: 1.5; }
 
-/* ── Toolbar ── */
+/* -- Toolbar -- */
 .fr-toolbar {
     display: flex; align-items: center; gap: 10px;
     margin-bottom: 1.5rem; flex-wrap: wrap;
@@ -60,10 +60,10 @@
 }
 .fr-search-btn:hover { border-color: var(--tp); color: var(--tp); }
 
-/* ── Cards container ── */
+/* -- Cards container -- */
 .fr-cards { display: flex; flex-direction: column; gap: 1rem; }
 
-/* ── Forum card ── */
+/* -- Forum card -- */
 .fr-card {
     background: var(--tc); border: 1.5px solid var(--tb);
     border-radius: 16px; padding: 1.25rem 1.5rem;
@@ -118,7 +118,7 @@
     display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2;
     -webkit-box-orient: vertical; overflow: hidden;
 }
-/* Card footer – left stats, right button */
+/* Card footer � left stats, right button */
 .fr-card-footer {
     display: flex; align-items: center;
     justify-content: space-between;
@@ -149,7 +149,7 @@
 }
 .fr-view-btn i { font-size: .8rem; }
 
-/* ── Empty states ── */
+/* -- Empty states -- */
 .fr-empty {
     display: flex; flex-direction: column; align-items: center;
     text-align: center; padding: 3.5rem 2rem;
@@ -178,7 +178,7 @@
 }
 .fr-reset-link:hover { color: var(--th); }
 
-/* ── New Post Modal ── */
+/* -- New Post Modal -- */
 .fr-modal-overlay {
     position: fixed; inset: 0;
     background: rgba(17,24,39,.55);
@@ -233,7 +233,7 @@
 }
 .fr-btn-post:hover { background: var(--th); }
 
-/* ── Toast ── */
+/* -- Toast -- */
 .fr-toast-wrap { position: fixed; top: 1.25rem; right: 1.25rem; z-index: 9999; }
 .fr-toast {
     background: var(--ts); color: #fff;
@@ -244,7 +244,7 @@
     animation: frFadeUp .3s ease;
 }
 
-/* ── Responsive ── */
+/* -- Responsive -- */
 @media (max-width: 640px) {
     .fr-toolbar { flex-direction: column; align-items: stretch; }
     .fr-search-wrap { max-width: 100%; }
@@ -252,7 +252,7 @@
     .fr-card-footer { flex-direction: column; align-items: flex-start; }
     .fr-view-btn { width: 100%; justify-content: center; }
 }
-/* ── Pending License Notice ── */
+/* -- Pending License Notice -- */
 .fr-pending-notice{display:flex;align-items:flex-start;gap:.75rem;padding:.85rem 1.1rem;margin-bottom:1.25rem;background:#FEF2F2;border:1.5px solid #FECACA;border-left:4px solid #DC2626;border-radius:10px;}
 .fr-pending-notice-icon{flex-shrink:0;width:32px;height:32px;border-radius:8px;background:#FEE2E2;color:#DC2626;display:flex;align-items:center;justify-content:center;font-size:1rem;}
 .fr-pending-notice-content{flex:1;min-width:0;}
@@ -263,10 +263,11 @@
 </style>
 </asp:Content>
 
-<%-- ════ SIDEBAR ════ --%>
+<%-- ---- SIDEBAR ---- --%>
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
     <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Main","Utama") %></div>
-        <a href="<%: ResolveUrl("~/Teacher/Dashboard.aspx") %>" class="sb-sidebar-item"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label"><%: T("Dashboard","Papan Pemuka") %></span></a></div>
+        <a href="<%: ResolveUrl("~/Teacher/Dashboard.aspx") %>" class="sb-sidebar-item"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label"><%: T("Dashboard","Papan Pemuka") %></span></a>
+        <a href="<%: ResolveUrl("~/Teacher/Notifications.aspx") %>" class="sb-sidebar-item"><i class="bi bi-bell item-icon"></i><span class="item-label"><%: T("Notifications","Notifikasi") %></span></a></div>
     <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Teaching","Pengajaran") %></div>
         <a href="<%: ResolveUrl("~/Teacher/manageMaterials.aspx") %>" class="sb-sidebar-item"><i class="bi bi-book item-icon"></i><span class="item-label"><%: T("Manage Materials","Bahan Pembelajaran") %></span></a>
         <a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx") %>" class="sb-sidebar-item"><i class="bi bi-patch-question item-icon"></i><span class="item-label"><%: T("Manage Quiz","Kuiz") %></span></a>
@@ -282,7 +283,7 @@
 
 <asp:Content ID="cPageTitle" ContentPlaceHolderID="PageTitle" runat="server"><%: T("Forum","Forum") %></asp:Content>
 
-<%-- ════ MAIN CONTENT ════ --%>
+<%-- ---- MAIN CONTENT ---- --%>
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 <asp:HiddenField ID="hidLicenseStatus" runat="server" Value="" />
 
@@ -367,7 +368,7 @@
 <div class="fr-toast-wrap" id="frToastWrap"></div>
 </asp:Content>
 
-<%-- ════ SCRIPTS ════ --%>
+<%-- ---- SCRIPTS ---- --%>
 <asp:Content ID="cScripts" ContentPlaceHolderID="ScriptsContent" runat="server">
 <script>
 // Search on Enter key

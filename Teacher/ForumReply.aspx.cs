@@ -276,6 +276,34 @@ namespace ScienceBuddy.Teacher
                     { cmd.Parameters.AddWithValue("@id", newId); cmd.Parameters.AddWithValue("@fid", forumId); cmd.Parameters.AddWithValue("@uid", userId); cmd.Parameters.AddWithValue("@msg", replyText); cmd.ExecuteNonQuery(); }
                     txn.Commit();
                 }
+
+                // Notify the original forum creator (if not the same as the replier)
+                try
+                {
+                    string creatorId = null;
+                    using (var cmd = new SqlCommand("SELECT [createdBy] FROM dbo.[Forum] WHERE [forumId]=@fid", conn))
+                    { cmd.Parameters.AddWithValue("@fid", forumId); creatorId = cmd.ExecuteScalar()?.ToString(); }
+
+                    if (!string.IsNullOrEmpty(creatorId) && creatorId != userId)
+                    {
+                        int maxN = 0;
+                        using (var cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING([notificationId],2,LEN([notificationId])-1) AS INT)),0) FROM dbo.[Notification]", conn))
+                        { maxN = Convert.ToInt32(cmd.ExecuteScalar()); }
+                        string nid = "N" + (maxN + 1).ToString("D3");
+
+                        using (var cmd = new SqlCommand("INSERT INTO dbo.[Notification]([notificationId],[toUserId],[titleEN],[titleBM],[messageEN],[messageBM],[isRead],[createdAt]) VALUES(@id,@uid,@tEN,@tBM,@mEN,@mBM,0,GETDATE())", conn))
+                        {
+                            cmd.Parameters.AddWithValue("@id", nid);
+                            cmd.Parameters.AddWithValue("@uid", creatorId);
+                            cmd.Parameters.AddWithValue("@tEN", "New Forum Reply");
+                            cmd.Parameters.AddWithValue("@tBM", "Balasan Forum Baharu");
+                            cmd.Parameters.AddWithValue("@mEN", "Your forum discussion has received a new reply.");
+                            cmd.Parameters.AddWithValue("@mBM", "Perbincangan forum anda telah menerima balasan baharu.");
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+                catch { /* Notification failure is non-critical */ }
             }
             txtReply.Text  = "";
             hidToast.Value = T("Reply posted successfully.", "Balasan berjaya dihantar.");

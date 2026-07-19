@@ -33,9 +33,6 @@ namespace ScienceBuddy.Teacher
 
             if (!IsPostBack)
             {
-                txtSearch.Attributes["placeholder"] = T("Search student name...", "Cari nama pelajar...");
-                btnSearch.Text = T("Search", "Cari");
-                btnReset.Text = T("Reset", "Set Semula");
                 ddlSort.Items.Clear();
                 ddlSort.Items.Add(new ListItem(T("Default","Lalai"), ""));
                 ddlSort.Items.Add(new ListItem("A-Z", "az"));
@@ -66,9 +63,6 @@ namespace ScienceBuddy.Teacher
             }
             catch { return ""; }
         }
-
-        protected void btnSearch_Click(object sender, EventArgs e) { LoadPodium(); LoadTable(txtSearch.Text.Trim()); }
-        protected void btnReset_Click(object sender, EventArgs e) { txtSearch.Text = ""; ddlSort.SelectedIndex = 0; LoadPodium(); LoadTable(""); }
 
         private List<RankItem> FetchStudents(string search)
         {

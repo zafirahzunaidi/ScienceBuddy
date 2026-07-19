@@ -15,6 +15,30 @@ namespace ScienceBuddy.Teacher
         protected string T(string en, string bm) { return CurrentLanguage == "BM" ? bm : en; }
         private string ConnStr => ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
+        protected int MinSessionDuration
+        {
+            get
+            {
+                if (ViewState["_minDur"] != null) return (int)ViewState["_minDur"];
+                int val = 30; // fallback default
+                try
+                {
+                    using (var conn = new SqlConnection(ConnStr))
+                    {
+                        conn.Open();
+                        using (var cmd = new SqlCommand("SELECT [configValue] FROM dbo.[ConfigurationSetting] WHERE [configId]='CONFIG014'", conn))
+                        {
+                            var r = cmd.ExecuteScalar();
+                            if (r != null && r != DBNull.Value) int.TryParse(r.ToString(), out val);
+                        }
+                    }
+                }
+                catch { }
+                ViewState["_minDur"] = val;
+                return val;
+            }
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["userId"] == null || Session["role"]?.ToString() != "Teacher")
@@ -575,6 +599,41 @@ namespace ScienceBuddy.Teacher
                     cmd.ExecuteNonQuery();
                 }
 
+                // Send notification to all active Students
+                try
+                {
+                    int maxNotifNum = 0;
+                    using (var cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING([notificationId],2,LEN([notificationId])-1) AS INT)),0) FROM dbo.[Notification]", conn))
+                    { maxNotifNum = Convert.ToInt32(cmd.ExecuteScalar()); }
+
+                    string msgEN = "A live session titled \"" + title + "\" has started. Join now.";
+                    string msgBM = "Sesi langsung bertajuk \"" + title + "\" telah bermula. Sertai sekarang.";
+
+                    using (var cmd = new SqlCommand("SELECT u.[userId] FROM dbo.[User] u INNER JOIN dbo.[Student] s ON s.[userId]=u.[userId] WHERE u.[status]='Active'", conn))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        var studentIds = new List<string>();
+                        while (reader.Read()) studentIds.Add(reader["userId"].ToString());
+                        reader.Close();
+
+                        foreach (var studentUserId in studentIds)
+                        {
+                            maxNotifNum++;
+                            string nid = "N" + maxNotifNum.ToString("D3");
+                            using (var ins = new SqlCommand("INSERT INTO dbo.[Notification]([notificationId],[toUserId],[titleEN],[titleBM],[messageEN],[messageBM],[isRead],[createdAt]) VALUES(@id,@uid,@tEN,@tBM,@mEN,@mBM,0,GETDATE())", conn))
+                            {
+                                ins.Parameters.AddWithValue("@id", nid);
+                                ins.Parameters.AddWithValue("@uid", studentUserId);
+                                ins.Parameters.AddWithValue("@tEN", "Live Session Started");
+                                ins.Parameters.AddWithValue("@tBM", "Sesi Langsung Telah Bermula");
+                                ins.Parameters.AddWithValue("@mEN", msgEN);
+                                ins.Parameters.AddWithValue("@mBM", msgBM);
+                                ins.ExecuteNonQuery();
+                            }
+                        }
+                    }
+                }
+                catch { /* Notification failure is non-critical */ }
             }
 
             txtInstantTitle.Text = ""; txtInstantDesc.Text = "";
@@ -638,6 +697,43 @@ namespace ScienceBuddy.Teacher
                     cmd.Parameters.AddWithValue("@status", "Upcoming");
                     cmd.ExecuteNonQuery();
                 }
+
+                // Send notification to all active Students
+                try
+                {
+                    int maxNotifNum = 0;
+                    using (var cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING([notificationId],2,LEN([notificationId])-1) AS INT)),0) FROM dbo.[Notification]", conn))
+                    { maxNotifNum = Convert.ToInt32(cmd.ExecuteScalar()); }
+
+                    string dateTimeStr = startDt.ToString("dd MMM yyyy, hh:mm tt");
+                    string msgEN = "A new live session titled \"" + title + "\" has been scheduled for " + dateTimeStr + ".";
+                    string msgBM = "Sesi langsung baharu bertajuk \"" + title + "\" telah dijadualkan pada " + dateTimeStr + ".";
+
+                    using (var cmd = new SqlCommand("SELECT u.[userId] FROM dbo.[User] u INNER JOIN dbo.[Student] s ON s.[userId]=u.[userId] WHERE u.[status]='Active'", conn))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        var studentIds = new System.Collections.Generic.List<string>();
+                        while (reader.Read()) studentIds.Add(reader["userId"].ToString());
+                        reader.Close();
+
+                        foreach (var studentUserId in studentIds)
+                        {
+                            maxNotifNum++;
+                            string nid = "N" + maxNotifNum.ToString("D3");
+                            using (var ins = new SqlCommand("INSERT INTO dbo.[Notification]([notificationId],[toUserId],[titleEN],[titleBM],[messageEN],[messageBM],[isRead],[createdAt]) VALUES(@id,@uid,@tEN,@tBM,@mEN,@mBM,0,GETDATE())", conn))
+                            {
+                                ins.Parameters.AddWithValue("@id", nid);
+                                ins.Parameters.AddWithValue("@uid", studentUserId);
+                                ins.Parameters.AddWithValue("@tEN", "Upcoming Live Session");
+                                ins.Parameters.AddWithValue("@tBM", "Sesi Langsung Akan Datang");
+                                ins.Parameters.AddWithValue("@mEN", msgEN);
+                                ins.Parameters.AddWithValue("@mBM", msgBM);
+                                ins.ExecuteNonQuery();
+                            }
+                        }
+                    }
+                }
+                catch { /* Notification failure is non-critical */ }
             }
             hidToast.Value = T("Live class scheduled successfully!", "Kelas langsung berjaya dijadualkan!");
             txtTitle.Text = ""; txtDate.Text = ""; txtStart.Text = ""; txtEnd.Text = ""; txtDesc.Text = "";

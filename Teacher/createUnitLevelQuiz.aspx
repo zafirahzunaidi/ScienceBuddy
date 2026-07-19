@@ -4,24 +4,24 @@
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
 <style>
-/* ═══ DESIGN TOKENS — Purple/Blue Premium Theme ══════════ */
+/* --- DESIGN TOKENS � Purple/Blue Premium Theme ---------- */
 :root{
   --tc-primary:#6D5EF7;--tc-hover:#5B47F5;--tc-light-bg:#F6F4FF;
   --tc-card-bg:#FFF;--tc-border:#E4E0FC;--tc-text:#1E1B3A;
   --tc-muted:#7B7499;--tc-error:#E53E5E;--tc-success:#22C27A;
   --tc-accent:#4F8CFF;--tc-purple-soft:#EEF2FF;
 }
-/* ═══ LAYOUT ══════════════════════════════════════════════ */
+/* --- LAYOUT ---------------------------------------------- */
 .qb-layout{display:grid;grid-template-columns:220px 1fr 260px;gap:1.5rem;min-height:75vh;align-items:start;}
 
 
-/* ═══ PROGRESS BAR ════════════════════════════════════════ */
+/* --- PROGRESS BAR ---------------------------------------- */
 .qb-progress{background:#fff;border:1.5px solid var(--tc-border);border-radius:18px;padding:1.1rem 1.6rem;margin-bottom:1.5rem;box-shadow:0 2px 12px rgba(109,94,247,.06);display:flex;align-items:center;gap:1.25rem;}
 .qb-progress-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#B8B0FA,#9B8FF5);display:flex;align-items:center;justify-content:center;font-size:1rem;color:#fff;flex-shrink:0;}
 .qb-progress-bar{flex:1;height:10px;background:#ECEAFC;border-radius:20px;overflow:hidden;}
 .qb-progress-fill{height:100%;background:linear-gradient(90deg,#6D5EF7,#4F8CFF);border-radius:20px;transition:width .5s cubic-bezier(.4,0,.2,1);}
 .qb-progress-text{font-size:.82rem;font-weight:700;color:var(--tc-text);white-space:nowrap;letter-spacing:.01em;}
-/* ═══ LEFT NAV — Question Navigator ══════════════════════ */
+/* --- LEFT NAV � Question Navigator ---------------------- */
 .qb-nav{
   background:#fff;border:1.5px solid var(--tc-border);border-radius:20px;
   padding:0;box-shadow:0 4px 20px rgba(109,94,247,.08);overflow:hidden;
@@ -142,8 +142,8 @@
 }
 .qb-del-btn-confirm:hover{background:#C02050;box-shadow:0 5px 16px rgba(229,62,94,.32);}
 
-/* ── Submit success modal ────────────────────────────── */
-/* ── Unsaved Changes modal ───────────────────────────── */
+/* -- Submit success modal ------------------------------ */
+/* -- Unsaved Changes modal ----------------------------- */
 .qb-unsaved-overlay{position:fixed;inset:0;background:rgba(30,27,58,.50);z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s;}
 .qb-unsaved-overlay.open{opacity:1;pointer-events:all;}
 .qb-unsaved-modal{background:#fff;border-radius:20px;padding:2rem;width:380px;max-width:90vw;box-shadow:0 20px 60px rgba(109,94,247,.18);transform:translateY(10px) scale(.97);transition:transform .22s;}
@@ -156,7 +156,7 @@
 .qb-unsaved-cancel:hover{border-color:var(--tc-primary);color:var(--tc-primary);}
 .qb-unsaved-confirm{flex:1;padding:.65rem;border-radius:11px;border:none;background:#DC2626;color:#fff;font-size:.84rem;font-weight:700;cursor:pointer;transition:all .18s;box-shadow:0 3px 10px rgba(220,38,38,.22);}
 .qb-unsaved-confirm:hover{background:#B91C1C;box-shadow:0 5px 16px rgba(220,38,38,.32);}
-/* ── Submit success modal ────────────────────────────── */
+/* -- Submit success modal ------------------------------ */
 .qb-success-overlay{
   position:fixed;inset:0;background:rgba(30,27,58,.55);z-index:9998;
   display:flex;align-items:center;justify-content:center;
@@ -180,11 +180,11 @@
 .qb-success-modal h3{font-size:1.1rem;font-weight:800;color:var(--tc-text);margin:0 0 .6rem;}
 .qb-success-modal p{font-size:.88rem;color:var(--tc-muted);margin:0;line-height:1.65;}
 
-/* ═══ CENTER EDITOR CARD ══════════════════════════════════ */
+/* --- CENTER EDITOR CARD ---------------------------------- */
 .qb-center{background:#fff;border:1.5px solid var(--tc-border);border-radius:22px;padding:0;box-shadow:0 6px 32px rgba(109,94,247,.09);display:flex;flex-direction:column;min-height:580px;overflow:hidden;}
 
 .qb-header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 2rem;background:linear-gradient(135deg,#F6F4FF,#EEF2FF);border-bottom:2px solid #EDEAFC;}
-/* ── Compact Toolbar ── */
+/* -- Compact Toolbar -- */
 .qb-toolbar{display:flex;align-items:center;justify-content:space-between;padding:.85rem 1.75rem;background:linear-gradient(135deg,#F6F4FF,#EEF2FF);border-bottom:none;border-radius:22px 22px 0 0;gap:.75rem;flex-wrap:wrap;}
 .qb-toolbar-nav{display:flex;align-items:center;gap:10px;}
 .qb-toolbar-arrow{width:34px;height:34px;border-radius:10px;border:1.5px solid var(--tc-border);background:#fff;display:flex;align-items:center;justify-content:center;font-size:1rem;color:var(--tc-primary);cursor:pointer;transition:all .18s;}
@@ -207,7 +207,7 @@
 
 .qb-question-hero{background:linear-gradient(145deg,#F8F6FF,#F0EEFF);border:2px solid #D8D2F8;border-radius:18px;padding:0;margin-bottom:1.4rem;overflow:hidden;transition:border-color .2s,box-shadow .2s;}
 .qb-question-hero:focus-within{border-color:var(--tc-primary);box-shadow:0 0 0 4px rgba(109,94,247,.10);}
-/* ── Rich Text Editor ─────────────────────────────────── */
+/* -- Rich Text Editor ----------------------------------- */
 .qb-rte-wrap{border:1.5px solid var(--tc-border);border-radius:14px;overflow:hidden;background:#fff;transition:border-color .2s,box-shadow .2s;}
 .qb-rte-wrap:focus-within{border-color:var(--tc-primary);box-shadow:0 0 0 3px rgba(109,94,247,.10);}
 .qb-rte-toolbar{display:flex;align-items:center;gap:2px;padding:6px 10px;background:#F9F8FF;border-bottom:1.5px solid var(--tc-border);}
@@ -232,7 +232,7 @@
 .qb-question-hero textarea.qb-input{border:none;border-radius:0;background:transparent;padding:1rem 1.1rem;font-size:.96rem;font-weight:500;line-height:1.7;min-height:110px;resize:vertical;box-shadow:none;}
 .qb-question-hero textarea.qb-input:focus{border:none;box-shadow:none;outline:none;}
 
-/* ── Question Image Upload ─────────────────────────────── */
+/* -- Question Image Upload ------------------------------- */
 .qb-img-zone{border:2px dashed #C8C2F8;border-radius:14px;background:#F8F6FF;margin-bottom:1.4rem;transition:border-color .2s,background .2s;overflow:hidden;}
 .qb-img-upload{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:1.4rem 1rem;cursor:pointer;}
 .qb-img-upload:hover,.qb-img-zone:hover{border-color:var(--tc-primary);}
@@ -246,14 +246,14 @@
 .qb-img-remove{position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;border:none;background:rgba(0,0,0,.55);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.75rem;cursor:pointer;transition:background .18s;}
 .qb-img-remove:hover{background:rgba(229,62,94,.85);}
 
-/* ── Section divider header ────────────────────────────── */
+/* -- Section divider header ------------------------------ */
 .qb-section-header{display:flex;align-items:center;gap:10px;margin-bottom:1rem;margin-top:.25rem;}
 .qb-section-header-icon{width:28px;height:28px;border-radius:8px;background:#F0EEFF;border:1.5px solid #C8C2F8;display:flex;align-items:center;justify-content:center;font-size:.85rem;color:var(--tc-primary);flex-shrink:0;}
 .qb-section-header-text{font-size:.92rem;font-weight:800;color:var(--tc-text);letter-spacing:.01em;}
 .qb-section-header-sub{font-size:.71rem;color:var(--tc-muted);font-weight:500;margin-left:auto;}
 .qb-section-divider{flex:1;height:1.5px;background:linear-gradient(90deg,#D8D2F8,transparent);margin-left:6px;}
 
-/* ═══ FIELDS ══════════════════════════════════════════════ */
+/* --- FIELDS ---------------------------------------------- */
 .qb-field{margin-bottom:1.4rem;position:relative;}
 .qb-label{font-size:.88rem;font-weight:800;color:var(--tc-text);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;letter-spacing:.01em;}
 .qb-input{width:100%;border-radius:14px;border:1.5px solid var(--tc-border);padding:.75rem 1rem;font-size:.88rem;transition:all .2s;background:#fff;color:var(--tc-text);}
@@ -262,7 +262,7 @@
 .qb-textarea{min-height:90px;resize:vertical;line-height:1.65;}
 .qb-char-count{font-size:.68rem;color:var(--tc-muted);font-weight:600;background:#F0EEFF;padding:2px 8px;border-radius:6px;text-transform:none;letter-spacing:0;}
 
-/* ═══ MCQ OPTIONS — Premium cards ════════════════════════ */
+/* --- MCQ OPTIONS � Premium cards ------------------------ */
 .qb-opts{display:grid;grid-template-columns:1fr 1fr;gap:.85rem;margin-bottom:1.4rem;}
 .qb-opt{display:flex;align-items:stretch;gap:0;border-radius:16px;border:2px solid var(--tc-border);transition:all .25s cubic-bezier(.4,0,.2,1);position:relative;background:#fff;overflow:hidden;cursor:text;min-height:64px;}
 .qb-opt-band{width:52px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.05rem;font-weight:900;color:#fff;letter-spacing:.02em;transition:filter .2s;user-select:none;}
@@ -305,7 +305,7 @@
   content:'\2713';color:#fff;font-size:.75rem;font-weight:900;
 }
 
-/* ═══ EXPLANATION CONTAINERS ══════════════════════════════ */
+/* --- EXPLANATION CONTAINERS ------------------------------ */
 .qb-exp-block{border-radius:16px;overflow:hidden;margin-bottom:1.25rem;}
 .qb-exp-block-header{display:flex;align-items:center;gap:10px;padding:.7rem 1.1rem;}
 .qb-exp-block-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;}
@@ -325,7 +325,7 @@
 .qb-exp-wrong .qb-exp-block-count{background:#FAC8D4;color:#7A0A22;}
 .qb-exp-wrong textarea.qb-input{background:transparent;border:none;border-radius:0;padding:.85rem 1.1rem;box-shadow:none;min-height:80px;font-size:.88rem;line-height:1.65;}
 .qb-exp-wrong textarea.qb-input:focus{border:none;box-shadow:none;outline:none;}
-/* ═══ ACTIONS BAR ═════════════════════════════════════════ */
+/* --- ACTIONS BAR ----------------------------------------- */
 .qb-actions{display:flex;gap:.85rem;margin-top:auto;padding:1.25rem 2rem 1.5rem;border-top:1.5px solid #EDEAFC;flex-wrap:wrap;align-items:center;background:linear-gradient(135deg,#FAFAFF,#F6F4FF);}
 .qb-btn{padding:.65rem 1.35rem;border-radius:14px;font-size:.84rem;font-weight:700;cursor:pointer;border:none;transition:all .22s;display:inline-flex;align-items:center;gap:7px;letter-spacing:.01em;}
 .qb-btn:hover{transform:translateY(-2px);}
@@ -336,7 +336,7 @@
 .qb-btn-success{background:linear-gradient(135deg,#22C27A,#14A860);color:#fff;box-shadow:0 3px 12px rgba(34,194,122,.22);}
 .qb-btn-success:hover{background:linear-gradient(135deg,#14A860,#0A8A50);box-shadow:0 6px 20px rgba(34,194,122,.32);}
 
-/* ═══ RIGHT PROPS PANEL — Settings Card ══════════════════ */
+/* --- RIGHT PROPS PANEL � Settings Card ------------------ */
 .qb-props{background:#fff;border:1.5px solid var(--tc-border);border-radius:20px;padding:0;box-shadow:0 4px 20px rgba(109,94,247,.08);overflow:hidden;}
 .qb-props-header{padding:1rem 1.2rem .85rem;border-bottom:1.5px solid #EDEAFC;background:linear-gradient(135deg,#F6F4FF,#EEF2FF);display:flex;align-items:center;gap:9px;}
 .qb-props-header-icon{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#C8C2F8,#A8A0F5);display:flex;align-items:center;justify-content:center;font-size:.8rem;color:#fff;flex-shrink:0;}
@@ -352,13 +352,13 @@
 .qb-prop-subtopic-val{font-size:.82rem;font-weight:600;color:var(--tc-text);padding:.55rem .85rem;background:#F6F4FF;border-radius:10px;border:1.5px solid #D8D2F8;line-height:1.45;}
 .qb-prop-diff-wrap{position:relative;}
 .qb-prop-diff-wrap select.qb-input{padding-right:2.5rem;}
-/* ═══ SAVE STATUS ═════════════════════════════════════════ */
+/* --- SAVE STATUS ----------------------------------------- */
 .qb-save-status{display:flex;align-items:center;gap:9px;padding:.7rem 1.1rem;border-radius:12px;font-size:.79rem;font-weight:700;margin-bottom:1.1rem;background:#FEF8E6;color:#8A5E00;border:1.5px solid #F0D88A;transition:all .3s;}
 .qb-save-status.ready{background:#EDFBF4;color:#0E6840;border-color:#90DFB8;}
-/* ═══ ANSWER SECTION TRANSITIONS ═════════════════════════ */
+/* --- ANSWER SECTION TRANSITIONS ------------------------- */
 .qb-answer-section{animation:qbFadeIn .25s ease;}
 @keyframes qbFadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-/* ═══ TRUE / FALSE ════════════════════════════════════════ */
+/* --- TRUE / FALSE ---------------------------------------- */
 .qb-tf-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;margin-bottom:1.4rem;}
 .qb-tf-card{display:flex;flex-direction:column;align-items:center;gap:10px;padding:2rem 1rem;border-radius:18px;border:2px solid var(--tc-border);cursor:pointer;transition:all .25s;text-align:center;background:#fff;}
 .qb-tf-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(109,94,247,.10);}
@@ -367,11 +367,11 @@
 .qb-tf-card span{font-size:1rem;font-weight:800;color:var(--tc-text);}
 .qb-tf-card.selected{border-color:var(--tc-primary);background:#F0EEFF;box-shadow:0 8px 24px rgba(109,94,247,.18);}
 .qb-tf-card.selected i{color:var(--tc-primary);}
-/* ═══ MULTISELECT ═════════════════════════════════════════ */
+/* --- MULTISELECT ----------------------------------------- */
 .qb-ms-opt.selected{border-color:var(--tc-success)!important;background:#EDFBF4;box-shadow:0 4px 14px rgba(34,194,122,.10);}
 .qb-ms-count{font-size:.72rem;font-weight:700;color:var(--tc-primary);background:#F0EEFF;padding:3px 9px;border-radius:7px;margin-left:8px;}
 
-/* ═══ FILL IN THE BLANK ═══════════════════════════════════ */
+/* --- FILL IN THE BLANK ----------------------------------- */
 .fib-add-row{display:flex;align-items:center;gap:12px;margin-bottom:.85rem;}
 /* FIB Instruction Card */
 .fib-instruction-card{display:flex;align-items:flex-start;gap:10px;padding:.75rem 1rem;margin-bottom:1.1rem;background:#FFFBEB;border:1.5px solid #FDE68A;border-left:4px solid #D97706;border-radius:10px;}
@@ -413,57 +413,59 @@
 .qb-fib-chip:hover{transform:translateY(-1px);box-shadow:0 4px 10px rgba(109,94,247,.14);}
 .qb-fib-hint{font-size:.77rem;color:var(--tc-muted);display:flex;align-items:flex-start;gap:6px;padding:.7rem .9rem;background:#F6F4FF;border-radius:11px;margin-top:1.3rem;line-height:1.55;}
 
-/* ═══ MISC ════════════════════════════════════════════════ */
+/* --- MISC ------------------------------------------------ */
 .qb-msg{padding:.8rem 1.1rem;border-radius:12px;margin-bottom:1rem;font-size:.85rem;font-weight:600;}
 .qb-msg-error{background:#FEF2F2;color:#B01C1C;border:1px solid #F8C8C8;}
 .qb-msg-success{background:#EDFBF4;color:#0E6840;border:1px solid #90DFB8;}
 .qb-toast-container{position:fixed;top:1.25rem;right:1.25rem;z-index:9999;display:flex;flex-direction:column;gap:.5rem;}
 .qb-toast{background:linear-gradient(135deg,#6D5EF7,#4F8CFF);color:#fff;padding:.8rem 1.3rem;border-radius:12px;font-size:.85rem;font-weight:700;display:flex;align-items:center;gap:9px;box-shadow:0 8px 28px rgba(109,94,247,.30);animation:qbSlide .3s ease;}
 @keyframes qbSlide{from{opacity:0;transform:translateX(30px);}to{opacity:1;transform:translateX(0);}}
-/* ═══ INLINE FIELD VALIDATION ═════════════════════════════ */
-/* No red border or red line — just show the message */
+/* --- INLINE FIELD VALIDATION ----------------------------- */
+/* No red border or red line � just show the message */
 .qb-err{border-color:inherit!important;box-shadow:none!important;}
-/* Error message — below the field, outside the editor wrap */
+/* Error message � below the field, outside the editor wrap */
 .qb-err-msg{
-  display:flex;align-items:center;gap:6px;
+  display:inline-flex;align-items:center;gap:6px;
   font-size:13px;font-weight:500;color:#DC3545;
-  margin-top:6px;
-  margin-bottom:10px;
+  margin-top:4px;
+  margin-bottom:6px;
   padding:0;line-height:1.4;
   animation:qbFadeIn .15s ease;
+  width:fit-content;
+  max-width:100%;
 }
-/* ═══ RESPONSIVE ══════════════════════════════════════════ */
+/* --- RESPONSIVE ------------------------------------------ */
 @media(max-width:1100px){.qb-layout{grid-template-columns:1fr;}.qb-nav,.qb-props{display:none;}}
 @media(max-width:640px){.qb-opts{grid-template-columns:1fr;}.qb-tf-grid{grid-template-columns:1fr;}.qb-fib-words{grid-template-columns:1fr;}.qb-actions{flex-direction:column;padding:1rem 1.25rem 1.25rem;}.qb-editor-body{padding:1.25rem;}.qb-header{padding:1rem 1.25rem;}.qb-toolbar{flex-direction:column;align-items:stretch;gap:.6rem;padding:.7rem 1rem;}.qb-toolbar-nav{justify-content:center;}.qb-toolbar-lang{padding:.5rem 1rem;justify-content:center;}}
 
-/* ═══════════════════════════════════════════════════════════
-   HERO — Warm educational premium, ScienceBuddy palette
-   ═══════════════════════════════════════════════════════════ */
-.cq-hero{position:relative;background:#FCFBF7;border-radius:24px;padding:2.75rem 2.8rem 2.2rem;margin-bottom:1.5rem;overflow:hidden;border:1.5px solid #DDD5C0;box-shadow:0 8px 40px rgba(95,143,99,.10),0 2px 0 rgba(255,255,255,.95) inset;}
+/* -----------------------------------------------------------
+   HERO � Purple/Blue premium, matching Practice Quiz palette
+   ----------------------------------------------------------- */
+.cq-hero{position:relative;background:#F0EEFF;border-radius:24px;padding:2.75rem 2.8rem 2.2rem;margin-bottom:1.5rem;overflow:hidden;border:1.5px solid #C8C2F8;box-shadow:0 8px 40px rgba(109,94,247,.12),0 2px 0 rgba(255,255,255,.90) inset;}
 .cq-hero-bg{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
-.cq-hero-bg svg{position:absolute;top:0;right:0;width:68%;height:100%;opacity:.10;}
-.cq-hero::before{content:'';position:absolute;top:-70px;right:-70px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,#5F8F63 0%,transparent 68%);opacity:.16;pointer-events:none;}
-.cq-hero::after{content:'';position:absolute;bottom:-55px;left:25%;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,#D8A53A 0%,transparent 68%);opacity:.14;pointer-events:none;}
-.cq-hero-bg::before{content:'';position:absolute;top:30%;left:-55px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,#D97B6C 0%,transparent 68%);opacity:.13;pointer-events:none;}
-.cq-hero-bg::after{content:'';position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");background-size:180px 180px;opacity:.022;mix-blend-mode:multiply;pointer-events:none;}
-.cq-hero-left::after{content:'';position:absolute;inset:0;border-radius:22px;background:radial-gradient(ellipse at 50% 50%,transparent 55%,rgba(252,251,247,.55) 100%);pointer-events:none;z-index:0;}
+.cq-hero-bg svg{position:absolute;top:0;right:0;width:68%;height:100%;opacity:.11;}
+.cq-hero::before{content:'';position:absolute;top:-70px;right:-70px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,#6D5EF7 0%,transparent 68%);opacity:.13;pointer-events:none;}
+.cq-hero::after{content:'';position:absolute;bottom:-55px;left:25%;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,#4F8CFF 0%,transparent 68%);opacity:.12;pointer-events:none;}
+.cq-hero-bg::before{content:'';position:absolute;top:30%;left:-55px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,#A78BFA 0%,transparent 68%);opacity:.10;pointer-events:none;}
+.cq-hero-bg::after{content:'';position:absolute;inset:0;pointer-events:none;}
+.cq-hero-left::after{content:'';position:absolute;inset:0;border-radius:22px;background:radial-gradient(ellipse at 50% 50%,transparent 55%,rgba(240,238,255,.55) 100%);pointer-events:none;z-index:0;}
 .cq-hero-left{position:relative;z-index:2;display:flex;flex-direction:column;gap:1.4rem;}
 .cq-hero-top{display:flex;align-items:flex-start;gap:18px;}
-.cq-hero-icon{width:62px;height:62px;border-radius:18px;background:linear-gradient(145deg,#D8A53A,#B07820);display:flex;align-items:center;justify-content:center;font-size:1.65rem;flex-shrink:0;box-shadow:0 6px 22px rgba(184,120,32,.35),0 1px 0 rgba(255,255,255,.22) inset;}
+.cq-hero-icon{width:62px;height:62px;border-radius:18px;background:linear-gradient(145deg,#6D5EF7,#4F8CFF);display:flex;align-items:center;justify-content:center;font-size:1.65rem;flex-shrink:0;box-shadow:0 6px 22px rgba(109,94,247,.38),0 1px 0 rgba(255,255,255,.22) inset;}
 .cq-hero-icon i{color:#fff;}
-.cq-hero-title{font-size:2rem;font-weight:900;color:#1E2818;margin:0;letter-spacing:-.5px;line-height:1.15;}
-.cq-hero-desc{font-size:.93rem;color:#7A7060;margin:5px 0 0;font-weight:500;}
-.cq-hero-meta{display:inline-flex;align-items:stretch;gap:0;background:rgba(255,252,244,.90);border-radius:16px;border:1.5px solid #CECCA0;overflow:hidden;width:fit-content;backdrop-filter:blur(8px);box-shadow:0 3px 14px rgba(95,143,99,.10);}
+.cq-hero-title{font-size:2rem;font-weight:900;color:#1E1B3A;margin:0;letter-spacing:-.5px;line-height:1.15;}
+.cq-hero-desc{font-size:.93rem;color:#7B7499;margin:5px 0 0;font-weight:500;}
+.cq-hero-meta{display:inline-flex;align-items:stretch;gap:0;background:rgba(240,238,255,.92);border-radius:16px;border:1.5px solid #C8C2F8;overflow:hidden;width:fit-content;backdrop-filter:blur(8px);box-shadow:0 3px 14px rgba(109,94,247,.10);}
 .cq-meta-item{display:flex;align-items:center;gap:12px;padding:.85rem 1.4rem;}
-.cq-meta-item:not(:last-child){border-right:1.5px solid #D8D0B8;}
+.cq-meta-item:not(:last-child){border-right:1.5px solid #D4CDFA;}
 .cq-meta-pill{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex-shrink:0;}
-.cq-meta-pill-unit{background:linear-gradient(135deg,#C4DAB0,#9EC480);color:#2E5A30;box-shadow:0 2px 8px rgba(72,111,75,.22);}
-.cq-meta-pill-level{background:linear-gradient(135deg,#C4DAB0,#9EC480);color:#2E5A30;box-shadow:0 2px 8px rgba(72,111,75,.22);}
-.cq-meta-pill-subtopic{background:linear-gradient(135deg,#F4C4B4,#E8A090);color:#8A2810;box-shadow:0 2px 8px rgba(217,123,108,.22);}
-.cq-meta-label{font-size:.67rem;font-weight:700;color:#8A7A60;text-transform:uppercase;letter-spacing:.6px;display:block;line-height:1;margin-bottom:3px;}
-.cq-meta-val{font-size:.95rem;font-weight:800;color:#1E2818;display:block;line-height:1.15;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cq-meta-pill-unit{background:linear-gradient(135deg,#BAD5FF,#8AB8FF);color:#1A4DAA;box-shadow:0 2px 8px rgba(79,140,255,.22);}
+.cq-meta-pill-level{background:linear-gradient(135deg,#C8C2F8,#A89AF5);color:#3D2AAA;box-shadow:0 2px 8px rgba(109,94,247,.22);}
+.cq-meta-pill-subtopic{background:linear-gradient(135deg,#D4C8FC,#B8A8F8);color:#4A28CC;box-shadow:0 2px 8px rgba(109,94,247,.18);}
+.cq-meta-label{font-size:.67rem;font-weight:700;color:#8078AA;text-transform:uppercase;letter-spacing:.6px;display:block;line-height:1;margin-bottom:3px;}
+.cq-meta-val{font-size:.95rem;font-weight:800;color:#1E1B3A;display:block;line-height:1.15;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
-/* ── Quiz Titles Panel ─────────────────────────────────── */
+/* -- Quiz Titles Panel ----------------------------------- */
 .cq-titles-panel{display:grid;grid-template-columns:1fr 1fr;background:#fff;border-radius:18px;border:1.5px solid #EAE2D4;margin-bottom:1.5rem;overflow:hidden;box-shadow:0 3px 14px rgba(0,0,0,.04);}
 .cq-title-col{padding:1.5rem 1.8rem;position:relative;}
 .cq-title-col:first-child{border-right:1.5px solid #F0E8DC;}
@@ -473,21 +475,22 @@
 .cq-title-badge-en{background:#D4EAC8;color:#2E5A30;}
 .cq-title-badge-bm{background:#F8D8D0;color:#902810;}
 .cq-title-val{font-size:1.05rem;font-weight:700;color:#1F2418;line-height:1.5;}
-/* ── Info Notice ───────────────────────────────────────── */
+/* -- Info Notice ----------------------------------------- */
 .cq-info-notice{display:flex;align-items:flex-start;gap:16px;background:#FFFBF2;border-left:5px solid #D8A53A;border-radius:0 16px 16px 0;padding:1.25rem 1.6rem;margin-bottom:1.75rem;box-shadow:0 3px 16px rgba(216,165,58,.12);}
 .cq-info-icon{width:44px;height:44px;background:linear-gradient(135deg,#F8E090,#E8C040);border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#7A5000;flex-shrink:0;box-shadow:0 3px 12px rgba(216,165,58,.28);}
 .cq-info-body{flex:1;}
 .cq-info-title{font-size:.9rem;font-weight:800;color:#6A4400;margin-bottom:5px;letter-spacing:.01em;}
 .cq-info-text{font-size:.83rem;color:#5A3C10;line-height:1.65;}
-/* ── Responsive ────────────────────────────────────────── */
-@media(max-width:900px){.cq-hero{padding:2rem 1.75rem 1.75rem;}.cq-hero-meta{flex-direction:column;width:100%;}.cq-meta-item:not(:last-child){border-right:none;border-bottom:1.5px solid #EDE0CC;}}
+/* -- Responsive ------------------------------------------ */
+@media(max-width:900px){.cq-hero{padding:2rem 1.75rem 1.75rem;}.cq-hero-meta{flex-direction:column;width:100%;}.cq-meta-item:not(:last-child){border-right:none;border-bottom:1.5px solid #D4CDFA;}}
 @media(max-width:640px){.cq-hero-title{font-size:1.55rem;}.cq-titles-panel{grid-template-columns:1fr;}.cq-title-col:first-child{border-right:none;border-bottom:1.5px solid #F0E8DC;}.cq-title-col:first-child::before,.cq-title-col:last-child::before{display:none;}.cq-hero{padding:1.5rem 1.25rem 1.5rem;}}
 </style>
 </asp:Content>
 
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
     <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Main","Utama") %></div>
-        <a href="<%: ResolveUrl("~/Teacher/Dashboard.aspx") %>" class="sb-sidebar-item"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label"><%: T("Dashboard","Papan Pemuka") %></span></a></div>
+        <a href="<%: ResolveUrl("~/Teacher/Dashboard.aspx") %>" class="sb-sidebar-item"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label"><%: T("Dashboard","Papan Pemuka") %></span></a>
+        <a href="<%: ResolveUrl("~/Teacher/Notifications.aspx") %>" class="sb-sidebar-item"><i class="bi bi-bell item-icon"></i><span class="item-label"><%: T("Notifications","Notifikasi") %></span></a></div>
     <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Teaching","Pengajaran") %></div>
         <a href="<%: ResolveUrl("~/Teacher/manageMaterials.aspx") %>" class="sb-sidebar-item"><i class="bi bi-book item-icon"></i><span class="item-label"><%: T("Manage Materials","Bahan Pembelajaran") %></span></a>
         <a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx") %>" class="sb-sidebar-item active"><i class="bi bi-patch-question item-icon"></i><span class="item-label"><%: T("Manage Quiz","Kuiz") %></span></a>
@@ -510,9 +513,9 @@
 
 <asp:Panel ID="pnlBuilder" runat="server" Visible="false">
 
-<%-- ══════════════════════════════════════════════════════
+<%-- ------------------------------------------------------
      HERO HEADER
-     ══════════════════════════════════════════════════════ --%>
+     ------------------------------------------------------ --%>
 <div class="cq-hero">
     <div class="cq-hero-bg">
         <svg viewBox="0 0 820 260" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMaxYMid slice">
@@ -667,7 +670,7 @@
     </div>
 </div>
 
-<%-- Delete confirmation modal (pure UI — no backend wired yet) --%>
+<%-- Delete confirmation modal (pure UI � no backend wired yet) --%>
 <div class="qb-del-overlay" id="qbDelOverlay" onclick="closeDeleteModal(event)">
     <div class="qb-del-modal">
         <div class="qb-del-modal-icon"><i class="bi bi-trash3-fill"></i></div>
@@ -689,7 +692,7 @@
             <span id="qbNavLabel" class="qb-toolbar-label"></span>
             <button type="button" id="qbNavNext" class="qb-toolbar-arrow" onclick="navGoTo(window.__CI+1);return false;"><i class="bi bi-chevron-right"></i></button>
         </div>
-        <asp:Button ID="btnSubmitQuiz" runat="server" Text="Submit Quiz" CssClass="qb-btn qb-btn-success" style="margin:0;padding:.55rem 1.2rem;font-size:.82rem;" OnClientClick="return validateFibBlanksAndFlush();" OnClick="btnSubmitQuiz_Click" CausesValidation="false" />
+        <asp:Button ID="btnSubmitQuiz" runat="server" CssClass="qb-btn qb-btn-success" style="margin:0;padding:.55rem 1.2rem;font-size:.82rem;" OnClientClick="return validateFibBlanksAndFlush();" OnClick="btnSubmitQuiz_Click" CausesValidation="false" />
     </div>
     <%-- Row 2: Language toggle (no label, white background, inside card) --%>
     <div class="qb-toolbar-lang">
@@ -704,7 +707,7 @@
 
     <div class="qb-editor-body">
 
-    <%-- Question Text — Rich Editor style --%>
+    <%-- Question Text � Rich Editor style --%>
     <div class="qb-field" style="margin-bottom:1.2rem;">
         <div class="qb-label">
             <span><%: T("Question","Soalan") %> * <span id="qbLangBadge" style="font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:5px;background:#D1FAE5;color:#047857;margin-left:6px;text-transform:none;letter-spacing:0;">EN</span></span>
@@ -722,7 +725,7 @@
                 <span class="fib-counter qb-fib-only" id="blankCounter" style="display:none;margin-left:auto;font-size:.75rem;"><%: T("Blanks","Kosong") %>: <strong id="blankNum">0</strong> / 4</span>
                 <button type="button" class="fib-add-btn qb-fib-only" id="btnAddBlank" onclick="addBlank()" style="display:none;margin-left:6px;padding:.4rem .8rem;font-size:.76rem;"><i class="bi bi-plus-square-dotted"></i> <%: T("Add Blank","Tambah Kosong") %></button>
             </div>
-            <div id="qbRteEditor" class="qb-rte-editor" contenteditable="true" data-placeholder-en="Type your question here..." data-placeholder-bm="Taip soalan anda di sini..."></div>
+            <div id="qbRteEditor" class="qb-rte-editor" contenteditable="true" data-placeholder-en="Type your question here..." data-placeholder-bm="Taip soalan anda di sini..." data-placeholder="<%: T("Type your question here...","Taip soalan anda di sini...") %>"></div>
         </div>
         <%-- Hidden textarea for server sync --%>
         <asp:TextBox ID="txtQuestionText" runat="server" TextMode="MultiLine" Rows="4" CssClass="qb-input qb-textarea" MaxLength="500" style="display:none;" />
@@ -733,7 +736,7 @@
         <div class="qb-img-upload" id="qbImgUploadLabel" onclick="document.getElementById('qbImgInput').click()">
             <div class="qb-img-upload-icon"><i class="bi bi-image"></i></div>
             <span class="qb-img-upload-text"><%: T("Upload Image","Muat Naik Imej") %></span>
-            <span class="qb-img-upload-sub"><%: T("Optional · PNG, JPG, GIF up to 5 MB","Pilihan · PNG, JPG, GIF sehingga 5 MB") %></span>
+            <span class="qb-img-upload-sub"><%: T("Optional � PNG, JPG, GIF up to 5 MB","Pilihan � PNG, JPG, GIF sehingga 5 MB") %></span>
         </div>
         <%-- Server-side file upload control (hidden; triggered by JS click) --%>
         <asp:FileUpload ID="fuQuestionImage" runat="server" Style="display:none;" />
@@ -855,7 +858,7 @@
         <span class="qb-section-header-text"><%: T("Explanations","Penjelasan") %></span>
         <div class="qb-section-divider"></div>
     </div>
-    <%-- Correct Explanation — soft green --%>
+    <%-- Correct Explanation � soft green --%>
     <div class="qb-exp-block qb-exp-correct">
         <div class="qb-exp-block-header">
             <div class="qb-exp-block-icon"><i class="bi bi-check-circle-fill"></i></div>
@@ -864,7 +867,7 @@
         </div>
         <asp:TextBox ID="txtCorrectExp" runat="server" TextMode="MultiLine" Rows="2" CssClass="qb-input qb-textarea" MaxLength="500" />
     </div>
-    <%-- Wrong Explanation — soft red --%>
+    <%-- Wrong Explanation � soft red --%>
     <div class="qb-exp-block qb-exp-wrong">
         <div class="qb-exp-block-header">
             <div class="qb-exp-block-icon"><i class="bi bi-x-circle-fill"></i></div>
@@ -874,15 +877,15 @@
         <asp:TextBox ID="txtWrongExp" runat="server" TextMode="MultiLine" Rows="2" CssClass="qb-input qb-textarea" MaxLength="500" />
     </div>
 
-    <%-- Save Status (hidden — auto-save handles this) --%>
+    <%-- Save Status (hidden � auto-save handles this) --%>
     <div class="qb-save-status" id="saveStatus" style="display:none;"><i class="bi bi-circle"></i> <span id="saveStatusText"><%: T("Question Incomplete","Soalan Tidak Lengkap") %></span></div>
 
     </div><%-- /.qb-editor-body --%>
 
     <%-- Hidden server buttons for postback compatibility --%>
     <div style="display:none;">
-        <asp:Button ID="btnPrev" runat="server" Text="← Previous" CssClass="qb-btn qb-btn-outline" OnClientClick="return navGoTo(window.__CI-1);" CausesValidation="false" />
-        <asp:Button ID="btnNext" runat="server" Text="Next →" CssClass="qb-btn qb-btn-outline" OnClientClick="return navGoTo(window.__CI+1);" CausesValidation="false" />
+        <asp:Button ID="btnPrev" runat="server" Text="? Previous" CssClass="qb-btn qb-btn-outline" OnClientClick="return navGoTo(window.__CI-1);" CausesValidation="false" />
+        <asp:Button ID="btnNext" runat="server" Text="Next ?" CssClass="qb-btn qb-btn-outline" OnClientClick="return navGoTo(window.__CI+1);" CausesValidation="false" />
         <asp:Button ID="btnSaveQ" runat="server" Text="Save Question" CssClass="qb-btn qb-btn-primary" OnClientClick="flushToServer();" OnClick="btnSaveQ_Click" CausesValidation="false" />
     </div>
 </div><%-- /.qb-center --%>
@@ -934,7 +937,7 @@
 <asp:Literal ID="litQuestionsJson" runat="server" />
 </asp:Panel>
 
-<%-- ── Submit Success Modal ─────────────────────────────── --%>
+<%-- -- Submit Success Modal ------------------------------- --%>
 <div class="qb-success-overlay" id="qbSuccessOverlay">
     <div class="qb-success-modal">
         <div class="qb-success-icon"><i class="bi bi-patch-check-fill"></i></div>
@@ -946,7 +949,7 @@
     </div>
 </div>
 
-<%-- ── Unsaved Changes Modal ─────────────────────────────── --%>
+<%-- -- Unsaved Changes Modal ------------------------------- --%>
 <div class="qb-unsaved-overlay" id="qbUnsavedOverlay">
     <div class="qb-unsaved-modal">
         <div class="qb-unsaved-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
@@ -964,9 +967,9 @@
 
 <asp:Content ID="cScripts" ContentPlaceHolderID="ScriptsContent" runat="server">
 <script>
-/* ═══════════════════════════════════════════════════════════
-   CLIENT-SIDE QUIZ ENGINE — no postback for tab/nav switch
-   ═══════════════════════════════════════════════════════════ */
+/* -----------------------------------------------------------
+   CLIENT-SIDE QUIZ ENGINE � no postback for tab/nav switch
+   ----------------------------------------------------------- */
 function $id(s){return document.getElementById(s);}
 function $qs(s){return document.querySelector(s);}
 
@@ -986,8 +989,10 @@ var SRV={
 window.__QD=window.__QD||[];
 window.__CI=window.__CI||0;
 window.__CT=window.__CT||'EN';
+window.__SITE_LANG='<%= CurrentLanguage %>';
+function _T(en,bm){return window.__SITE_LANG==='BM'?bm:en;}
 
-/* After server postback, fibIdxEN/fibIdxBM arrive as JSON strings — parse them back to objects */
+/* After server postback, fibIdxEN/fibIdxBM arrive as JSON strings � parse them back to objects */
 (function normFibIdx(){
     window.__QD.forEach(function(q){
         if(typeof q.fibIdxEN==='string'){try{q.fibIdxEN=JSON.parse(q.fibIdxEN);}catch(e){q.fibIdxEN={};}}
@@ -1004,10 +1009,10 @@ function emptyQ(){return{
     aEN:'',aBM:'',bEN:'',bBM:'',cEN:'',cBM:'',dEN:'',dBM:'',
     ceEN:'',ceBM:'',weEN:'',weBM:'',
     correct:'',type:'MCQ',diff:'Medium',saved:false,img:'',
-    /* Multiselect — per-language option text, SHARED checked state */
+    /* Multiselect � per-language option text, SHARED checked state */
     msAEN:'',msABM:'',msBEN:'',msBBM:'',msCEN:'',msCBM:'',msDEN:'',msDBM:'',
-    msChk:'',  /* shared comma-separated checked letters e.g. "A,C" — same for both languages */
-    /* Drag & Drop (FIB) — per-language word bank (4 slots) */
+    msChk:'',  /* shared comma-separated checked letters e.g. "A,C" � same for both languages */
+    /* Drag & Drop (FIB) � per-language word bank (4 slots) */
     fibEN:['','','',''],fibBM:['','','',''],
     /* FIB mapping indices per blank per language: {blank_label: slot_index_string} */
     fibIdxEN:{},fibIdxBM:{},
@@ -1015,7 +1020,7 @@ function emptyQ(){return{
     fibMapEN:[],fibMapBM:[]
 };}
 
-/* ── Rich Text Editor ─────────────────────────────────── */
+/* -- Rich Text Editor ----------------------------------- */
 function rteExec(cmd){
     document.execCommand(cmd,false,null);
     rteSync();rteUpdateToolbar();
@@ -1064,48 +1069,48 @@ function rteUpdateToolbar(){
 }
 function rteUpdatePlaceholder(){
     var ed=document.getElementById('qbRteEditor');
-    if(ed){var isEN=(window.__CT==='EN');ed.setAttribute('data-placeholder',isEN?ed.dataset.placeholderEn:ed.dataset.placeholderBm);}
+    if(ed){ed.setAttribute('data-placeholder',_T(ed.dataset.placeholderEn,ed.dataset.placeholderBm));}
 }
 
 function captureCurrentFields(){
     if(!window.__QD.length)return;
-    rteSync(); // sync contenteditable → hidden textarea
+    rteSync(); // sync contenteditable ? hidden textarea
     var q=window.__QD[window.__CI],tab=window.__CT;
     var g=function(id){var e=$id(id);return e?e.value:'';};
 
-    /* ── MCQ / shared text fields ─────────────────────────── */
+    /* -- MCQ / shared text fields --------------------------- */
     if(tab==='EN'){q.qEN=g(SRV.txtQ);q.aEN=g(SRV.txtA);q.bEN=g(SRV.txtB);q.cEN=g(SRV.txtC);q.dEN=g(SRV.txtD);q.ceEN=g(SRV.txtCE);q.weEN=g(SRV.txtWE);}
     else{q.qBM=g(SRV.txtQ);q.aBM=g(SRV.txtA);q.bBM=g(SRV.txtB);q.cBM=g(SRV.txtC);q.dBM=g(SRV.txtD);q.ceBM=g(SRV.txtCE);q.weBM=g(SRV.txtWE);}
 
-    /* ── MCQ correct answer ───────────────────────────────── */
+    /* -- MCQ correct answer --------------------------------- */
     ['A','B','C','D'].forEach(function(l){var r=$id(SRV['rad'+l]);if(r&&r.checked)q.correct=l;});
 
-    /* ── True/False correct answer (separate radio group) ─── */
+    /* -- True/False correct answer (separate radio group) --- */
     if(q.type==='True/False'||($id(SRV.ddlType)&&$id(SRV.ddlType).value==='True/False')){
         var tfRadios=document.querySelectorAll('.qb-tf-card input[type="radio"]');
         tfRadios.forEach(function(r){if(r.checked)q.correct=r.value;});
     }
 
-    /* ── Multiselect option texts (per language) ─────────── */
+    /* -- Multiselect option texts (per language) ----------- */
     var msInputs=document.querySelectorAll('#sectionMS .ms-text');
     var msKeys=(tab==='EN')?['msAEN','msBEN','msCEN','msDEN']:['msABM','msBBM','msCBM','msDBM'];
     msInputs.forEach(function(inp,i){if(msKeys[i]!==undefined)q[msKeys[i]]=inp.value||'';});
-    /* Multiselect checked letters — SHARED across languages */
+    /* Multiselect checked letters � SHARED across languages */
     var msChecked=[];
     document.querySelectorAll('#sectionMS .ms-check').forEach(function(cb,i){
         if(cb.checked)msChecked.push(['A','B','C','D'][i]);
     });
-    /* store as single shared field — same selection applies to both EN and BM */
+    /* store as single shared field � same selection applies to both EN and BM */
     q.msChk=msChecked.join(',');
 
-    /* ── FIB word bank (per language) ────────────────────── */
+    /* -- FIB word bank (per language) ---------------------- */
     var fibInputs=document.querySelectorAll('#sectionFIB .fib-word-input');
     var fibArr=[];
     fibInputs.forEach(function(inp){fibArr.push(inp.value||'');});
     if(tab==='EN')q.fibEN=fibArr;
     else q.fibBM=fibArr;
 
-    /* ── FIB mapping — capture selected slot indices + resolved word text per language ─── */
+    /* -- FIB mapping � capture selected slot indices + resolved word text per language --- */
     var fibWordInputsAll=document.querySelectorAll('#sectionFIB .fib-word-input');
     var allWords=[];
     fibWordInputsAll.forEach(function(inp){allWords.push(inp.value||'');});
@@ -1123,7 +1128,7 @@ function captureCurrentFields(){
     var dt=$id(SRV.ddlType);if(dt)q.type=dt.value;
     var dd=$id(SRV.ddlDiff);if(dd)q.diff=dd.value;
 
-    /* ── Image ───────────────────────────────────────────── */
+    /* -- Image --------------------------------------------- */
     var imgSrc=$id('qbImgPreviewSrc');
     var imgPreview=$id('qbImgPreview');
     if(imgSrc&&imgPreview&&imgPreview.style.display!=='none'&&imgSrc.src&&imgSrc.src!==window.location.href){
@@ -1135,27 +1140,27 @@ function populateFields(q,tab){
     var isEN=(tab==='EN');
     var s=function(id,v){var e=$id(id);if(e)e.value=v||'';};
 
-    /* ── MCQ / shared text fields ─────────────────────────── */
+    /* -- MCQ / shared text fields --------------------------- */
     s(SRV.txtQ,isEN?q.qEN:q.qBM);
     rteSetContent(isEN?q.qEN:q.qBM); // sync RTE editor with stored text
     s(SRV.txtA,isEN?q.aEN:q.aBM);s(SRV.txtB,isEN?q.bEN:q.bBM);
     s(SRV.txtC,isEN?q.cEN:q.cBM);s(SRV.txtD,isEN?q.dEN:q.dBM);
     s(SRV.txtCE,isEN?q.ceEN:q.ceBM);s(SRV.txtWE,isEN?q.weEN:q.weBM);
 
-    /* ── MCQ correct answer radio ────────────────────────── */
+    /* -- MCQ correct answer radio -------------------------- */
     ['A','B','C','D'].forEach(function(l){var r=$id(SRV['rad'+l]);if(r)r.checked=(q.correct===l);});
 
-    /* ── True/False correct answer (separate radio group) ─── */
+    /* -- True/False correct answer (separate radio group) --- */
     document.querySelectorAll('.qb-tf-card input[type="radio"]').forEach(function(r){
         r.checked=(q.correct===r.value);
     });
     updateTFCards();
 
-    /* ── Multiselect option texts (per language) ─────────── */
+    /* -- Multiselect option texts (per language) ----------- */
     var msInputs=document.querySelectorAll('#sectionMS .ms-text');
     var msVals=isEN?[q.msAEN,q.msBEN,q.msCEN,q.msDEN]:[q.msABM,q.msBBM,q.msCBM,q.msDBM];
     msInputs.forEach(function(inp,i){inp.value=msVals[i]||'';});
-    /* Restore multiselect checked state — SHARED, same for both languages */
+    /* Restore multiselect checked state � SHARED, same for both languages */
     var chkStr=q.msChk||'';
     var chkLetters=chkStr?chkStr.split(','):[];
     var letters=['A','B','C','D'];
@@ -1164,7 +1169,7 @@ function populateFields(q,tab){
     });
     updateMSCards();
 
-    /* ── FIB word bank (per language) ────────────────────── */
+    /* -- FIB word bank (per language) ---------------------- */
     var fibArr=isEN?(q.fibEN||['','','','']):(q.fibBM||['','','','']);
     document.querySelectorAll('#sectionFIB .fib-word-input').forEach(function(inp,i){
         inp.value=fibArr[i]||'';
@@ -1172,11 +1177,11 @@ function populateFields(q,tab){
     /* Rebuild the mapping dropdowns using this language's stored indices */
     /* (updateFibUI calls updateFibMappings which reads fibIdxEN/fibIdxBM from the store) */
 
-    /* ── Type / Difficulty ───────────────────────────────── */
+    /* -- Type / Difficulty --------------------------------- */
     var dt=$id(SRV.ddlType);if(dt&&q.type)dt.value=q.type;
     var dd=$id(SRV.ddlDiff);if(dd&&q.diff)dd.value=q.diff;
 
-    /* ── Image ───────────────────────────────────────────── */
+    /* -- Image --------------------------------------------- */
     var imgPreview=$id('qbImgPreview');
     var imgSrc=$id('qbImgPreviewSrc');
     var imgLabel=$id('qbImgUploadLabel');
@@ -1195,25 +1200,26 @@ function populateFields(q,tab){
 
 function updateLabels(tab){
     var isEN=(tab==='EN');
-    // Update language badge
+    // Update language badge (shows which content tab is active)
     var badge=document.getElementById('qbLangBadge');
     if(badge){badge.textContent=isEN?'EN':'BM';badge.style.background=isEN?'#D1FAE5':'#FEF3C7';badge.style.color=isEN?'#047857':'#92400E';}
+    // Section headers indicate which language content is being edited
     var ol=$qs('#sectionMCQ .qb-section-header-text');
-    if(ol)ol.textContent=isEN?'Options (English)':'Options (Bahasa Melayu)';
+    if(ol)ol.textContent=isEN?_T('Options (English)','Pilihan (Bahasa Inggeris)'):_T('Options (Bahasa Melayu)','Pilihan (Bahasa Melayu)');
     var ce=$qs('.qb-exp-correct .qb-exp-block-label');
-    if(ce)ce.textContent=(isEN?'Correct Explanation (EN)':'Correct Explanation (BM)')+' *';
+    if(ce)ce.textContent=(isEN?_T('Correct Explanation (EN)','Penjelasan Betul (EN)'):_T('Correct Explanation (BM)','Penjelasan Betul (BM)'))+' *';
     var we=$qs('.qb-exp-wrong .qb-exp-block-label');
-    if(we)we.textContent=(isEN?'Wrong Explanation (EN)':'Wrong Explanation (BM)')+' *';
-    // Update placeholders based on language
-    var ph=function(id,en,bm){var el=$id(id);if(el)el.placeholder=isEN?en:bm;};
-    ph(SRV.txtQ,'Type your question here...','Taipkan soalan anda di sini...');
+    if(we)we.textContent=(isEN?_T('Wrong Explanation (EN)','Penjelasan Salah (EN)'):_T('Wrong Explanation (BM)','Penjelasan Salah (BM)'))+' *';
+    // Placeholders follow website language, NOT the active tab
+    var ph=function(id,en,bm){var el=$id(id);if(el)el.placeholder=_T(en,bm);};
+    ph(SRV.txtQ,'Type your question here...','Taip soalan anda di sini...');
     rteUpdatePlaceholder();
     ph(SRV.txtA,'Enter option A...','Masukkan pilihan A...');
     ph(SRV.txtB,'Enter option B...','Masukkan pilihan B...');
     ph(SRV.txtC,'Enter option C...','Masukkan pilihan C...');
     ph(SRV.txtD,'Enter option D...','Masukkan pilihan D...');
     ph(SRV.txtCE,'Explain why this answer is correct...','Terangkan mengapa jawapan ini betul...');
-    ph(SRV.txtWE,'Explain why the other answers are incorrect...','Terangkan mengapa jawapan lain tidak betul...');
+    ph(SRV.txtWE,'Explain why the other answers are incorrect...','Terangkan mengapa jawapan lain salah...');
     // Update navigation label
     updateNavLabel();
 }
@@ -1223,7 +1229,7 @@ function updateNavLabel(){
     var next=document.getElementById('qbNavNext');
     var total=window.__QD?window.__QD.length:1;
     var current=(window.__CI||0)+1;
-    if(lbl)lbl.textContent='Question '+current+' of '+total;
+    if(lbl)lbl.textContent=_T('Question '+current+' of '+total,'Soalan '+current+' daripada '+total);
     if(prev){prev.disabled=(current<=1);prev.style.opacity=(current<=1)?'.35':'1';}
     if(next){next.disabled=(current>=total);next.style.opacity=(current>=total)?'.35':'1';}
 }
@@ -1249,8 +1255,8 @@ function navGoTo(idx){
     updateProgress();return false;
 }
 
-/* ── Inline field validation helpers ─────────────────────── */
-var ERR_MSG='Please fill in the required field.';
+/* -- Inline field validation helpers ----------------------- */
+var ERR_MSG=_T('Please fill in the required field.','Sila isi ruangan yang diperlukan.');
 
 /* Returns the element after which the message should be inserted.
    We always want the message OUTSIDE the coloured container card. */
@@ -1315,38 +1321,38 @@ function qbWireAutoClears(){
     });
 }
 
-/* ── Full client-side submit validation ───────────────────── */
+/* -- Full client-side submit validation --------------------- */
 function validateAllQuestions(){
     for(var i=0;i<window.__QD.length;i++){
         var q=window.__QD[i];
         var qType=q.type||'MCQ';
         navGoTo(i);
 
-        /* ── EN question text ─── */
+        /* -- EN question text --- */
         switchTab('EN');
         var txQ=$id(SRV.txtQ);
         if(!txQ||!txQ.value.trim()){qbSetErr(txQ);return{ok:false,qIdx:i,tab:'EN',firstEl:txQ};}
 
-        /* ── BM question text ─── */
+        /* -- BM question text --- */
         switchTab('BM');
         txQ=$id(SRV.txtQ);
         if(!txQ||!txQ.value.trim()){qbSetErr(txQ);return{ok:false,qIdx:i,tab:'BM',firstEl:txQ};}
 
-        /* ── EN explanations ─── */
+        /* -- EN explanations --- */
         switchTab('EN');
         var txCE=$id(SRV.txtCE);
         if(!txCE||!txCE.value.trim()){qbSetErr(txCE);return{ok:false,qIdx:i,tab:'EN',firstEl:txCE};}
         var txWE=$id(SRV.txtWE);
         if(!txWE||!txWE.value.trim()){qbSetErr(txWE);return{ok:false,qIdx:i,tab:'EN',firstEl:txWE};}
 
-        /* ── BM explanations ─── */
+        /* -- BM explanations --- */
         switchTab('BM');
         txCE=$id(SRV.txtCE);
         if(!txCE||!txCE.value.trim()){qbSetErr(txCE);return{ok:false,qIdx:i,tab:'BM',firstEl:txCE};}
         txWE=$id(SRV.txtWE);
         if(!txWE||!txWE.value.trim()){qbSetErr(txWE);return{ok:false,qIdx:i,tab:'BM',firstEl:txWE};}
 
-        /* ── MCQ ─── */
+        /* -- MCQ --- */
         if(qType==='MCQ'){
             switchTab('EN');
             var mcqGrid=$qs('#sectionMCQ .qb-opts');
@@ -1364,64 +1370,125 @@ function validateAllQuestions(){
             /* No correct answer selected */
             switchTab('EN');
             if(!q.correct){
-                qbSetGridErr($qs('#sectionMCQ .qb-opts'),[],'Please select the correct answer.');
+                qbSetGridErr($qs('#sectionMCQ .qb-opts'),[],_T('Please select the correct answer.','Sila pilih jawapan yang betul.'));
                 return{ok:false,qIdx:i,tab:'EN',firstEl:$qs('#sectionMCQ .qb-opts')};
             }
             /* Correct answer points to an empty option */
             var correctInput=$id({'A':SRV.txtA,'B':SRV.txtB,'C':SRV.txtC,'D':SRV.txtD}[q.correct]);
             if(!correctInput||!correctInput.value.trim()){
-                qbSetGridErr($qs('#sectionMCQ .qb-opts'),[correctInput],'Please fill in the required field.');
+                qbSetGridErr($qs('#sectionMCQ .qb-opts'),[correctInput],_T('Please fill in the required field.','Sila isi ruangan yang diperlukan.'));
                 return{ok:false,qIdx:i,tab:'EN',firstEl:correctInput||$qs('#sectionMCQ .qb-opts')};
+            }
+            /* Correct answer must have text in both EN and BM */
+            var correctENVal={'A':q.aEN,'B':q.bEN,'C':q.cEN,'D':q.dEN}[q.correct]||'';
+            var correctBMVal={'A':q.aBM,'B':q.bBM,'C':q.cBM,'D':q.dBM}[q.correct]||'';
+            if(!correctENVal.trim()){
+                switchTab('EN');
+                qbSetGridErr($qs('#sectionMCQ .qb-opts'),[],_T('The selected correct answer must contain answer text in both English and Bahasa Melayu.','Jawapan betul yang dipilih mesti mempunyai teks jawapan dalam Bahasa Inggeris dan Bahasa Melayu.'));
+                return{ok:false,qIdx:i,tab:'EN',firstEl:$qs('#sectionMCQ .qb-opts')};
+            }
+            if(!correctBMVal.trim()){
+                switchTab('BM');
+                qbSetGridErr($qs('#sectionMCQ .qb-opts'),[],_T('The selected correct answer must contain answer text in both English and Bahasa Melayu.','Jawapan betul yang dipilih mesti mempunyai teks jawapan dalam Bahasa Inggeris dan Bahasa Melayu.'));
+                return{ok:false,qIdx:i,tab:'BM',firstEl:$qs('#sectionMCQ .qb-opts')};
+            }
+            /* EN/BM must use the same option letters */
+            var mcqLettersEN=((q.aEN||'').trim()?'A':'')+((q.bEN||'').trim()?'B':'')+((q.cEN||'').trim()?'C':'')+((q.dEN||'').trim()?'D':'');
+            var mcqLettersBM=((q.aBM||'').trim()?'A':'')+((q.bBM||'').trim()?'B':'')+((q.cBM||'').trim()?'C':'')+((q.dBM||'').trim()?'D':'');
+            if(mcqLettersEN!==mcqLettersBM){
+                if(mcqLettersEN.length>=mcqLettersBM.length){
+                    switchTab('BM');
+                    qbSetGridErr($qs('#sectionMCQ .qb-opts'),[],_T('The English and Bahasa Melayu sections must use the same answer options.','Bahagian Bahasa Inggeris dan Bahasa Melayu mesti menggunakan pilihan jawapan yang sama.'));
+                    return{ok:false,qIdx:i,tab:'BM',firstEl:$qs('#sectionMCQ .qb-opts')};
+                }else{
+                    switchTab('EN');
+                    qbSetGridErr($qs('#sectionMCQ .qb-opts'),[],_T('The English and Bahasa Melayu sections must use the same answer options.','Bahagian Bahasa Inggeris dan Bahasa Melayu mesti menggunakan pilihan jawapan yang sama.'));
+                    return{ok:false,qIdx:i,tab:'EN',firstEl:$qs('#sectionMCQ .qb-opts')};
+                }
             }
         }
 
-        /* ── True / False ─── */
+        /* -- True / False --- */
         if(qType==='True/False'){
             switchTab('EN');
             if(!q.correct){
                 var tfGrid=$qs('#sectionTF .qb-tf-grid');
-                qbSetGridErr(tfGrid,[],'Please select the correct answer.');
+                qbSetGridErr(tfGrid,[],_T('Please select the correct answer.','Sila pilih jawapan yang betul.'));
                 return{ok:false,qIdx:i,tab:'EN',firstEl:tfGrid};
             }
         }
 
-        /* ── Multiselect ─── */
+        /* -- Multiselect --- */
         if(qType==='Multiselect'){
-            /* Required option text A, B, C */
+            /* At least 3 answer options required (EN) */
             switchTab('EN');
             var msGrid=$qs('#sectionMS .qb-opts');
             var msTxEN=document.querySelectorAll('#sectionMS .ms-text');
-            var emptyMsEN=[];
-            [0,1,2].forEach(function(j){if(msTxEN[j]&&!msTxEN[j].value.trim())emptyMsEN.push(msTxEN[j]);});
-            if(emptyMsEN.length){qbSetGridErr(msGrid,emptyMsEN);return{ok:false,qIdx:i,tab:'EN',firstEl:emptyMsEN[0]};}
+            var filledMsEN=Array.prototype.slice.call(msTxEN).filter(function(inp){return inp.value.trim();}).length;
+            if(filledMsEN<3){
+                var emptyMsEN=Array.prototype.slice.call(msTxEN).filter(function(inp){return!inp.value.trim();});
+                qbSetGridErr(msGrid,emptyMsEN.slice(0,3-filledMsEN),_T('Multi-select questions must contain at least three answer options.','Soalan Aneka Pilihan Berbilang mesti mempunyai sekurang-kurangnya tiga pilihan jawapan.'));
+                return{ok:false,qIdx:i,tab:'EN',firstEl:emptyMsEN[0]||msGrid};
+            }
+            /* At least 3 answer options required (BM) */
             switchTab('BM');
             var msTxBM=document.querySelectorAll('#sectionMS .ms-text');
-            var emptyMsBM=[];
-            [0,1,2].forEach(function(j){if(msTxBM[j]&&!msTxBM[j].value.trim())emptyMsBM.push(msTxBM[j]);});
-            if(emptyMsBM.length){qbSetGridErr($qs('#sectionMS .qb-opts'),emptyMsBM);return{ok:false,qIdx:i,tab:'BM',firstEl:emptyMsBM[0]};}
+            var filledMsBM=Array.prototype.slice.call(msTxBM).filter(function(inp){return inp.value.trim();}).length;
+            if(filledMsBM<3){
+                var emptyMsBM=Array.prototype.slice.call(msTxBM).filter(function(inp){return!inp.value.trim();});
+                qbSetGridErr($qs('#sectionMS .qb-opts'),emptyMsBM.slice(0,3-filledMsBM),_T('Multi-select questions must contain at least three answer options.','Soalan Aneka Pilihan Berbilang mesti mempunyai sekurang-kurangnya tiga pilihan jawapan.'));
+                return{ok:false,qIdx:i,tab:'BM',firstEl:emptyMsBM[0]||$qs('#sectionMS .qb-opts')};
+            }
             /* Correct answer count */
             switchTab('EN');
             var chkLetters=(q.msChk||'').split(',').filter(function(l){return l.trim();});
-            if(chkLetters.length===0){
-                qbSetGridErr($qs('#sectionMS .qb-opts'),[],'Please select the correct answers.');
+            if(chkLetters.length<2){
+                qbSetGridErr($qs('#sectionMS .qb-opts'),[],_T('Please select at least two correct answers for a Multi-select question.','Sila pilih sekurang-kurangnya dua jawapan yang betul.'));
                 return{ok:false,qIdx:i,tab:'EN',firstEl:$qs('#sectionMS .qb-opts')};
             }
-            if(chkLetters.length===1){
-                qbSetGridErr($qs('#sectionMS .qb-opts'),[],'Please select at least 2 correct answers.');
-                return{ok:false,qIdx:i,tab:'EN',firstEl:$qs('#sectionMS .qb-opts')};
-            }
-            /* Ensure each selected letter points to a non-empty EN option */
+            /* Ensure each selected correct answer has text in both EN and BM */
             var msMap={'A':0,'B':1,'C':2,'D':3};
-            var msTxCheck=document.querySelectorAll('#sectionMS .ms-text');
-            var badChk=[];
+            var msENVals=[q.msAEN,q.msBEN,q.msCEN,q.msDEN];
+            var msBMVals=[q.msABM,q.msBBM,q.msCBM,q.msDBM];
+            var badChkEN=[];var badChkBM=[];
             chkLetters.forEach(function(l){
                 var j=msMap[l];
-                if(j!==undefined&&msTxCheck[j]&&!msTxCheck[j].value.trim())badChk.push(msTxCheck[j]);
+                if(j!==undefined){
+                    if(!(msENVals[j]||'').trim())badChkEN.push(l);
+                    if(!(msBMVals[j]||'').trim())badChkBM.push(l);
+                }
             });
-            if(badChk.length){qbSetGridErr($qs('#sectionMS .qb-opts'),badChk);return{ok:false,qIdx:i,tab:'EN',firstEl:badChk[0]};}
+            if(badChkEN.length){
+                switchTab('EN');
+                var msTxCheckEN=document.querySelectorAll('#sectionMS .ms-text');
+                var highlightEN=badChkEN.map(function(l){return msTxCheckEN[msMap[l]];}).filter(Boolean);
+                qbSetGridErr($qs('#sectionMS .qb-opts'),highlightEN,_T('All selected correct answers must contain answer text in both English and Bahasa Melayu.','Semua jawapan betul yang dipilih mesti mempunyai teks jawapan dalam Bahasa Inggeris dan Bahasa Melayu.'));
+                return{ok:false,qIdx:i,tab:'EN',firstEl:highlightEN[0]||$qs('#sectionMS .qb-opts')};
+            }
+            if(badChkBM.length){
+                switchTab('BM');
+                var msTxCheckBM=document.querySelectorAll('#sectionMS .ms-text');
+                var highlightBM=badChkBM.map(function(l){return msTxCheckBM[msMap[l]];}).filter(Boolean);
+                qbSetGridErr($qs('#sectionMS .qb-opts'),highlightBM,_T('All selected correct answers must contain answer text in both English and Bahasa Melayu.','Semua jawapan betul yang dipilih mesti mempunyai teks jawapan dalam Bahasa Inggeris dan Bahasa Melayu.'));
+                return{ok:false,qIdx:i,tab:'BM',firstEl:highlightBM[0]||$qs('#sectionMS .qb-opts')};
+            }
+            /* EN/BM must use the same option letters */
+            var msLettersEN=((q.msAEN||'').trim()?'A':'')+((q.msBEN||'').trim()?'B':'')+((q.msCEN||'').trim()?'C':'')+((q.msDEN||'').trim()?'D':'');
+            var msLettersBM=((q.msABM||'').trim()?'A':'')+((q.msBBM||'').trim()?'B':'')+((q.msCBM||'').trim()?'C':'')+((q.msDBM||'').trim()?'D':'');
+            if(msLettersEN!==msLettersBM){
+                if(msLettersEN.length>=msLettersBM.length){
+                    switchTab('BM');
+                    qbSetGridErr($qs('#sectionMS .qb-opts'),[],_T('The English and Bahasa Melayu sections must use the same answer options.','Bahagian Bahasa Inggeris dan Bahasa Melayu mesti menggunakan pilihan jawapan yang sama.'));
+                    return{ok:false,qIdx:i,tab:'BM',firstEl:$qs('#sectionMS .qb-opts')};
+                }else{
+                    switchTab('EN');
+                    qbSetGridErr($qs('#sectionMS .qb-opts'),[],_T('The English and Bahasa Melayu sections must use the same answer options.','Bahagian Bahasa Inggeris dan Bahasa Melayu mesti menggunakan pilihan jawapan yang sama.'));
+                    return{ok:false,qIdx:i,tab:'EN',firstEl:$qs('#sectionMS .qb-opts')};
+                }
+            }
         }
 
-        /* ── Drag & Drop ─── */
+        /* -- Drag & Drop --- */
         if(qType==='Drag & Drop'){
             var blankRe=/\[Blank \d\]/g;
             var enC=((q.qEN||'').match(blankRe)||[]).length;
@@ -1431,7 +1498,7 @@ function validateAllQuestions(){
             if(enC!==bmC){
                 switchTab('EN');
                 var tqMismatch=$id(SRV.txtQ);
-                qbSetErr(tqMismatch,'The number of blanks in English and Bahasa Melayu must match.');
+                qbSetErr(tqMismatch,_T('The number of blanks in English and Bahasa Melayu must match.','Bilangan kosong dalam Bahasa Inggeris dan Bahasa Melayu mesti sama.'));
                 return{ok:false,qIdx:i,tab:'EN',firstEl:tqMismatch};
             }
 
@@ -1439,7 +1506,7 @@ function validateAllQuestions(){
             if(enC<1){
                 switchTab('EN');
                 var tqBlank=$id(SRV.txtQ);
-                qbSetErr(tqBlank,'At least one blank is required.');
+                qbSetErr(tqBlank,_T('At least one blank is required.','Sekurang-kurangnya satu kosong diperlukan.'));
                 return{ok:false,qIdx:i,tab:'EN',firstEl:tqBlank};
             }
 
@@ -1451,7 +1518,7 @@ function validateAllQuestions(){
                 var fibInEN=document.querySelectorAll('#sectionFIB .fib-word-input');
                 var emptyFibEN=Array.prototype.slice.call(fibInEN).filter(function(el){return!el.value.trim();});
                 qbSetGridErr(fibGridEN,emptyFibEN.slice(0,Math.max(1,2-enW.length)),
-                    'At least two answer options are required.');
+                    _T('At least two answer options are required.','Sekurang-kurangnya dua pilihan jawapan diperlukan.'));
                 return{ok:false,qIdx:i,tab:'EN',firstEl:emptyFibEN[0]||fibGridEN};
             }
 
@@ -1463,7 +1530,7 @@ function validateAllQuestions(){
                 var fibInBM=document.querySelectorAll('#sectionFIB .fib-word-input');
                 var emptyFibBM=Array.prototype.slice.call(fibInBM).filter(function(el){return!el.value.trim();});
                 qbSetGridErr(fibGridBM,emptyFibBM.slice(0,Math.max(1,2-bmW.length)),
-                    'At least two answer options are required.');
+                    _T('At least two answer options are required.','Sekurang-kurangnya dua pilihan jawapan diperlukan.'));
                 return{ok:false,qIdx:i,tab:'BM',firstEl:emptyFibBM[0]||fibGridBM};
             }
 
@@ -1473,13 +1540,13 @@ function validateAllQuestions(){
             if(enMapped.length===0){
                 var mapSectionEN=$id('fibMappingSection');
                 qbSetGridErr(mapSectionEN||$qs('#sectionFIB .qb-fib-words'),[],
-                    'Please select the correct mapping order.');
+                    _T('Please select the correct mapping order.','Sila pilih susunan pemetaan yang betul.'));
                 return{ok:false,qIdx:i,tab:'EN',firstEl:mapSectionEN};
             }
             if(enMapped.length!==enC){
                 var mapSectionEN2=$id('fibMappingSection');
                 qbSetGridErr(mapSectionEN2||$qs('#sectionFIB .qb-fib-words'),[],
-                    'The number of mappings must match the number of blanks.');
+                    _T('The number of mappings must match the number of blanks.','Bilangan pemetaan mesti sama dengan bilangan kosong.'));
                 return{ok:false,qIdx:i,tab:'EN',firstEl:mapSectionEN2};
             }
 
@@ -1489,13 +1556,13 @@ function validateAllQuestions(){
             if(bmMapped.length===0){
                 var mapSectionBM=$id('fibMappingSection');
                 qbSetGridErr(mapSectionBM||$qs('#sectionFIB .qb-fib-words'),[],
-                    'Please select the correct mapping order.');
+                    _T('Please select the correct mapping order.','Sila pilih susunan pemetaan yang betul.'));
                 return{ok:false,qIdx:i,tab:'BM',firstEl:mapSectionBM};
             }
             if(bmMapped.length!==bmC){
                 var mapSectionBM2=$id('fibMappingSection');
                 qbSetGridErr(mapSectionBM2||$qs('#sectionFIB .qb-fib-words'),[],
-                    'The number of mappings must match the number of blanks.');
+                    _T('The number of mappings must match the number of blanks.','Bilangan pemetaan mesti sama dengan bilangan kosong.'));
                 return{ok:false,qIdx:i,tab:'BM',firstEl:mapSectionBM2};
             }
         }
@@ -1503,7 +1570,7 @@ function validateAllQuestions(){
     return{ok:true};
 }
 
-/* ── Validate then flush ──────────────────────────────────── */
+/* -- Validate then flush ------------------------------------ */
 function validateFibBlanksAndFlush(){
     captureCurrentFields();
     qbClearAllErrors();
@@ -1633,7 +1700,7 @@ function updateFibMappings(){
     var blanks=(text.match(/\[Blank \d\]/g)||[]),words=[];
     document.querySelectorAll('.fib-word-input').forEach(function(i){if(i.value.trim())words.push(i.value.trim());});
     var container=$id('fibMappings');
-    /* Use the stored index map for the current language — not the live DOM — so EN and BM are independent */
+    /* Use the stored index map for the current language � not the live DOM � so EN and BM are independent */
     var q=window.__QD[window.__CI];
     var storedIdx=(window.__CT==='EN')?((q&&q.fibIdxEN)||{}):((q&&q.fibIdxBM)||{});
     var html='';
@@ -1675,14 +1742,14 @@ function updateProgress(){
     document.querySelectorAll('.qb-nav-del').forEach(function(b){total<=1?b.classList.add('disabled'):b.classList.remove('disabled');});
 }
 
-/* ── Delete modal ────────────────────────────────────────── */
+/* -- Delete modal ------------------------------------------ */
 var _pendingDeleteIndex=-1;
 
 function confirmDeleteQuestion(idx){
     if(window.__QD.length<=1)return; /* never delete the last question */
     _pendingDeleteIndex=idx;
     var msg=$id('qbDelMsg');
-    if(msg)msg.textContent='Question '+(idx+1)+' will be permanently removed. This action cannot be undone.';
+    if(msg)msg.textContent=_T('Question '+(idx+1)+' will be permanently removed. This action cannot be undone.','Soalan '+(idx+1)+' akan dipadamkan secara kekal. Tindakan ini tidak boleh dibatalkan.');
     $id('qbDelOverlay').classList.add('open');
 }
 function closeDeleteModal(e){
@@ -1704,7 +1771,7 @@ function executeDelete(){
     window.__QD.splice(delIdx,1);
 
     /* 3. Work out which question to show next:
-          - if delIdx < length → show delIdx (now the question that was after it)
+          - if delIdx < length ? show delIdx (now the question that was after it)
           - otherwise show the new last question                                  */
     var nextIdx=delIdx<window.__QD.length ? delIdx : window.__QD.length-1;
     window.__CI=nextIdx;
@@ -1736,19 +1803,19 @@ function executeDelete(){
     var hJson=$id(SRV.hidJson);if(hJson)hJson.value=JSON.stringify(window.__QD);
 }
 
-/* ── Image upload — per-question, stored in __QD[idx].img ─── */
+/* -- Image upload � per-question, stored in __QD[idx].img --- */
 function handleQImgUpload(input){
     if(!input.files||!input.files[0])return;
     var file=input.files[0];
     if(file.size>5*1024*1024){alert('<%: T("Image must be under 5 MB.","Imej mesti di bawah 5 MB.") %>');input.value='';return;}
-    /* Store just the filename in the question store — the server FileUpload saves the file */
+    /* Store just the filename in the question store � the server FileUpload saves the file */
     var fileName=file.name;
     if(window.__QD[window.__CI])window.__QD[window.__CI].img=fileName;
     /* Copy the selected file to the server-side FileUpload control so it uploads on submit */
     try{
         var dt=new DataTransfer();dt.items.add(file);
         var fu=$id(SRV.fuImg);if(fu)fu.files=dt.files;
-    }catch(e){/* DataTransfer not supported in all browsers — file still previews */}
+    }catch(e){/* DataTransfer not supported in all browsers � file still previews */}
     /* Also write filename into the hidden server field for fallback */
     var hf=$id(SRV.hidImgFile);if(hf)hf.value=fileName;
     /* Show preview using data-URL (display only) */
@@ -1768,7 +1835,7 @@ function removeQImg(){
     $id('qbImgPreview').style.display='none';$id('qbImgUploadLabel').style.display='flex';
 }
 
-/* ── Add question client-side (no postback) ──────────────── */
+/* -- Add question client-side (no postback) ---------------- */
 function clientAddQuestion(){
     captureCurrentFields();
     window.__QD.push(emptyQ());
@@ -1804,7 +1871,7 @@ function rebuildNavList(){
         del.className='qb-nav-del'+(window.__QD.length<=1?' disabled':'');
         del.dataset.idx=i;
         del.innerHTML='<i class="bi bi-trash3"></i>';
-        del.title='Delete question';
+        del.title=_T('Delete question','Padam soalan');
         del.addEventListener('click',function(){confirmDeleteQuestion(parseInt(del.dataset.idx,10));});
         row.appendChild(btn);row.appendChild(del);
         list.appendChild(row);
@@ -1812,7 +1879,7 @@ function rebuildNavList(){
     var nc=$id('navCount');if(nc)nc.textContent=window.__QD.length;
 }
 
-/* ── Bootstrap ────────────────────────────────────────────── */
+/* -- Bootstrap ---------------------------------------------- */
 function wireNavItems(){
     /* Wire server-rendered nav items (initial load / after postback) */
     document.querySelectorAll('.qb-nav-item').forEach(function(el){
@@ -1900,7 +1967,7 @@ window.addEventListener('load',function(){
     if(bn)bn.disabled=(window.__CI>=window.__QD.length-1);
 });
 
-/* ═══ UNSAVED CHANGES DETECTION ═══════════════════════════ */
+/* --- UNSAVED CHANGES DETECTION --------------------------- */
 (function(){
     var dirty=false;
     var pendingUrl='';
@@ -1954,7 +2021,7 @@ window.addEventListener('load',function(){
         });
     });
 
-    // Modal confirm — navigate away
+    // Modal confirm � navigate away
     var confirmBtn=document.getElementById('qbUnsavedConfirm');
     if(confirmBtn)confirmBtn.addEventListener('click',function(){
         dirty=false;
@@ -1972,6 +2039,183 @@ window.addEventListener('load',function(){
     document.addEventListener('keydown',function(e){
         if(e.key==='Escape'&&document.getElementById('qbUnsavedOverlay').classList.contains('open'))closeUnsavedModal();
     });
+})();
+
+/* --- WEBSITE LANGUAGE SWITCH � NO RELOAD ----------------- */
+(function(){
+    /* Intercept the master page language toggle buttons to prevent full postback */
+    function interceptLangBtns(){
+        var btns=document.querySelectorAll('[id$="btnLangEN_Top"],[id$="btnLangBM_Top"],[id$="btnLangEN_Header"],[id$="btnLangBM_Header"]');
+        btns.forEach(function(btn){
+            btn.addEventListener('click',function(e){
+                e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+                var newLang=btn.id.indexOf('LangEN')>-1?'EN':'BM';
+                if(newLang===window.__SITE_LANG)return;
+                switchSiteLang(newLang);
+                return false;
+            },true); /* capture phase to beat __doPostBack */
+            /* Also remove the href="javascript:__doPostBack..." so the link doesn't fire */
+            btn.removeAttribute('href');
+            btn.style.cursor='pointer';
+        });
+    }
+
+    function switchSiteLang(lang){
+        /* 1. Update session via AJAX (fire-and-forget) */
+        var xhr=new XMLHttpRequest();
+        xhr.open('POST','<%= ResolveUrl("~/Teacher/createUnitLevelQuiz.aspx/SetLanguage") %>',true);
+        xhr.setRequestHeader('Content-Type','application/json; charset=utf-8');
+        xhr.send(JSON.stringify({lang:lang}));
+
+        /* 2. Update client-side language variable */
+        window.__SITE_LANG=lang;
+
+        /* 3. Update toggle button active states */
+        document.querySelectorAll('.sb-lang-btn').forEach(function(b){
+            var isEN=b.id.indexOf('LangEN')>-1;
+            b.className=(isEN&&lang==='EN')||(!isEN&&lang==='BM')?'sb-lang-btn active':'sb-lang-btn';
+        });
+
+        /* 4. Refresh all UI text */
+        refreshPageLanguage();
+    }
+
+    function refreshPageLanguage(){
+        var L=window.__SITE_LANG;
+        var t=function(en,bm){return L==='BM'?bm:en;};
+
+        /* -- ERR_MSG (used by validation) -- */
+        ERR_MSG=t('Please fill in the required field.','Sila isi ruangan yang diperlukan.');
+
+        /* -- Navigation label -- */
+        updateNavLabel();
+
+        /* -- Placeholders (always website language) -- */
+        var ph=function(id,en,bm){var el=$id(id);if(el)el.placeholder=t(en,bm);};
+        ph(SRV.txtQ,'Type your question here...','Taip soalan anda di sini...');
+        ph(SRV.txtA,'Enter option A...','Masukkan pilihan A...');
+        ph(SRV.txtB,'Enter option B...','Masukkan pilihan B...');
+        ph(SRV.txtC,'Enter option C...','Masukkan pilihan C...');
+        ph(SRV.txtD,'Enter option D...','Masukkan pilihan D...');
+        ph(SRV.txtCE,'Explain why this answer is correct...','Terangkan mengapa jawapan ini betul...');
+        ph(SRV.txtWE,'Explain why the other answers are incorrect...','Terangkan mengapa jawapan lain salah...');
+
+        /* -- RTE placeholder -- */
+        var ed=document.getElementById('qbRteEditor');
+        if(ed)ed.setAttribute('data-placeholder',t(ed.dataset.placeholderEn,ed.dataset.placeholderBm));
+
+        /* -- Section headers (keep tab-awareness) -- */
+        var isEN=(window.__CT==='EN');
+        var ol=$qs('#sectionMCQ .qb-section-header-text');
+        if(ol)ol.textContent=isEN?t('Options (English)','Pilihan (Bahasa Inggeris)'):t('Options (Bahasa Melayu)','Pilihan (Bahasa Melayu)');
+        var ce=$qs('.qb-exp-correct .qb-exp-block-label');
+        if(ce)ce.textContent=(isEN?t('Correct Explanation (EN)','Penjelasan Betul (EN)'):t('Correct Explanation (BM)','Penjelasan Betul (BM)'))+' *';
+        var we=$qs('.qb-exp-wrong .qb-exp-block-label');
+        if(we)we.textContent=(isEN?t('Wrong Explanation (EN)','Penjelasan Salah (EN)'):t('Wrong Explanation (BM)','Penjelasan Salah (BM)'))+' *';
+
+        /* -- MCQ sub-header -- */
+        var mcqSub=$qs('#sectionMCQ .qb-section-header-sub');
+        if(mcqSub)mcqSub.textContent=t('Select one correct answer','Pilih satu jawapan betul');
+
+        /* -- True/False section -- */
+        var tfHead=$qs('#sectionTF .qb-section-header-text');
+        if(tfHead)tfHead.textContent=t('Select the correct answer','Pilih jawapan yang betul');
+
+        /* -- Multiselect section -- */
+        var msHead=$qs('#sectionMS .qb-section-header-text');
+        if(msHead)msHead.textContent=t('Select all correct answers','Pilih semua jawapan betul');
+
+        /* -- Explanations section header -- */
+        var expHeaders=document.querySelectorAll('.qb-section-header .qb-section-header-text');
+        expHeaders.forEach(function(h){
+            if(h.textContent.indexOf('Explanation')>-1||h.textContent.indexOf('Penjelasan')>-1)
+                h.textContent=t('Explanations','Penjelasan');
+        });
+
+        /* -- Buttons -- */
+        var submitBtn=document.querySelector('[id$="btnSubmitQuiz"]');
+        if(submitBtn)submitBtn.value=t('Submit Quiz','Hantar Kuiz');
+        var addBtn=document.querySelector('[id$="btnAddQuestion"]');
+        if(addBtn)addBtn.value=t('+ Add Question','+ Tambah Soalan');
+
+        /* -- Dropdown display text -- */
+        var ddlType=$id(SRV.ddlType);
+        if(ddlType){
+            var typeMap={'MCQ':t('MCQ','Aneka Pilihan'),'True/False':t('True / False','Betul / Salah'),'Multiselect':t('Multiselect','Pelbagai Pilihan'),'Drag & Drop':t('Drag & Drop','Seret & Letak')};
+            Array.prototype.slice.call(ddlType.options).forEach(function(opt){if(typeMap[opt.value])opt.text=typeMap[opt.value];});
+        }
+        var ddlDiff=$id(SRV.ddlDiff);
+        if(ddlDiff){
+            var diffMap={'Easy':t('Easy','Mudah'),'Medium':t('Medium','Sederhana'),'Hard':t('Hard','Sukar')};
+            Array.prototype.slice.call(ddlDiff.options).forEach(function(opt){if(diffMap[opt.value])opt.text=diffMap[opt.value];});
+        }
+
+        /* -- Properties panel labels -- */
+        var propLabels=document.querySelectorAll('.qb-prop-label');
+        propLabels.forEach(function(lbl){
+            var txt=lbl.textContent.trim();
+            if(txt.indexOf('Question Type')>-1||txt.indexOf('Jenis Soalan')>-1)
+                lbl.innerHTML=lbl.querySelector('.qb-prop-label-icon').outerHTML+' '+t('Question Type','Jenis Soalan');
+            else if(txt.indexOf('Difficulty')>-1||txt.indexOf('Kesukaran')>-1)
+                lbl.innerHTML=lbl.querySelector('.qb-prop-label-icon').outerHTML+' '+t('Difficulty','Kesukaran');
+        });
+
+        /* -- Properties panel title -- */
+        var propsTitle=$qs('.qb-props-title');
+        if(propsTitle)propsTitle.textContent=t('Properties','Sifat');
+
+        /* -- Image upload text -- */
+        var imgText=$qs('.qb-img-upload-text');
+        if(imgText)imgText.textContent=t('Upload Image','Muat Naik Imej');
+        var imgSub=$qs('.qb-img-upload-sub');
+        if(imgSub)imgSub.textContent=t('Optional � PNG, JPG, GIF up to 5 MB','Pilihan � PNG, JPG, GIF sehingga 5 MB');
+
+        /* -- Delete modal -- */
+        var delTitle=$qs('.qb-del-modal h3');
+        if(delTitle)delTitle.textContent=t('Delete Question?','Padam Soalan?');
+        var delCancel=$qs('.qb-del-btn-cancel');
+        if(delCancel)delCancel.textContent=t('Cancel','Batal');
+        var delConfirm=$qs('.qb-del-btn-confirm');
+        if(delConfirm)delConfirm.textContent=t('Delete','Padam');
+
+        /* -- Unsaved modal -- */
+        var unsavedTitle=$qs('.qb-unsaved-modal h3');
+        if(unsavedTitle)unsavedTitle.textContent=t('Unsaved Changes','Perubahan Belum Disimpan');
+        var unsavedDesc=$qs('.qb-unsaved-modal p');
+        if(unsavedDesc)unsavedDesc.textContent=t('Your unsaved question will be discarded. Are you sure you want to leave this page?','Soalan anda yang belum disimpan akan dibuang. Adakah anda pasti mahu meninggalkan halaman ini?');
+        var unsavedCancel=$qs('.qb-unsaved-cancel');
+        if(unsavedCancel)unsavedCancel.textContent=t('Cancel','Batal');
+        var unsavedConfirm=$qs('.qb-unsaved-confirm');
+        if(unsavedConfirm)unsavedConfirm.textContent=t('Confirm','Sahkan');
+
+        /* -- Success modal -- */
+        var successTitle=$qs('.qb-success-modal h3');
+        if(successTitle)successTitle.textContent=t('Quiz Submitted Successfully','Kuiz Berjaya Dihantar');
+        var successDesc=$qs('.qb-success-modal p');
+        if(successDesc)successDesc.textContent=t('Your questions have been submitted and are now pending review.','Soalan anda telah dihantar dan sedang menunggu semakan.');
+        var successBtn=$qs('.qb-success-modal .qb-btn');
+        if(successBtn)successBtn.textContent=t('Back to Manage Quizzes','Kembali ke Urus Kuiz');
+
+        /* -- Page title -- */
+        var pageTitle=$qs('.sb-page-title');
+        if(pageTitle)pageTitle.textContent=t('Create Quiz','Cipta Kuiz');
+
+        /* -- Question label -- */
+        var qLabel=$qs('.qb-label span');
+        if(qLabel){
+            var badge=document.getElementById('qbLangBadge');
+            var badgeHTML=badge?badge.outerHTML:'';
+            qLabel.innerHTML=t('Question','Soalan')+' * '+badgeHTML;
+        }
+
+        /* -- Multiselect count -- */
+        updateMSCards();
+
+        /* -- Progress bar -- */
+        updateProgress();
+    }
+
+    interceptLangBtns();
 })();
 </script>
 </asp:Content>

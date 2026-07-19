@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Notifications.aspx.cs"
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Notifications.aspx.cs"
     Inherits="ScienceBuddy.Teacher.Notifications" MasterPageFile="~/Site.Master" Title="Notifications" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
@@ -37,7 +37,8 @@
 
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
     <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Main","Utama") %></div>
-        <a href="<%: ResolveUrl("~/Teacher/Dashboard.aspx") %>" class="sb-sidebar-item"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label"><%: T("Dashboard","Papan Pemuka") %></span></a></div>
+        <a href="<%: ResolveUrl("~/Teacher/Dashboard.aspx") %>" class="sb-sidebar-item"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label"><%: T("Dashboard","Papan Pemuka") %></span></a>
+        <a href="<%: ResolveUrl("~/Teacher/Notifications.aspx") %>" class="sb-sidebar-item active"><i class="bi bi-bell item-icon"></i><span class="item-label"><%: T("Notifications","Notifikasi") %></span></a></div>
     <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Teaching","Pengajaran") %></div>
         <a href="<%: ResolveUrl("~/Teacher/manageMaterials.aspx") %>" class="sb-sidebar-item"><i class="bi bi-book item-icon"></i><span class="item-label"><%: T("Manage Materials","Bahan Pembelajaran") %></span></a>
         <a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx") %>" class="sb-sidebar-item"><i class="bi bi-patch-question item-icon"></i><span class="item-label"><%: T("Manage Quiz","Kuiz") %></span></a>
@@ -50,10 +51,10 @@
         <a href="<%: ResolveUrl("~/Teacher/MyProfile.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person item-icon"></i><span class="item-label"><%: T("My Profile","Profil Saya") %></span></a>
         <a href="<%: ResolveUrl("~/Logout.aspx") %>" class="sb-sidebar-item"><i class="bi bi-box-arrow-right item-icon"></i><span class="item-label"><%: T("Sign Out","Log Keluar") %></span></a></div>
 </asp:Content>
-<asp:Content ID="cPageTitle" ContentPlaceHolderID="PageTitle" runat="server"><%: T("Notifications","Pemberitahuan") %></asp:Content>
+<asp:Content ID="cPageTitle" ContentPlaceHolderID="PageTitle" runat="server"><%: T("Notifications","Notifikasi") %></asp:Content>
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 
-<div class="nt-header"><h1><%: T("Notifications","Pemberitahuan") %></h1><p><%: T("Stay updated with your latest ScienceBuddy activities.","Kekal dikemas kini dengan aktiviti ScienceBuddy terkini anda.") %></p></div>
+<div class="nt-header"><h1><%: T("Notifications","Notifikasi") %></h1><p><%: T("Stay updated with your latest ScienceBuddy activities.","Kekal dikemas kini dengan aktiviti ScienceBuddy terkini anda.") %></p></div>
 
 <%-- Segmented Tabs with counts --%>
 <div class="nt-tabs">

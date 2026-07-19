@@ -1,22 +1,22 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ForumReply.aspx.cs"
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ForumReply.aspx.cs"
     Inherits="ScienceBuddy.Teacher.ForumReply" MasterPageFile="~/Site.Master" Title="Forum Discussion" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
 <style>
 :root{--tp:#6C63FF;--th:#5A52E0;--tl:#F5F3FF;--tc:#FFF;--tb:#E5E7EB;--tt:#374151;--tm:#6B7280;--ts:#10B981;--te:#EF4444;}
-/* ── 2-column layout ── */
+/* -- 2-column layout -- */
 .frd-layout{display:grid;grid-template-columns:1fr 340px;gap:1.5rem;align-items:start;}
-/* ── Back ── */
+/* -- Back -- */
 .frd-back{display:inline-flex;align-items:center;gap:6px;font-size:.82rem;font-weight:700;color:var(--tp);text-decoration:none;margin-bottom:1.25rem;transition:color .15s;}
 .frd-back:hover{color:var(--th);text-decoration:none;}
-/* ── Error ── */
+/* -- Error -- */
 .frd-err-card{background:#FEF2F2;border:1.5px solid #FECACA;border-radius:18px;padding:3rem 2rem;text-align:center;}
 .frd-err-card i{font-size:2.8rem;color:var(--te);opacity:.55;margin-bottom:.75rem;display:block;}
 .frd-err-title{font-size:1rem;font-weight:800;color:#991B1B;margin-bottom:.4rem;}
 .frd-err-sub{font-size:.85rem;color:#B91C1C;margin-bottom:1.1rem;}
 .frd-err-link{display:inline-flex;align-items:center;gap:6px;background:var(--tp);border:none;border-radius:10px;padding:.55rem 1.1rem;font-weight:700;font-size:.83rem;color:#fff;text-decoration:none;transition:background .2s;}
 .frd-err-link:hover{background:var(--th);color:#fff;text-decoration:none;}
-/* ── Main discussion card ── */
+/* -- Main discussion card -- */
 .frd-main-card{background:var(--tc);border:1.5px solid #D8D4FF;border-radius:18px;padding:1.75rem 2rem;box-shadow:0 6px 24px rgba(108,99,255,.09);margin-bottom:1.5rem;}
 .frd-card-top{display:flex;align-items:flex-start;gap:14px;margin-bottom:1.1rem;}
 .frd-avatar-lg{width:48px;height:48px;border-radius:50%;background:#EDE9FE;color:var(--tp);display:flex;align-items:center;justify-content:center;font-size:.95rem;font-weight:800;flex-shrink:0;border:2px solid #C4BFFF;}
@@ -37,7 +37,7 @@
 .frd-like-btn.liked:hover{background:#FEE2E2;}
 .frd-like-btn.notliked{color:var(--tm);border-color:var(--tb);}
 .frd-like-btn.notliked:hover{color:var(--te);border-color:#FEE2E2;background:#FEF2F2;}
-/* ── Reply composer ── */
+/* -- Reply composer -- */
 .frd-composer-wrap{background:var(--tc);border:1.5px solid var(--tb);border-radius:16px;padding:1rem 1.25rem;box-shadow:0 2px 8px rgba(0,0,0,.03);margin-bottom:1.5rem;}
 .frd-composer-row{display:flex;align-items:center;gap:10px;}
 .frd-composer-ta{flex:1;min-width:0;border-radius:12px;border:1.5px solid var(--tb);padding:.6rem .85rem;font-size:.85rem;line-height:1.5;resize:none;min-height:42px;max-height:120px;font-family:inherit;transition:border-color .2s,box-shadow .2s;box-sizing:border-box;}
@@ -46,7 +46,7 @@
 .frd-val-msg{font-size:.75rem;color:var(--te);font-weight:600;display:flex;align-items:center;gap:4px;}
 .frd-send-btn{width:42px;height:42px;border-radius:50%;background:var(--tp);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex-shrink:0;transition:background .2s,transform .15s,box-shadow .2s;box-shadow:0 2px 8px rgba(108,99,255,.22);}
 .frd-send-btn:hover{background:var(--th);transform:scale(1.08);box-shadow:0 4px 14px rgba(108,99,255,.32);}
-/* ── Comments ── */
+/* -- Comments -- */
 .frd-comments-hd{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;}
 .frd-comments-hd h2{font-size:1rem;font-weight:800;color:var(--tt);margin:0;}
 .frd-count-badge{font-size:.72rem;font-weight:700;background:var(--tl);color:var(--tp);padding:2px 10px;border-radius:20px;}
@@ -67,7 +67,7 @@
 .frd-empty i{font-size:2.2rem;color:var(--tm);opacity:.3;margin-bottom:.6rem;}
 .frd-empty-title{font-size:.9rem;font-weight:700;color:var(--tt);margin-bottom:.2rem;}
 .frd-empty-sub{font-size:.78rem;color:var(--tm);}
-/* ── Right sidebar ── */
+/* -- Right sidebar -- */
 .frd-sidebar{display:flex;flex-direction:column;gap:1.25rem;}
 .frd-sidebar-card{background:var(--tc);border:1.5px solid var(--tb);border-radius:16px;padding:1.1rem 1.25rem;box-shadow:0 2px 8px rgba(0,0,0,.03);}
 .frd-sidebar-title{font-size:.82rem;font-weight:800;color:var(--tt);margin-bottom:.9rem;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--tb);padding-bottom:.6rem;}
@@ -88,7 +88,7 @@
 .frd-part-item{display:flex;align-items:center;gap:9px;}
 .frd-part-avatar{width:30px;height:30px;border-radius:50%;background:#EDE9FE;color:var(--tp);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;flex-shrink:0;}
 .frd-part-name{font-size:.78rem;font-weight:600;color:var(--tt);}
-/* ── Toast ── */
+/* -- Toast -- */
 .frd-toast-wrap{position:fixed;top:1.25rem;right:1.25rem;z-index:9999;}
 .frd-toast{background:var(--ts);color:#fff;padding:.7rem 1.1rem;border-radius:10px;font-size:.82rem;font-weight:600;display:flex;align-items:center;gap:6px;box-shadow:0 6px 18px rgba(16,185,129,.25);animation:frdIn .3s ease;}
 @keyframes frdIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
@@ -105,10 +105,11 @@
 </style>
 </asp:Content>
 
-<%-- ════ SIDEBAR MENU ════ --%>
+<%-- ---- SIDEBAR MENU ---- --%>
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
     <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Main","Utama") %></div>
-        <a href="<%: ResolveUrl("~/Teacher/Dashboard.aspx") %>" class="sb-sidebar-item"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label"><%: T("Dashboard","Papan Pemuka") %></span></a></div>
+        <a href="<%: ResolveUrl("~/Teacher/Dashboard.aspx") %>" class="sb-sidebar-item"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label"><%: T("Dashboard","Papan Pemuka") %></span></a>
+        <a href="<%: ResolveUrl("~/Teacher/Notifications.aspx") %>" class="sb-sidebar-item"><i class="bi bi-bell item-icon"></i><span class="item-label"><%: T("Notifications","Notifikasi") %></span></a></div>
     <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Teaching","Pengajaran") %></div>
         <a href="<%: ResolveUrl("~/Teacher/manageMaterials.aspx") %>" class="sb-sidebar-item"><i class="bi bi-book item-icon"></i><span class="item-label"><%: T("Manage Materials","Bahan Pembelajaran") %></span></a>
         <a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx") %>" class="sb-sidebar-item"><i class="bi bi-patch-question item-icon"></i><span class="item-label"><%: T("Manage Quiz","Kuiz") %></span></a>
@@ -124,7 +125,7 @@
 
 <asp:Content ID="cPageTitle" ContentPlaceHolderID="PageTitle" runat="server"><%: T("Forum Discussion","Perbincangan Forum") %></asp:Content>
 
-<%-- ════ MAIN CONTENT ════ --%>
+<%-- ---- MAIN CONTENT ---- --%>
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 
     <%-- Back link --%>
@@ -132,7 +133,7 @@
         <i class="bi bi-arrow-left"></i> <%: T("Back to Forum","Kembali ke Forum") %>
     </a>
 
-    <%-- ── Error panel ── --%>
+    <%-- -- Error panel -- --%>
     <asp:Panel ID="pnlError" runat="server" Visible="false">
         <div class="frd-err-card">
             <i class="bi bi-exclamation-triangle-fill"></i>
@@ -144,11 +145,11 @@
         </div>
     </asp:Panel>
 
-    <%-- ── Main content (2-column) ── --%>
+    <%-- -- Main content (2-column) -- --%>
     <asp:Panel ID="pnlMain" runat="server" Visible="false">
     <div class="frd-layout">
 
-        <%-- ══ LEFT COLUMN ══ --%>
+        <%-- -- LEFT COLUMN -- --%>
         <div class="frd-left-col">
 
             <%-- Discussion card --%>
@@ -233,7 +234,7 @@
 
         </div><%-- /.frd-left-col --%>
 
-        <%-- ══ RIGHT SIDEBAR ══ --%>
+        <%-- -- RIGHT SIDEBAR -- --%>
         <div class="frd-sidebar">
 
             <%-- More Discussions --%>
@@ -249,7 +250,7 @@
                                         <div class="frd-more-name"><%# HttpUtility.HtmlEncode(Eval("creatorName").ToString()) %></div>
                                         <div class="frd-more-date"><%# Eval("timeAgo") %></div>
                                         <div class="frd-more-title"><%# HttpUtility.HtmlEncode(Eval("title").ToString()) %></div>
-                                        <a href='<%# ResolveUrl("~/Teacher/ForumReply.aspx") + "?forumId=" + Eval("forumId") %>' class="frd-more-link"><%: T("View Discussion →","Lihat Perbincangan →") %></a>
+                                        <a href='<%# ResolveUrl("~/Teacher/ForumReply.aspx") + "?forumId=" + Eval("forumId") %>' class="frd-more-link"><%: T("View Discussion ?","Lihat Perbincangan ?") %></a>
                                     </div>
                                 </div>
                             </ItemTemplate>
@@ -269,7 +270,7 @@
 
 </asp:Content>
 
-<%-- ════ SCRIPTS ════ --%>
+<%-- ---- SCRIPTS ---- --%>
 <asp:Content ID="cScripts" ContentPlaceHolderID="ScriptsContent" runat="server">
 <script>
 (function () {

@@ -15,6 +15,15 @@ namespace ScienceBuddy.Teacher
     {
 
         /// <summary>
+        /// hidLicenseStatus control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hidLicenseStatus;
+
+        /// <summary>
         /// litUpcoming control.
         /// </summary>
         /// <remarks>
@@ -51,40 +60,57 @@ namespace ScienceBuddy.Teacher
         protected global::System.Web.UI.WebControls.Literal litStudentsJoined;
 
         /// <summary>
-        /// btnTabUpcoming control.
+        /// pnlListUpcoming control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        /// <summary>
-        /// pnlListUpcoming control.
-        /// </summary>
         protected global::System.Web.UI.WebControls.Panel pnlListUpcoming;
 
         /// <summary>
         /// rptUpcoming control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Repeater rptUpcoming;
 
         /// <summary>
         /// pnlUpcomingEmpty control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlUpcomingEmpty;
 
         /// <summary>
         /// pnlListHistory control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlListHistory;
 
         /// <summary>
         /// rptHistory control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Repeater rptHistory;
 
         /// <summary>
         /// pnlHistoryEmpty control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlHistoryEmpty;
 
         /// <summary>
@@ -106,15 +132,6 @@ namespace ScienceBuddy.Teacher
         protected global::System.Web.UI.WebControls.TextBox txtInstantDesc;
 
         /// <summary>
-        /// ddlInstantSubtopic control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlInstantSubtopic;
-
-        /// <summary>
         /// ddlInstantUnit control.
         /// </summary>
         /// <remarks>
@@ -122,6 +139,15 @@ namespace ScienceBuddy.Teacher
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList ddlInstantUnit;
+
+        /// <summary>
+        /// ddlInstantSubtopic control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlInstantSubtopic;
 
         /// <summary>
         /// pnlInstantError control.
@@ -331,15 +357,6 @@ namespace ScienceBuddy.Teacher
         protected global::System.Web.UI.WebControls.TextBox txtEnd;
 
         /// <summary>
-        /// ddlSubtopic control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlSubtopic;
-
-        /// <summary>
         /// ddlUnit control.
         /// </summary>
         /// <remarks>
@@ -347,6 +364,15 @@ namespace ScienceBuddy.Teacher
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList ddlUnit;
+
+        /// <summary>
+        /// ddlSubtopic control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlSubtopic;
 
         /// <summary>
         /// txtDesc control.
@@ -402,19 +428,94 @@ namespace ScienceBuddy.Teacher
         /// </remarks>
         protected global::System.Web.UI.WebControls.HiddenField hidShowModal;
 
+        /// <summary>
+        /// hidShowSummary control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.HiddenField hidShowSummary;
 
-        protected global::System.Web.UI.WebControls.HiddenField hidLicenseStatus;
-
-        // Summary panel controls
+        /// <summary>
+        /// pnlSummary control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlSummary;
+
+        /// <summary>
+        /// litSumTitle control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litSumTitle;
+
+        /// <summary>
+        /// litSumStart control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litSumStart;
+
+        /// <summary>
+        /// litSumEnd control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litSumEnd;
+
+        /// <summary>
+        /// litSumDuration control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litSumDuration;
+
+        /// <summary>
+        /// litSumStudents control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litSumStudents;
+
+        /// <summary>
+        /// pnlSumPartsList control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlSumPartsList;
+
+        /// <summary>
+        /// rptSumParticipants control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Repeater rptSumParticipants;
+
+        /// <summary>
+        /// pnlSumNoParticipants control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlSumNoParticipants;
     }
 }

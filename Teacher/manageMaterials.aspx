@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="manageMaterials.aspx.cs"
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="manageMaterials.aspx.cs"
     Inherits="ScienceBuddy.Teacher.manageMaterials" MasterPageFile="~/Site.Master"
     Title="Manage Materials" %>
 
@@ -29,14 +29,14 @@
     box-shadow: none; pointer-events: none;
 }
 
-/* ─── Tabs (underline style) ─── */
+/* --- Tabs (underline style) --- */
 .mm-tabs{display:flex;gap:0;border-bottom:2px solid var(--tc-border);margin-bottom:1.25rem;}
 .mm-tab{display:inline-flex;align-items:center;gap:6px;padding:.75rem 1.3rem;font-size:.9rem;font-weight:700;cursor:pointer;border:none;border-radius:0;background:transparent;color:var(--tc-muted);transition:color .15s;text-decoration:none;position:relative;margin-bottom:-2px;border-bottom:2.5px solid transparent;}
 .mm-tab:hover{color:var(--tc-primary);text-decoration:none;}
 .mm-tab.active{color:var(--tc-primary);border-bottom-color:var(--tc-primary);}
 .mm-tab.active:hover{color:var(--tc-primary);}
 
-/* ─── Status chips ─── */
+/* --- Status chips --- */
 .mm-chips{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap;}
 .mm-chip{display:inline-flex;align-items:center;padding:.4rem .9rem;border-radius:999px;font-size:.82rem;font-weight:600;cursor:pointer;border:1.5px solid var(--tc-border);background:var(--tc-card-bg);color:var(--tc-muted);transition:all .15s;text-decoration:none;}
 .mm-chip:hover{background:#F3F4F6;text-decoration:none;}
@@ -47,7 +47,7 @@
 .mm-chip[data-status="pending"].active{background:#FEF3C7;color:#B45309;border-color:#FCD34D;}
 .mm-chip[data-status="rejected"].active{background:#FEE2E2;color:#B91C1C;border-color:#FCA5A5;}
 
-/* ─── Filter bar ─── */
+/* --- Filter bar --- */
 .mm-filter-bar {
     display: flex; align-items: center; gap: 10px;
     margin-bottom: 1.25rem; flex-wrap: wrap;
@@ -86,7 +86,7 @@
 }
 .mm-btn-search:hover { background: var(--tc-hover); }
 
-/* ─── Material cards ─── */
+/* --- Material cards --- */
 .mm-card {
     background: var(--tc-card-bg); border: 1.5px solid var(--tc-border);
     border-radius: 14px; padding: 1.5rem 1.6rem;
@@ -145,7 +145,7 @@
 .mm-act-delete:hover { background: #FEE2E2; }
 .mm-empty { display: flex; flex-direction: column; align-items: center; padding: 3.5rem; text-align: center; color: var(--tc-muted); }
 
-/* ─── Modal ─── */
+/* --- Modal --- */
 .mm-modal-overlay { position: fixed; inset: 0; background: rgba(17,24,39,.5); z-index: 9000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
 .mm-modal { background: #fff; border-radius: 16px; width: 100%; max-width: 600px; box-shadow: 0 24px 64px rgba(0,0,0,.2); animation: mmFadeIn .2s ease; }
 .mm-modal-sm { max-width: 420px; }
@@ -162,26 +162,26 @@
 .mm-btn-cancel { background: #fff; border: 1.5px solid var(--tc-border); border-radius: 10px; padding: .55rem 1.1rem; font-weight: 600; font-size: .84rem; color: var(--tc-text); cursor: pointer; transition: border-color .15s; }
 .mm-btn-cancel:hover { border-color: var(--tc-muted); }
 
-/* ─── Form ─── */
+/* --- Form --- */
 .mm-label { font-size: .79rem; font-weight: 600; color: var(--tc-text); display: block; margin-bottom: 4px; }
 .mm-input { width: 100%; border-radius: 10px; border: 1.5px solid var(--tc-border); padding: .55rem .75rem; font-size: .84rem; transition: border-color .2s, box-shadow .2s; }
 .mm-input:focus { border-color: var(--tc-primary); box-shadow: 0 0 0 3px rgba(108,99,255,.08); outline: none; }
 .mm-form-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
 .mm-form-grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
 
-/* ─── Toast ─── */
+/* --- Toast --- */
 .mm-toast-container { position: fixed; top: 1.25rem; right: 1.25rem; z-index: 9999; display: flex; flex-direction: column; gap: .5rem; }
 .mm-toast { background: var(--tc-primary); color: #fff; padding: .75rem 1.25rem; border-radius: 10px; font-size: .84rem; font-weight: 600; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 24px rgba(108,99,255,.3); animation: mmSlideIn .3s ease; }
 .mm-toast-out { animation: mmSlideOut .4s ease forwards; }
 @keyframes mmSlideIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
 @keyframes mmSlideOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(30px); } }
 
-/* ─── Validation messages ─── */
+/* --- Validation messages --- */
 .mm-val-msg { font-size:.76rem; color:var(--tc-error); margin-top:4px; display:none; font-weight:600; }
 .mm-val-msg.show { display:block; }
 .mm-input.mm-invalid { border-color:var(--tc-error)!important; }
 
-/* ─── Responsive ─── */
+/* --- Responsive --- */
 @media (max-width: 1100px) {
     .mm-filter-bar { flex-wrap: wrap; }
     .mm-search-wrap { width: 100%; }
@@ -201,7 +201,8 @@
 
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
     <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Main","Utama") %></div>
-        <a href="<%: ResolveUrl("~/Teacher/Dashboard.aspx") %>" class="sb-sidebar-item"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label"><%: T("Dashboard","Papan Pemuka") %></span></a></div>
+        <a href="<%: ResolveUrl("~/Teacher/Dashboard.aspx") %>" class="sb-sidebar-item"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label"><%: T("Dashboard","Papan Pemuka") %></span></a>
+        <a href="<%: ResolveUrl("~/Teacher/Notifications.aspx") %>" class="sb-sidebar-item"><i class="bi bi-bell item-icon"></i><span class="item-label"><%: T("Notifications","Notifikasi") %></span></a></div>
     <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Teaching","Pengajaran") %></div>
         <a href="<%: ResolveUrl("~/Teacher/manageMaterials.aspx") %>" class="sb-sidebar-item active"><i class="bi bi-book item-icon"></i><span class="item-label"><%: T("Manage Materials","Bahan Pembelajaran") %></span></a>
         <a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx") %>" class="sb-sidebar-item"><i class="bi bi-patch-question item-icon"></i><span class="item-label"><%: T("Manage Quiz","Kuiz") %></span></a>
@@ -222,7 +223,7 @@
 <%-- Status panels --%>
 <asp:Panel ID="pnlDenied" runat="server" Visible="false">
     <div style="display:flex;flex-direction:column;align-items:center;padding:3rem;text-align:center;">
-        <div style="font-size:3rem;margin-bottom:1rem;">🚫</div>
+        <div style="font-size:3rem;margin-bottom:1rem;">??</div>
         <h2 style="color:var(--tc-text);font-weight:800;">Access Denied</h2>
         <p style="color:var(--tc-muted);max-width:450px;">Your account cannot access this page. Please contact support.</p>
     </div>
@@ -256,7 +257,7 @@
     <asp:LinkButton ID="btnTabDiscover" runat="server" CssClass="mm-tab" OnClick="btnTabDiscover_Click" CausesValidation="false"><i class="bi bi-globe2"></i> <%: T("Discover Materials","Terokai Bahan") %></asp:LinkButton>
 </div>
 
-<%-- Search & Filter — hidden for pending teachers and on Discover tab --%>
+<%-- Search & Filter � hidden for pending teachers and on Discover tab --%>
 <asp:Panel ID="pnlFilterBar" runat="server">
 <div class="mm-filter-bar">
     <div class="mm-search-wrap">
@@ -284,7 +285,7 @@
 <%-- Pending verification state (My Materials tab only) --%>
 <asp:Panel ID="pnlMyMaterialsPending" runat="server" Visible="false">
     <div style="display:flex;flex-direction:column;align-items:center;padding:3.5rem 2rem;text-align:center;">
-        <div style="font-size:3.5rem;margin-bottom:1rem;opacity:.85;">⏳</div>
+        <div style="font-size:3.5rem;margin-bottom:1rem;opacity:.85;">?</div>
         <h2 style="font-size:1.15rem;font-weight:800;color:var(--tc-text);margin:0 0 .6rem;"><%: T("Verification Pending","Pengesahan Sedang Diproses") %></h2>
         <p style="font-size:.88rem;color:var(--tc-muted);max-width:480px;line-height:1.65;margin:0;"><%: T("Your teaching certificate is under review. You'll be able to upload and manage learning materials once your verification is approved.","Sijil pengajaran anda sedang dalam semakan. Anda boleh memuat naik dan mengurus bahan pembelajaran setelah pengesahan anda diluluskan.") %></p>
     </div>
@@ -332,7 +333,7 @@
 <%-- Empty state (My Materials) --%>
 <asp:Panel ID="pnlEmpty" runat="server" Visible="false">
     <div class="mm-empty">
-        <div style="font-size:3rem;opacity:.5;margin-bottom:.75rem;">📂</div>
+        <div style="font-size:3rem;opacity:.5;margin-bottom:.75rem;">??</div>
         <div style="font-size:1rem;font-weight:700;color:var(--tc-text);margin-bottom:.25rem;"><asp:Literal ID="litEmptyTitle" runat="server" /></div>
         <div style="font-size:.85rem;margin-bottom:1rem;"><asp:Literal ID="litEmptyDesc" runat="server" /></div>
         <asp:Panel ID="pnlEmptyUploadBtn" runat="server">
@@ -341,7 +342,7 @@
     </div>
 </asp:Panel>
 
-<%-- ═══ DISCOVER MATERIALS ═══ --%>
+<%-- --- DISCOVER MATERIALS --- --%>
 <asp:Panel ID="pnlDiscover" runat="server" Visible="false">
     <asp:Repeater ID="rptDiscover" runat="server" OnItemCommand="rptDiscover_ItemCommand">
         <ItemTemplate>
@@ -380,13 +381,13 @@
 <%-- Empty state (Discover) --%>
 <asp:Panel ID="pnlDiscoverEmpty" runat="server" Visible="false">
     <div class="mm-empty">
-        <div style="font-size:3rem;opacity:.5;margin-bottom:.75rem;">🔍</div>
+        <div style="font-size:3rem;opacity:.5;margin-bottom:.75rem;">??</div>
         <div style="font-size:1rem;font-weight:700;color:var(--tc-text);margin-bottom:.25rem;"><%: T("No shared materials are available at the moment.","Tiada bahan kongsi tersedia buat masa ini.") %></div>
         <div style="font-size:.85rem;"><%: T("Check back later for materials shared by other teachers.","Semak kemudian untuk bahan yang dikongsi oleh guru lain.") %></div>
     </div>
 </asp:Panel>
 
-<%-- ═══ EDIT MODAL ═══ --%>
+<%-- --- EDIT MODAL --- --%>
 <div id="editModal" class="mm-modal-overlay" style="display:none;">
     <div class="mm-modal">
         <div class="mm-modal-header">
@@ -394,7 +395,7 @@
                 <h3 class="mm-modal-title"><asp:Literal ID="litFormTitle" runat="server" Text="Edit Material" /></h3>
                 <p class="mm-modal-sub">Update your learning material information.</p>
             </div>
-            <button type="button" class="mm-modal-close" onclick="closeEditModal()">×</button>
+            <button type="button" class="mm-modal-close" onclick="closeEditModal()">�</button>
         </div>
         <div class="mm-modal-body">
             <asp:HiddenField ID="hidMaterialId" runat="server" Value="" />
@@ -459,10 +460,10 @@
     </div>
 </div>
 
-<%-- ═══ SAVE CONFIRMATION MODAL ═══ --%>
+<%-- --- SAVE CONFIRMATION MODAL --- --%>
 <div id="saveConfirmModal" class="mm-modal-overlay" style="display:none;">
     <div style="background:#fff;border-radius:20px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(17,24,39,.16);border:1px solid #F0F0F0;position:relative;animation:mmFadeIn .2s ease;">
-        <button type="button" onclick="closeSaveConfirm()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:1.3rem;color:#9CA3AF;cursor:pointer;line-height:1;padding:2px;">×</button>
+        <button type="button" onclick="closeSaveConfirm()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:1.3rem;color:#9CA3AF;cursor:pointer;line-height:1;padding:2px;">�</button>
         <div style="padding:2rem 1.75rem 1.5rem;text-align:center;">
             <div style="width:56px;height:56px;border-radius:50%;background:#EEF2FF;border:2px solid #C7D2FE;display:inline-flex;align-items:center;justify-content:center;margin-bottom:1rem;">
                 <i class="bi bi-info-circle-fill" style="font-size:1.5rem;color:#6C63FF;"></i>
@@ -477,7 +478,7 @@
     </div>
 </div>
 
-<%-- ═══ DELETE CONFIRMATION MODAL ═══ --%>
+<%-- --- DELETE CONFIRMATION MODAL --- --%>
 <div id="deleteConfirmModal" class="mm-modal-overlay" style="display:none;">
     <div class="mm-modal mm-modal-sm" style="border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.18);">
         <div style="background:#FEF2F2;padding:1.1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #FECACA;">
@@ -505,12 +506,12 @@
 <asp:HiddenField ID="hidToast" runat="server" Value="" />
 <asp:HiddenField ID="hidActiveTab" runat="server" Value="mine" />
 
-<%-- ═══ VIEW MATERIAL MODAL ═══ --%>
+<%-- --- VIEW MATERIAL MODAL --- --%>
 <div id="viewMaterialModal" class="mm-modal-overlay" style="display:none;" onclick="if(event.target===this)closeViewModal()">
     <div class="mm-modal" style="max-width:780px;max-height:90vh;display:flex;flex-direction:column;border-radius:18px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.22);">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.5rem;border-bottom:1px solid var(--tc-border);flex-shrink:0;">
             <h3 id="vmTitle" style="font-size:1rem;font-weight:800;color:var(--tc-text);margin:0;"></h3>
-            <button type="button" style="background:none;border:none;font-size:1.3rem;color:var(--tc-muted);cursor:pointer;" onclick="closeViewModal()">×</button>
+            <button type="button" style="background:none;border:none;font-size:1.3rem;color:var(--tc-muted);cursor:pointer;" onclick="closeViewModal()">�</button>
         </div>
         <div style="flex:1;overflow-y:auto;padding:1.25rem 1.5rem;">
             <div id="vmPreview" style="border-radius:12px;overflow:hidden;"></div>
@@ -543,7 +544,7 @@ function openViewModal(btn) {
     var resolvedUrl = '<%: ResolveUrl("~/") %>' + file;
     var ext = file.split('.').pop().toLowerCase();
 
-    // Unsupported preview types — open in new tab instead
+    // Unsupported preview types � open in new tab instead
     if (['ppt','pptx','doc','docx','xls','xlsx'].indexOf(ext) >= 0) {
         showToast('Preview is not available for this file type. Opening in a new tab...');
         window.open(resolvedUrl, '_blank');
@@ -552,7 +553,7 @@ function openViewModal(btn) {
 
     document.getElementById('vmTitle').textContent = title;
 
-    // Preview only — no meta, no description
+    // Preview only � no meta, no description
     var preview = document.getElementById('vmPreview');
 
     if (ext === 'pdf') {
@@ -562,7 +563,7 @@ function openViewModal(btn) {
     } else if (['mp4','webm','ogg'].indexOf(ext) >= 0) {
         preview.innerHTML = '<video controls style="width:100%;border-radius:10px;"><source src="' + resolvedUrl + '" type="video/' + ext + '">Your browser does not support video.</video>';
     } else {
-        // Any other unknown type — also open in new tab
+        // Any other unknown type � also open in new tab
         showToast('Preview is not available for this file type. Opening in a new tab...');
         window.open(resolvedUrl, '_blank');
         return;
@@ -587,7 +588,7 @@ function closeEditModal() {
 }
 function showEditModal() { document.getElementById('editModal').style.display = 'flex'; }
 
-/* ═══ VALIDATION ═══ */
+/* --- VALIDATION --- */
 function clearValidation() {
     var msgs = document.querySelectorAll('.mm-val-msg');
     for (var i = 0; i < msgs.length; i++) msgs[i].classList.remove('show');
@@ -620,7 +621,7 @@ function validateEditForm() {
     var titleVal = titleEl.value.trim();
     if (!titleVal) { showVal('valTitle', titleEl); valid = false; } else { hideVal('valTitle', titleEl); }
 
-    // Description (optional — no validation needed)
+    // Description (optional � no validation needed)
     var descEl = document.querySelector('[id$="txtDescription"]');
     var descVal = descEl.value.trim();
 
@@ -671,7 +672,7 @@ function validateEditForm() {
         return;
     }
 
-    // All valid and has changes — show confirmation modal
+    // All valid and has changes � show confirmation modal
     openSaveConfirm();
 }
 
@@ -698,7 +699,7 @@ function closeSaveConfirm() {
     if (btn) { btn.disabled = false; btn.value = 'Confirm'; btn.style.opacity = ''; btn.style.cursor = ''; btn.removeAttribute('data-saving'); }
 }
 
-/* Attach loading state to Confirm Changes button — uses setTimeout to not block postback */
+/* Attach loading state to Confirm Changes button � uses setTimeout to not block postback */
 (function(){
     var btn = document.querySelector('[id$="btnSave"]');
     if (!btn) return;

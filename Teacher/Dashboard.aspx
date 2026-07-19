@@ -1,10 +1,10 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Dashboard.aspx.cs"
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Dashboard.aspx.cs"
     Inherits="ScienceBuddy.Teacher.Dashboard" MasterPageFile="~/Site.Master"
     Title="Teacher Dashboard" %>
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
 <style>
-/* ── Teacher Dashboard – Purple Theme ── */
+/* -- Teacher Dashboard � Purple Theme -- */
 :root {
     --tc-primary: #6C63FF;
     --tc-secondary: #8B5CF6;
@@ -126,7 +126,7 @@
     animation: tdHeartFloat 5s ease-in-out infinite;
 }
 .td-hero-decor-heart::before {
-    content: '♥'; font-size: 12px; color: rgba(244,114,182,.6);
+    content: '?'; font-size: 12px; color: rgba(244,114,182,.6);
 }
 @keyframes tdHeartFloat {
     0%, 100% { transform: translateY(0); opacity: .5; }
@@ -182,7 +182,7 @@
     .td-hero-decor-circle1, .td-hero-decor-circle3 { animation: none; }
 }
 
-/* ── Available Topics Modal ── */
+/* -- Available Topics Modal -- */
 .td-topics-overlay {
     display: none; position: fixed; inset: 0; z-index: 9999;
     background: rgba(30,15,60,.5); backdrop-filter: blur(4px);
@@ -356,7 +356,7 @@
 }
 .td-subtopic-item:hover { background: #F0EAFF; border-color: #DDD6FE; }
 .td-subtopic-item::before {
-    content: '✦'; font-size: .6rem; color: #A78BFA; flex-shrink: 0; opacity: .7;
+    content: '?'; font-size: .6rem; color: #A78BFA; flex-shrink: 0; opacity: .7;
 }
 /* Loading & empty states */
 .td-topics-loading {
@@ -552,7 +552,7 @@
 .td-upcoming-empty-btn:hover{background:#059669;color:#fff;text-decoration:none;}
 @media(max-width:900px){.td-live-row{grid-template-columns:1fr;}}
 
-/* Practice Quiz Engagement – Carousel */
+/* Practice Quiz Engagement � Carousel */
 .td-pq-carousel-wrap { position: relative; margin-bottom: 2rem; }
 .td-pq-carousel { overflow: hidden; border-radius: 8px; }
 .td-pq-track {
@@ -676,7 +676,7 @@
 }
 .td-status-msg { font-size: 1rem; color: var(--tc-muted); max-width: 500px; line-height: 1.6; }
 
-/* Quiz Contribution Cards — coloured */
+/* Quiz Contribution Cards � coloured */
 .td-qc-card{border-radius:18px;padding:1.35rem 1.4rem;margin-bottom:1rem;position:relative;overflow:hidden;transition:transform .2s ease,box-shadow .2s ease;}
 .td-qc-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.08);}
 .td-qc-purple{background:linear-gradient(135deg,#F5F3FF 0%,#EDE9FE 60%,#DDD6FE 100%);border:1.5px solid #C4B5FD;box-shadow:0 2px 10px rgba(124,58,237,.06);}
@@ -807,10 +807,11 @@
 </style>
 </asp:Content>
 
-<%-- ════ SIDEBAR MENU ════ --%>
+<%-- ---- SIDEBAR MENU ---- --%>
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
     <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Main","Utama") %></div>
-        <a href="<%: ResolveUrl("~/Teacher/Dashboard.aspx") %>" class="sb-sidebar-item active"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label"><%: T("Dashboard","Papan Pemuka") %></span></a></div>
+        <a href="<%: ResolveUrl("~/Teacher/Dashboard.aspx") %>" class="sb-sidebar-item active"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label"><%: T("Dashboard","Papan Pemuka") %></span></a>
+        <a href="<%: ResolveUrl("~/Teacher/Notifications.aspx") %>" class="sb-sidebar-item"><i class="bi bi-bell item-icon"></i><span class="item-label"><%: T("Notifications","Notifikasi") %></span></a></div>
     <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Teaching","Pengajaran") %></div>
         <a href="<%: ResolveUrl("~/Teacher/manageMaterials.aspx") %>" class="sb-sidebar-item"><i class="bi bi-book item-icon"></i><span class="item-label"><%: T("Manage Materials","Bahan Pembelajaran") %></span></a>
         <a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx") %>" class="sb-sidebar-item"><i class="bi bi-patch-question item-icon"></i><span class="item-label"><%: T("Manage Quiz","Kuiz") %></span></a>
@@ -826,13 +827,13 @@
 
 <asp:Content ID="cPageTitle" ContentPlaceHolderID="PageTitle" runat="server"><%: T("Teacher Dashboard","Papan Pemuka Guru") %></asp:Content>
 
-<%-- ════ MAIN CONTENT ════ --%>
+<%-- ---- MAIN CONTENT ---- --%>
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 
 <%-- Status panels for non-certified teachers --%>
 <asp:Panel ID="pnlPending" runat="server" Visible="false">
     <div class="td-status-panel">
-        <div class="td-status-ico">⏳</div>
+        <div class="td-status-ico">?</div>
         <div class="td-status-title">Verification Pending</div>
         <div class="td-status-msg">
             Your teaching certificate is currently under review. You will receive full access to the Teacher Dashboard once your certification has been approved by our admin team. Thank you for your patience!
@@ -842,7 +843,7 @@
 
 <asp:Panel ID="pnlRejected" runat="server" Visible="false">
     <div class="td-status-panel">
-        <div class="td-status-ico">📋</div>
+        <div class="td-status-ico">??</div>
         <div class="td-status-title">Certificate Not Approved</div>
         <div class="td-status-msg">
             Unfortunately, your teaching certificate was not approved. Please contact our support team or resubmit your certification documents for review. We are here to help!
@@ -852,7 +853,7 @@
 
 <asp:Panel ID="pnlDenied" runat="server" Visible="false">
     <div class="td-status-panel">
-        <div class="td-status-ico">🚫</div>
+        <div class="td-status-ico">??</div>
         <div class="td-status-title">Access Denied</div>
         <div class="td-status-msg">
             Your account does not currently have access to the Teacher Dashboard. If you believe this is an error, please contact the ScienceBuddy support team.
@@ -863,7 +864,7 @@
 <%-- Main Dashboard (visible only to Certified teachers) --%>
 <asp:Panel ID="pnlDashboard" runat="server" Visible="false">
 
-<%-- ── 1. HERO BANNER ── --%>
+<%-- -- 1. HERO BANNER -- --%>
 <div class="td-hero">
     <div class="td-hero-body">
         <div class="td-hero-eyebrow">Teacher Portal</div>
@@ -898,7 +899,7 @@
             <div class="td-topics-header-left">
                 <div class="td-topics-header-ico"><i class="bi bi-journal-bookmark-fill"></i></div>
                 <div class="td-topics-header-text">
-                    <div class="td-topics-title" id="tdTopicsTitle">Available Topics <span class="td-topics-title-sparkle">✦</span></div>
+                    <div class="td-topics-title" id="tdTopicsTitle">Available Topics <span class="td-topics-title-sparkle">?</span></div>
                     <div class="td-topics-subtitle">Explore available units and subtopics by level.</div>
                 </div>
             </div>
@@ -916,10 +917,10 @@
     </div>
 </div>
 
-<%-- ── 2. QUIZ CREATION ── --%>
+<%-- -- 2. QUIZ CREATION -- --%>
 <div class="td-sec-hd">
     <div class="td-sec-title"><i class="bi bi-mortarboard-fill" style="color:var(--tc-primary);"></i> <%: T("Quiz Creation","Cipta Kuiz") %></div>
-    <a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx?tab=unit-level") %>" style="font-size:.85rem;font-weight:600;color:var(--tc-primary);text-decoration:none;transition:color .15s;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'"><%: T("View all quizzes","Lihat semua kuiz") %> →</a>
+    <a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx?tab=unit-level") %>" style="font-size:.85rem;font-weight:600;color:var(--tc-primary);text-decoration:none;transition:color .15s;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'"><%: T("View all quizzes","Lihat semua kuiz") %> ?</a>
 </div>
 <div class="td-quiz-row">
     <a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx?tab=unit-level&type=unit") %>" class="td-quiz-card td-quiz-purple">
@@ -927,30 +928,30 @@
         <div class="td-quiz-ico"><i class="bi bi-funnel-fill"></i></div>
         <div class="td-quiz-title"><%: T("Unit Quiz","Kuiz Unit") %></div>
         <div class="td-quiz-desc"><%: T("Create quizzes based on a specific unit or topic.","Cipta kuiz berdasarkan unit atau topik tertentu.") %></div>
-        <span class="td-quiz-btn"><%: T("Create Quiz","Cipta Kuiz") %> →</span>
+        <span class="td-quiz-btn"><%: T("Create Quiz","Cipta Kuiz") %> ?</span>
     </a>
     <a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx?tab=unit-level&type=level") %>" class="td-quiz-card td-quiz-orange">
         <div class="td-quiz-bg-icons"><i class="bi bi-journal-bookmark"></i><i class="bi bi-layers"></i><i class="bi bi-lightning"></i><i class="bi bi-globe-americas"></i><i class="bi bi-sun"></i></div>
         <div class="td-quiz-ico"><i class="bi bi-book-half"></i></div>
         <div class="td-quiz-title"><%: T("Level Quiz","Kuiz Tahap") %></div>
         <div class="td-quiz-desc"><%: T("Create quizzes based on difficulty levels.","Cipta kuiz berdasarkan tahap kesukaran.") %></div>
-        <span class="td-quiz-btn"><%: T("Create Quiz","Cipta Kuiz") %> →</span>
+        <span class="td-quiz-btn"><%: T("Create Quiz","Cipta Kuiz") %> ?</span>
     </a>
     <a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx?tab=practice") %>" class="td-quiz-card td-quiz-teal">
         <div class="td-quiz-bg-icons"><i class="bi bi-gear"></i><i class="bi bi-bullseye"></i><i class="bi bi-flower1"></i><i class="bi bi-thermometer-half"></i><i class="bi bi-rocket"></i></div>
         <div class="td-quiz-ico"><i class="bi bi-clipboard2-pulse-fill"></i></div>
         <div class="td-quiz-title"><%: T("Practice Quiz","Kuiz Latihan") %></div>
         <div class="td-quiz-desc"><%: T("Create practice quizzes for revision and exercises.","Cipta kuiz latihan untuk ulangkaji dan latihan.") %></div>
-        <span class="td-quiz-btn"><%: T("Create Quiz","Cipta Kuiz") %> →</span>
+        <span class="td-quiz-btn"><%: T("Create Quiz","Cipta Kuiz") %> ?</span>
     </a>
 </div>
 
-<%-- ── QUIZ CONTRIBUTION ── --%>
+<%-- -- QUIZ CONTRIBUTION -- --%>
 <div class="td-sec-hd">
     <div class="td-sec-title"><i class="bi bi-pie-chart-fill" style="color:var(--tc-primary);"></i> <%: T("Your Quiz Contribution","Sumbangan Kuiz Anda") %>
         <span class="td-contrib-info" tabindex="0" aria-label="Quiz contribution information">
             <i class="bi bi-info-circle"></i>
-            <span class="td-contrib-tooltip">Your Quiz Contribution shows the number of approved quiz questions you have contributed compared to the total approved quiz questions currently available in ScienceBuddy.<br/><br/>Only approved questions are included in the calculation.<br/><br/>• Unit Quiz Contribution counts approved Unit Quiz questions.<br/>• Level Quiz Contribution counts approved Level Quiz questions.</span>
+            <span class="td-contrib-tooltip">Your Quiz Contribution shows the number of approved quiz questions you have contributed compared to the total approved quiz questions currently available in ScienceBuddy.<br/><br/>Only approved questions are included in the calculation.<br/><br/>� Unit Quiz Contribution counts approved Unit Quiz questions.<br/>� Level Quiz Contribution counts approved Level Quiz questions.</span>
         </span>
     </div>
 </div>
@@ -994,7 +995,7 @@
 <asp:Literal ID="litUnitCount" runat="server" Text="" Visible="false" />
 <asp:Literal ID="litLevelCount" runat="server" Text="" Visible="false" />
 
-<%-- ── 3. QUICK ACTIONS ── --%>
+<%-- -- 3. QUICK ACTIONS -- --%>
 <div class="td-sec-hd">
     <div class="td-sec-title"><i class="bi bi-lightning-fill" style="color:var(--tc-primary);"></i> <%: T("Quick Actions","Tindakan Pantas") %></div>
 </div>
@@ -1033,14 +1034,14 @@
     </a>
 </div>
 
-<%-- ── 4. UPCOMING SESSIONS & NOTIFICATIONS ── --%>
+<%-- -- 4. UPCOMING SESSIONS & NOTIFICATIONS -- --%>
 <div class="td-twin-row">
     <%-- Upcoming Live Sessions --%>
     <div class="td-card" style="flex:1.3;">
         <div class="td-card-body">
             <div class="td-sec-hd" style="margin-bottom:.75rem;">
                 <div class="td-sec-title" style="font-size:.92rem;"><i class="bi bi-camera-video-fill" style="color:var(--tc-info);"></i> <%: T("Upcoming Live Sessions","Kelas Langsung Akan Datang") %></div>
-                <a href="<%: ResolveUrl("~/Teacher/liveSession.aspx") %>" style="font-size:.78rem;font-weight:600;color:var(--tc-primary);text-decoration:none;"><%: T("View All","Lihat Semua") %> →</a>
+                <a href="<%: ResolveUrl("~/Teacher/liveSession.aspx") %>" style="font-size:.78rem;font-weight:600;color:var(--tc-primary);text-decoration:none;"><%: T("View All","Lihat Semua") %> ?</a>
             </div>
             <asp:Panel ID="pnlTimelineSessions" runat="server" Visible="false">
                 <div class="td-timeline">
@@ -1077,8 +1078,8 @@
     <div class="td-card" style="flex:0.7;">
         <div class="td-card-body">
             <div class="td-sec-hd" style="margin-bottom:.75rem;">
-                <div class="td-sec-title" style="font-size:.92rem;"><i class="bi bi-bell-fill" style="color:var(--tc-warning);"></i> <%: T("Notifications","Pemberitahuan") %></div>
-                <a href="<%: ResolveUrl("~/Teacher/Notifications.aspx") %>" style="font-size:.78rem;font-weight:600;color:var(--tc-primary);text-decoration:none;"><%: T("View All","Lihat Semua") %> →</a>
+                <div class="td-sec-title" style="font-size:.92rem;"><i class="bi bi-bell-fill" style="color:var(--tc-warning);"></i> <%: T("Notifications","Notifikasi") %></div>
+                <a href="<%: ResolveUrl("~/Teacher/Notifications.aspx") %>" style="font-size:.78rem;font-weight:600;color:var(--tc-primary);text-decoration:none;"><%: T("View All","Lihat Semua") %> ?</a>
             </div>
             <asp:Panel ID="pnlDashNotifs" runat="server" Visible="false">
                 <div class="td-notif-list-v2">
@@ -1107,7 +1108,7 @@
     </div>
 </div>
 
-<%-- ── 5. OVERVIEW ── --%>
+<%-- -- 5. OVERVIEW -- --%>
 <div class="td-sec-hd">
     <div class="td-sec-title"><i class="bi bi-bar-chart-fill" style="color:var(--tc-primary);"></i> <%: T("Overview","Ringkasan") %></div>
 </div>
@@ -1134,7 +1135,7 @@
     </a>
 </div>
 
-<%-- ── 5. PRACTICE QUIZ ENGAGEMENT ── --%>
+<%-- -- 5. PRACTICE QUIZ ENGAGEMENT -- --%>
 <div class="td-sec-hd">
     <div class="td-sec-title"><i class="bi bi-clipboard2-pulse-fill" style="color:var(--tc-primary);"></i> Practice Quiz Engagement</div>
 </div>
@@ -1216,7 +1217,7 @@ window.addEventListener('load',function(){
     },150);
 });
 
-/* ── Available Topics Modal ── */
+/* -- Available Topics Modal -- */
 var _topicsData = null;
 var _topicsLoaded = false;
 
@@ -1354,7 +1355,7 @@ function filterTopics(query) {
 
 function esc(s) { var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
 
-/* ── Practice Quiz Carousel ── */
+/* -- Practice Quiz Carousel -- */
 (function(){
     var track = document.getElementById('pqTrack');
     if (!track) return;

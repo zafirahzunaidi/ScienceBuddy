@@ -23,6 +23,7 @@ namespace ScienceBuddy.Teacher
         protected global::System.Web.UI.WebControls.Repeater rptLevelQs;
         protected global::System.Web.UI.WebControls.Panel pnlLevelEmpty;
         protected global::System.Web.UI.WebControls.Literal litUnitGrouped;
+        protected global::System.Web.UI.WebControls.Literal litEmptyMsg;
 
         protected string CurrentLanguage
         {
@@ -53,6 +54,9 @@ namespace ScienceBuddy.Teacher
             { HandlePQUnitsRequest(); return; }
             if (Request.QueryString["handler"] == "pqsubtopics")
             { HandlePQSubtopicsRequest(); return; }
+            // Handle resubmit request
+            if (Request.QueryString["handler"] == "resubmit")
+            { HandleResubmitRequest(); return; }
 
             var master = (ScienceBuddy.SiteMaster)Master;
             master.LayoutMode = "Sidebar";
@@ -355,8 +359,18 @@ namespace ScienceBuddy.Teacher
                     conn.Open();
                     var sb = new System.Text.StringBuilder();
 
-                    // Load all questions for this Practice Quiz (no userId filter — all teachers can view)
-                    const string sql = @"
+                    // Determine if this quiz is the current teacher's Practice Quiz
+                    string userId = Session["userId"]?.ToString() ?? "";
+                    bool isOwnPractice = false;
+                    using (var chk = new SqlCommand("SELECT COUNT(*) FROM dbo.[Quiz] WHERE [quizId]=@qid AND [quizType]='Practice' AND [createdByUserId]=@uid", conn))
+                    {
+                        chk.Parameters.AddWithValue("@qid", quizId);
+                        chk.Parameters.AddWithValue("@uid", userId);
+                        isOwnPractice = (int)chk.ExecuteScalar() > 0;
+                    }
+
+                    // If own Practice Quiz, show ALL questions; otherwise only Approved
+                    string sql = @"
                         SELECT qn.[questionTextEN], qn.[questionTextBM], qn.[questionType], qn.[difficulty],
                                qn.[optionA_EN], qn.[optionA_BM], qn.[optionB_EN], qn.[optionB_BM],
                                qn.[optionC_EN], qn.[optionC_BM], qn.[optionD_EN], qn.[optionD_BM],
@@ -365,7 +379,7 @@ namespace ScienceBuddy.Teacher
                                qn.[wrongExplanationEN], qn.[wrongExplanationBM],
                                qn.[questionImageUrl]
                         FROM dbo.[Question] qn
-                        WHERE qn.[quizId]=@qid AND qn.[status]='Approved'
+                        WHERE qn.[quizId]=@qid" + (isOwnPractice ? "" : " AND qn.[status]='Approved'") + @"
                         ORDER BY qn.[questionId]";
 
                     using (var cmd = new SqlCommand(sql, conn))
@@ -433,13 +447,67 @@ namespace ScienceBuddy.Teacher
                                 sb.Append("</div>"); // vq-card
                             }
                             if (num == 0)
-                                sb.Append("<div class='mq-empty'><div style='font-size:2.5rem;opacity:.4;margin-bottom:.75rem;'>📭</div><div class='mq-empty-title'>No approved questions in this quiz yet.</div></div>");
+                                sb.Append("<div class='mq-empty'><div style='font-size:2.5rem;opacity:.4;margin-bottom:.75rem;'>📭</div><div class='mq-empty-title'>No questions in this quiz yet.</div></div>");
                         }
                     }
                     Response.Write(sb.ToString());
                 }
             }
             catch { Response.Write("<div class='mq-empty'><div class='mq-empty-title'>Error loading questions.</div></div>"); }
+            Response.End();
+        }
+
+        private void HandleResubmitRequest()
+        {
+            Response.Clear();
+            Response.ContentType = "text/plain";
+            string quizId = (Request.QueryString["quizId"] ?? "").Trim();
+            string userId = Session["userId"]?.ToString() ?? "";
+            if (string.IsNullOrEmpty(quizId) || string.IsNullOrEmpty(userId))
+            { Response.StatusCode = 400; Response.Write("Invalid request."); Response.End(); return; }
+            try
+            {
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    using (var txn = conn.BeginTransaction())
+                    {
+                        try
+                        {
+                            // 1. Update the Quiz status to Pending (only if owned by this teacher)
+                            int quizRows;
+                            using (var cmd = new SqlCommand("UPDATE dbo.[Quiz] SET [status]='Pending' WHERE [quizId]=@qid AND [createdByUserId]=@uid AND [quizType]='Practice'", conn, txn))
+                            {
+                                cmd.Parameters.AddWithValue("@qid", quizId);
+                                cmd.Parameters.AddWithValue("@uid", userId);
+                                quizRows = cmd.ExecuteNonQuery();
+                            }
+                            if (quizRows == 0)
+                            {
+                                txn.Rollback();
+                                Response.StatusCode = 400;
+                                Response.Write("Quiz not found or not eligible for resubmission.");
+                                Response.End();
+                                return;
+                            }
+                            // 2. Update ALL questions in this quiz to Pending
+                            using (var cmd2 = new SqlCommand("UPDATE dbo.[Question] SET [status]='Pending' WHERE [quizId]=@qid", conn, txn))
+                            {
+                                cmd2.Parameters.AddWithValue("@qid", quizId);
+                                cmd2.ExecuteNonQuery();
+                            }
+                            txn.Commit();
+                            Response.Write("OK");
+                        }
+                        catch
+                        {
+                            txn.Rollback();
+                            throw;
+                        }
+                    }
+                }
+            }
+            catch { Response.StatusCode = 500; Response.Write("Error."); }
             Response.End();
         }
 
@@ -680,6 +748,15 @@ namespace ScienceBuddy.Teacher
                     {
                         pnlQuizzes.Visible = false; pnlEmpty.Visible = true;
                         pnlDiscover.Visible = false; pnlDiscoverEmpty.Visible = false;
+                        // Set filter-specific empty message
+                        if (status == "Approved")
+                            litEmptyMsg.Text = T("No approved Practice Quizzes found.", "Tiada Kuiz Latihan yang diluluskan ditemui.");
+                        else if (status == "Pending")
+                            litEmptyMsg.Text = T("No pending Practice Quizzes found.", "Tiada Kuiz Latihan yang menunggu ditemui.");
+                        else if (status == "Rejected")
+                            litEmptyMsg.Text = T("No rejected Practice Quizzes found.", "Tiada Kuiz Latihan yang ditolak ditemui.");
+                        else
+                            litEmptyMsg.Text = T("No Practice Quizzes found.", "Tiada Kuiz Latihan ditemui.");
                     }
                 }
             }
@@ -854,12 +931,14 @@ namespace ScienceBuddy.Teacher
 
                             sb.Append("<div class=\"mq-ulq-card\">");
                             sb.AppendFormat("<div class=\"mq-ulq-left\"><div class=\"mq-ulq-icon mq-ulq-icon-unit\"><i class=\"bi bi-layers-fill\"></i></div><div class=\"mq-ulq-info\"><div class=\"mq-ulq-title\">{0}</div></div></div>", HttpUtility.HtmlEncode(unitName));
-                            sb.AppendFormat("<div class=\"mq-ulq-col\"><div class=\"mq-ulq-col-label\">{0} <span class=\"mq-info-icon\" tabindex=\"0\" data-tip=\"{2}\"><i class=\"bi bi-info-circle\"></i></span></div><div class=\"mq-ulq-col-val mq-val-overall\">{1}</div></div>", T("Overall Approved", "Diluluskan Semua"), overallApproved, HttpUtility.HtmlEncode(overallTip));
-                            sb.AppendFormat("<div class=\"mq-ulq-col\"><div class=\"mq-ulq-col-label\">{0} <span class=\"mq-info-icon\" tabindex=\"0\" data-tip=\"{2}\"><i class=\"bi bi-info-circle\"></i></span></div><div class=\"mq-ulq-col-val\">{1}</div></div>", T("Your Submitted", "Hantar Anda"), yourCount, HttpUtility.HtmlEncode(yourTip));
-                            sb.AppendFormat("<div class=\"mq-ulq-col\"><span class=\"mq-ulq-badge mq-ulq-badge-green\">{0}</span><div class=\"mq-ulq-badge-count mq-ulq-badge-count-green\">{1}</div></div>", T("Approved", "Diluluskan"), approved);
-                            sb.AppendFormat("<div class=\"mq-ulq-col\"><span class=\"mq-ulq-badge mq-ulq-badge-amber\">{0}</span><div class=\"mq-ulq-badge-count mq-ulq-badge-count-amber\">{1}</div></div>", T("Pending", "Menunggu"), pending);
-                            sb.AppendFormat("<div class=\"mq-ulq-col\"><span class=\"mq-ulq-badge mq-ulq-badge-red\">{0}</span><div class=\"mq-ulq-badge-count mq-ulq-badge-count-red\">{1}</div></div>", T("Rejected", "Ditolak"), rejected);
-                            sb.AppendFormat("<div class=\"mq-ulq-btn-col\"><a href=\"#\" class=\"mq-ulq-btn mq-ulq-btn-add\" onclick='openSubtopicModal(\"{0}\");return false;'><i class=\"bi bi-plus-lg\"></i> {1}</a><button type=\"button\" class=\"mq-ulq-btn\" onclick='openULModal(\"{0}\")'><i class=\"bi bi-eye\"></i> {2}</button></div>", HttpUtility.HtmlEncode(quizId), T("Add", "Tambah"), T("View", "Lihat"));
+                            sb.Append("<div class=\"mq-ulq-stats\">");
+                            sb.AppendFormat("<div class=\"mq-ulq-col mq-ulq-col--overall\"><div class=\"mq-ulq-col-label\">{0} <span class=\"mq-info-icon\" tabindex=\"0\" data-tip=\"{2}\"><i class=\"bi bi-info-circle\"></i></span></div><div class=\"mq-ulq-col-val mq-val-overall\">{1}</div></div>", T("Overall Approved", "Diluluskan Semua"), overallApproved, HttpUtility.HtmlEncode(overallTip));
+                            sb.AppendFormat("<div class=\"mq-ulq-col mq-ulq-col--submitted\"><div class=\"mq-ulq-col-label\">{0} <span class=\"mq-info-icon\" tabindex=\"0\" data-tip=\"{2}\"><i class=\"bi bi-info-circle\"></i></span></div><div class=\"mq-ulq-col-val\">{1}</div></div>", T("Your Submitted", "Hantar Anda"), yourCount, HttpUtility.HtmlEncode(yourTip));
+                            sb.AppendFormat("<div class=\"mq-ulq-col mq-ulq-col--approved\"><div class=\"mq-ulq-col-label\">{0}</div><div class=\"mq-ulq-col-val mq-val-approved\">{1}</div></div>", T("Approved", "Diluluskan"), approved);
+                            sb.AppendFormat("<div class=\"mq-ulq-col mq-ulq-col--pending\"><div class=\"mq-ulq-col-label\">{0}</div><div class=\"mq-ulq-col-val mq-val-pending\">{1}</div></div>", T("Pending", "Menunggu"), pending);
+                            sb.AppendFormat("<div class=\"mq-ulq-col mq-ulq-col--rejected\"><div class=\"mq-ulq-col-label\">{0}</div><div class=\"mq-ulq-col-val mq-val-rejected\">{1}</div></div>", T("Rejected", "Ditolak"), rejected);
+                            sb.Append("</div>");
+                            sb.AppendFormat("<div class=\"mq-ulq-btn-col\"><a href=\"#\" class=\"mq-ulq-btn mq-ulq-btn-add\" onclick='openSubtopicModal(\"{0}\");return false;'><i class=\"bi bi-plus-lg\"></i> {1}</a><button type=\"button\" class=\"mq-ulq-btn\" onclick='openULModal(\"{0}\")'><i class=\"bi bi-eye\"></i> {2}</button></div>", HttpUtility.HtmlEncode(quizId), T("Add Questions", "Tambah Soalan"), T("View Questions", "Lihat Soalan"));
                             sb.Append("</div>");
                         }
                         if (currentGroup > 0) sb.Append("</div>"); // close last group

@@ -46,7 +46,10 @@ namespace ScienceBuddy.Teacher
                 {
                     c.Open();
                     var sb = new System.Text.StringBuilder();
-                    using (var cmd = new SqlCommand(@"SELECT qst.[questionTextEN], qa.[selectedAnswer], qst.[correctAnswer], qa.[isCorrect]
+                    using (var cmd = new SqlCommand(@"SELECT qst.[questionTextEN], qst.[questionTextBM], qst.[questionType],
+                        qst.[optionA_EN], qst.[optionA_BM], qst.[optionB_EN], qst.[optionB_BM],
+                        qst.[optionC_EN], qst.[optionC_BM], qst.[optionD_EN], qst.[optionD_BM],
+                        qa.[selectedAnswer], qst.[correctAnswer], qa.[isCorrect]
                         FROM dbo.[QuizAnswer] qa
                         INNER JOIN dbo.[Question] qst ON qst.[questionId]=qa.[questionId]
                         WHERE qa.[resultId]=@rid
@@ -59,7 +62,17 @@ namespace ScienceBuddy.Teacher
                             while (r.Read())
                             {
                                 qNum++;
-                                string qText = r["questionTextEN"]?.ToString() ?? "";
+                                string qEN = r["questionTextEN"]?.ToString() ?? "";
+                                string qBM = r["questionTextBM"]?.ToString() ?? "";
+                                string qType = r["questionType"]?.ToString() ?? "MCQ";
+                                string aEN = r["optionA_EN"]?.ToString() ?? "";
+                                string aBM = r["optionA_BM"]?.ToString() ?? "";
+                                string bEN = r["optionB_EN"]?.ToString() ?? "";
+                                string bBM = r["optionB_BM"]?.ToString() ?? "";
+                                string cEN = r["optionC_EN"]?.ToString() ?? "";
+                                string cBM = r["optionC_BM"]?.ToString() ?? "";
+                                string dEN = r["optionD_EN"]?.ToString() ?? "";
+                                string dBM = r["optionD_BM"]?.ToString() ?? "";
                                 string selected = r["selectedAnswer"] != DBNull.Value ? r["selectedAnswer"].ToString() : "-";
                                 string correct = r["correctAnswer"]?.ToString() ?? "-";
                                 bool isCorrect = r["isCorrect"] != DBNull.Value && Convert.ToBoolean(r["isCorrect"]);
@@ -67,12 +80,96 @@ namespace ScienceBuddy.Teacher
                                 string badgeCss = isCorrect ? "correct" : "wrong";
 
                                 sb.Append("<div class=\"sd-ans-card\">");
-                                sb.AppendFormat("<div class=\"sd-ans-q\">Q{0}. {1}</div>", qNum, HttpUtility.HtmlEncode(qText));
-                                sb.Append("<div class=\"sd-ans-row\">");
-                                sb.AppendFormat("<span><strong>{0}:</strong> {1}</span>", T("Student's Answer", "Jawapan Pelajar"), HttpUtility.HtmlEncode(selected));
-                                sb.AppendFormat("<span><strong>{0}:</strong> {1}</span>", T("Correct Answer", "Jawapan Betul"), HttpUtility.HtmlEncode(correct));
-                                sb.AppendFormat("<span class=\"sd-ans-badge {0}\">{1}</span>", badgeCss, statusLabel);
-                                sb.Append("</div></div>");
+                                sb.AppendFormat("<div class=\"sd-ans-header\"><span class=\"sd-ans-num\">Q{0}</span><span class=\"sd-ans-badge {1}\">{2}</span></div>", qNum, badgeCss, statusLabel);
+
+                                // Language sections side by side
+                                sb.Append("<div class=\"sd-ans-langs\">");
+
+                                // English section
+                                sb.Append("<div class=\"sd-ans-lang-section\">");
+                                sb.AppendFormat("<div class=\"sd-ans-lang-label\">{0}</div>", T("English", "Bahasa Inggeris"));
+                                if (!string.IsNullOrEmpty(qEN))
+                                {
+                                    sb.AppendFormat("<div class=\"sd-ans-q\">{0}</div>", HttpUtility.HtmlEncode(qEN));
+                                    sb.Append("<div class=\"sd-ans-options\">");
+                                    if (!string.IsNullOrEmpty(aEN)) sb.AppendFormat("<div class=\"sd-ans-opt{0}\"><span class=\"sd-opt-label\">A</span>{1}</div>", correct == "A" ? " sd-opt-correct" : (selected == "A" && !isCorrect ? " sd-opt-wrong" : ""), HttpUtility.HtmlEncode(aEN));
+                                    if (!string.IsNullOrEmpty(bEN)) sb.AppendFormat("<div class=\"sd-ans-opt{0}\"><span class=\"sd-opt-label\">B</span>{1}</div>", correct == "B" ? " sd-opt-correct" : (selected == "B" && !isCorrect ? " sd-opt-wrong" : ""), HttpUtility.HtmlEncode(bEN));
+                                    if (!string.IsNullOrEmpty(cEN)) sb.AppendFormat("<div class=\"sd-ans-opt{0}\"><span class=\"sd-opt-label\">C</span>{1}</div>", correct == "C" ? " sd-opt-correct" : (selected == "C" && !isCorrect ? " sd-opt-wrong" : ""), HttpUtility.HtmlEncode(cEN));
+                                    if (!string.IsNullOrEmpty(dEN)) sb.AppendFormat("<div class=\"sd-ans-opt{0}\"><span class=\"sd-opt-label\">D</span>{1}</div>", correct == "D" ? " sd-opt-correct" : (selected == "D" && !isCorrect ? " sd-opt-wrong" : ""), HttpUtility.HtmlEncode(dEN));
+                                    sb.Append("</div>");
+                                }
+                                else
+                                {
+                                    sb.AppendFormat("<div class=\"sd-ans-unavail\">{0}</div>", T("Translation unavailable", "Terjemahan tidak tersedia"));
+                                }
+                                sb.Append("</div>");
+
+                                // Bahasa Melayu section
+                                sb.Append("<div class=\"sd-ans-lang-section\">");
+                                sb.AppendFormat("<div class=\"sd-ans-lang-label\">{0}</div>", T("Bahasa Melayu", "Bahasa Melayu"));
+                                if (!string.IsNullOrEmpty(qBM))
+                                {
+                                    sb.AppendFormat("<div class=\"sd-ans-q\">{0}</div>", HttpUtility.HtmlEncode(qBM));
+                                    sb.Append("<div class=\"sd-ans-options\">");
+                                    if (!string.IsNullOrEmpty(aBM)) sb.AppendFormat("<div class=\"sd-ans-opt{0}\"><span class=\"sd-opt-label\">A</span>{1}</div>", correct == "A" ? " sd-opt-correct" : (selected == "A" && !isCorrect ? " sd-opt-wrong" : ""), HttpUtility.HtmlEncode(aBM));
+                                    if (!string.IsNullOrEmpty(bBM)) sb.AppendFormat("<div class=\"sd-ans-opt{0}\"><span class=\"sd-opt-label\">B</span>{1}</div>", correct == "B" ? " sd-opt-correct" : (selected == "B" && !isCorrect ? " sd-opt-wrong" : ""), HttpUtility.HtmlEncode(bBM));
+                                    if (!string.IsNullOrEmpty(cBM)) sb.AppendFormat("<div class=\"sd-ans-opt{0}\"><span class=\"sd-opt-label\">C</span>{1}</div>", correct == "C" ? " sd-opt-correct" : (selected == "C" && !isCorrect ? " sd-opt-wrong" : ""), HttpUtility.HtmlEncode(cBM));
+                                    if (!string.IsNullOrEmpty(dBM)) sb.AppendFormat("<div class=\"sd-ans-opt{0}\"><span class=\"sd-opt-label\">D</span>{1}</div>", correct == "D" ? " sd-opt-correct" : (selected == "D" && !isCorrect ? " sd-opt-wrong" : ""), HttpUtility.HtmlEncode(dBM));
+                                    sb.Append("</div>");
+                                }
+                                else
+                                {
+                                    sb.AppendFormat("<div class=\"sd-ans-unavail\">{0}</div>", T("Translation unavailable", "Terjemahan tidak tersedia"));
+                                }
+                                sb.Append("</div>"); // sd-ans-lang-section BM
+                                sb.Append("</div>"); // sd-ans-langs
+
+                                // Student answer summary — varies by question type
+                                string notAnswered = T("Not Answered", "Tidak Dijawab");
+                                string selectedDisplay = string.IsNullOrEmpty(selected) || selected == "-" ? notAnswered : selected;
+                                string correctDisplay = correct;
+
+                                sb.Append("<div class=\"sd-ans-summary\">");
+
+                                if (qType.Equals("DragDrop", StringComparison.OrdinalIgnoreCase) || qType.Equals("Drag and Drop", StringComparison.OrdinalIgnoreCase) || qType.Equals("DnD", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    // Drag and Drop: display answer text in both languages
+                                    sb.Append("<div class=\"sd-ans-dd-block\">");
+                                    sb.AppendFormat("<div class=\"sd-ans-dd-title\">{0}</div>", T("Student's Answer", "Jawapan Pelajar"));
+                                    if (string.IsNullOrEmpty(selected) || selected == "-")
+                                    {
+                                        sb.AppendFormat("<div class=\"sd-ans-dd-val\">{0}</div>", notAnswered);
+                                    }
+                                    else
+                                    {
+                                        sb.AppendFormat("<div class=\"sd-ans-dd-lang\"><span class=\"sd-ans-dd-lang-label\">{0}:</span> {1}</div>", T("English", "Bahasa Inggeris"), HttpUtility.HtmlEncode(selected));
+                                        sb.AppendFormat("<div class=\"sd-ans-dd-lang\"><span class=\"sd-ans-dd-lang-label\">{0}:</span> {1}</div>", T("Bahasa Melayu", "Bahasa Melayu"), HttpUtility.HtmlEncode(selected));
+                                    }
+                                    sb.Append("</div>");
+                                    sb.Append("<div class=\"sd-ans-dd-block\">");
+                                    sb.AppendFormat("<div class=\"sd-ans-dd-title\">{0}</div>", T("Correct Answer", "Jawapan Betul"));
+                                    sb.AppendFormat("<div class=\"sd-ans-dd-lang\"><span class=\"sd-ans-dd-lang-label\">{0}:</span> {1}</div>", T("English", "Bahasa Inggeris"), HttpUtility.HtmlEncode(correct));
+                                    sb.AppendFormat("<div class=\"sd-ans-dd-lang\"><span class=\"sd-ans-dd-lang-label\">{0}:</span> {1}</div>", T("Bahasa Melayu", "Bahasa Melayu"), HttpUtility.HtmlEncode(correct));
+                                    sb.Append("</div>");
+                                }
+                                else if (qType.Equals("MultiSelect", StringComparison.OrdinalIgnoreCase) || qType.Equals("Multi-select", StringComparison.OrdinalIgnoreCase) || qType.Equals("MS", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    // Multi-select: sort letters alphabetically, display with commas
+                                    string sortedSelected = SortLetters(selected, notAnswered);
+                                    string sortedCorrect = SortLetters(correct, "-");
+                                    sb.AppendFormat("<div class=\"sd-ans-pair\"><span class=\"sd-ans-pair-label\">{0}:</span><span class=\"sd-ans-pair-val\">{1}</span></div>", T("Student's Answer", "Jawapan Pelajar"), HttpUtility.HtmlEncode(sortedSelected));
+                                    sb.AppendFormat("<div class=\"sd-ans-pair\"><span class=\"sd-ans-pair-label\">{0}:</span><span class=\"sd-ans-pair-val\">{1}</span></div>", T("Correct Answer", "Jawapan Betul"), HttpUtility.HtmlEncode(sortedCorrect));
+                                }
+                                else
+                                {
+                                    // MCQ / True-False: display option letter only
+                                    sb.AppendFormat("<div class=\"sd-ans-pair\"><span class=\"sd-ans-pair-label\">{0}:</span><span class=\"sd-ans-pair-val\">{1}</span></div>", T("Student's Answer", "Jawapan Pelajar"), HttpUtility.HtmlEncode(selectedDisplay));
+                                    sb.AppendFormat("<div class=\"sd-ans-pair\"><span class=\"sd-ans-pair-label\">{0}:</span><span class=\"sd-ans-pair-val\">{1}</span></div>", T("Correct Answer", "Jawapan Betul"), HttpUtility.HtmlEncode(correctDisplay));
+                                }
+
+                                sb.Append("</div>");
+
+                                sb.Append("</div>"); // sd-ans-card
                             }
                             if (qNum == 0) sb.AppendFormat("<div class=\"sd-empty\">{0}</div>", T("No answer records found.", "Tiada rekod jawapan dijumpai."));
                         }
@@ -110,18 +207,100 @@ namespace ScienceBuddy.Teacher
 
                     // Lesson Progress
                     var lRows = new List<object>();
-                    using (var cmd = new SqlCommand("SELECT les.[lessonTitleEN],lp.[isCompleted],lp.[completedDate] FROM dbo.[LessonProgress] lp INNER JOIN dbo.[Lesson] les ON les.[lessonId]=lp.[lessonId] WHERE lp.[studentId]=@s ORDER BY lp.[completedDate] DESC", c))
-                    { cmd.Parameters.AddWithValue("@s", sid); using (var r = cmd.ExecuteReader()) while (r.Read()) { bool d = r["isCompleted"] != DBNull.Value && Convert.ToBoolean(r["isCompleted"]); string dt = r["completedDate"] != DBNull.Value ? Convert.ToDateTime(r["completedDate"]).ToString("d MMM yyyy") : "-"; lRows.Add(new { lesson = r["lessonTitleEN"].ToString(), status = d ? T("Completed", "Selesai") : T("Incomplete", "Belum Selesai"), statusCss = d ? "done" : "inc", date = dt }); } }
-                    if (lRows.Count > 0) { rptLessons.DataSource = lRows; rptLessons.DataBind(); }
+                    using (var cmd = new SqlCommand("SELECT les.[lessonTitleEN],les.[lessonTitleBM],lp.[isCompleted],lp.[completedDate] FROM dbo.[LessonProgress] lp INNER JOIN dbo.[Lesson] les ON les.[lessonId]=lp.[lessonId] WHERE lp.[studentId]=@s ORDER BY lp.[completedDate] DESC", c))
+                    { cmd.Parameters.AddWithValue("@s", sid); using (var r = cmd.ExecuteReader()) while (r.Read()) { bool d = r["isCompleted"] != DBNull.Value && Convert.ToBoolean(r["isCompleted"]); string dt = r["completedDate"] != DBNull.Value ? Convert.ToDateTime(r["completedDate"]).ToString("d MMM yyyy") : "-"; string lessonTitle = CurrentLanguage == "BM" ? (r["lessonTitleBM"]?.ToString() ?? r["lessonTitleEN"]?.ToString() ?? "") : (r["lessonTitleEN"]?.ToString() ?? r["lessonTitleBM"]?.ToString() ?? ""); lRows.Add(new { lesson = lessonTitle, status = d ? T("Completed", "Selesai") : T("Incomplete", "Belum Selesai"), statusCss = d ? "done" : "inc", date = dt }); } }
+                    if (lRows.Count > 0) { pnlLessonTable.Visible = true; pnlLessonEmpty.Visible = false; rptLessons.DataSource = lRows; rptLessons.DataBind(); } else { pnlLessonTable.Visible = false; pnlLessonEmpty.Visible = true; }
 
-                    BindQuiz(c, sid, "Unit", rptUnitQuiz);
-                    BindQuiz(c, sid, "Level", rptLevelQuiz);
+                    BindQuiz(c, sid, "Unit", rptUnitQuiz, pnlUnitQuizTable, pnlUnitQuizEmpty);
+                    BindQuiz(c, sid, "Level", rptLevelQuiz, pnlLevelQuizTable, pnlLevelQuizEmpty);
 
-                    // Weak Subtopics
+                    // Weak Topics — based on latest quiz attempt vs passing mark from Configuration
+                    decimal unitPassMark = 50, levelPassMark = 50; // defaults
+                    using (var cfgCmd = new SqlCommand("SELECT [configId],[configValue] FROM dbo.[ConfigurationSetting] WHERE [configId] IN ('CONFIG004','CONFIG005')", c))
+                    {
+                        using (var cfgR = cfgCmd.ExecuteReader())
+                        {
+                            while (cfgR.Read())
+                            {
+                                string cfgId = cfgR["configId"]?.ToString() ?? "";
+                                decimal cfgVal;
+                                if (decimal.TryParse(cfgR["configValue"]?.ToString(), out cfgVal))
+                                {
+                                    if (cfgId == "CONFIG004") unitPassMark = cfgVal;
+                                    else if (cfgId == "CONFIG005") levelPassMark = cfgVal;
+                                }
+                            }
+                        }
+                    }
+                    string weakTitleCol = CurrentLanguage == "BM"
+                        ? "COALESCE(q.[quizTitleBM], q.[quizTitleEN], 'Quiz')"
+                        : "COALESCE(q.[quizTitleEN], q.[quizTitleBM], 'Quiz')";
+                    string weakUnitCol = CurrentLanguage == "BM"
+                        ? "COALESCE(u.[unitNameBM], u.[unitNameEN], '')"
+                        : "COALESCE(u.[unitNameEN], u.[unitNameBM], '')";
+                    string weakLevelCol = CurrentLanguage == "BM"
+                        ? "COALESCE(lv.[levelNameBM], lv.[levelNameEN], '')"
+                        : "COALESCE(lv.[levelNameEN], lv.[levelNameBM], '')";
                     var wRows = new List<object>();
-                    using (var cmd = new SqlCommand(@"SELECT COALESCE(st.[subtopicTitleEN],'Subtopic') AS sub, SUM(CASE WHEN qa.[isCorrect]=1 THEN 1 ELSE 0 END) AS cor, SUM(CASE WHEN qa.[isCorrect]=0 THEN 1 ELSE 0 END) AS wrg FROM dbo.[QuizAnswer] qa INNER JOIN dbo.[QuizResult] qr ON qr.[resultId]=qa.[resultId] INNER JOIN dbo.[Quiz] q ON q.[quizId]=qr.[quizId] INNER JOIN dbo.[Question] qst ON qst.[questionId]=qa.[questionId] INNER JOIN dbo.[Subtopic] st ON st.[subtopicId]=qst.[subtopicId] WHERE qr.[studentId]=@s AND q.[quizType] IN ('Unit','Level') GROUP BY st.[subtopicId],st.[subtopicTitleEN] HAVING SUM(CASE WHEN qa.[isCorrect]=0 THEN 1 ELSE 0 END)>0 ORDER BY wrg DESC", c))
-                    { cmd.Parameters.AddWithValue("@s", sid); using (var r = cmd.ExecuteReader()) while (r.Read()) { int cor = Convert.ToInt32(r["cor"]), wrg = Convert.ToInt32(r["wrg"]), tot = cor + wrg; int gPct = tot > 0 ? (int)Math.Round((decimal)cor / tot * 100) : 0; wRows.Add(new { subtopic = r["sub"].ToString(), correctCount = cor, wrongCount = wrg, greenPct = gPct, redPct = 100 - gPct }); } }
-                    if (wRows.Count > 0) { rptWeak.DataSource = wRows; rptWeak.DataBind(); pnlWeakEmpty.Visible = false; } else { pnlWeakEmpty.Visible = true; }
+                    bool hasNoQuizAttempts = false;
+                    using (var wCmd = new SqlCommand(@"
+                        SELECT quizName, quizType, percentage, scopeName FROM (
+                            SELECT " + weakTitleCol + @" AS quizName, q.[quizType],
+                                   qr.[percentage],
+                                   CASE WHEN q.[quizType]='Unit' THEN " + weakUnitCol + @"
+                                        ELSE " + weakLevelCol + @" END AS scopeName,
+                                   ROW_NUMBER() OVER(PARTITION BY qr.[quizId] ORDER BY qr.[attemptedDate] DESC, qr.[attemptNo] DESC) AS rn
+                            FROM dbo.[QuizResult] qr
+                            INNER JOIN dbo.[Quiz] q ON q.[quizId]=qr.[quizId]
+                            LEFT JOIN dbo.[Unit] u ON u.[unitId]=q.[unitId]
+                            LEFT JOIN dbo.[Level] lv ON lv.[levelId]=q.[levelId]
+                            WHERE qr.[studentId]=@s AND q.[quizType] IN ('Unit','Level')
+                        ) sub WHERE rn=1
+                        ORDER BY quizType, quizName", c))
+                    {
+                        wCmd.Parameters.AddWithValue("@s", sid);
+                        int totalAttemptedQuizzes = 0;
+                        using (var wR = wCmd.ExecuteReader())
+                        {
+                            while (wR.Read())
+                            {
+                                totalAttemptedQuizzes++;
+                                string qName = wR["quizName"]?.ToString() ?? "";
+                                string qType = wR["quizType"]?.ToString() ?? "";
+                                string scopeName = wR["scopeName"]?.ToString() ?? "";
+                                decimal pctVal = wR["percentage"] != DBNull.Value ? Convert.ToDecimal(wR["percentage"]) : 0;
+                                decimal passMark = qType == "Unit" ? unitPassMark : levelPassMark;
+                                if (pctVal < passMark)
+                                {
+                                    wRows.Add(new {
+                                        quizType = qType,
+                                        scopeLabel = qType == "Unit" ? T("Unit Quiz","Kuiz Unit") : T("Level Quiz","Kuiz Tahap"),
+                                        scopeName = scopeName,
+                                        quizName = qName,
+                                        latestPct = pctVal.ToString("0.0") + "%",
+                                        passMarkStr = passMark.ToString("0") + "%",
+                                        statusLabel = T("Needs Improvement","Perlu Peningkatan")
+                                    });
+                                }
+                            }
+                        }
+                        // Three states: no attempts, has weak topics, all passed
+                        bool hasNoAttemptsLocal = (totalAttemptedQuizzes == 0);
+                        hasNoQuizAttempts = hasNoAttemptsLocal;
+                        if (hasNoAttemptsLocal)
+                        {
+                            pnlWeakNoAttempts.Visible = true; pnlWeakEmpty.Visible = false;
+                        }
+                        else if (wRows.Count > 0)
+                        {
+                            rptWeak.DataSource = wRows; rptWeak.DataBind();
+                            pnlWeakEmpty.Visible = false; pnlWeakNoAttempts.Visible = false;
+                        }
+                        else
+                        {
+                            pnlWeakEmpty.Visible = true; pnlWeakNoAttempts.Visible = false;
+                        }
+                    }
 
                     // Certificates
                     var certs = new List<object>();
@@ -135,7 +314,19 @@ namespace ScienceBuddy.Teacher
                     catch { }
                     if (certs.Count > 0) { rptCerts.DataSource = certs; rptCerts.DataBind(); pnlCertEmpty.Visible = false; } else { pnlCertEmpty.Visible = true; }
 
-                    Insight(name, uAvg, lAvg, wRows, LessonPct);
+                    // Populate performance summary
+                    litInsLessons.Text = HttpUtility.HtmlEncode(doneL + " / " + totalL);
+                    int weakUnitCount = 0, weakLevelCount = 0;
+                    foreach (var w in wRows)
+                    {
+                        string wt = ((dynamic)w).quizType;
+                        if (wt == "Unit") weakUnitCount++; else weakLevelCount++;
+                    }
+                    litInsWeakUnit.Text = weakUnitCount.ToString();
+                    litInsWeakLevel.Text = weakLevelCount.ToString();
+                    litInsCerts.Text = certs.Count.ToString();
+
+                    Insight(weakUnitCount, weakLevelCount, hasNoQuizAttempts);
                 }
                 pnlMain.Visible = true; pnlError.Visible = false;
             }
@@ -144,11 +335,36 @@ namespace ScienceBuddy.Teacher
 
         private decimal Avg(SqlConnection c, string sid, string qt) { using (var cmd = new SqlCommand("SELECT AVG(CAST(qr.[percentage] AS DECIMAL(5,2))) FROM dbo.[QuizResult] qr INNER JOIN dbo.[Quiz] q ON q.[quizId]=qr.[quizId] WHERE qr.[studentId]=@s AND q.[quizType]=@t", c)) { cmd.Parameters.AddWithValue("@s", sid); cmd.Parameters.AddWithValue("@t", qt); var v = cmd.ExecuteScalar(); return (v != null && v != DBNull.Value) ? Convert.ToDecimal(v) : -1; } }
 
-        private void BindQuiz(SqlConnection c, string sid, string qt, Repeater rpt) { var rows = new List<object>(); using (var cmd = new SqlCommand(@"SELECT quizName,score,totalMarks,percentage,resultStatus,attemptNo,attemptedDate,resultId,correctCount,wrongCount FROM(SELECT COALESCE(q.[quizTitleEN],'Quiz') AS quizName,qr.[score],qr.[totalMarks],qr.[percentage],qr.[resultStatus],qr.[attemptNo],qr.[attemptedDate],qr.[resultId],(SELECT COUNT(*) FROM dbo.[QuizAnswer] qa WHERE qa.[resultId]=qr.[resultId] AND qa.[isCorrect]=1) AS correctCount,(SELECT COUNT(*) FROM dbo.[QuizAnswer] qa WHERE qa.[resultId]=qr.[resultId] AND qa.[isCorrect]=0) AS wrongCount,ROW_NUMBER() OVER(PARTITION BY qr.[quizId] ORDER BY qr.[attemptedDate] DESC,qr.[attemptNo] DESC) AS rn FROM dbo.[QuizResult] qr INNER JOIN dbo.[Quiz] q ON q.[quizId]=qr.[quizId] WHERE qr.[studentId]=@s AND q.[quizType]=@t) sub WHERE rn=1 ORDER BY attemptedDate DESC", c)) { cmd.Parameters.AddWithValue("@s", sid); cmd.Parameters.AddWithValue("@t", qt); using (var r = cmd.ExecuteReader()) while (r.Read()) { string dt = r["attemptedDate"] != DBNull.Value ? Convert.ToDateTime(r["attemptedDate"]).ToString("d MMM yyyy") : "-"; string pct = r["percentage"] != DBNull.Value ? Convert.ToDecimal(r["percentage"]).ToString("0.0") + "%" : "-"; string sc = r["score"] != DBNull.Value ? Convert.ToDecimal(r["score"]).ToString("0") + "/" + Convert.ToDecimal(r["totalMarks"]).ToString("0") : "-"; string res = r["resultStatus"]?.ToString() ?? "-"; int corr = r["correctCount"] != DBNull.Value ? Convert.ToInt32(r["correctCount"]) : 0; int wrng = r["wrongCount"] != DBNull.Value ? Convert.ToInt32(r["wrongCount"]) : 0; rows.Add(new { quizName = r["quizName"].ToString(), score = sc, pct, result = res, resCss = res == "Passed" ? "pass" : "fail", attempts = r["attemptNo"]?.ToString() ?? "1", date = dt, resultId = r["resultId"].ToString(), correctCount = corr, wrongCount = wrng }); } } if (rows.Count > 0) { rpt.DataSource = rows; rpt.DataBind(); } }
+        private void BindQuiz(SqlConnection c, string sid, string qt, Repeater rpt, System.Web.UI.WebControls.Panel pnlTable, System.Web.UI.WebControls.Panel pnlEmpty) { bool isBM = CurrentLanguage == "BM"; string titleCol = isBM ? "COALESCE(q.[quizTitleBM], q.[quizTitleEN], 'Quiz')" : "COALESCE(q.[quizTitleEN], q.[quizTitleBM], 'Quiz')"; var rows = new List<object>(); using (var cmd = new SqlCommand(@"SELECT quizName,score,totalMarks,percentage,resultStatus,attemptNo,attemptedDate,resultId,correctCount,wrongCount FROM(SELECT " + titleCol + @" AS quizName,qr.[score],qr.[totalMarks],qr.[percentage],qr.[resultStatus],qr.[attemptNo],qr.[attemptedDate],qr.[resultId],(SELECT COUNT(*) FROM dbo.[QuizAnswer] qa WHERE qa.[resultId]=qr.[resultId] AND qa.[isCorrect]=1) AS correctCount,(SELECT COUNT(*) FROM dbo.[QuizAnswer] qa WHERE qa.[resultId]=qr.[resultId] AND qa.[isCorrect]=0) AS wrongCount,ROW_NUMBER() OVER(PARTITION BY qr.[quizId] ORDER BY qr.[attemptedDate] DESC,qr.[attemptNo] DESC) AS rn FROM dbo.[QuizResult] qr INNER JOIN dbo.[Quiz] q ON q.[quizId]=qr.[quizId] WHERE qr.[studentId]=@s AND q.[quizType]=@t) sub WHERE rn=1 ORDER BY attemptedDate DESC", c)) { cmd.Parameters.AddWithValue("@s", sid); cmd.Parameters.AddWithValue("@t", qt); using (var r = cmd.ExecuteReader()) while (r.Read()) { string dt = r["attemptedDate"] != DBNull.Value ? Convert.ToDateTime(r["attemptedDate"]).ToString("d MMM yyyy") : "-"; string pct = r["percentage"] != DBNull.Value ? Convert.ToDecimal(r["percentage"]).ToString("0.0") + "%" : "-"; string sc = r["score"] != DBNull.Value ? Convert.ToDecimal(r["score"]).ToString("0") + "/" + Convert.ToDecimal(r["totalMarks"]).ToString("0") : "-"; string res = r["resultStatus"]?.ToString() ?? "-"; int corr = r["correctCount"] != DBNull.Value ? Convert.ToInt32(r["correctCount"]) : 0; int wrng = r["wrongCount"] != DBNull.Value ? Convert.ToInt32(r["wrongCount"]) : 0; rows.Add(new { quizName = r["quizName"].ToString(), score = sc, pct, result = res == "Passed" ? T("Passed","Lulus") : T("Failed","Gagal"), resCss = res == "Passed" ? "pass" : "fail", attempts = r["attemptNo"]?.ToString() ?? "1", date = dt, resultId = r["resultId"].ToString(), correctCount = corr, wrongCount = wrng }); } } if (rows.Count > 0) { pnlTable.Visible = true; pnlEmpty.Visible = false; rpt.DataSource = rows; rpt.DataBind(); } else { pnlTable.Visible = false; pnlEmpty.Visible = true; } }
 
-        private void Insight(string name, decimal u, decimal l, List<object> weak, int lPct) { var ins = new List<string>(); if (u >= 80 && l >= 80) ins.Add(T("Excellent! " + name + " is performing strongly in main quizzes.", "Cemerlang! " + name + " menunjukkan prestasi mantap.")); else if (u >= 60 && l >= 60) ins.Add(T(name + " shows good progress.", name + " menunjukkan kemajuan baik.")); if (u >= 0 && u < 50) ins.Add(T("Unit Quiz below 50%. Targeted revision recommended.", "Kuiz Unit bawah 50%. Ulang kaji bersasar disyorkan.")); if (l >= 0 && l < 50) ins.Add(T("Level Quiz needs improvement.", "Kuiz Tahap perlu ditingkatkan.")); if (lPct >= 80) ins.Add(T("Great lesson completion!", "Penyelesaian pelajaran hebat!")); else if (lPct < 30) ins.Add(T("Low lesson completion.", "Penyelesaian pelajaran rendah.")); if (weak.Count > 0) { string top = ((dynamic)weak[0]).subtopic; ins.Add(T("Weak in: " + top + ". Assign revision materials.", "Lemah dalam: " + top + ". Berikan bahan ulang kaji.")); } else ins.Add(T("No weak subtopics detected.", "Tiada subtopik lemah dikesan.")); if (ins.Count == 0) ins.Add(T("No issues detected.", "Tiada isu dikesan.")); litInsight.Text = string.Join("<br/>", ins); }
+        private void Insight(int weakUnit, int weakLevel, bool noAttempts)
+        {
+            string rec;
+            if (noAttempts)
+                rec = T("Encourage the student to attempt a Unit or Level quiz so their performance can be evaluated.", "Galakkan pelajar mencuba Kuiz Unit atau Kuiz Level supaya prestasi mereka dapat dinilai.");
+            else if (weakUnit > 0 && weakLevel > 0)
+                rec = T("Review the failed Unit and Level topics before reattempting the quizzes.", "Ulang kaji topik Unit dan Level yang gagal sebelum mencuba semula kuiz.");
+            else if (weakUnit > 0)
+                rec = T("Review the failed Unit topics before reattempting the Unit quizzes.", "Ulang kaji topik Unit yang gagal sebelum mencuba semula Kuiz Unit.");
+            else if (weakLevel > 0)
+                rec = T("Review the failed Level topics before reattempting the Level quizzes.", "Ulang kaji topik Level yang gagal sebelum mencuba semula Kuiz Level.");
+            else
+                rec = T("Excellent progress. Continue completing the remaining lessons and maintain your performance.", "Prestasi yang cemerlang. Teruskan menyelesaikan pelajaran yang masih belum lengkap dan kekalkan prestasi anda.");
+            litInsight.Text = HttpUtility.HtmlEncode(rec);
+        }
 
         private void ShowError(string m) { pnlError.Visible = true; pnlMain.Visible = false; litErrMsg.Text = HttpUtility.HtmlEncode(m); }
         private static string Ini(string n) { if (string.IsNullOrWhiteSpace(n)) return "S"; var p = n.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries); return p.Length >= 2 ? (p[0][0].ToString() + p[p.Length - 1][0].ToString()).ToUpper() : n.Trim()[0].ToString().ToUpper(); }
+
+        private static string SortLetters(string val, string fallback)
+        {
+            if (string.IsNullOrEmpty(val) || val == "-") return fallback;
+            // Split by common delimiters, filter to single letters, sort alphabetically
+            var letters = val.Split(new[] { ',', ';', ' ', '|' }, StringSplitOptions.RemoveEmptyEntries);
+            var sorted = new List<string>();
+            foreach (var l in letters) { string t = l.Trim().ToUpper(); if (!string.IsNullOrEmpty(t)) sorted.Add(t); }
+            sorted.Sort();
+            return sorted.Count > 0 ? string.Join(", ", sorted) : fallback;
+        }
     }
 }

@@ -282,6 +282,52 @@ namespace ScienceBuddy.Teacher
                 if (!string.IsNullOrEmpty(attachFile)) cmd.Parameters.AddWithValue("@af", attachFile);
                 cmd.ExecuteNonQuery();
             }
+
+            // Send notification to the recipient (not the sender)
+            try
+            {
+                // Get the other user in the chat
+                string recipientId = null;
+                using (var cmd = new SqlCommand("SELECT CASE WHEN [userId]=@u THEN [user2Id] ELSE [userId] END FROM dbo.[userChat] WHERE [chatId]=@c", conn))
+                { cmd.Parameters.AddWithValue("@u", userId); cmd.Parameters.AddWithValue("@c", chatId); recipientId = cmd.ExecuteScalar()?.ToString(); }
+
+                if (!string.IsNullOrEmpty(recipientId))
+                {
+                    // Determine recipient role
+                    string recipientRole = "";
+                    using (var cmd = new SqlCommand("SELECT [role] FROM dbo.[User] WHERE [userId]=@uid", conn))
+                    { cmd.Parameters.AddWithValue("@uid", recipientId); recipientRole = cmd.ExecuteScalar()?.ToString() ?? ""; }
+
+                    string msgEN, msgBM;
+                    if (recipientRole.Equals("Parent", StringComparison.OrdinalIgnoreCase))
+                    {
+                        msgEN = "You have received a new message regarding your child's learning progress.";
+                        msgBM = "Anda telah menerima mesej baharu berkaitan perkembangan pembelajaran anak anda.";
+                    }
+                    else
+                    {
+                        msgEN = "You have received a new message from your teacher.";
+                        msgBM = "Anda telah menerima mesej baharu daripada guru anda.";
+                    }
+
+                    int maxN = 0;
+                    using (var cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING([notificationId],2,LEN([notificationId])-1) AS INT)),0) FROM dbo.[Notification]", conn))
+                    { maxN = Convert.ToInt32(cmd.ExecuteScalar()); }
+                    string nid = "N" + (maxN + 1).ToString("D3");
+
+                    using (var cmd = new SqlCommand("INSERT INTO dbo.[Notification]([notificationId],[toUserId],[titleEN],[titleBM],[messageEN],[messageBM],[isRead],[createdAt]) VALUES(@id,@uid,@tEN,@tBM,@mEN,@mBM,0,GETDATE())", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", nid);
+                        cmd.Parameters.AddWithValue("@uid", recipientId);
+                        cmd.Parameters.AddWithValue("@tEN", "New Message from Teacher");
+                        cmd.Parameters.AddWithValue("@tBM", "Mesej Baharu daripada Guru");
+                        cmd.Parameters.AddWithValue("@mEN", msgEN);
+                        cmd.Parameters.AddWithValue("@mBM", msgBM);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch { /* Notification failure is non-critical */ }
         }
 
         private static string FormatTime(DateTime dt)

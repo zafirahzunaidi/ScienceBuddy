@@ -6,6 +6,7 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Web;
+using System.Web.Services;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -104,6 +105,14 @@ namespace ScienceBuddy.Teacher
                 if (!InitContext()) return;
                 if (Questions.Count == 0) { var qs = new List<QuestionData> { new QuestionData() }; Questions = qs; }
                 LoadCurrentQuestion();
+                // Localize dropdown display text
+                ddlQDiff.Items.FindByValue("Easy").Text = T("Easy", "Mudah");
+                ddlQDiff.Items.FindByValue("Medium").Text = T("Medium", "Sederhana");
+                ddlQDiff.Items.FindByValue("Hard").Text = T("Hard", "Sukar");
+                ddlQType.Items.FindByValue("MCQ").Text = T("MCQ", "Aneka Pilihan");
+                ddlQType.Items.FindByValue("True/False").Text = T("True / False", "Betul / Salah");
+                ddlQType.Items.FindByValue("Multiselect").Text = T("Multiselect", "Pelbagai Pilihan");
+                ddlQType.Items.FindByValue("Drag & Drop").Text = T("Drag & Drop", "Seret & Letak");
             }
         }
 
@@ -180,6 +189,7 @@ namespace ScienceBuddy.Teacher
 
             pnlBuilder.Visible = true;
             btnAddQuestion.Text = T("+ Add Question", "+ Tambah Soalan");
+            btnSubmitQuiz.Text = T("Submit Quiz", "Hantar Kuiz");
             return true;
         }
 
@@ -267,6 +277,7 @@ namespace ScienceBuddy.Teacher
 
             pnlBuilder.Visible = true;
             btnAddQuestion.Text = T("+ Add Question", "+ Tambah Soalan");
+            btnSubmitQuiz.Text = T("Submit Quiz", "Hantar Kuiz");
             return true;
         }
 
@@ -411,8 +422,8 @@ namespace ScienceBuddy.Teacher
                 q.WrongExplanationBM = txtWrongExp.Text;
             }
 
-            q.QuestionType = ddlQType.SelectedValue;
-            q.Difficulty = ddlQDiff.SelectedValue;
+            q.QuestionType = NormalizeQuestionType(ddlQType.SelectedValue);
+            q.Difficulty = NormalizeDifficulty(ddlQDiff.SelectedValue);
             if (radA.Checked) q.CorrectAnswer = "A";
             else if (radB.Checked) q.CorrectAnswer = "B";
             else if (radC.Checked) q.CorrectAnswer = "C";
@@ -460,8 +471,8 @@ namespace ScienceBuddy.Teacher
                         CorrectExplanationEN = g("ceEN"), CorrectExplanationBM = g("ceBM"),
                         WrongExplanationEN = g("weEN"), WrongExplanationBM = g("weBM"),
                         CorrectAnswer = g("correct"),
-                        QuestionType = string.IsNullOrEmpty(g("type")) ? "MCQ" : g("type"),
-                        Difficulty = string.IsNullOrEmpty(g("diff")) ? "Medium" : g("diff"),
+                        QuestionType = NormalizeQuestionType(g("type")),
+                        Difficulty = NormalizeDifficulty(g("diff")),
                         IsSaved = b("saved"),
                         QuestionImageUrl = imgUrl,
                         MsChk = g("msChk"),
@@ -846,6 +857,39 @@ namespace ScienceBuddy.Teacher
             litError.Text = HttpUtility.HtmlEncode(msg);
         }
 
+        /// <summary>
+        /// Ensures the question type stored in the database is always the English standard value,
+        /// regardless of the current website display language.
+        /// </summary>
+        private static string NormalizeQuestionType(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return "MCQ";
+            switch (value)
+            {
+                case "MCQ": return "MCQ";
+                case "True/False": return "True/False";
+                case "Multiselect": return "Multiselect";
+                case "Drag & Drop": return "Drag & Drop";
+                default: return "MCQ";
+            }
+        }
+
+        /// <summary>
+        /// Ensures the difficulty stored in the database is always the English standard value,
+        /// regardless of the current website display language.
+        /// </summary>
+        private static string NormalizeDifficulty(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return "Medium";
+            switch (value)
+            {
+                case "Easy": return "Easy";
+                case "Medium": return "Medium";
+                case "Hard": return "Hard";
+                default: return "Medium";
+            }
+        }
+
         // Saves the uploaded question image to ~/Images/Question/ and returns just the filename.
         // Returns null if nothing was uploaded.
         private string SaveQuestionImage()
@@ -883,6 +927,38 @@ namespace ScienceBuddy.Teacher
                     return "N" + (n + 1).ToString().PadLeft(last.Length - 1, '0');
                 return "N001";
             }
+        }
+
+        // ── WebMethod: Switch language without page reload ────────────
+        [WebMethod(EnableSession = true)]
+        public static object SetLanguage(string lang)
+        {
+            lang = (lang ?? "").Trim().ToUpper();
+            if (lang != "EN" && lang != "BM") lang = "EN";
+
+            HttpContext.Current.Session["preferredLanguage"] = lang;
+
+            string userId = HttpContext.Current.Session["userId"] as string;
+            if (!string.IsNullOrEmpty(userId))
+            {
+                try
+                {
+                    string connStr = ConfigurationManager
+                        .ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+                    const string sql = "UPDATE [User] SET preferredLanguage = @lang WHERE userId = @userId";
+                    using (var conn = new SqlConnection(connStr))
+                    using (var cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@lang", lang);
+                        cmd.Parameters.AddWithValue("@userId", userId);
+                        conn.Open();
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                catch (SqlException) { /* session already updated */ }
+            }
+
+            return new { ok = true, lang = lang };
         }
     }
 }
