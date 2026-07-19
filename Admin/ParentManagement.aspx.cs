@@ -317,6 +317,8 @@ namespace ScienceBuddy.Admin
             LoadParents("", "", "", "name");
         }
 
+        protected string WidthPct(object pct) { return "width:" + pct + "%;"; }
+
         private string SafeScalar(SqlConnection conn, string sql)
         {
             try
@@ -424,7 +426,17 @@ namespace ScienceBuddy.Admin
                         { cmd.Parameters.AddWithValue("@pid", parentId); cmd.Parameters.AddWithValue("@uid", userId); cmd.Parameters.AddWithValue("@name", name);
                           cmd.Parameters.AddWithValue("@ph", string.IsNullOrEmpty(phone) ? (object)DBNull.Value : phone); cmd.ExecuteNonQuery(); }
 
-                        // 3. Insert Log
+                        // 3. Insert Welcome Notification
+                        string notifId = GenId(conn, "Notification", "notificationId", "N", txn);
+                        using (var cmd = new SqlCommand("INSERT INTO dbo.[Notification]([notificationId],[toUserId],[titleEN],[titleBM],[messageEN],[messageBM],[isRead],[createdAt]) VALUES(@nid,@uid,@tEN,@tBM,@mEN,@mBM,0,GETDATE())", conn, txn))
+                        { cmd.Parameters.AddWithValue("@nid", notifId); cmd.Parameters.AddWithValue("@uid", userId);
+                          cmd.Parameters.AddWithValue("@tEN", "Welcome to ScienceBuddy");
+                          cmd.Parameters.AddWithValue("@tBM", "Selamat Datang ke ScienceBuddy");
+                          cmd.Parameters.AddWithValue("@mEN", "Welcome! Your parent account has been successfully created. You can now link your child's account using the Parent Code provided by your child. Once linked, you will be able to monitor learning progress, create study plans and communicate with teachers.");
+                          cmd.Parameters.AddWithValue("@mBM", "Selamat datang! Akaun ibu bapa anda telah berjaya didaftarkan. Anda kini boleh menghubungkan akaun anak anda menggunakan Kod Ibu Bapa yang diberikan oleh anak anda. Selepas berjaya dihubungkan, anda boleh memantau kemajuan pembelajaran, mencipta pelan pembelajaran dan berkomunikasi dengan guru.");
+                          cmd.ExecuteNonQuery(); }
+
+                        // 4. Insert Log
                         string logId = GenId(conn, "Log", "logId", "LOG", txn);
                         using (var cmd = new SqlCommand("INSERT INTO dbo.[Log]([logId],[userId],[action],[description],[logDateTime],[status]) VALUES(@a,@b,'Parent Created',@c,@d,'Success')", conn, txn))
                         { cmd.Parameters.AddWithValue("@a", logId); cmd.Parameters.AddWithValue("@b", adminId); cmd.Parameters.AddWithValue("@c", "Administrator created parent account " + parentId + " (" + name + ")."); cmd.Parameters.AddWithValue("@d", DateTime.Now); cmd.ExecuteNonQuery(); }

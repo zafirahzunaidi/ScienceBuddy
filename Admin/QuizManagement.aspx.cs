@@ -205,16 +205,21 @@ namespace ScienceBuddy.Admin
 
                 // Questions
                 string qCol = CurrentLanguage == "BM" ? "questionTextBM" : "questionTextEN";
+                string qFallback = CurrentLanguage == "BM" ? "questionTextEN" : "questionTextBM";
                 string oACol = CurrentLanguage == "BM" ? "optionA_BM" : "optionA_EN";
+                string oAFb = CurrentLanguage == "BM" ? "optionA_EN" : "optionA_BM";
                 string oBCol = CurrentLanguage == "BM" ? "optionB_BM" : "optionB_EN";
+                string oBFb = CurrentLanguage == "BM" ? "optionB_EN" : "optionB_BM";
                 string oCCol = CurrentLanguage == "BM" ? "optionC_BM" : "optionC_EN";
+                string oCFb = CurrentLanguage == "BM" ? "optionC_EN" : "optionC_BM";
                 string oDCol = CurrentLanguage == "BM" ? "optionD_BM" : "optionD_EN";
+                string oDFb = CurrentLanguage == "BM" ? "optionD_EN" : "optionD_BM";
 
-                string questionSql = string.Format(@"SELECT ISNULL([{0}],[questionTextEN]) AS questionText,
-                    ISNULL([{1}],[optionA_EN]) AS optA, ISNULL([{2}],[optionB_EN]) AS optB,
-                    ISNULL([{3}],[optionC_EN]) AS optC, ISNULL([{4}],[optionD_EN]) AS optD,
-                    [correctAnswer],[difficulty]
-                    FROM dbo.[Question] WHERE [quizId]=@id ORDER BY [questionId]", qCol, oACol, oBCol, oCCol, oDCol);
+                string questionSql = string.Format(@"SELECT ISNULL([{0}],[{5}]) AS questionText,
+                    ISNULL([{1}],[{6}]) AS optA, ISNULL([{2}],[{7}]) AS optB,
+                    ISNULL([{3}],[{8}]) AS optC, ISNULL([{4}],[{9}]) AS optD,
+                    [correctAnswer],[difficulty],[questionType]
+                    FROM dbo.[Question] WHERE [quizId]=@id ORDER BY [questionId]", qCol, oACol, oBCol, oCCol, oDCol, qFallback, oAFb, oBFb, oCFb, oDFb);
 
                 using (var cmd = new SqlCommand(questionSql, conn))
                 {
@@ -245,7 +250,10 @@ namespace ScienceBuddy.Admin
                                 optC = NullSafe(row["optC"]),
                                 optD = NullSafe(row["optD"]),
                                 correctAnswer = NullSafe(row["correctAnswer"]),
-                                difficulty = NullSafe(row["difficulty"])
+                                difficulty = NullSafe(row["difficulty"]),
+                                questionType = NullSafe(row["questionType"]),
+                                isDragDrop = NullSafe(row["questionType"]).IndexOf("Drag", StringComparison.OrdinalIgnoreCase) >= 0,
+                                isFillBlank = NullSafe(row["questionType"]).IndexOf("Fill", StringComparison.OrdinalIgnoreCase) >= 0
                             });
                         }
                         pnlQuestions.Visible = true;
@@ -279,6 +287,29 @@ namespace ScienceBuddy.Admin
 
         // --- Helpers ---
 
+        protected string HideIf(bool condition) { return condition ? "display:none;" : ""; }
+        protected string ShowIf(bool condition, string style) { return condition ? style : "display:none;"; }
+
+        protected string FormatDragDropAnswer(string answer)
+        {
+            if (string.IsNullOrWhiteSpace(answer)) return "<span style='color:#94A3B8;'>-</span>";
+            string[] parts = answer.Split(',');
+            string[] colors = { "#7C3AED", "#2563EB", "#059669", "#D97706", "#DC2626", "#0891B2" };
+            var sb = new System.Text.StringBuilder();
+            for (int i = 0; i < parts.Length; i++)
+            {
+                string color = colors[i % colors.Length];
+                if (i > 0)
+                    sb.Append("<div style=\"text-align:center;padding:2px 0;color:#94A3B8;font-size:.7rem;\"><i class=\"bi bi-arrow-down\"></i></div>");
+                sb.AppendFormat(
+                    "<div style=\"display:flex;align-items:center;gap:10px;padding:8px 14px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;\">" +
+                    "<span style=\"display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:{0};color:#fff;font-size:.75rem;font-weight:700;flex-shrink:0;\">{1}</span>" +
+                    "<span style=\"font-size:.875rem;font-weight:600;color:#1E293B;\">{2}</span></div>",
+                    color, i + 1, HttpUtility.HtmlEncode(parts[i].Trim()));
+            }
+            return sb.ToString();
+        }
+
         private string SafeScalar(SqlConnection conn, string sql)
         {
             try
@@ -290,6 +321,27 @@ namespace ScienceBuddy.Admin
                 }
             }
             catch { return "0"; }
+        }
+
+        protected string GetQuestionOptionsStyle(bool isDragDrop, bool isFillBlank)
+        {
+            return (isDragDrop || isFillBlank)
+                ? "display:none;"
+                : "";
+        }
+
+        protected string GetFillBlankStyle(bool isFillBlank)
+        {
+            return isFillBlank
+                ? "padding:12px 16px;margin-top:8px;background:#D1FAE5;border:1px solid #6EE7B7;border-radius:10px;"
+                : "display:none;";
+        }
+
+        protected string GetDragDropStyle(bool isDragDrop)
+        {
+            return isDragDrop
+                ? "padding:14px 16px;margin-top:10px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;"
+                : "display:none;";
         }
 
         private static string NullSafe(object val)

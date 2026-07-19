@@ -29,5 +29,18 @@ namespace ScienceBuddy.Admin
         protected global::System.Web.UI.WebControls.Panel pnlEmpty;
         protected global::System.Web.UI.WebControls.Panel pnlToast;
         protected global::System.Web.UI.WebControls.Literal litToast;
+        protected global::System.Web.UI.WebControls.Panel pnlModal;
+        protected global::System.Web.UI.WebControls.Literal litMNotifId;
+        protected global::System.Web.UI.WebControls.Literal litMId;
+        protected global::System.Web.UI.WebControls.Literal litMRecipientName;
+        protected global::System.Web.UI.WebControls.Literal litMRecipientUsername;
+        protected global::System.Web.UI.WebControls.Literal litMRecipientRole;
+        protected global::System.Web.UI.WebControls.Literal litMStatus;
+        protected global::System.Web.UI.WebControls.Literal litMDateSent;
+        protected global::System.Web.UI.WebControls.Literal litMIconTitle;
+        protected global::System.Web.UI.WebControls.Literal litMTitleBM;
+        protected global::System.Web.UI.WebControls.Literal litMMsgEN;
+        protected global::System.Web.UI.WebControls.Literal litMMsgBM;
+        protected global::System.Web.UI.WebControls.Button btnCloseModal;
     }
 }

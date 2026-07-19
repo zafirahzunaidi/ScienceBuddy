@@ -76,10 +76,7 @@ namespace ScienceBuddy.Admin
                 litMCQ.Text = SC(conn, "SELECT COUNT(*) FROM dbo.[Question] WHERE [questionType]='MCQ'").ToString();
                 litTF.Text = SC(conn, "SELECT COUNT(*) FROM dbo.[Question] WHERE [questionType]='True/False'").ToString();
 
-                int total = int.Parse(litTotal.Text);
-                int mcq = int.Parse(litMCQ.Text);
-                int tf = int.Parse(litTF.Text);
-                litOther.Text = (total - mcq - tf).ToString();
+                litOther.Text = (int.Parse(litTotal.Text) - int.Parse(litMCQ.Text) - int.Parse(litTF.Text)).ToString();
             }
         }
 
@@ -126,8 +123,12 @@ namespace ScienceBuddy.Admin
                         {
                             string textEN = NS(r, "questionTextEN");
                             string textBM = NS(r, "questionTextBM");
-                            string text = CurrentLanguage == "BM" && !string.IsNullOrEmpty(textBM) ? textBM : textEN;
-                            if (string.IsNullOrEmpty(text)) text = !string.IsNullOrEmpty(textEN) ? textEN : "(No text)";
+                            string text = CurrentLanguage == "BM"
+                                ? (!string.IsNullOrEmpty(textBM) ? textBM : textEN)
+                                : (!string.IsNullOrEmpty(textEN) ? textEN : textBM);
+                            if (string.IsNullOrEmpty(text)) text = "(No text)";
+
+                            string qStatus = NS(r, "status");
 
                             string sub = CurrentLanguage == "BM" && !string.IsNullOrEmpty(NS(r, "subBM")) ? NS(r, "subBM") : NS(r, "subEN");
                             string optA = CurrentLanguage == "BM" && !string.IsNullOrEmpty(NS(r, "optionA_BM")) ? NS(r, "optionA_BM") : NS(r, "optionA_EN");
@@ -137,7 +138,7 @@ namespace ScienceBuddy.Admin
                             string expl = CurrentLanguage == "BM" && !string.IsNullOrEmpty(NS(r, "correctExplanationBM")) ? NS(r, "correctExplanationBM") : NS(r, "correctExplanationEN");
 
                             string json = "{" + JStr("id", NS(r, "questionId")) + "," + JStr("text", text) + "," + JStr("type", NS(r, "questionType")) + "," +
-                                JStr("diff", NS(r, "difficulty")) + "," + JStr("status", NS(r, "status")) + "," + JStr("teacher", NS(r, "teacherName")) + "," +
+                                JStr("diff", NS(r, "difficulty")) + "," + JStr("status", qStatus) + "," + JStr("teacher", NS(r, "teacherName")) + "," +
                                 JStr("subtopic", sub) + "," + JStr("lang", "") + "," + JStr("correct", NS(r, "correctAnswer")) + "," +
                                 JStr("optA", optA) + "," + JStr("optB", optB) + "," + JStr("optC", optC) + "," + JStr("optD", optD) + "," +
                                 JStr("explanation", expl) + "," + JStr("date", r["createdAt"] != DBNull.Value ? Convert.ToDateTime(r["createdAt"]).ToString("d MMM yyyy") : "-") + "}";
@@ -148,7 +149,8 @@ namespace ScienceBuddy.Admin
                                 questionText = text.Length > 150 ? text.Substring(0, 150) + "..." : text,
                                 questionType = NS(r, "questionType"),
                                 difficulty = NS(r, "difficulty"),
-                                status = NS(r, "status"),
+                                status = qStatus,
+                                canEdit = qStatus != "Pending",
                                 teacherName = NS(r, "teacherName"),
                                 subtopicName = sub,
                                 createdAt = r["createdAt"] != DBNull.Value ? Convert.ToDateTime(r["createdAt"]).ToString("d MMM yyyy") : "-",
@@ -203,7 +205,7 @@ namespace ScienceBuddy.Admin
                 using (var conn = new SqlConnection(ConnStr))
                 {
                     conn.Open();
-                    using (var cmd = new SqlCommand("SELECT [questionId],[questionTextEN],[questionTextBM],[optionA_EN],[optionB_EN],[optionC_EN],[optionD_EN],[correctAnswer],[difficulty],[status] FROM dbo.[Question] WHERE [questionId]=@id", conn))
+                    using (var cmd = new SqlCommand("SELECT [questionId],[questionTextEN],[questionTextBM],[optionA_EN],[optionB_EN],[optionC_EN],[optionD_EN],[correctAnswer],[difficulty],[status],[questionType] FROM dbo.[Question] WHERE [questionId]=@id", conn))
                     {
                         cmd.Parameters.AddWithValue("@id", qId);
                         using (var rd = cmd.ExecuteReader())
@@ -221,7 +223,8 @@ namespace ScienceBuddy.Admin
                                 "\"optD\":\"" + EJ(rd["optionD_EN"]) + "\"," +
                                 "\"correct\":\"" + EJ(rd["correctAnswer"]) + "\"," +
                                 "\"diff\":\"" + EJ(rd["difficulty"]) + "\"," +
-                                "\"status\":\"" + EJ(rd["status"]) + "\"}}";
+                                "\"status\":\"" + EJ(rd["status"]) + "\"," +
+                                "\"type\":\"" + EJ(rd["questionType"]) + "\"}}";
                             Response.Write(json);
                         }
                     }
@@ -270,6 +273,37 @@ namespace ScienceBuddy.Admin
                         cmd.Parameters.AddWithValue("@id", qId);
                         cmd.ExecuteNonQuery();
                     }
+
+                    // Notify the teacher who created this question
+                    try
+                    {
+                        string creatorUserId = null;
+                        using (var cmd = new SqlCommand("SELECT [createdByUserId] FROM dbo.[Question] WHERE [questionId]=@id", conn))
+                        {
+                            cmd.Parameters.AddWithValue("@id", qId);
+                            var val = cmd.ExecuteScalar();
+                            if (val != null && val != DBNull.Value)
+                                creatorUserId = val.ToString();
+                        }
+
+                        if (!string.IsNullOrEmpty(creatorUserId))
+                        {
+                            string notifId = GenId(conn, "Notification", "notificationId", "N");
+                            using (var cmd = new SqlCommand("INSERT INTO dbo.[Notification]([notificationId],[toUserId],[titleEN],[titleBM],[messageEN],[messageBM],[isRead],[createdAt]) VALUES(@a,@b,@c,@d,@e,@f,0,@g)", conn))
+                            {
+                                cmd.Parameters.AddWithValue("@a", notifId);
+                                cmd.Parameters.AddWithValue("@b", creatorUserId);
+                                cmd.Parameters.AddWithValue("@c", "Question Updated");
+                                cmd.Parameters.AddWithValue("@d", "Soalan Dikemas Kini");
+                                cmd.Parameters.AddWithValue("@e", "Your question (Question ID: " + qId + ") has been updated by an administrator. Please review the latest changes if necessary.");
+                                cmd.Parameters.AddWithValue("@f", "Soalan anda (ID Soalan: " + qId + ") telah dikemas kini oleh pentadbir. Sila semak perubahan terkini jika perlu.");
+                                cmd.Parameters.AddWithValue("@g", DateTime.Now);
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+                    }
+                    catch { /* Notification failure must not affect question update success */ }
+
                     InsertLog(conn, Session["userId"].ToString(), "Question Updated", "Updated question " + qId + ".", "Success");
                 }
                 Response.Write("{\"success\":true}");
@@ -308,6 +342,8 @@ namespace ScienceBuddy.Admin
         }
 
         // --- Helper Methods ---
+
+        protected string HideIf(bool condition) { return condition ? "display:none;" : ""; }
 
         private void InsertLog(SqlConnection c, string uid, string action, string desc, string status)
         {

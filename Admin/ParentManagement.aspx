@@ -187,7 +187,7 @@
                                         <span><i class="bi bi-bar-chart"></i> <%# HttpUtility.HtmlEncode(Eval("level")) %></span>
                                         <span><i class="bi bi-lightning"></i> <%# Eval("xp") %> XP</span>
                                     </div>
-                                    <div class="ad-parent-management-child-xp-bar"><div class="ad-parent-management-child-xp-fill" style='width:<%# Eval("xpPct") %>%'></div></div>
+                                    <div class="ad-parent-management-child-xp-bar"><div class="ad-parent-management-child-xp-fill" style='<%# WidthPct(Eval("xpPct")) %>'></div></div>
                                 </div>
                             </div>
                         </ItemTemplate>

@@ -127,7 +127,7 @@
         <asp:Repeater ID="rptStudents" runat="server" OnItemCommand="rptStudents_ItemCommand">
             <ItemTemplate>
                 <div class="ad-student-management-card">
-                    <div class="ad-student-management-avatar" style='<%# Eval("avatarGradient") %>'>
+                    <div class="ad-student-management-avatar" style="<%# Eval("avatarGradient") %>">
                         <%# HttpUtility.HtmlEncode(Eval("initials")) %>
                         <span class='ad-student-management-avatar-status <%# Eval("statusClass") %>'></span>
                     </div>
@@ -140,7 +140,7 @@
                     </div>
                     <div class="ad-student-management-progress-section">
                         <div class="ad-student-management-progress-row"><span>XP</span><span><%# Eval("xp") %></span></div>
-                        <div class="ad-student-management-progress-bar"><div class="ad-student-management-progress-fill" style='width:<%# Eval("xpPct") %>%'></div></div>
+                        <div class="ad-student-management-progress-bar"><div class="ad-student-management-progress-fill" style="<%# WidthPct(Eval("xpPct")) %>"></div></div>
                     </div>
                     <div class="ad-student-management-meta">
                         <span><i class="bi bi-book"></i> <%# Eval("lessonsCompleted") %></span>
