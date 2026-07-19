@@ -13,7 +13,7 @@ namespace ScienceBuddy.Parent
 {
     public partial class QuizResults : Page
     {
-        private string DatabaseConnectionString =>
+        private string ConnStr =>
             ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
         protected string CurrentLanguage = "EN";
@@ -23,44 +23,36 @@ namespace ScienceBuddy.Parent
             return CurrentLanguage == "BM" ? bm : en;
         }
 
-        private string _parentRecordId = "";
-        private string _authenticatedUserId = "";
-        private string _selectedChildId = "";
-        private string _selectedChildName = "";
-        private string _studentParentLinkId = "";
-
-        /// <summary>
-        /// Tracks which quiz result cards have their incorrect-question section expanded.
-        /// Persisted via ViewState to survive postbacks.
-        /// </summary>
+        private string _parentId = "";
+        private string _userId = "";
+        private string _childId = "";
+        private string _childName = "";
+        private string _spId = "";
         private List<string> _expandedResultIds
         {
             get { return ViewState["ExpandedResults"] as List<string> ?? new List<string>(); }
             set { ViewState["ExpandedResults"] = value; }
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  PAGE LIFECYCLE
-        // ══════════════════════════════════════════════════════════════
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!ValidateParentSession())
+            if (!CheckAuth())
             {
                 return;
             }
 
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
-            LoadLanguagePreference();
-            LoadUnreadNotificationBadge();
-            _authenticatedUserId = Session["userId"].ToString();
-            LoadParentRecordId();
+            LoadLang();
+            LoadUnreadBadge();
+            _userId = Session["userId"].ToString();
+            LoadParentId();
 
             if (!IsPostBack)
             {
-                ApplyPageLabels();
+                SetLabels();
                 LoadLinkedChildrenDropdown();
 
-                if (!string.IsNullOrEmpty(_selectedChildId))
+                if (!string.IsNullOrEmpty(_childId))
                 {
                     pnlContent.Visible = true;
                     pnlNoChild.Visible = false;
@@ -74,18 +66,16 @@ namespace ScienceBuddy.Parent
             }
             else
             {
-                ApplyPageLabels();
-                _selectedChildId = ddlSidebarChild.SelectedValue;
-                _selectedChildName = ddlSidebarChild.SelectedItem != null
+                SetLabels();
+                _childId = ddlSidebarChild.SelectedValue;
+                _childName = ddlSidebarChild.SelectedItem != null
                     ? ddlSidebarChild.SelectedItem.Text : "";
-                LoadStudentParentLinkId();
+                LoadSpId();
             }
         }
 
-        // ══════════════════════════════════════════════════════════════
         //  AUTHORIZATION, LANGUAGE, PARENT RESOLUTION
-        // ══════════════════════════════════════════════════════════════
-        private bool ValidateParentSession()
+        private bool CheckAuth()
         {
             if (Session["userId"] == null || Session["role"] == null ||
                 Session["role"].ToString() != "Parent")
@@ -97,7 +87,7 @@ namespace ScienceBuddy.Parent
             return true;
         }
 
-        private void LoadLanguagePreference()
+        private void LoadLang()
         {
             string cachedLanguage = Session["preferredLanguage"] as string;
             if (!string.IsNullOrEmpty(cachedLanguage))
@@ -108,7 +98,7 @@ namespace ScienceBuddy.Parent
 
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(
                     "SELECT preferredLanguage FROM dbo.[User] WHERE userId=@uid", connection))
                 {
@@ -126,21 +116,21 @@ namespace ScienceBuddy.Parent
             catch { }
         }
 
-        private void LoadParentRecordId()
+        private void LoadParentId()
         {
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(
                     "SELECT parentId FROM dbo.[Parent] WHERE userId=@uid", connection))
                 {
-                    command.Parameters.AddWithValue("@uid", _authenticatedUserId);
+                    command.Parameters.AddWithValue("@uid", _userId);
                     connection.Open();
                     object result = command.ExecuteScalar();
 
                     if (result != null)
                     {
-                        _parentRecordId = result.ToString();
+                        _parentId = result.ToString();
                     }
                 }
             }
@@ -157,10 +147,10 @@ namespace ScienceBuddy.Parent
                     FROM dbo.StudentParent sp INNER JOIN dbo.Student s ON sp.studentId=s.studentId
                     WHERE sp.parentId=@pid ORDER BY s.name";
 
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(childListQuery, connection))
                 {
-                    command.Parameters.AddWithValue("@pid", _parentRecordId);
+                    command.Parameters.AddWithValue("@pid", _parentId);
                     connection.Open();
 
                     using (var reader = command.ExecuteReader())
@@ -189,29 +179,29 @@ namespace ScienceBuddy.Parent
                     Session["selectedChildId"] = ddlSidebarChild.Items[0].Value;
                 }
 
-                _selectedChildId = ddlSidebarChild.SelectedValue;
-                _selectedChildName = ddlSidebarChild.SelectedItem.Text;
-                LoadStudentParentLinkId();
+                _childId = ddlSidebarChild.SelectedValue;
+                _childName = ddlSidebarChild.SelectedItem.Text;
+                LoadSpId();
             }
         }
 
-        private void LoadStudentParentLinkId()
+        private void LoadSpId()
         {
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(
                     "SELECT studentParentId FROM dbo.StudentParent WHERE parentId=@pid AND studentId=@sid",
                     connection))
                 {
-                    command.Parameters.AddWithValue("@pid", _parentRecordId);
-                    command.Parameters.AddWithValue("@sid", _selectedChildId);
+                    command.Parameters.AddWithValue("@pid", _parentId);
+                    command.Parameters.AddWithValue("@sid", _childId);
                     connection.Open();
                     object result = command.ExecuteScalar();
 
                     if (result != null)
                     {
-                        _studentParentLinkId = result.ToString();
+                        _spId = result.ToString();
                     }
                 }
             }
@@ -221,9 +211,9 @@ namespace ScienceBuddy.Parent
         protected void SidebarChildChanged(object sender, EventArgs e)
         {
             Session["selectedChildId"] = ddlSidebarChild.SelectedValue;
-            _selectedChildId = ddlSidebarChild.SelectedValue;
-            _selectedChildName = ddlSidebarChild.SelectedItem.Text;
-            LoadStudentParentLinkId();
+            _childId = ddlSidebarChild.SelectedValue;
+            _childName = ddlSidebarChild.SelectedItem.Text;
+            LoadSpId();
             pnlContent.Visible = true;
             pnlNoChild.Visible = false;
             pnlDetailsModal.Visible = false;
@@ -246,7 +236,7 @@ namespace ScienceBuddy.Parent
                 "Tiada anak dipautkan. Sila pautkan akaun anak terlebih dahulu.");
         }
 
-        private void ApplyPageLabels()
+        private void SetLabels()
         {
             btnViewSelected.Text = T("View Selected Details", "Lihat Butiran Dipilih");
             btnAddWeakToStudyPlan.Text = T("Add Weak Topics to Study Plan",
@@ -257,11 +247,11 @@ namespace ScienceBuddy.Parent
         {
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(
                     "SELECT ISNULL(nickname, name) FROM dbo.Student WHERE studentId=@sid", connection))
                 {
-                    command.Parameters.AddWithValue("@sid", _selectedChildId);
+                    command.Parameters.AddWithValue("@sid", _childId);
                     connection.Open();
                     object result = command.ExecuteScalar();
 
@@ -272,7 +262,7 @@ namespace ScienceBuddy.Parent
                 }
             }
             catch { }
-            return _selectedChildName;
+            return _childName;
         }
 
         private string GetSelectedUnitFilter()
@@ -280,9 +270,6 @@ namespace ScienceBuddy.Parent
             return ddlUnit.SelectedValue ?? "";
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  UNIT FILTER DROPDOWN
-        // ══════════════════════════════════════════════════════════════
         private void PopulateUnitFilter()
         {
             ddlUnit.Items.Clear();
@@ -302,10 +289,10 @@ namespace ScienceBuddy.Parent
                     WHERE qr.studentId=@sid
                     ORDER BY unitNameEN";
 
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(unitListQuery, connection))
                 {
-                    command.Parameters.AddWithValue("@sid", _selectedChildId);
+                    command.Parameters.AddWithValue("@sid", _childId);
                     connection.Open();
 
                     using (var reader = command.ExecuteReader())
@@ -323,13 +310,10 @@ namespace ScienceBuddy.Parent
             catch { }
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  PAGE DATA ORCHESTRATOR
-        // ══════════════════════════════════════════════════════════════
         private void RefreshAllQuizData()
         {
             string childDisplayName = FetchChildNickname();
-            _selectedChildName = childDisplayName;
+            _childName = childDisplayName;
 
             litHeroTitle.Text = string.Format(
                 T("{0}'s Quiz Results", "Keputusan Kuiz {0}"), childDisplayName);
@@ -345,11 +329,6 @@ namespace ScienceBuddy.Parent
             RenderWeakAndStrongAreas();
             RenderPerformanceInsightSummary(childDisplayName);
         }
-
-        /// <summary>
-        /// Builds the natural-language performance summary that tells the parent
-        /// whether the child is excelling, progressing, or needs attention.
-        /// </summary>
         private void RenderPerformanceInsightSummary(string childName)
         {
             try
@@ -359,7 +338,7 @@ namespace ScienceBuddy.Parent
                 decimal overallAverage = 0;
                 int totalAttemptCount = 0;
 
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 {
                     connection.Open();
 
@@ -368,7 +347,7 @@ namespace ScienceBuddy.Parent
                         "SELECT AVG(percentage) AS avg, COUNT(*) AS cnt FROM dbo.QuizResult WHERE studentId=@sid",
                         connection))
                     {
-                        command.Parameters.AddWithValue("@sid", _selectedChildId);
+                        command.Parameters.AddWithValue("@sid", _childId);
 
                         using (var reader = command.ExecuteReader())
                         {
@@ -434,7 +413,7 @@ namespace ScienceBuddy.Parent
 
             using (var command = new SqlCommand(topUnitQuery, connection))
             {
-                command.Parameters.AddWithValue("@sid", _selectedChildId);
+                command.Parameters.AddWithValue("@sid", _childId);
                 command.Parameters.AddWithValue("@lang", CurrentLanguage);
 
                 using (var reader = command.ExecuteReader())
@@ -460,7 +439,7 @@ namespace ScienceBuddy.Parent
 
             using (var command = new SqlCommand(weakUnitQuery, connection))
             {
-                command.Parameters.AddWithValue("@sid", _selectedChildId);
+                command.Parameters.AddWithValue("@sid", _childId);
                 command.Parameters.AddWithValue("@lang", CurrentLanguage);
 
                 using (var reader = command.ExecuteReader())
@@ -511,9 +490,6 @@ namespace ScienceBuddy.Parent
             }
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  SUMMARY STATISTICS CARD
-        // ══════════════════════════════════════════════════════════════
         private void RenderSummaryStatistics(string unitFilter)
         {
             try
@@ -525,10 +501,10 @@ namespace ScienceBuddy.Parent
                     FROM dbo.QuizResult qr INNER JOIN dbo.Quiz q ON qr.quizId=q.quizId
                     WHERE qr.studentId=@sid{0}", unitClause);
 
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(summaryQuery, connection))
                 {
-                    command.Parameters.AddWithValue("@sid", _selectedChildId);
+                    command.Parameters.AddWithValue("@sid", _childId);
                     if (!string.IsNullOrEmpty(unitFilter))
                     {
                         command.Parameters.AddWithValue("@uid", unitFilter);
@@ -566,9 +542,6 @@ namespace ScienceBuddy.Parent
             }
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  SCORE TREND CHART (SVG polyline)
-        // ══════════════════════════════════════════════════════════════
         private void RenderScoreTrendChart(string unitFilter)
         {
             pnlScoreTrend.Controls.Clear();
@@ -582,10 +555,10 @@ namespace ScienceBuddy.Parent
                     FROM dbo.QuizResult qr INNER JOIN dbo.Quiz q ON qr.quizId=q.quizId
                     WHERE qr.studentId=@sid{0} ORDER BY qr.attemptedDate DESC", unitClause);
 
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(trendQuery, connection))
                 {
-                    command.Parameters.AddWithValue("@sid", _selectedChildId);
+                    command.Parameters.AddWithValue("@sid", _childId);
                     if (!string.IsNullOrEmpty(unitFilter))
                     {
                         command.Parameters.AddWithValue("@uid", unitFilter);
@@ -670,9 +643,6 @@ namespace ScienceBuddy.Parent
             return chartHtml;
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  UNIT PERFORMANCE BARS
-        // ══════════════════════════════════════════════════════════════
         private void RenderUnitPerformanceBars(string unitFilter)
         {
             pnlUnitPerformance.Controls.Clear();
@@ -688,10 +658,10 @@ namespace ScienceBuddy.Parent
                     WHERE qr.studentId=@sid{0} GROUP BY u.unitNameEN, u.unitNameBM ORDER BY avg DESC",
                     unitClause);
 
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(perfQuery, connection))
                 {
-                    command.Parameters.AddWithValue("@sid", _selectedChildId);
+                    command.Parameters.AddWithValue("@sid", _childId);
                     if (!string.IsNullOrEmpty(unitFilter))
                     {
                         command.Parameters.AddWithValue("@uid", unitFilter);
@@ -756,9 +726,6 @@ namespace ScienceBuddy.Parent
             pnlUnitPerformance.Controls.Add(new LiteralControl(barsHtml.ToString()));
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  RECENT ATTEMPTS TABLE
-        // ══════════════════════════════════════════════════════════════
         private void RenderRecentAttemptsTable(string unitFilter)
         {
             pnlAttempts.Controls.Clear();
@@ -775,10 +742,10 @@ namespace ScienceBuddy.Parent
 
                 var attemptRows = new List<QuizAttemptRow>();
 
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(attemptsQuery, connection))
                 {
-                    command.Parameters.AddWithValue("@sid", _selectedChildId);
+                    command.Parameters.AddWithValue("@sid", _childId);
                     if (!string.IsNullOrEmpty(unitFilter))
                     {
                         command.Parameters.AddWithValue("@uid", unitFilter);
@@ -876,15 +843,12 @@ function selectSingleQuiz(id){document.getElementById('" + hidSelectedResults.Cl
             public string ResultStatus;
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  QUIZ DETAILS MODAL
-        // ══════════════════════════════════════════════════════════════
         protected void BtnViewSelected_Click(object sender, EventArgs e)
         {
             string selectedIds = hidSelectedResults.Value;
             if (string.IsNullOrWhiteSpace(selectedIds))
             {
-                ShowFeedbackMessage(
+                ShowMsg(
                     T("Please select at least one quiz.", "Sila pilih sekurang-kurangnya satu kuiz."),
                     false);
                 RefreshAllQuizData();
@@ -911,7 +875,7 @@ function selectSingleQuiz(id){document.getElementById('" + hidSelectedResults.Cl
 
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 {
                     connection.Open();
 
@@ -932,7 +896,7 @@ function selectSingleQuiz(id){document.getElementById('" + hidSelectedResults.Cl
                             WHERE qr.resultId=@rid AND qr.studentId=@sid", connection))
                         {
                             command.Parameters.AddWithValue("@rid", resultId);
-                            command.Parameters.AddWithValue("@sid", _selectedChildId);
+                            command.Parameters.AddWithValue("@sid", _childId);
 
                             using (var reader = command.ExecuteReader())
                             {
@@ -1059,11 +1023,6 @@ function selectSingleQuiz(id){document.getElementById('" + hidSelectedResults.Cl
             }
             RefreshAllQuizData();
         }
-
-        /// <summary>
-        /// Resolves the correct answer display text by mapping single-letter answers (A/B/C/D)
-        /// to their full option text in the appropriate language.
-        /// </summary>
         private string ResolveCorrectAnswerText(SqlDataReader reader)
         {
             string correctKey = reader["correctAnswer"] != DBNull.Value
@@ -1089,9 +1048,6 @@ function selectSingleQuiz(id){document.getElementById('" + hidSelectedResults.Cl
             return correctKey;
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  WEAK & STRONG AREAS
-        // ══════════════════════════════════════════════════════════════
         private void RenderWeakAndStrongAreas()
         {
             pnlWeakAreas.Controls.Clear();
@@ -1117,10 +1073,10 @@ function selectSingleQuiz(id){document.getElementById('" + hidSelectedResults.Cl
                     INNER JOIN dbo.Unit u ON q.unitId=u.unitId
                     WHERE qr.studentId=@sid GROUP BY u.unitId, u.unitNameEN, u.unitNameBM";
 
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(statsQuery, connection))
                 {
-                    command.Parameters.AddWithValue("@sid", _selectedChildId);
+                    command.Parameters.AddWithValue("@sid", _childId);
                     connection.Open();
 
                     using (var reader = command.ExecuteReader())
@@ -1226,11 +1182,6 @@ function selectSingleQuiz(id){document.getElementById('" + hidSelectedResults.Cl
                 pnlNoStrong.Visible = true;
             }
         }
-
-        /// <summary>
-        /// Identifies the unit with the greatest improvement by comparing the average
-        /// of the first half of attempts vs the second half (chronological order).
-        /// </summary>
         private string CalculateMostImprovedUnit()
         {
             try
@@ -1241,10 +1192,10 @@ function selectSingleQuiz(id){document.getElementById('" + hidSelectedResults.Cl
                     INNER JOIN dbo.Unit u ON q.unitId=u.unitId
                     WHERE qr.studentId=@sid ORDER BY q.unitId, qr.attemptedDate";
 
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(historyQuery, connection))
                 {
-                    command.Parameters.AddWithValue("@sid", _selectedChildId);
+                    command.Parameters.AddWithValue("@sid", _childId);
                     connection.Open();
 
                     var scoresByUnit = new Dictionary<string, List<decimal>>();
@@ -1305,14 +1256,11 @@ function selectSingleQuiz(id){document.getElementById('" + hidSelectedResults.Cl
             public int IncorrectQuestionCount;
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  ADD WEAK TOPICS TO STUDY PLAN
-        // ══════════════════════════════════════════════════════════════
         protected void BtnAddWeakToStudyPlan_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(_studentParentLinkId))
+            if (string.IsNullOrEmpty(_spId))
             {
-                ShowFeedbackMessage(
+                ShowMsg(
                     T("Unable to find child link.", "Tidak dapat mencari pautan anak."), false);
                 RefreshAllQuizData();
                 return;
@@ -1322,7 +1270,7 @@ function selectSingleQuiz(id){document.getElementById('" + hidSelectedResults.Cl
             {
                 var weakUnitsList = new List<Tuple<string, string>>();
 
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 {
                     connection.Open();
 
@@ -1333,7 +1281,7 @@ function selectSingleQuiz(id){document.getElementById('" + hidSelectedResults.Cl
                         WHERE qr.studentId=@sid GROUP BY u.unitId, u.unitNameEN, u.unitNameBM 
                         HAVING AVG(qr.percentage) < 80 ORDER BY avg", connection))
                     {
-                        command.Parameters.AddWithValue("@sid", _selectedChildId);
+                        command.Parameters.AddWithValue("@sid", _childId);
 
                         using (var reader = command.ExecuteReader())
                         {
@@ -1350,7 +1298,7 @@ function selectSingleQuiz(id){document.getElementById('" + hidSelectedResults.Cl
 
                 if (weakUnitsList.Count == 0)
                 {
-                    ShowFeedbackMessage(
+                    ShowMsg(
                         T("No weak topics to add.", "Tiada topik lemah untuk ditambah."), false);
                     RefreshAllQuizData();
                     return;
@@ -1366,14 +1314,14 @@ function selectSingleQuiz(id){document.getElementById('" + hidSelectedResults.Cl
 
                 litTaskModalSub.Text = string.Format(
                     T("Review and add a revision task for {0}.",
-                      "Semak dan tambah tugasan ulangkaji untuk {0}."), _selectedChildName);
+                      "Semak dan tambah tugasan ulangkaji untuk {0}."), _childName);
                 btnConfirmAddTask.Text = T("Add Task", "Tambah Tugasan");
 
                 pnlTaskModal.CssClass = "pt-task-modal-overlay";
             }
             catch
             {
-                ShowFeedbackMessage(T("An error occurred.", "Ralat berlaku."), false);
+                ShowMsg(T("An error occurred.", "Ralat berlaku."), false);
             }
             RefreshAllQuizData();
         }
@@ -1382,15 +1330,15 @@ function selectSingleQuiz(id){document.getElementById('" + hidSelectedResults.Cl
         {
             if (string.IsNullOrWhiteSpace(txtTaskName.Text))
             {
-                ShowFeedbackMessage(
+                ShowMsg(
                     T("Please enter a task name.", "Sila masukkan nama tugasan."), false);
                 RefreshAllQuizData();
                 return;
             }
 
-            if (string.IsNullOrEmpty(_studentParentLinkId))
+            if (string.IsNullOrEmpty(_spId))
             {
-                ShowFeedbackMessage(
+                ShowMsg(
                     T("Unable to find child link.", "Tidak dapat mencari pautan anak."), false);
                 RefreshAllQuizData();
                 return;
@@ -1398,7 +1346,7 @@ function selectSingleQuiz(id){document.getElementById('" + hidSelectedResults.Cl
 
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 {
                     connection.Open();
 
@@ -1408,7 +1356,7 @@ function selectSingleQuiz(id){document.getElementById('" + hidSelectedResults.Cl
                         "SELECT TOP 1 studyPlanId FROM dbo.StudyPlan WHERE studentParentId=@spid AND status='Ongoing' ORDER BY createdAt DESC",
                         connection))
                     {
-                        command.Parameters.AddWithValue("@spid", _studentParentLinkId);
+                        command.Parameters.AddWithValue("@spid", _spId);
                         activePlanId = command.ExecuteScalar() as string;
                     }
 
@@ -1426,8 +1374,8 @@ function selectSingleQuiz(id){document.getElementById('" + hidSelectedResults.Cl
                                     connection, transaction))
                                 {
                                     command.Parameters.AddWithValue("@id", activePlanId);
-                                    command.Parameters.AddWithValue("@spid", _studentParentLinkId);
-                                    command.Parameters.AddWithValue("@uid", _authenticatedUserId);
+                                    command.Parameters.AddWithValue("@spid", _spId);
+                                    command.Parameters.AddWithValue("@uid", _userId);
                                     command.Parameters.AddWithValue("@title",
                                         T("Quiz Revision Plan", "Pelan Ulangkaji Kuiz"));
                                     command.Parameters.AddWithValue("@start", DateTime.Today);
@@ -1452,7 +1400,7 @@ function selectSingleQuiz(id){document.getElementById('" + hidSelectedResults.Cl
                             {
                                 transaction.Rollback();
                                 pnlTaskModal.CssClass = "pt-task-modal-overlay pt-task-modal-hidden";
-                                ShowFeedbackMessage(
+                                ShowMsg(
                                     T("This task has already been added to the study plan.",
                                       "Tugasan ini telah ditambah ke pelan belajar."), true);
                                 RefreshAllQuizData();
@@ -1499,7 +1447,7 @@ function selectSingleQuiz(id){document.getElementById('" + hidSelectedResults.Cl
                             txtTaskName.Text = "";
                             txtSuggestedAction.Text = "";
                             pnlTaskModal.CssClass = "pt-task-modal-overlay pt-task-modal-hidden";
-                            ShowFeedbackMessage(
+                            ShowMsg(
                                 T("The task has been added to the study plan.",
                                   "Tugasan telah ditambah ke pelan belajar."), true);
                         }
@@ -1513,16 +1461,13 @@ function selectSingleQuiz(id){document.getElementById('" + hidSelectedResults.Cl
             }
             catch
             {
-                ShowFeedbackMessage(
+                ShowMsg(
                     T("An error occurred while adding the task.",
                       "Ralat berlaku semasa menambah tugasan."), false);
             }
             RefreshAllQuizData();
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  SHARED UTILITIES
-        // ══════════════════════════════════════════════════════════════
         private string GenerateSequentialId(SqlConnection connection, SqlTransaction transaction,
             string tableName, string columnName, string prefix)
         {
@@ -1584,7 +1529,7 @@ function selectSingleQuiz(id){document.getElementById('" + hidSelectedResults.Cl
                     INNER JOIN dbo.[User] u ON s.userId=u.userId 
                     WHERE s.studentId=@sid", connection, transaction))
                 {
-                    command.Parameters.AddWithValue("@sid", _selectedChildId);
+                    command.Parameters.AddWithValue("@sid", _childId);
                     var result = command.ExecuteScalar();
 
                     if (result != null && result != DBNull.Value)
@@ -1597,7 +1542,7 @@ function selectSingleQuiz(id){document.getElementById('" + hidSelectedResults.Cl
             return null;
         }
 
-        private void ShowFeedbackMessage(string messageText, bool isSuccess)
+        private void ShowMsg(string messageText, bool isSuccess)
         {
             pnlMessage.Visible = true;
             divMessage.InnerHtml = messageText;
@@ -1612,11 +1557,11 @@ function selectSingleQuiz(id){document.getElementById('" + hidSelectedResults.Cl
             RefreshAllQuizData();
         }
 
-        private void LoadUnreadNotificationBadge()
+        private void LoadUnreadBadge()
         {
             try
             {
-                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var connection = new SqlConnection(ConnStr))
                 using (var command = new SqlCommand(
                     "SELECT COUNT(*) FROM dbo.Notification WHERE toUserId=@uid AND isRead=0",
                     connection))

@@ -273,6 +273,32 @@ namespace ScienceBuddy.Parent
                         cmd.Parameters.AddWithValue("@now", DateTime.Now);
                         cmd.ExecuteNonQuery();
                     }
+
+                    // Notify teacher about new message
+                    string teacherUserId = "";
+                    using (var cmd = new SqlCommand("SELECT CASE WHEN userId=@me THEN user2Id ELSE userId END FROM dbo.userChat WHERE chatId=@cid", c, txn))
+                    { cmd.Parameters.AddWithValue("@me", _userId); cmd.Parameters.AddWithValue("@cid", chatId); var r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) teacherUserId = r.ToString(); }
+
+                    if (!string.IsNullOrEmpty(teacherUserId))
+                    {
+                        string parentUsername = "";
+                        using (var cmd = new SqlCommand("SELECT username FROM dbo.[User] WHERE userId=@u", c, txn))
+                        { cmd.Parameters.AddWithValue("@u", _userId); var r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) parentUsername = r.ToString(); }
+
+                        string nid = GenId(c, txn, "Notification", "notificationId", "N");
+                        using (var cmd = new SqlCommand("INSERT INTO dbo.Notification(notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt) VALUES(@id,@to,@te,@tb,@me,@mb,0,@now)", c, txn))
+                        {
+                            cmd.Parameters.AddWithValue("@id", nid);
+                            cmd.Parameters.AddWithValue("@to", teacherUserId);
+                            cmd.Parameters.AddWithValue("@te", "New message from parent");
+                            cmd.Parameters.AddWithValue("@tb", "Mesej baharu daripada ibu bapa");
+                            cmd.Parameters.AddWithValue("@me", parentUsername + " sent you a new message.");
+                            cmd.Parameters.AddWithValue("@mb", parentUsername + " menghantar mesej baharu kepada anda.");
+                            cmd.Parameters.AddWithValue("@now", DateTime.Now);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+
                     txn.Commit(); txtMessage.Text = "";
                 } catch { txn.Rollback(); throw; } } }
             }

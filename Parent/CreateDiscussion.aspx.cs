@@ -92,6 +92,41 @@ namespace ScienceBuddy.Parent
                             { cmd2.Parameters.AddWithValue("@id", ftId); cmd2.Parameters.AddWithValue("@fid", forumId); cmd2.Parameters.AddWithValue("@tid", tagId); cmd2.ExecuteNonQuery(); }
                         }
                     }
+                    // Notify all linked children
+                    string parentId = "";
+                    using (var cmd = new SqlCommand("SELECT parentId FROM dbo.[Parent] WHERE userId=@u", c, txn))
+                    { cmd.Parameters.AddWithValue("@u", Session["userId"].ToString()); var r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) parentId = r.ToString(); }
+
+                    if (!string.IsNullOrEmpty(parentId))
+                    {
+                        using (var cmd = new SqlCommand("SELECT s.userId FROM dbo.StudentParent sp INNER JOIN dbo.Student s ON sp.studentId=s.studentId WHERE sp.parentId=@p", c, txn))
+                        {
+                            cmd.Parameters.AddWithValue("@p", parentId);
+                            using (var rdr = cmd.ExecuteReader())
+                            {
+                                var childUserIds = new System.Collections.Generic.List<string>();
+                                while (rdr.Read()) { string uid = rdr["userId"]?.ToString() ?? ""; if (!string.IsNullOrEmpty(uid)) childUserIds.Add(uid); }
+                                rdr.Close();
+
+                                foreach (string childUserId in childUserIds)
+                                {
+                                    string nid = GenId(c, txn, "Notification", "notificationId", "N");
+                                    using (var cmd2 = new SqlCommand("INSERT INTO dbo.Notification(notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt) VALUES(@id,@to,@te,@tb,@me,@mb,0,@now)", c, txn))
+                                    {
+                                        cmd2.Parameters.AddWithValue("@id", nid);
+                                        cmd2.Parameters.AddWithValue("@to", childUserId);
+                                        cmd2.Parameters.AddWithValue("@te", "Your parent started a new discussion");
+                                        cmd2.Parameters.AddWithValue("@tb", "Ibu bapa anda memulakan perbincangan baharu");
+                                        cmd2.Parameters.AddWithValue("@me", "Your parent posted a new discussion: " + title + ".");
+                                        cmd2.Parameters.AddWithValue("@mb", "Ibu bapa anda memuat naik perbincangan baharu: " + title + ".");
+                                        cmd2.Parameters.AddWithValue("@now", DateTime.Now);
+                                        cmd2.ExecuteNonQuery();
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     txn.Commit();
                     Response.Redirect("ForumThread.aspx?forumId=" + forumId, false); Context.ApplicationInstance.CompleteRequest();
                 } catch { txn.Rollback(); throw; } } }

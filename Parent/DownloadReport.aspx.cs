@@ -10,24 +10,20 @@ using System.Web.Script.Serialization;
 using System.Web.UI;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
-using iTextSharp.text.pdf.draw;
 
 namespace ScienceBuddy.Parent
 {
-    /// <summary>
-    /// Generates a colourful, child-friendly A4 progress report styled like
-    /// a kindergarten report card. Streams directly as a PDF download.
-    /// </summary>
+    // Generates a child-friendly A4 progress report PDF and streams it as download
     public partial class DownloadReport : Page
     {
-        private string DatabaseConnectionString =>
+        private string ConnStr =>
             ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
-        private string _parentUserId   = "";
-        private string _parentRecordId = "";
-        private string _selectedChildId = "";
+        private string _userId = "";
+        private string _parentId = "";
+        private string _studentId = "";
 
-        // ── Class-level colour palette ────────────────────────────────
+        // Colour palette
         private static readonly BaseColor ColourGreen       = new BaseColor(220, 252, 231);
         private static readonly BaseColor ColourGreenDark   = new BaseColor( 22, 163,  74);
         private static readonly BaseColor ColourBlue        = new BaseColor(219, 234, 254);
@@ -41,9 +37,7 @@ namespace ScienceBuddy.Parent
         private static readonly BaseColor ColourMuted       = new BaseColor(100, 116, 139);
         private static readonly BaseColor ColourWhite       = BaseColor.WHITE;
 
-        // ══════════════════════════════════════════════════════════════
-        //  PAGE LIFECYCLE
-        // ══════════════════════════════════════════════════════════════
+        // --- Page Load ---
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -55,19 +49,19 @@ namespace ScienceBuddy.Parent
                 return;
             }
 
-            _parentUserId    = Session["userId"].ToString();
-            _selectedChildId = Session["selectedChildId"] as string ?? "";
+            _userId = Session["userId"].ToString();
+            _studentId = Session["selectedChildId"] as string ?? "";
 
-            if (string.IsNullOrEmpty(_selectedChildId))
+            if (string.IsNullOrEmpty(_studentId))
             {
                 Response.Redirect("~/Parent/ChildProgress.aspx", false);
                 Context.ApplicationInstance.CompleteRequest();
                 return;
             }
 
-            LoadParentRecordId();
+            LoadParentId();
 
-            if (!IsChildLinkedToParent())
+            if (!IsLinked())
             {
                 Response.Redirect("~/Parent/ChildProgress.aspx", false);
                 Context.ApplicationInstance.CompleteRequest();
@@ -77,37 +71,37 @@ namespace ScienceBuddy.Parent
             BuildAndStreamReport();
         }
 
-        private void LoadParentRecordId()
+        private void LoadParentId()
         {
             try
             {
-                using (var conn = new SqlConnection(DatabaseConnectionString))
+                using (var conn = new SqlConnection(ConnStr))
                 using (var cmd = new SqlCommand(
                     "SELECT parentId FROM dbo.[Parent] WHERE userId = @uid", conn))
                 {
-                    cmd.Parameters.AddWithValue("@uid", _parentUserId);
+                    cmd.Parameters.AddWithValue("@uid", _userId);
                     conn.Open();
                     object r = cmd.ExecuteScalar();
                     if (r != null && r != DBNull.Value)
-                        _parentRecordId = r.ToString();
+                        _parentId = r.ToString();
                 }
             }
             catch { }
         }
 
-        private bool IsChildLinkedToParent()
+        private bool IsLinked()
         {
-            if (string.IsNullOrEmpty(_parentRecordId) || string.IsNullOrEmpty(_selectedChildId))
+            if (string.IsNullOrEmpty(_parentId) || string.IsNullOrEmpty(_studentId))
                 return false;
             try
             {
-                using (var conn = new SqlConnection(DatabaseConnectionString))
+                using (var conn = new SqlConnection(ConnStr))
                 using (var cmd = new SqlCommand(
                     "SELECT COUNT(*) FROM dbo.StudentParent WHERE parentId=@pid AND studentId=@sid",
                     conn))
                 {
-                    cmd.Parameters.AddWithValue("@pid", _parentRecordId);
-                    cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                    cmd.Parameters.AddWithValue("@pid", _parentId);
+                    cmd.Parameters.AddWithValue("@sid", _studentId);
                     conn.Open();
                     return (int)cmd.ExecuteScalar() > 0;
                 }
@@ -115,9 +109,7 @@ namespace ScienceBuddy.Parent
             catch { return false; }
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  DATA MODELS
-        // ══════════════════════════════════════════════════════════════
+        // --- Data Models ---
 
         private class ChildInfo
         {
@@ -149,16 +141,14 @@ namespace ScienceBuddy.Parent
             public List<SkillRow> Skills = new List<SkillRow>();
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  DATA COLLECTION
-        // ══════════════════════════════════════════════════════════════
+        // --- Data Collection ---
 
         private ChildInfo GatherChildData()
         {
             var info = new ChildInfo();
             try
             {
-                using (var conn = new SqlConnection(DatabaseConnectionString))
+                using (var conn = new SqlConnection(ConnStr))
                 {
                     conn.Open();
 
@@ -168,7 +158,7 @@ namespace ScienceBuddy.Parent
                           LEFT JOIN dbo.[Level] l ON l.levelId = s.currentLevelId
                           WHERE s.studentId = @sid", conn))
                     {
-                        cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                        cmd.Parameters.AddWithValue("@sid", _studentId);
                         using (var r = cmd.ExecuteReader())
                         {
                             if (r.Read())
@@ -183,7 +173,7 @@ namespace ScienceBuddy.Parent
                     using (var cmd = new SqlCommand(
                         "SELECT TOP 1 enrolledDate FROM dbo.Enrollment WHERE studentId=@sid ORDER BY enrolledDate ASC", conn))
                     {
-                        cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                        cmd.Parameters.AddWithValue("@sid", _studentId);
                         object r = cmd.ExecuteScalar();
                         if (r != null && r != DBNull.Value)
                             info.EnrolledDate = Convert.ToDateTime(r);
@@ -192,21 +182,21 @@ namespace ScienceBuddy.Parent
                     using (var cmd = new SqlCommand(
                         "SELECT COUNT(*) FROM dbo.LessonProgress WHERE studentId=@sid AND isCompleted=1", conn))
                     {
-                        cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                        cmd.Parameters.AddWithValue("@sid", _studentId);
                         info.LessonsCompleted = (int)cmd.ExecuteScalar();
                     }
 
                     using (var cmd = new SqlCommand(
                         "SELECT COUNT(*) FROM dbo.StudentBadge WHERE studentId=@sid", conn))
                     {
-                        cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                        cmd.Parameters.AddWithValue("@sid", _studentId);
                         info.BadgeCount = (int)cmd.ExecuteScalar();
                     }
 
                     using (var cmd = new SqlCommand(
                         "SELECT COUNT(*) FROM dbo.QuizResult WHERE studentId=@sid", conn))
                     {
-                        cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                        cmd.Parameters.AddWithValue("@sid", _studentId);
                         info.QuizAttempts = (int)cmd.ExecuteScalar();
                     }
 
@@ -214,7 +204,7 @@ namespace ScienceBuddy.Parent
                         @"SELECT TOP 1 analysisJson, overallSummary, weakTopics, strongTopics
                           FROM dbo.AILearningAnalysis WHERE studentId=@sid AND isLatest=1", conn))
                     {
-                        cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                        cmd.Parameters.AddWithValue("@sid", _studentId);
                         using (var r = cmd.ExecuteReader())
                         {
                             if (r.Read())
@@ -248,7 +238,7 @@ namespace ScienceBuddy.Parent
 
             try
             {
-                using (var conn = new SqlConnection(DatabaseConnectionString))
+                using (var conn = new SqlConnection(ConnStr))
                 {
                     conn.Open();
 
@@ -267,7 +257,7 @@ namespace ScienceBuddy.Parent
                         WHERE s.studentId = @sid
                         GROUP BY st.subtopicId", conn))
                     {
-                        cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                        cmd.Parameters.AddWithValue("@sid", _studentId);
                         using (var r = cmd.ExecuteReader())
                         {
                             while (r.Read())
@@ -291,7 +281,7 @@ namespace ScienceBuddy.Parent
 
                     using (var cmd = new SqlCommand(unitQuery, conn))
                     {
-                        cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                        cmd.Parameters.AddWithValue("@sid", _studentId);
                         using (var r = cmd.ExecuteReader())
                         {
                             while (r.Read())
@@ -322,9 +312,7 @@ namespace ScienceBuddy.Parent
             return categories.Where(c => c.Skills.Count > 0).ToList();
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  AI TEACHER COMMENT
-        // ══════════════════════════════════════════════════════════════
+        // --- AI Teacher Comment ---
 
         private string GetTeacherComment(ChildInfo info)
         {
@@ -428,9 +416,7 @@ namespace ScienceBuddy.Parent
                 info.BadgeCount,       info.BadgeCount       == 1 ? "" : "s");
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  PDF STORYBOOK LAYOUT
-        // ══════════════════════════════════════════════════════════════
+        // --- PDF Layout ---
 
         private void BuildAndStreamReport()
         {
@@ -797,14 +783,7 @@ namespace ScienceBuddy.Parent
             }
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  LAYOUT HELPER METHODS
-        // ══════════════════════════════════════════════════════════════
-
-        /// <summary>
-        /// Storybook section title: icon badge on the left, large heading + subtitle
-        /// stacked on the right. No full-width coloured rectangle.
-        /// </summary>
+        // --- Layout Helpers ---
         private void StorybookTitle(Document doc, BaseFont bfB, BaseFont bf,
             string icon, string heading, string subtitle, BaseColor accentColour)
         {
@@ -839,11 +818,6 @@ namespace ScienceBuddy.Parent
             tbl.AddCell(textCell);
             doc.Add(tbl);
         }
-
-        /// <summary>
-        /// Playful dot-stripe divider — alternating coloured dots that break up
-        /// sections like an illustrated children's book page separator.
-        /// </summary>
         private void DotDivider(Document doc, BaseFont bf,
             BaseColor c1, BaseColor c2, BaseColor c3)
         {
@@ -865,22 +839,10 @@ namespace ScienceBuddy.Parent
 
             doc.Add(divider);
         }
-
-        /// <summary>
-        /// A tiny vertical gap between major sections so nothing feels cramped.
-        /// </summary>
         private void Spacer(Document doc)
         {
             doc.Add(new Paragraph(" ") { SpacingAfter = 1 });
         }
-
-        /// <summary>
-        /// One skill-category sticker card inside a two-column pair.
-        /// Each card has a thick top border in its category colour to differentiate
-        /// it from the others — looks like a real physical sticker card.
-        /// Skills get a coloured square indicator (green/yellow/grey) that actually
-        /// renders visibly in iTextSharp instead of relying on emoji.
-        /// </summary>
         private void StickerSkillCard(PdfPTable row, SkillCategory cat,
             BaseFont bfB, BaseFont bf)
         {
@@ -935,11 +897,6 @@ namespace ScienceBuddy.Parent
 
             row.AddCell(cell);
         }
-
-        /// <summary>
-        /// One circular-feel achievement sticker: large emoji, bold big number, small label.
-        /// Equal padding on all sides gives it a badge/sticker appearance.
-        /// </summary>
         private PdfPCell AchievementSticker(string emoji, string count, string label,
             BaseColor bg, BaseColor textColour, BaseFont bfB, BaseFont bf)
         {
@@ -968,11 +925,6 @@ namespace ScienceBuddy.Parent
 
             return cell;
         }
-
-        /// <summary>
-        /// Builds two-letter or one-letter initials from the child's full name.
-        /// Displayed as the avatar inside the name-tag profile section.
-        /// </summary>
         private string MakeInitials(string fullName)
         {
             if (string.IsNullOrEmpty(fullName)) return "?";
