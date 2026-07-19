@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
@@ -26,7 +26,7 @@ namespace ScienceBuddy.Teacher
             var master = (ScienceBuddy.SiteMaster)Master;
             master.LayoutMode = "Sidebar";
 
-            // AJAX handlers — return JSON without full page lifecycle
+            // AJAX handlers � return JSON without full page lifecycle
             string handler = Request.QueryString["handler"] ?? "";
             if (handler == "levels")    { HandleLevels();    return; }
             if (handler == "units")     { HandleUnits();     return; }
@@ -44,7 +44,7 @@ namespace ScienceBuddy.Teacher
             }
         }
 
-        // ── AJAX: all levels ─────────────────────────────────────────
+        // -- AJAX: all levels -----------------------------------------
         private void HandleLevels()
         {
             Response.Clear(); Response.ContentType = "application/json";
@@ -72,7 +72,7 @@ namespace ScienceBuddy.Teacher
             Response.End();
         }
 
-        // ── AJAX: units by level ─────────────────────────────────────
+        // -- AJAX: units by level -------------------------------------
         private void HandleUnits()
         {
             Response.Clear(); Response.ContentType = "application/json";
@@ -105,7 +105,7 @@ namespace ScienceBuddy.Teacher
             Response.End();
         }
 
-        // ── AJAX: subtopics by unit ──────────────────────────────────
+        // -- AJAX: subtopics by unit ----------------------------------
         private void HandleSubtopics()
         {
             Response.Clear(); Response.ContentType = "application/json";
@@ -138,7 +138,7 @@ namespace ScienceBuddy.Teacher
             Response.End();
         }
 
-        // ── Authorization ─────────────────────────────────────────────
+        // -- Authorization ---------------------------------------------
         private bool AuthorizeTeacher()
         {
             using (var conn = new SqlConnection(ConnStr))
@@ -156,7 +156,7 @@ namespace ScienceBuddy.Teacher
             return true;
         }
 
-        // ── Validate query-string params and populate hero ────────────
+        // -- Validate query-string params and populate hero ------------
         private void ValidateAndLoad()
         {
             string levelId    = (Request.QueryString["levelId"]    ?? "").Trim();
@@ -232,7 +232,7 @@ namespace ScienceBuddy.Teacher
             pnlInvalid.Visible = true;
         }
 
-        // ── Submit Practice Quiz ──────────────────────────────────────
+        // -- Submit Practice Quiz --------------------------------------
         protected void btnSubmitPQ_Click(object sender, EventArgs e)
         {
             string userId     = Session["userId"]?.ToString() ?? "";
@@ -338,12 +338,12 @@ namespace ScienceBuddy.Teacher
                             string difficulty = G("diff");
                             switch (difficulty) { case "Easy": case "Medium": case "Hard": break; default: difficulty = "Medium"; break; }
 
-                            // Question text — stored in the content language slot
+                            // Question text � stored in the content language slot
                             string textContent = G("q" + qSuf);
                             string textEN = isEN ? textContent : "";
                             string textBM = isEN ? "" : textContent;
 
-                            // Options — resolve per type
+                            // Options � resolve per type
                             string aEN, aBM, bEN, bBM, cEN, cBM, dEN, dBM;
                             if (qType == "Multiselect")
                             {
@@ -353,7 +353,9 @@ namespace ScienceBuddy.Teacher
                             }
                             else if (qType == "True/False")
                             {
-                                aEN = "True"; aBM = "Betul"; bEN = "False"; bBM = "Salah";
+                                // Store True/False options only in the quiz content language
+                                if (isEN) { aEN = "True"; bEN = "False"; aBM = null; bBM = null; }
+                                else { aBM = "Betul"; bBM = "Salah"; aEN = null; bEN = null; }
                                 cEN = null; cBM = null; dEN = null; dBM = null;
                             }
                             else if (qType == "Drag & Drop")
@@ -383,6 +385,46 @@ namespace ScienceBuddy.Teacher
                             // Correct answer
                             string correctAnswer = G("correct");
                             if (qType == "Multiselect") correctAnswer = G("msChk");
+
+                            // Drag & Drop: build correctAnswer from fibMap (same as Unit/Level Quiz)
+                            if (qType == "Drag & Drop")
+                            {
+                                // If JS already built the comma-separated correct value, use it.
+                                // Otherwise, rebuild from fibMap array as a safety net.
+                                if (string.IsNullOrWhiteSpace(correctAnswer))
+                                {
+                                    var fibMapKey = "fibMap" + qSuf;
+                                    if (qDict.ContainsKey(fibMapKey) && qDict[fibMapKey] is Newtonsoft.Json.Linq.JArray mapArr)
+                                    {
+                                        var mapped = new List<string>();
+                                        foreach (var token in mapArr)
+                                        {
+                                            string word = token?.ToString() ?? "";
+                                            if (!string.IsNullOrWhiteSpace(word))
+                                                mapped.Add(word.Trim());
+                                        }
+                                        correctAnswer = string.Join(",", mapped);
+                                    }
+                                }
+                                // Final guard: never allow NULL correctAnswer for Drag & Drop
+                                if (string.IsNullOrWhiteSpace(correctAnswer))
+                                {
+                                    txn.Rollback();
+                                    ShowInvalid(T("Please complete the correct answer mapping for every blank.",
+                                                  "Sila lengkapkan pemetaan jawapan betul bagi setiap ruang kosong."));
+                                    return;
+                                }
+                            }
+
+                            // Question image � decode from data URL and save to Images/Question/
+                            string imgFileName = null;
+                            string imgRawName = G("img");
+                            string imgDataUrl = G("imgDataUrl");
+                            if (!string.IsNullOrWhiteSpace(imgRawName) && !string.IsNullOrWhiteSpace(imgDataUrl)
+                                && imgDataUrl.StartsWith("data:"))
+                            {
+                                imgFileName = SaveQuestionImageFromDataUrl(imgRawName, imgDataUrl);
+                            }
 
                             // Explanations
                             string ceContent = G("ce" + qSuf), weContent = G("we" + qSuf);
@@ -421,7 +463,7 @@ namespace ScienceBuddy.Teacher
                                 cmd.Parameters.AddWithValue("@tEN", (object)Nv(textEN) ?? DBNull.Value);
                                 cmd.Parameters.AddWithValue("@tBM", (object)Nv(textBM) ?? DBNull.Value);
                                 cmd.Parameters.AddWithValue("@type", qType);
-                                cmd.Parameters.AddWithValue("@imgUrl", DBNull.Value);
+                                cmd.Parameters.AddWithValue("@imgUrl", (object)imgFileName ?? DBNull.Value);
                                 cmd.Parameters.AddWithValue("@aEN", (object)Nv(aEN) ?? DBNull.Value);
                                 cmd.Parameters.AddWithValue("@aBM", (object)Nv(aBM) ?? DBNull.Value);
                                 cmd.Parameters.AddWithValue("@bEN", (object)Nv(bEN) ?? DBNull.Value);
@@ -440,7 +482,7 @@ namespace ScienceBuddy.Teacher
                             }
                         }
 
-                        // Insert Log record (inside transaction — only persists if commit succeeds)
+                        // Insert Log record (inside transaction � only persists if commit succeeds)
                         int maxLogNum = 0;
                         using (var logCmd = new SqlCommand(
                             "SELECT ISNULL(MAX(CAST(SUBSTRING([logId],4,LEN([logId])-3) AS INT)),0) FROM dbo.[Log]",
@@ -460,8 +502,13 @@ namespace ScienceBuddy.Teacher
 
                         txn.Commit();
 
-                        // Flag success for client-side toast + redirect
-                        hidSubmitSuccess.Value = "1";
+                        // Store success message in Session and redirect to Manage Quiz
+                        Session["PracticeQuizSuccess"] = isEN
+                            ? "Practice Quiz submitted successfully."
+                            : "Kuiz Latihan berjaya dihantar.";
+                        Response.Redirect("~/Teacher/manageQuiz.aspx?tab=practice", false);
+                        Context.ApplicationInstance.CompleteRequest();
+                        return;
                     }
                     catch (Exception ex)
                     {
@@ -474,7 +521,7 @@ namespace ScienceBuddy.Teacher
             }
         }
 
-        // ── WebMethod: Switch language without page reload ────────────
+        // -- WebMethod: Switch language without page reload ------------
         [WebMethod(EnableSession = true)]
         public static object SetLanguage(string lang)
         {
@@ -504,6 +551,49 @@ namespace ScienceBuddy.Teacher
             }
 
             return new { ok = true, lang = lang };
+        }
+
+        // -- Save question image from base64 data URL to Images/Question/ --
+        // Returns just the filename saved (with duplicate handling), or null on failure.
+        private string SaveQuestionImageFromDataUrl(string originalName, string dataUrl)
+        {
+            try
+            {
+                // Extract base64 content from data URL (format: "data:image/png;base64,AAAA...")
+                int commaIdx = dataUrl.IndexOf(',');
+                if (commaIdx < 0) return null;
+                string base64 = dataUrl.Substring(commaIdx + 1);
+                byte[] bytes = Convert.FromBase64String(base64);
+
+                string fileName = System.IO.Path.GetFileName(originalName);
+                if (string.IsNullOrWhiteSpace(fileName)) return null;
+
+                string folder = Server.MapPath("~/Images/Question/");
+                if (!System.IO.Directory.Exists(folder))
+                    System.IO.Directory.CreateDirectory(folder);
+
+                // Duplicate handling: if file exists, append (1), (2), etc.
+                string targetPath = System.IO.Path.Combine(folder, fileName);
+                if (System.IO.File.Exists(targetPath))
+                {
+                    string nameOnly = System.IO.Path.GetFileNameWithoutExtension(fileName);
+                    string ext = System.IO.Path.GetExtension(fileName);
+                    int counter = 1;
+                    do
+                    {
+                        fileName = nameOnly + "(" + counter + ")" + ext;
+                        targetPath = System.IO.Path.Combine(folder, fileName);
+                        counter++;
+                    } while (System.IO.File.Exists(targetPath));
+                }
+
+                System.IO.File.WriteAllBytes(targetPath, bytes);
+                return fileName;
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }

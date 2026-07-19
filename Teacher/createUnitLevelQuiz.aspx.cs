@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -302,7 +302,7 @@ namespace ScienceBuddy.Teacher
             using (cmd) { var v = cmd.ExecuteScalar(); return v?.ToString(); }
         }
 
-        // ── UI Loading ───────────────────────────────────────────────
+        // -- UI Loading -----------------------------------------------
         private void LoadCurrentQuestion()
         {
             var qs = Questions;
@@ -315,8 +315,8 @@ namespace ScienceBuddy.Teacher
             ddlQDiff.SelectedValue = q.Difficulty ?? "Medium";
 
             bool isEN = CurrentTab == "EN";
-            btnTabEN.CssClass = isEN ? "qb-tab active" : "qb-tab";
-            btnTabBM.CssClass = isEN ? "qb-tab" : "qb-tab active";
+            btnTabEN.CssClass = isEN ? "tc-question-builder-tab active" : "tc-question-builder-tab";
+            btnTabBM.CssClass = isEN ? "tc-question-builder-tab" : "tc-question-builder-tab active";
             litQTextLabel.Text = isEN ? T("Question (English)", "Soalan (Bahasa Inggeris)") : T("Question (Bahasa Melayu)", "Soalan (Bahasa Melayu)");
             litOptionsLabel.Text = isEN ? T("Options (English)", "Pilihan (Bahasa Inggeris)") : T("Options (Bahasa Melayu)", "Pilihan (Bahasa Melayu)");
             litCorrectExpLabel.Text = isEN ? T("Correct Explanation (EN)", "Penjelasan Betul (EN)") : T("Correct Explanation (BM)", "Penjelasan Betul (BM)");
@@ -432,7 +432,7 @@ namespace ScienceBuddy.Teacher
             Questions = qs;
         }
 
-        // Minimal JSON deserialiser — parses the array of question objects emitted by JS
+        // Minimal JSON deserialiser � parses the array of question objects emitted by JS
         private List<QuestionData> SimpleJsonDeserialize(string json)
         {
             var result = new List<QuestionData>();
@@ -503,12 +503,12 @@ namespace ScienceBuddy.Teacher
             rptNav.DataSource = list; rptNav.DataBind();
         }
 
-        // ── Event Handlers ───────────────────────────────────────────
-        // Tab switching is now client-side only — these handlers kept for fallback/non-JS
+        // -- Event Handlers -------------------------------------------
+        // Tab switching is now client-side only � these handlers kept for fallback/non-JS
         protected void btnTabEN_Click(object sender, EventArgs e) { SaveCurrentToMemory(); CurrentTab = "EN"; LoadCurrentQuestion(); }
         protected void btnTabBM_Click(object sender, EventArgs e) { SaveCurrentToMemory(); CurrentTab = "BM"; LoadCurrentQuestion(); }
 
-        // Prev/Next are now client-side — these are no longer triggered but kept for safety
+        // Prev/Next are now client-side � these are no longer triggered but kept for safety
         protected void btnPrev_Click(object sender, EventArgs e) { SaveCurrentToMemory(); if (CurrentIndex > 0) CurrentIndex--; LoadCurrentQuestion(); }
         protected void btnNext_Click(object sender, EventArgs e) { SaveCurrentToMemory(); var qs = Questions; if (CurrentIndex < qs.Count - 1) CurrentIndex++; LoadCurrentQuestion(); }
 
@@ -563,7 +563,7 @@ namespace ScienceBuddy.Teacher
             if (string.IsNullOrEmpty(quizId))    { ShowError(T("Quiz not found.", "Kuiz tidak ditemui.")); return; }
             if (string.IsNullOrEmpty(subtopicId)) { ShowError(T("Subtopic not specified.", "Subtopik tidak dinyatakan.")); return; }
 
-            // ── Save uploaded image once (optional — applies to current question) ──
+            // -- Save uploaded image once (optional � applies to current question) --
             string uploadedImageFileName = SaveQuestionImage();
             // If an image was uploaded, assign its filename to the current question
             if (!string.IsNullOrEmpty(uploadedImageFileName) && qs.Count > 0)
@@ -574,20 +574,20 @@ namespace ScienceBuddy.Teacher
             // Also handle filenames that came from the JS store (already-named, no new upload)
             // Those are already in q.QuestionImageUrl from SimpleJsonDeserialize
 
-            // ── Per-question validation ──────────────────────────────
+            // -- Per-question validation ------------------------------
             for (int qi = 0; qi < qs.Count; qi++)
             {
                 var q     = qs[qi];
                 string qLabel = T($"Question {qi + 1}", $"Soalan {qi + 1}");
                 string qType  = q.QuestionType ?? "MCQ";
 
-                // Question text — required for all types
+                // Question text � required for all types
                 if (string.IsNullOrWhiteSpace(q.QuestionTextEN))
                 { ShowError($"{qLabel}: {T("English question text is required.", "Teks soalan Bahasa Inggeris diperlukan.")}"); return; }
                 if (string.IsNullOrWhiteSpace(q.QuestionTextBM))
                 { ShowError($"{qLabel}: {T("Bahasa Melayu question text is required.", "Teks soalan Bahasa Melayu diperlukan.")}"); return; }
 
-                // Explanations — required for all types
+                // Explanations � required for all types
                 if (string.IsNullOrWhiteSpace(q.CorrectExplanationEN))
                 { ShowError($"{qLabel}: {T("Correct explanation (English) is required.", "Penjelasan betul (Bahasa Inggeris) diperlukan.")}"); return; }
                 if (string.IsNullOrWhiteSpace(q.CorrectExplanationBM))
@@ -661,7 +661,7 @@ namespace ScienceBuddy.Teacher
                 }
             }
 
-            // ── Build save values per question type ──────────────────
+            // -- Build save values per question type ------------------
             string BuildCorrectAnswer(QuestionData q)
             {
                 switch (q.QuestionType ?? "MCQ")
@@ -685,7 +685,7 @@ namespace ScienceBuddy.Teacher
                 }
             }
 
-            // ── Insert all questions in a single transaction ──────────
+            // -- Insert all questions in a single transaction ----------
             try
             {
                 using (var conn = new SqlConnection(ConnStr))
@@ -808,7 +808,7 @@ namespace ScienceBuddy.Teacher
 
                             txn.Commit();
 
-                            // ── Insert ONE notification for the teacher ──────────
+                            // -- Insert ONE notification for the teacher ----------
                             string titleEN = T("Question Submitted Successfully", "Soalan Berjaya Dihantar");
                             string titleBM = "Soalan Berjaya Dihantar";
                             string quizTitleEN = ViewState["QuizTitleEN"] as string ?? quizId;
@@ -834,7 +834,7 @@ namespace ScienceBuddy.Teacher
                             }
                             catch { /* notification failure must not block success */ }
 
-                            // ── Signal the success modal (no redirect) ──────────
+                            // -- Signal the success modal (no redirect) ----------
                             hidSubmitSuccess.Value = "1";
                         }
                         catch (Exception ex)
@@ -929,7 +929,7 @@ namespace ScienceBuddy.Teacher
             }
         }
 
-        // ── WebMethod: Switch language without page reload ────────────
+        // -- WebMethod: Switch language without page reload ------------
         [WebMethod(EnableSession = true)]
         public static object SetLanguage(string lang)
         {

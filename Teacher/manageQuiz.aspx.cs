@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -65,7 +65,23 @@ namespace ScienceBuddy.Teacher
             {
                 if (!Authorize()) return;
                 SetupControls();
-                hidActiveTab.Value = "unitlevel";
+
+                // Check for Practice Quiz submission success (redirected from createPracticeQuiz)
+                string pqSuccess = Session["PracticeQuizSuccess"] as string;
+                if (!string.IsNullOrEmpty(pqSuccess) || Request.QueryString["tab"] == "practice")
+                {
+                    hidActiveTab.Value = "mine";
+                    if (!string.IsNullOrEmpty(pqSuccess))
+                    {
+                        hidToast.Value = pqSuccess;
+                        Session.Remove("PracticeQuizSuccess");
+                    }
+                }
+                else
+                {
+                    hidActiveTab.Value = "unitlevel";
+                }
+
                 SetTabUI();
                 LoadForActiveTab();
             }
@@ -77,7 +93,7 @@ namespace ScienceBuddy.Teacher
             Response.ContentType = "text/html";
             string quizId = (Request.QueryString["quizId"] ?? "").Trim();
             string userId = Session["userId"]?.ToString() ?? "";
-            if (string.IsNullOrEmpty(quizId)) { Response.Write("<div class='mq-empty'>Invalid request.</div>"); Response.End(); return; }
+            if (string.IsNullOrEmpty(quizId)) { Response.Write("<div class='tc-manage-quiz-empty'>Invalid request.</div>"); Response.End(); return; }
             try
             {
                 using (var conn = new SqlConnection(ConnStr))
@@ -85,7 +101,7 @@ namespace ScienceBuddy.Teacher
                     conn.Open();
                     var sb = new System.Text.StringBuilder();
 
-                    // Quiz header info — bilingual two-column layout
+                    // Quiz header info � bilingual two-column layout
                     using (var cmd = new SqlCommand(@"SELECT q.[quizTitleEN], q.[quizTitleBM], q.[quizType],
                         CASE WHEN q.[quizType]='Unit' THEN COALESCE(u.[unitNameEN],'-') ELSE COALESCE(lv.[levelNameEN],'-') END AS relatedName
                         FROM dbo.[Quiz] q LEFT JOIN dbo.[Unit] u ON u.[unitId]=q.[unitId] LEFT JOIN dbo.[Level] lv ON lv.[levelId]=q.[levelId]
@@ -100,12 +116,12 @@ namespace ScienceBuddy.Teacher
                                 string titleBM = r["quizTitleBM"]?.ToString() ?? "";
                                 string related = r["relatedName"]?.ToString() ?? "-";
                                 string qType = r["quizType"]?.ToString() ?? "";
-                                sb.Append("<div class='vq-header'>");
-                                sb.Append("<div class='vq-header-titles'>");
-                                sb.AppendFormat("<div class='vq-header-col'><div class='vq-header-lang'>English</div><div class='vq-header-title'>{0}</div></div>", HttpUtility.HtmlEncode(titleEN));
-                                sb.AppendFormat("<div class='vq-header-col'><div class='vq-header-lang'>Bahasa Melayu</div><div class='vq-header-title'>{0}</div></div>", HttpUtility.HtmlEncode(titleBM));
+                                sb.Append("<div class='tc-view-quiz-header'>");
+                                sb.Append("<div class='tc-view-quiz-header-titles'>");
+                                sb.AppendFormat("<div class='tc-view-quiz-header-col'><div class='tc-view-quiz-header-lang'>English</div><div class='tc-view-quiz-header-title'>{0}</div></div>", HttpUtility.HtmlEncode(titleEN));
+                                sb.AppendFormat("<div class='tc-view-quiz-header-col'><div class='tc-view-quiz-header-lang'>Bahasa Melayu</div><div class='tc-view-quiz-header-title'>{0}</div></div>", HttpUtility.HtmlEncode(titleBM));
                                 sb.Append("</div>");
-                                sb.AppendFormat("<div class='vq-header-meta'><i class='bi bi-diagram-3'></i> {0} · {1}</div>", HttpUtility.HtmlEncode(related), HttpUtility.HtmlEncode(qType));
+                                sb.AppendFormat("<div class='tc-view-quiz-header-meta'><i class='bi bi-diagram-3'></i> {0} � {1}</div>", HttpUtility.HtmlEncode(related), HttpUtility.HtmlEncode(qType));
                                 sb.Append("</div>");
                             }
                         }
@@ -144,61 +160,61 @@ namespace ScienceBuddy.Teacher
                                 string ceEN = r["correctExplanationEN"]?.ToString() ?? "", ceBM = r["correctExplanationBM"]?.ToString() ?? "";
                                 string weEN = r["wrongExplanationEN"]?.ToString() ?? "", weBM = r["wrongExplanationBM"]?.ToString() ?? "";
 
-                                string statusCss = status == "Approved" ? "vq-badge-green" : status == "Rejected" ? "vq-badge-red" : "vq-badge-amber";
-                                string diffCss = diff.Equals("Easy", StringComparison.OrdinalIgnoreCase) ? "vq-badge-green" : diff.Equals("Hard", StringComparison.OrdinalIgnoreCase) ? "vq-badge-red" : "vq-badge-amber";
+                                string statusCss = status == "Approved" ? "tc-view-quiz-badge-green" : status == "Rejected" ? "tc-view-quiz-badge-red" : "tc-view-quiz-badge-amber";
+                                string diffCss = diff.Equals("Easy", StringComparison.OrdinalIgnoreCase) ? "tc-view-quiz-badge-green" : diff.Equals("Hard", StringComparison.OrdinalIgnoreCase) ? "tc-view-quiz-badge-red" : "tc-view-quiz-badge-amber";
                                 bool expanded = (num == 1);
 
                                 // Card
-                                sb.AppendFormat("<div class='vq-card{0}'>", expanded ? " vq-expanded" : "");
+                                sb.AppendFormat("<div class='tc-view-quiz-card{0}'>", expanded ? " tc-view-quiz-expanded" : "");
                                 // Header: Q# + Difficulty (left) ... Status + chevron (right)
-                                sb.Append("<div class='vq-card-hd' onclick='toggleVQ(this)'>");
-                                sb.AppendFormat("<span class='vq-card-num'>Q{0}</span>", num);
-                                sb.AppendFormat("<span class='vq-badge {0}'>{1}</span>", diffCss, HttpUtility.HtmlEncode(diff));
-                                sb.AppendFormat("<span class='vq-badge {0} vq-status-badge'>{1}</span>", statusCss, HttpUtility.HtmlEncode(status));
-                                sb.Append("<i class='bi bi-chevron-down vq-chevron'></i>");
+                                sb.Append("<div class='tc-view-quiz-card-hd' onclick='toggleVQ(this)'>");
+                                sb.AppendFormat("<span class='tc-view-quiz-card-num'>Q{0}</span>", num);
+                                sb.AppendFormat("<span class='tc-view-quiz-badge {0}'>{1}</span>", diffCss, HttpUtility.HtmlEncode(diff));
+                                sb.AppendFormat("<span class='tc-view-quiz-badge {0} tc-view-quiz-status-badge'>{1}</span>", statusCss, HttpUtility.HtmlEncode(status));
+                                sb.Append("<i class='bi bi-chevron-down tc-view-quiz-chevron'></i>");
                                 sb.Append("</div>");
 
                                 // Body
-                                sb.Append("<div class='vq-card-body'>");
+                                sb.Append("<div class='tc-view-quiz-card-body'>");
                                 // Question Format (plain bold text)
-                                sb.AppendFormat("<div class='vq-format-row'><span class='vq-format-label'>Question Format:</span> <span class='vq-format-val'>{0}</span></div>", HttpUtility.HtmlEncode(qtype));
+                                sb.AppendFormat("<div class='tc-view-quiz-format-row'><span class='tc-view-quiz-format-label'>Question Format:</span> <span class='tc-view-quiz-format-val'>{0}</span></div>", HttpUtility.HtmlEncode(qtype));
 
                                 // Bilingual columns
-                                sb.Append("<div class='vq-cols'>");
+                                sb.Append("<div class='tc-view-quiz-cols'>");
                                 // EN
-                                sb.Append("<div class='vq-col'><div class='vq-col-hd'>English</div>");
-                                sb.AppendFormat("<div class='vq-question'>{0}</div>", HttpUtility.HtmlEncode(qEN));
+                                sb.Append("<div class='tc-view-quiz-col'><div class='tc-view-quiz-col-hd'>English</div>");
+                                sb.AppendFormat("<div class='tc-view-quiz-question'>{0}</div>", HttpUtility.HtmlEncode(qEN));
                                 RenderOptions(sb, aEN, bEN, cEN, dEN, correctAns, qtype, false);
-                                if (!string.IsNullOrEmpty(ceEN)) sb.AppendFormat("<div class='vq-expl vq-expl-correct'><div class='vq-expl-title'><i class='bi bi-check-circle-fill'></i> Correct Explanation</div><div>{0}</div></div>", HttpUtility.HtmlEncode(ceEN));
-                                if (!string.IsNullOrEmpty(weEN)) sb.AppendFormat("<div class='vq-expl vq-expl-wrong'><div class='vq-expl-title'><i class='bi bi-x-circle-fill'></i> Wrong Explanation</div><div>{0}</div></div>", HttpUtility.HtmlEncode(weEN));
+                                if (!string.IsNullOrEmpty(ceEN)) sb.AppendFormat("<div class='tc-view-quiz-expl tc-view-quiz-expl-correct'><div class='tc-view-quiz-expl-title'><i class='bi bi-check-circle-fill'></i> Correct Explanation</div><div>{0}</div></div>", HttpUtility.HtmlEncode(ceEN));
+                                if (!string.IsNullOrEmpty(weEN)) sb.AppendFormat("<div class='tc-view-quiz-expl tc-view-quiz-expl-wrong'><div class='tc-view-quiz-expl-title'><i class='bi bi-x-circle-fill'></i> Wrong Explanation</div><div>{0}</div></div>", HttpUtility.HtmlEncode(weEN));
                                 sb.Append("</div>");
                                 // BM
-                                sb.Append("<div class='vq-col'><div class='vq-col-hd'>Bahasa Melayu</div>");
-                                sb.AppendFormat("<div class='vq-question'>{0}</div>", HttpUtility.HtmlEncode(qBM));
+                                sb.Append("<div class='tc-view-quiz-col'><div class='tc-view-quiz-col-hd'>Bahasa Melayu</div>");
+                                sb.AppendFormat("<div class='tc-view-quiz-question'>{0}</div>", HttpUtility.HtmlEncode(qBM));
                                 RenderOptions(sb, aBM, bBM, cBM, dBM, correctAns, qtype, true);
-                                if (!string.IsNullOrEmpty(ceBM)) sb.AppendFormat("<div class='vq-expl vq-expl-correct'><div class='vq-expl-title'><i class='bi bi-check-circle-fill'></i> Penjelasan Betul</div><div>{0}</div></div>", HttpUtility.HtmlEncode(ceBM));
-                                if (!string.IsNullOrEmpty(weBM)) sb.AppendFormat("<div class='vq-expl vq-expl-wrong'><div class='vq-expl-title'><i class='bi bi-x-circle-fill'></i> Penjelasan Salah</div><div>{0}</div></div>", HttpUtility.HtmlEncode(weBM));
+                                if (!string.IsNullOrEmpty(ceBM)) sb.AppendFormat("<div class='tc-view-quiz-expl tc-view-quiz-expl-correct'><div class='tc-view-quiz-expl-title'><i class='bi bi-check-circle-fill'></i> Penjelasan Betul</div><div>{0}</div></div>", HttpUtility.HtmlEncode(ceBM));
+                                if (!string.IsNullOrEmpty(weBM)) sb.AppendFormat("<div class='tc-view-quiz-expl tc-view-quiz-expl-wrong'><div class='tc-view-quiz-expl-title'><i class='bi bi-x-circle-fill'></i> Penjelasan Salah</div><div>{0}</div></div>", HttpUtility.HtmlEncode(weBM));
                                 sb.Append("</div>");
-                                sb.Append("</div>"); // close vq-cols
+                                sb.Append("</div>"); // close tc-view-quiz-cols
 
                                 // Image
                                 if (!string.IsNullOrWhiteSpace(imgUrl))
                                 {
                                     string fileName = System.IO.Path.GetFileName(imgUrl);
                                     string resolvedPath = ResolveUrl("~/Images/Question/" + fileName);
-                                    sb.AppendFormat("<div class='vq-img-row'><i class='bi bi-image'></i> <a href='#' class='vq-img-link' onclick='openImgPreview(\"{0}\");return false;'>{1}</a></div>", HttpUtility.HtmlEncode(resolvedPath), HttpUtility.HtmlEncode(fileName));
+                                    sb.AppendFormat("<div class='tc-view-quiz-img-row'><i class='bi bi-image'></i> <a href='#' class='tc-view-quiz-img-link' onclick='openImgPreview(\"{0}\");return false;'>{1}</a></div>", HttpUtility.HtmlEncode(resolvedPath), HttpUtility.HtmlEncode(fileName));
                                 }
 
-                                sb.Append("</div>"); // close vq-card-body
-                                sb.Append("</div>"); // close vq-card
+                                sb.Append("</div>"); // close tc-view-quiz-card-body
+                                sb.Append("</div>"); // close tc-view-quiz-card
                             }
-                            if (num == 0) sb.Append("<div class='mq-empty'>" + T("No questions have been submitted by you for this quiz yet.", "Anda belum menghantar sebarang soalan untuk kuiz ini.") + "</div>");
+                            if (num == 0) sb.Append("<div class='tc-manage-quiz-empty'>" + T("No questions have been submitted by you for this quiz yet.", "Anda belum menghantar sebarang soalan untuk kuiz ini.") + "</div>");
                         }
                     }
                     Response.Write(sb.ToString());
                 }
             }
-            catch { Response.Write("<div class='mq-empty'>Error loading questions.</div>"); }
+            catch { Response.Write("<div class='tc-manage-quiz-empty'>Error loading questions.</div>"); }
             Response.End();
         }
 
@@ -274,11 +290,11 @@ namespace ScienceBuddy.Teacher
             if (qtype.Equals("Drag & Drop", StringComparison.OrdinalIgnoreCase) || qtype.Equals("DragDrop", StringComparison.OrdinalIgnoreCase) || qtype.Equals("Drag and Drop", StringComparison.OrdinalIgnoreCase))
             {
                 // Available Options as neutral boxes
-                sb.AppendFormat("<div class='vq-dd-section'><div class='vq-dd-label'>{0}</div><div class='vq-dd-items'>", isBM ? "Pilihan Tersedia" : "Available Options");
+                sb.AppendFormat("<div class='tc-view-quiz-dd-section'><div class='tc-view-quiz-dd-label'>{0}</div><div class='tc-view-quiz-dd-items'>", isBM ? "Pilihan Tersedia" : "Available Options");
                 for (int i = 0; i < 4; i++)
                 {
                     if (!string.IsNullOrEmpty(vals[i]))
-                        sb.AppendFormat("<div class='vq-dd-item'>{0}</div>", HttpUtility.HtmlEncode(vals[i]));
+                        sb.AppendFormat("<div class='tc-view-quiz-dd-item'>{0}</div>", HttpUtility.HtmlEncode(vals[i]));
                 }
                 sb.Append("</div></div>");
 
@@ -305,7 +321,7 @@ namespace ScienceBuddy.Teacher
                     }
                     else if (cleaned.Count == 1)
                     {
-                        // Single value — show for both
+                        // Single value � show for both
                         orderItems = cleaned.ToArray();
                     }
                     else
@@ -320,7 +336,7 @@ namespace ScienceBuddy.Teacher
 
                     if (orderItems.Length > 0)
                     {
-                        sb.AppendFormat("<div class='vq-dd-order'><div class='vq-dd-label'>{0}</div><ol class='vq-dd-order-list'>", isBM ? "Susunan Betul" : "Correct Order");
+                        sb.AppendFormat("<div class='tc-view-quiz-dd-order'><div class='tc-view-quiz-dd-label'>{0}</div><ol class='tc-view-quiz-dd-order-list'>", isBM ? "Susunan Betul" : "Correct Order");
                         foreach (string item in orderItems)
                             sb.AppendFormat("<li>{0}</li>", HttpUtility.HtmlEncode(item));
                         sb.Append("</ol></div>");
@@ -330,14 +346,14 @@ namespace ScienceBuddy.Teacher
             else
             {
                 // MCQ / Multiselect / True-False: show A,B,C,D with correct highlighted
-                sb.Append("<div class='vq-options'>");
+                sb.Append("<div class='tc-view-quiz-options'>");
                 string[] labels = { "A", "B", "C", "D" };
                 for (int i = 0; i < 4; i++)
                 {
                     if (string.IsNullOrEmpty(vals[i])) continue;
                     bool isCorrect = !string.IsNullOrEmpty(correct) && correct.IndexOf(labels[i], StringComparison.OrdinalIgnoreCase) >= 0;
-                    sb.AppendFormat("<div class='vq-opt{0}'><span class='vq-opt-label'>{1}</span><span class='vq-opt-text'>{2}</span>{3}</div>",
-                        isCorrect ? " vq-opt-correct" : "",
+                    sb.AppendFormat("<div class='tc-view-quiz-opt{0}'><span class='tc-view-quiz-opt-label'>{1}</span><span class='tc-view-quiz-opt-text'>{2}</span>{3}</div>",
+                        isCorrect ? " tc-view-quiz-opt-correct" : "",
                         labels[i],
                         HttpUtility.HtmlEncode(vals[i]),
                         isCorrect ? "<i class='bi bi-check-circle-fill'></i>" : "");
@@ -351,7 +367,7 @@ namespace ScienceBuddy.Teacher
             Response.Clear();
             Response.ContentType = "text/html";
             string quizId = (Request.QueryString["quizId"] ?? "").Trim();
-            if (string.IsNullOrEmpty(quizId)) { Response.Write("<div class='mq-empty'><div class='mq-empty-title'>Invalid request.</div></div>"); Response.End(); return; }
+            if (string.IsNullOrEmpty(quizId)) { Response.Write("<div class='tc-manage-quiz-empty'><div class='tc-manage-quiz-empty-title'>Invalid request.</div></div>"); Response.End(); return; }
             try
             {
                 using (var conn = new SqlConnection(ConnStr))
@@ -404,56 +420,56 @@ namespace ScienceBuddy.Teacher
                                 string ceEN=r["correctExplanationEN"]?.ToString()??"", ceBM=r["correctExplanationBM"]?.ToString()??"";
                                 string weEN=r["wrongExplanationEN"]?.ToString()??"",  weBM=r["wrongExplanationBM"]?.ToString()??"";
 
-                                string diffCss = diff.Equals("Easy",StringComparison.OrdinalIgnoreCase)?"vq-badge-green":diff.Equals("Hard",StringComparison.OrdinalIgnoreCase)?"vq-badge-red":"vq-badge-amber";
+                                string diffCss = diff.Equals("Easy",StringComparison.OrdinalIgnoreCase)?"tc-view-quiz-badge-green":diff.Equals("Hard",StringComparison.OrdinalIgnoreCase)?"tc-view-quiz-badge-red":"tc-view-quiz-badge-amber";
                                 bool expanded = (num == 1);
 
-                                sb.AppendFormat("<div class='vq-card{0}'>", expanded?" vq-expanded":"");
-                                sb.Append("<div class='vq-card-hd' onclick='toggleVQ(this)'>");
-                                sb.AppendFormat("<span class='vq-card-num'>Q{0}</span>", num);
-                                sb.AppendFormat("<span class='vq-badge {0}'>{1}</span>", diffCss, HttpUtility.HtmlEncode(diff));
-                                sb.Append("<i class='bi bi-chevron-down vq-chevron'></i>");
+                                sb.AppendFormat("<div class='tc-view-quiz-card{0}'>", expanded?" tc-view-quiz-expanded":"");
+                                sb.Append("<div class='tc-view-quiz-card-hd' onclick='toggleVQ(this)'>");
+                                sb.AppendFormat("<span class='tc-view-quiz-card-num'>Q{0}</span>", num);
+                                sb.AppendFormat("<span class='tc-view-quiz-badge {0}'>{1}</span>", diffCss, HttpUtility.HtmlEncode(diff));
+                                sb.Append("<i class='bi bi-chevron-down tc-view-quiz-chevron'></i>");
                                 sb.Append("</div>");
 
-                                sb.Append("<div class='vq-card-body'>");
-                                sb.AppendFormat("<div class='vq-format-row'><span class='vq-format-label'>Question Format:</span> <span class='vq-format-val'>{0}</span></div>", HttpUtility.HtmlEncode(qtype));
-                                sb.Append("<div class='vq-cols'>");
+                                sb.Append("<div class='tc-view-quiz-card-body'>");
+                                sb.AppendFormat("<div class='tc-view-quiz-format-row'><span class='tc-view-quiz-format-label'>Question Format:</span> <span class='tc-view-quiz-format-val'>{0}</span></div>", HttpUtility.HtmlEncode(qtype));
+                                sb.Append("<div class='tc-view-quiz-cols'>");
 
                                 // EN column
-                                sb.Append("<div class='vq-col'><div class='vq-col-hd'>English</div>");
-                                sb.AppendFormat("<div class='vq-question'>{0}</div>", HttpUtility.HtmlEncode(qEN));
+                                sb.Append("<div class='tc-view-quiz-col'><div class='tc-view-quiz-col-hd'>English</div>");
+                                sb.AppendFormat("<div class='tc-view-quiz-question'>{0}</div>", HttpUtility.HtmlEncode(qEN));
                                 RenderOptions(sb, aEN, bEN, cEN, dEN, correctAns, qtype, false);
-                                if (!string.IsNullOrEmpty(ceEN)) sb.AppendFormat("<div class='vq-expl vq-expl-correct'><div class='vq-expl-title'><i class='bi bi-check-circle-fill'></i> Correct Explanation</div><div>{0}</div></div>", HttpUtility.HtmlEncode(ceEN));
-                                if (!string.IsNullOrEmpty(weEN)) sb.AppendFormat("<div class='vq-expl vq-expl-wrong'><div class='vq-expl-title'><i class='bi bi-x-circle-fill'></i> Wrong Explanation</div><div>{0}</div></div>", HttpUtility.HtmlEncode(weEN));
+                                if (!string.IsNullOrEmpty(ceEN)) sb.AppendFormat("<div class='tc-view-quiz-expl tc-view-quiz-expl-correct'><div class='tc-view-quiz-expl-title'><i class='bi bi-check-circle-fill'></i> Correct Explanation</div><div>{0}</div></div>", HttpUtility.HtmlEncode(ceEN));
+                                if (!string.IsNullOrEmpty(weEN)) sb.AppendFormat("<div class='tc-view-quiz-expl tc-view-quiz-expl-wrong'><div class='tc-view-quiz-expl-title'><i class='bi bi-x-circle-fill'></i> Wrong Explanation</div><div>{0}</div></div>", HttpUtility.HtmlEncode(weEN));
                                 sb.Append("</div>");
 
                                 // BM column
-                                sb.Append("<div class='vq-col'><div class='vq-col-hd'>Bahasa Melayu</div>");
-                                sb.AppendFormat("<div class='vq-question'>{0}</div>", HttpUtility.HtmlEncode(qBM));
+                                sb.Append("<div class='tc-view-quiz-col'><div class='tc-view-quiz-col-hd'>Bahasa Melayu</div>");
+                                sb.AppendFormat("<div class='tc-view-quiz-question'>{0}</div>", HttpUtility.HtmlEncode(qBM));
                                 RenderOptions(sb, aBM, bBM, cBM, dBM, correctAns, qtype, true);
-                                if (!string.IsNullOrEmpty(ceBM)) sb.AppendFormat("<div class='vq-expl vq-expl-correct'><div class='vq-expl-title'><i class='bi bi-check-circle-fill'></i> Penjelasan Betul</div><div>{0}</div></div>", HttpUtility.HtmlEncode(ceBM));
-                                if (!string.IsNullOrEmpty(weBM)) sb.AppendFormat("<div class='vq-expl vq-expl-wrong'><div class='vq-expl-title'><i class='bi bi-x-circle-fill'></i> Penjelasan Salah</div><div>{0}</div></div>", HttpUtility.HtmlEncode(weBM));
+                                if (!string.IsNullOrEmpty(ceBM)) sb.AppendFormat("<div class='tc-view-quiz-expl tc-view-quiz-expl-correct'><div class='tc-view-quiz-expl-title'><i class='bi bi-check-circle-fill'></i> Penjelasan Betul</div><div>{0}</div></div>", HttpUtility.HtmlEncode(ceBM));
+                                if (!string.IsNullOrEmpty(weBM)) sb.AppendFormat("<div class='tc-view-quiz-expl tc-view-quiz-expl-wrong'><div class='tc-view-quiz-expl-title'><i class='bi bi-x-circle-fill'></i> Penjelasan Salah</div><div>{0}</div></div>", HttpUtility.HtmlEncode(weBM));
                                 sb.Append("</div>");
 
-                                sb.Append("</div>"); // vq-cols
+                                sb.Append("</div>"); // tc-view-quiz-cols
 
                                 if (!string.IsNullOrWhiteSpace(imgUrl))
                                 {
                                     string fileName = System.IO.Path.GetFileName(imgUrl);
                                     string resolvedPath = ResolveUrl("~/Images/Question/" + fileName);
-                                    sb.AppendFormat("<div class='vq-img-row'><i class='bi bi-image'></i> <a href='#' class='vq-img-link' onclick='openImgPreview(\"{0}\");return false;'>{1}</a></div>", HttpUtility.HtmlEncode(resolvedPath), HttpUtility.HtmlEncode(fileName));
+                                    sb.AppendFormat("<div class='tc-view-quiz-img-row'><i class='bi bi-image'></i> <a href='#' class='tc-view-quiz-img-link' onclick='openImgPreview(\"{0}\");return false;'>{1}</a></div>", HttpUtility.HtmlEncode(resolvedPath), HttpUtility.HtmlEncode(fileName));
                                 }
 
-                                sb.Append("</div>"); // vq-card-body
-                                sb.Append("</div>"); // vq-card
+                                sb.Append("</div>"); // tc-view-quiz-card-body
+                                sb.Append("</div>"); // tc-view-quiz-card
                             }
                             if (num == 0)
-                                sb.Append("<div class='mq-empty'><div style='font-size:2.5rem;opacity:.4;margin-bottom:.75rem;'>📭</div><div class='mq-empty-title'>No questions in this quiz yet.</div></div>");
+                                sb.Append("<div class='tc-manage-quiz-empty'><div style='font-size:2.5rem;opacity:.4;margin-bottom:.75rem;'>??</div><div class='tc-manage-quiz-empty-title'>No questions in this quiz yet.</div></div>");
                         }
                     }
                     Response.Write(sb.ToString());
                 }
             }
-            catch { Response.Write("<div class='mq-empty'><div class='mq-empty-title'>Error loading questions.</div></div>"); }
+            catch { Response.Write("<div class='tc-manage-quiz-empty'><div class='tc-manage-quiz-empty-title'>Error loading questions.</div></div>"); }
             Response.End();
         }
 
@@ -672,14 +688,14 @@ namespace ScienceBuddy.Teacher
 
             // Create modal - Quiz Type
             ddlCreateType.Items.Clear();
-            ddlCreateType.Items.Add(new ListItem(T("— Select Quiz Type —", "— Pilih Jenis Kuiz —"), ""));
+            ddlCreateType.Items.Add(new ListItem(T("� Select Quiz Type �", "� Pilih Jenis Kuiz �"), ""));
             ddlCreateType.Items.Add(new ListItem(T("Practice Quiz", "Kuiz Latihan"), "Practice"));
             ddlCreateType.Items.Add(new ListItem(T("Unit Quiz", "Kuiz Unit"), "Unit"));
             ddlCreateType.Items.Add(new ListItem(T("Level Quiz", "Kuiz Tahap"), "Level"));
 
             // Create modal - Level
             ddlCreateLevel.Items.Clear();
-            ddlCreateLevel.Items.Add(new ListItem(T("— Select Level —", "— Pilih Tahap —"), ""));
+            ddlCreateLevel.Items.Add(new ListItem(T("� Select Level �", "� Pilih Tahap �"), ""));
             using (var conn = new SqlConnection(ConnStr))
             {
                 conn.Open();
@@ -772,9 +788,9 @@ namespace ScienceBuddy.Teacher
         private void SetTabUI()
         {
             string tab = hidActiveTab.Value;
-            btnTabUnitLevel.CssClass = "mq-tab" + (tab == "unitlevel" ? " active" : "");
-            btnTabMine.CssClass = "mq-tab" + (tab == "mine" ? " active" : "");
-            btnTabDiscover.CssClass = "mq-tab" + (tab == "discover" ? " active" : "");
+            btnTabUnitLevel.CssClass = "tc-manage-quiz-tab" + (tab == "unitlevel" ? " active" : "");
+            btnTabMine.CssClass = "tc-manage-quiz-tab" + (tab == "mine" ? " active" : "");
+            btnTabDiscover.CssClass = "tc-manage-quiz-tab" + (tab == "discover" ? " active" : "");
             pnlCreateBtn.Visible = (tab == "mine");
             pnlCreateULBtn.Visible = (tab == "unitlevel");
             pnlStatusChips.Visible = (tab == "mine");
@@ -785,10 +801,10 @@ namespace ScienceBuddy.Teacher
         {
             var btn = sender as LinkButton;
             string status = btn?.CommandArgument ?? "";
-            btnChipAll.CssClass = "mq-chip" + (status == "" ? " active" : "");
-            btnChipApproved.CssClass = "mq-chip" + (status == "Approved" ? " active" : "");
-            btnChipPending.CssClass = "mq-chip" + (status == "Pending" ? " active" : "");
-            btnChipRejected.CssClass = "mq-chip" + (status == "Rejected" ? " active" : "");
+            btnChipAll.CssClass = "tc-manage-quiz-chip" + (status == "" ? " active" : "");
+            btnChipApproved.CssClass = "tc-manage-quiz-chip" + (status == "Approved" ? " active" : "");
+            btnChipPending.CssClass = "tc-manage-quiz-chip" + (status == "Pending" ? " active" : "");
+            btnChipRejected.CssClass = "tc-manage-quiz-chip" + (status == "Rejected" ? " active" : "");
             try { ddlStatus.SelectedValue = status; } catch { }
             LoadForActiveTab();
         }
@@ -906,7 +922,7 @@ namespace ScienceBuddy.Teacher
                         while (r.Read())
                         {
                             string unitId = r["unitId"]?.ToString() ?? "";
-                            // Derive group number: UN101 → 1, UN201 → 2, UN301 → 3
+                            // Derive group number: UN101 ? 1, UN201 ? 2, UN301 ? 3
                             int groupNum = 0;
                             if (unitId.Length >= 4) int.TryParse(unitId.Substring(2, 1), out groupNum);
 
@@ -914,7 +930,7 @@ namespace ScienceBuddy.Teacher
                             {
                                 if (currentGroup > 0) sb.Append("</div>"); // close previous group
                                 currentGroup = groupNum;
-                                sb.AppendFormat("<div class=\"mq-unit-group\"><div class=\"mq-unit-group-hd\"><span class=\"mq-unit-group-num\">{0}</span><span class=\"mq-unit-group-label\">{1} {0}</span></div>",
+                                sb.AppendFormat("<div class=\"tc-manage-quiz-unit-group\"><div class=\"tc-manage-quiz-unit-group-hd\"><span class=\"tc-manage-quiz-unit-group-num\">{0}</span><span class=\"tc-manage-quiz-unit-group-label\">{1} {0}</span></div>",
                                     groupNum, T("Unit", "Unit"));
                             }
 
@@ -929,16 +945,16 @@ namespace ScienceBuddy.Teacher
                             string overallTip = T("Total approved questions available for this quiz from all teachers.", "Jumlah soalan yang diluluskan tersedia untuk kuiz ini daripada semua guru.");
                             string yourTip = T("Total questions you have submitted for this quiz, including approved, pending and rejected questions.", "Jumlah soalan yang telah anda hantar untuk kuiz ini, termasuk yang diluluskan, menunggu dan ditolak.");
 
-                            sb.Append("<div class=\"mq-ulq-card\">");
-                            sb.AppendFormat("<div class=\"mq-ulq-left\"><div class=\"mq-ulq-icon mq-ulq-icon-unit\"><i class=\"bi bi-layers-fill\"></i></div><div class=\"mq-ulq-info\"><div class=\"mq-ulq-title\">{0}</div></div></div>", HttpUtility.HtmlEncode(unitName));
-                            sb.Append("<div class=\"mq-ulq-stats\">");
-                            sb.AppendFormat("<div class=\"mq-ulq-col mq-ulq-col--overall\"><div class=\"mq-ulq-col-label\">{0} <span class=\"mq-info-icon\" tabindex=\"0\" data-tip=\"{2}\"><i class=\"bi bi-info-circle\"></i></span></div><div class=\"mq-ulq-col-val mq-val-overall\">{1}</div></div>", T("Overall Approved", "Diluluskan Semua"), overallApproved, HttpUtility.HtmlEncode(overallTip));
-                            sb.AppendFormat("<div class=\"mq-ulq-col mq-ulq-col--submitted\"><div class=\"mq-ulq-col-label\">{0} <span class=\"mq-info-icon\" tabindex=\"0\" data-tip=\"{2}\"><i class=\"bi bi-info-circle\"></i></span></div><div class=\"mq-ulq-col-val\">{1}</div></div>", T("Your Submitted", "Hantar Anda"), yourCount, HttpUtility.HtmlEncode(yourTip));
-                            sb.AppendFormat("<div class=\"mq-ulq-col mq-ulq-col--approved\"><div class=\"mq-ulq-col-label\">{0}</div><div class=\"mq-ulq-col-val mq-val-approved\">{1}</div></div>", T("Approved", "Diluluskan"), approved);
-                            sb.AppendFormat("<div class=\"mq-ulq-col mq-ulq-col--pending\"><div class=\"mq-ulq-col-label\">{0}</div><div class=\"mq-ulq-col-val mq-val-pending\">{1}</div></div>", T("Pending", "Menunggu"), pending);
-                            sb.AppendFormat("<div class=\"mq-ulq-col mq-ulq-col--rejected\"><div class=\"mq-ulq-col-label\">{0}</div><div class=\"mq-ulq-col-val mq-val-rejected\">{1}</div></div>", T("Rejected", "Ditolak"), rejected);
+                            sb.Append("<div class=\"tc-manage-quiz-ulq-card\">");
+                            sb.AppendFormat("<div class=\"tc-manage-quiz-ulq-left\"><div class=\"tc-manage-quiz-ulq-icon tc-manage-quiz-ulq-icon-unit\"><i class=\"bi bi-layers-fill\"></i></div><div class=\"tc-manage-quiz-ulq-info\"><div class=\"tc-manage-quiz-ulq-title\">{0}</div></div></div>", HttpUtility.HtmlEncode(unitName));
+                            sb.Append("<div class=\"tc-manage-quiz-ulq-stats\">");
+                            sb.AppendFormat("<div class=\"tc-manage-quiz-ulq-col tc-manage-quiz-ulq-col--overall\"><div class=\"tc-manage-quiz-ulq-col-label\">{0} <span class=\"tc-manage-quiz-info-icon\" tabindex=\"0\" data-tip=\"{2}\"><i class=\"bi bi-info-circle\"></i></span></div><div class=\"tc-manage-quiz-ulq-col-val tc-manage-quiz-val-overall\">{1}</div></div>", T("Overall Approved", "Diluluskan Semua"), overallApproved, HttpUtility.HtmlEncode(overallTip));
+                            sb.AppendFormat("<div class=\"tc-manage-quiz-ulq-col tc-manage-quiz-ulq-col--submitted\"><div class=\"tc-manage-quiz-ulq-col-label\">{0} <span class=\"tc-manage-quiz-info-icon\" tabindex=\"0\" data-tip=\"{2}\"><i class=\"bi bi-info-circle\"></i></span></div><div class=\"tc-manage-quiz-ulq-col-val\">{1}</div></div>", T("Your Submitted", "Hantar Anda"), yourCount, HttpUtility.HtmlEncode(yourTip));
+                            sb.AppendFormat("<div class=\"tc-manage-quiz-ulq-col tc-manage-quiz-ulq-col--approved\"><div class=\"tc-manage-quiz-ulq-col-label\">{0}</div><div class=\"tc-manage-quiz-ulq-col-val tc-manage-quiz-val-approved\">{1}</div></div>", T("Approved", "Diluluskan"), approved);
+                            sb.AppendFormat("<div class=\"tc-manage-quiz-ulq-col tc-manage-quiz-ulq-col--pending\"><div class=\"tc-manage-quiz-ulq-col-label\">{0}</div><div class=\"tc-manage-quiz-ulq-col-val tc-manage-quiz-val-pending\">{1}</div></div>", T("Pending", "Menunggu"), pending);
+                            sb.AppendFormat("<div class=\"tc-manage-quiz-ulq-col tc-manage-quiz-ulq-col--rejected\"><div class=\"tc-manage-quiz-ulq-col-label\">{0}</div><div class=\"tc-manage-quiz-ulq-col-val tc-manage-quiz-val-rejected\">{1}</div></div>", T("Rejected", "Ditolak"), rejected);
                             sb.Append("</div>");
-                            sb.AppendFormat("<div class=\"mq-ulq-btn-col\"><a href=\"#\" class=\"mq-ulq-btn mq-ulq-btn-add\" onclick='openSubtopicModal(\"{0}\");return false;'><i class=\"bi bi-plus-lg\"></i> {1}</a><button type=\"button\" class=\"mq-ulq-btn\" onclick='openULModal(\"{0}\")'><i class=\"bi bi-eye\"></i> {2}</button></div>", HttpUtility.HtmlEncode(quizId), T("Add Questions", "Tambah Soalan"), T("View Questions", "Lihat Soalan"));
+                            sb.AppendFormat("<div class=\"tc-manage-quiz-ulq-btn-col\"><a href=\"#\" class=\"tc-manage-quiz-ulq-btn tc-manage-quiz-ulq-btn-add\" onclick='openSubtopicModal(\"{0}\");return false;'><i class=\"bi bi-plus-lg\"></i> {1}</a><button type=\"button\" class=\"tc-manage-quiz-ulq-btn\" onclick='openULModal(\"{0}\")'><i class=\"bi bi-eye\"></i> {2}</button></div>", HttpUtility.HtmlEncode(quizId), T("Add Questions", "Tambah Soalan"), T("View Questions", "Lihat Soalan"));
                             sb.Append("</div>");
                         }
                         if (currentGroup > 0) sb.Append("</div>"); // close last group
@@ -995,7 +1011,7 @@ namespace ScienceBuddy.Teacher
             LoadQuizzes();
         }
 
-        // ── Create Modal Events ─────────────────────────────────────
+        // -- Create Modal Events -------------------------------------
         protected void ddlCreateType_Changed(object sender, EventArgs e)
         {
             string t = ddlCreateType.SelectedValue;
@@ -1008,9 +1024,9 @@ namespace ScienceBuddy.Teacher
             if (t == "Unit") LoadCreateUnits();
             // Load subtopics based on type
             ddlCreateSubtopic.Items.Clear();
-            ddlCreateSubtopic.Items.Add(new ListItem(T("— Select Subtopic —", "— Pilih Subtopik —"), ""));
+            ddlCreateSubtopic.Items.Add(new ListItem(T("� Select Subtopic �", "� Pilih Subtopik �"), ""));
             ddlCreateUnit.Items.Clear();
-            ddlCreateUnit.Items.Add(new ListItem(T("— Select Unit —", "— Pilih Unit —"), ""));
+            ddlCreateUnit.Items.Add(new ListItem(T("� Select Unit �", "� Pilih Unit �"), ""));
             if (t == "Unit") LoadCreateUnits();
 
             hidShowCreateModal.Value = "1";
@@ -1020,7 +1036,7 @@ namespace ScienceBuddy.Teacher
         {
             // For Level quiz - load subtopics for the entire level
             ddlCreateSubtopic.Items.Clear();
-            ddlCreateSubtopic.Items.Add(new ListItem(T("— Select Subtopic —", "— Pilih Subtopik —"), ""));
+            ddlCreateSubtopic.Items.Add(new ListItem(T("� Select Subtopic �", "� Pilih Subtopik �"), ""));
             string levelId = ddlCreateLevel.SelectedValue;
             if (!string.IsNullOrEmpty(levelId))
             {
@@ -1039,7 +1055,7 @@ namespace ScienceBuddy.Teacher
         protected void ddlCreateUnit_Changed(object sender, EventArgs e)
         {
             ddlCreateSubtopic.Items.Clear();
-            ddlCreateSubtopic.Items.Add(new ListItem(T("— Select Subtopic —", "— Pilih Subtopik —"), ""));
+            ddlCreateSubtopic.Items.Add(new ListItem(T("� Select Subtopic �", "� Pilih Subtopik �"), ""));
             string unitId = ddlCreateUnit.SelectedValue;
             if (!string.IsNullOrEmpty(unitId))
             {
@@ -1056,7 +1072,7 @@ namespace ScienceBuddy.Teacher
         private void LoadCreateUnits()
         {
             ddlCreateUnit.Items.Clear();
-            ddlCreateUnit.Items.Add(new ListItem(T("— Select Unit —", "— Pilih Unit —"), ""));
+            ddlCreateUnit.Items.Add(new ListItem(T("� Select Unit �", "� Pilih Unit �"), ""));
             using (var conn = new SqlConnection(ConnStr))
             {
                 conn.Open();
@@ -1094,14 +1110,14 @@ namespace ScienceBuddy.Teacher
             Context.ApplicationInstance.CompleteRequest();
         }
 
-        // ── Helpers ──────────────────────────────────────────────────
+        // -- Helpers --------------------------------------------------
         protected string GetStatusCss(string s)
         {
-            if (string.IsNullOrEmpty(s)) return "mq-badge-pending";
+            if (string.IsNullOrEmpty(s)) return "tc-manage-quiz-badge-pending";
             string l = s.ToLower();
-            if (l == "approved" || l == "active") return "mq-badge-approved";
-            if (l == "rejected") return "mq-badge-rejected";
-            return "mq-badge-pending";
+            if (l == "approved" || l == "active") return "tc-manage-quiz-badge-approved";
+            if (l == "rejected") return "tc-manage-quiz-badge-rejected";
+            return "tc-manage-quiz-badge-pending";
         }
 
         protected string GetStatusLabel(string s)
@@ -1115,11 +1131,11 @@ namespace ScienceBuddy.Teacher
 
         protected string GetDiffCss(string d)
         {
-            if (string.IsNullOrEmpty(d)) return "mq-diff-medium";
+            if (string.IsNullOrEmpty(d)) return "tc-manage-quiz-diff-medium";
             string l = d.ToLower();
-            if (l == "easy") return "mq-diff-easy";
-            if (l == "hard") return "mq-diff-hard";
-            return "mq-diff-medium";
+            if (l == "easy") return "tc-manage-quiz-diff-easy";
+            if (l == "hard") return "tc-manage-quiz-diff-hard";
+            return "tc-manage-quiz-diff-medium";
         }
 
         protected string GetTeacherInitial(string name)

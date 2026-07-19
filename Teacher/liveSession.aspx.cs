@@ -1,4 +1,4 @@
-ï»¿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -314,7 +314,7 @@ namespace ScienceBuddy.Teacher
             }
             else
             {
-                // Pending or no teacher record â€” show empty states for both tabs
+                // Pending or no teacher record — show empty states for both tabs
                 pnlListUpcoming.Visible = false;
                 pnlUpcomingEmpty.Visible = true;
                 pnlListHistory.Visible = false;
@@ -355,9 +355,9 @@ namespace ScienceBuddy.Teacher
                 conn.Open();
                 // Load Units for schedule modal and instant modal
                 ddlUnit.Items.Clear();
-                ddlUnit.Items.Add(new ListItem(T("â€” Select Unit â€”", "â€” Pilih Unit â€”"), ""));
+                ddlUnit.Items.Add(new ListItem(T("— Select Unit —", "— Pilih Unit —"), ""));
                 ddlInstantUnit.Items.Clear();
-                ddlInstantUnit.Items.Add(new ListItem(T("â€” Select Unit â€”", "â€” Pilih Unit â€”"), ""));
+                ddlInstantUnit.Items.Add(new ListItem(T("— Select Unit —", "— Pilih Unit —"), ""));
                 using (var cmd = new SqlCommand("SELECT u.[unitId],u.[unitNameEN],l.[levelNameEN] FROM dbo.[Unit] u INNER JOIN dbo.[Level] l ON l.[levelId]=u.[levelId] ORDER BY u.[levelId],u.[orderNo]", conn))
                 using (var r = cmd.ExecuteReader()) while (r.Read())
                 {
@@ -368,8 +368,8 @@ namespace ScienceBuddy.Teacher
 
                 // Load all subtopics for instant modal (initially disabled, loaded via JS)
                 ddlSubtopic.Items.Clear(); ddlInstantSubtopic.Items.Clear();
-                ddlSubtopic.Items.Add(new ListItem(T("â€” Select Unit First â€”", "â€” Pilih Unit Dahulu â€”"), ""));
-                ddlInstantSubtopic.Items.Add(new ListItem(T("â€” Select Unit First â€”", "â€” Pilih Unit Dahulu â€”"), ""));
+                ddlSubtopic.Items.Add(new ListItem(T("— Select Unit First —", "— Pilih Unit Dahulu —"), ""));
+                ddlInstantSubtopic.Items.Add(new ListItem(T("— Select Unit First —", "— Pilih Unit Dahulu —"), ""));
             }
         }
 
@@ -413,10 +413,10 @@ namespace ScienceBuddy.Teacher
                         DateTime end = r["endDateTime"] != DBNull.Value ? Convert.ToDateTime(r["endDateTime"]) : start;
                         string status = r["status"]?.ToString() ?? "Upcoming";
                         string badgeCss, badgeLabel;
-                        if (status.Equals("Ongoing", StringComparison.OrdinalIgnoreCase)) { badgeCss = "ls-badge-live"; badgeLabel = "?? " + T("LIVE NOW", "LANGSUNG"); }
-                        else { badgeCss = "ls-badge-upcoming"; badgeLabel = T("Upcoming", "Akan Datang"); }
+                        if (status.Equals("Ongoing", StringComparison.OrdinalIgnoreCase)) { badgeCss = "tc-live-session-badge-live"; badgeLabel = "?? " + T("LIVE NOW", "LANGSUNG"); }
+                        else { badgeCss = "tc-live-session-badge-upcoming"; badgeLabel = T("Upcoming", "Akan Datang"); }
                         bool canStart = DateTime.Now >= start.AddMinutes(-15);
-                        upList.Add(new { sessionId = r["sessionId"].ToString(), title = r["sessionTitle"]?.ToString() ?? "", day = start.Day.ToString(), month = start.ToString("MMM").ToUpper(), timeRange = start.ToString("h:mm tt") + " â€“ " + end.ToString("h:mm tt"), topic = r["topic"]?.ToString() ?? "", students = Convert.ToInt32(r["students"]), duration = "", badgeCss, badgeLabel, rawStart = start.ToString("yyyy-MM-dd HH:mm"), rawEnd = end.ToString("yyyy-MM-dd HH:mm"), canStart });
+                        upList.Add(new { sessionId = r["sessionId"].ToString(), title = r["sessionTitle"]?.ToString() ?? "", day = start.Day.ToString(), month = start.ToString("MMM").ToUpper(), timeRange = start.ToString("h:mm tt") + " – " + end.ToString("h:mm tt"), topic = r["topic"]?.ToString() ?? "", students = Convert.ToInt32(r["students"]), duration = "", badgeCss, badgeLabel, rawStart = start.ToString("yyyy-MM-dd HH:mm"), rawEnd = end.ToString("yyyy-MM-dd HH:mm"), canStart });
                     }
                 }
                 if (upList.Count > 0) { pnlListUpcoming.Visible = true; pnlUpcomingEmpty.Visible = false; rptUpcoming.DataSource = upList; rptUpcoming.DataBind(); }
@@ -442,11 +442,11 @@ namespace ScienceBuddy.Teacher
                         int mins = (int)(end - start).TotalMinutes;
                         string status = r["status"]?.ToString() ?? "Completed";
                         string badgeCss, badgeLabel;
-                        if (status.Equals("Cancelled", StringComparison.OrdinalIgnoreCase)) { badgeCss = "ls-badge-cancelled"; badgeLabel = T("Cancelled", "Dibatalkan"); }
-                        else if (status.Equals("Expired", StringComparison.OrdinalIgnoreCase)) { badgeCss = "ls-badge-expired"; badgeLabel = T("Expired", "Tamat Tempoh"); }
-                        else { badgeCss = "ls-badge-completed"; badgeLabel = T("Completed", "Selesai"); }
+                        if (status.Equals("Cancelled", StringComparison.OrdinalIgnoreCase)) { badgeCss = "tc-live-session-badge-cancelled"; badgeLabel = T("Cancelled", "Dibatalkan"); }
+                        else if (status.Equals("Expired", StringComparison.OrdinalIgnoreCase)) { badgeCss = "tc-live-session-badge-expired"; badgeLabel = T("Expired", "Tamat Tempoh"); }
+                        else { badgeCss = "tc-live-session-badge-completed"; badgeLabel = T("Completed", "Selesai"); }
                         bool isCompleted = status.Equals("Completed", StringComparison.OrdinalIgnoreCase);
-                        histList.Add(new { sessionId = r["sessionId"].ToString(), title = r["sessionTitle"]?.ToString() ?? "", day = start.Day.ToString(), month = start.ToString("MMM").ToUpper(), timeRange = start.ToString("h:mm tt") + " â€“ " + end.ToString("h:mm tt"), topic = r["topic"]?.ToString() ?? "", students = Convert.ToInt32(r["students"]), duration = mins + " min", badgeCss, badgeLabel, isCompleted });
+                        histList.Add(new { sessionId = r["sessionId"].ToString(), title = r["sessionTitle"]?.ToString() ?? "", day = start.Day.ToString(), month = start.ToString("MMM").ToUpper(), timeRange = start.ToString("h:mm tt") + " – " + end.ToString("h:mm tt"), topic = r["topic"]?.ToString() ?? "", students = Convert.ToInt32(r["students"]), duration = mins + " min", badgeCss, badgeLabel, isCompleted });
                     }
                 }
                 if (histList.Count > 0) { pnlListHistory.Visible = true; pnlHistoryEmpty.Visible = false; rptHistory.DataSource = histList; rptHistory.DataBind(); }
@@ -494,7 +494,7 @@ namespace ScienceBuddy.Teacher
                 hidRescId.Value = args[0];
                 litRescTitle.Text = HttpUtility.HtmlEncode(args[3]);
                 DateTime st = DateTime.Parse(args[1]), en = DateTime.Parse(args[2]);
-                litRescCurrent.Text = T("Current: ", "Semasa: ") + st.ToString("d MMM yyyy, h:mm tt") + " â€“ " + en.ToString("h:mm tt");
+                litRescCurrent.Text = T("Current: ", "Semasa: ") + st.ToString("d MMM yyyy, h:mm tt") + " – " + en.ToString("h:mm tt");
                 txtRescDate.Text = st.ToString("yyyy-MM-dd");
                 txtRescStart.Text = st.ToString("HH:mm");
                 txtRescEnd.Text = en.ToString("HH:mm");

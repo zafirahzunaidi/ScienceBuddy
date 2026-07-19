@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
@@ -10,7 +10,7 @@ namespace ScienceBuddy.Teacher
 {
     public partial class Forum : Page
     {
-        // ── Language ──────────────────────────────────────────────────
+        // -- Language --------------------------------------------------
         protected string CurrentLanguage
         {
             get { string l = Session["preferredLanguage"] as string; return string.IsNullOrEmpty(l) ? "EN" : l; }
@@ -20,16 +20,16 @@ namespace ScienceBuddy.Teacher
         private string ConnStr =>
             ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
-        // ── State: track whether the current load is a search ─────────
+        // -- State: track whether the current load is a search ---------
         private bool IsSearch
         {
             get { return ViewState["IsSearch"] as bool? ?? false; }
             set { ViewState["IsSearch"] = value; }
         }
 
-        // ════════════════════════════════════════════════════════════
+        // ------------------------------------------------------------
         //  PAGE LOAD
-        // ════════════════════════════════════════════════════════════
+        // ------------------------------------------------------------
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["userId"] == null || Session["role"]?.ToString() != "Teacher")
@@ -43,7 +43,7 @@ namespace ScienceBuddy.Teacher
                 txtSearch.Attributes["placeholder"] = T("Search forum...", "Cari forum...");
                 btnSearch.Text = T("Search", "Cari");
                 btnPost.Text   = T("Post Discussion", "Hantar Perbincangan");
-                btnReset.Text  = T("↺ Reset search", "↺ Set semula carian");
+                btnReset.Text  = T("? Reset search", "? Set semula carian");
                 IsSearch       = false;
 
                 // Check Teaching License status
@@ -71,9 +71,9 @@ namespace ScienceBuddy.Teacher
             catch { return ""; }
         }
 
-        // ════════════════════════════════════════════════════════════
+        // ------------------------------------------------------------
         //  LOAD POSTS
-        // ════════════════════════════════════════════════════════════
+        // ------------------------------------------------------------
         private void LoadPosts(string searchTerm)
         {
             string userId = Session["userId"].ToString();
@@ -124,7 +124,7 @@ namespace ScienceBuddy.Teacher
                             {
                                 forumId    = r["forumId"].ToString(),
                                 title      = r["title"]?.ToString() ?? "",
-                                msgPreview = msg.Length > 180 ? msg.Substring(0, 180) + "…" : msg,
+                                msgPreview = msg.Length > 180 ? msg.Substring(0, 180) + "�" : msg,
                                 creatorName = name,
                                 initials   = BuildInitials(name),
                                 roleCss    = RoleCss(role),
@@ -163,18 +163,18 @@ namespace ScienceBuddy.Teacher
             }
         }
 
-        // ════════════════════════════════════════════════════════════
+        // ------------------------------------------------------------
         //  SEARCH
-        // ════════════════════════════════════════════════════════════
+        // ------------------------------------------------------------
         protected void btnSearch_Click(object sender, EventArgs e)
         {
             IsSearch = true;
             LoadPosts(txtSearch.Text.Trim());
         }
 
-        // ════════════════════════════════════════════════════════════
+        // ------------------------------------------------------------
         //  RESET SEARCH
-        // ════════════════════════════════════════════════════════════
+        // ------------------------------------------------------------
         protected void btnReset_Click(object sender, EventArgs e)
         {
             txtSearch.Text = "";
@@ -182,9 +182,9 @@ namespace ScienceBuddy.Teacher
             LoadPosts(searchTerm: "");
         }
 
-        // ════════════════════════════════════════════════════════════
+        // ------------------------------------------------------------
         //  CREATE POST
-        // ════════════════════════════════════════════════════════════
+        // ------------------------------------------------------------
         protected void btnPost_Click(object sender, EventArgs e)
         {
             string title = txtTitle.Text.Trim();
@@ -235,9 +235,9 @@ namespace ScienceBuddy.Teacher
             LoadPosts(searchTerm: "");
         }
 
-        // ════════════════════════════════════════════════════════════
+        // ------------------------------------------------------------
         //  HELPERS
-        // ════════════════════════════════════════════════════════════
+        // ------------------------------------------------------------
         private static string BuildInitials(string name)
         {
             if (string.IsNullOrWhiteSpace(name)) return "U";

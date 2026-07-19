@@ -1,4 +1,4 @@
-ï»¿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
@@ -39,7 +39,7 @@ namespace ScienceBuddy.Teacher
             Response.Clear();
             Response.ContentType = "text/html";
             string resultId = (Request.QueryString["resultId"] ?? "").Trim();
-            if (string.IsNullOrEmpty(resultId)) { Response.Write("<div class=\"sd-empty\">Invalid request.</div>"); Response.End(); return; }
+            if (string.IsNullOrEmpty(resultId)) { Response.Write("<div class=\"tc-student-details-empty\">Invalid request.</div>"); Response.End(); return; }
             try
             {
                 using (var c = new SqlConnection(ConnStr))
@@ -79,77 +79,77 @@ namespace ScienceBuddy.Teacher
                                 string statusLabel = isCorrect ? T("Correct", "Betul") : T("Wrong", "Salah");
                                 string badgeCss = isCorrect ? "correct" : "wrong";
 
-                                sb.Append("<div class=\"sd-ans-card\">");
-                                sb.AppendFormat("<div class=\"sd-ans-header\"><span class=\"sd-ans-num\">Q{0}</span><span class=\"sd-ans-badge {1}\">{2}</span></div>", qNum, badgeCss, statusLabel);
+                                sb.Append("<div class=\"tc-student-details-ans-card\">");
+                                sb.AppendFormat("<div class=\"tc-student-details-ans-header\"><span class=\"tc-student-details-ans-num\">Q{0}</span><span class=\"tc-student-details-ans-badge {1}\">{2}</span></div>", qNum, badgeCss, statusLabel);
 
                                 // Language sections side by side
-                                sb.Append("<div class=\"sd-ans-langs\">");
+                                sb.Append("<div class=\"tc-student-details-ans-langs\">");
 
                                 // English section
-                                sb.Append("<div class=\"sd-ans-lang-section\">");
-                                sb.AppendFormat("<div class=\"sd-ans-lang-label\">{0}</div>", T("English", "Bahasa Inggeris"));
+                                sb.Append("<div class=\"tc-student-details-ans-lang-section\">");
+                                sb.AppendFormat("<div class=\"tc-student-details-ans-lang-label\">{0}</div>", T("English", "Bahasa Inggeris"));
                                 if (!string.IsNullOrEmpty(qEN))
                                 {
-                                    sb.AppendFormat("<div class=\"sd-ans-q\">{0}</div>", HttpUtility.HtmlEncode(qEN));
-                                    sb.Append("<div class=\"sd-ans-options\">");
-                                    if (!string.IsNullOrEmpty(aEN)) sb.AppendFormat("<div class=\"sd-ans-opt{0}\"><span class=\"sd-opt-label\">A</span>{1}</div>", correct == "A" ? " sd-opt-correct" : (selected == "A" && !isCorrect ? " sd-opt-wrong" : ""), HttpUtility.HtmlEncode(aEN));
-                                    if (!string.IsNullOrEmpty(bEN)) sb.AppendFormat("<div class=\"sd-ans-opt{0}\"><span class=\"sd-opt-label\">B</span>{1}</div>", correct == "B" ? " sd-opt-correct" : (selected == "B" && !isCorrect ? " sd-opt-wrong" : ""), HttpUtility.HtmlEncode(bEN));
-                                    if (!string.IsNullOrEmpty(cEN)) sb.AppendFormat("<div class=\"sd-ans-opt{0}\"><span class=\"sd-opt-label\">C</span>{1}</div>", correct == "C" ? " sd-opt-correct" : (selected == "C" && !isCorrect ? " sd-opt-wrong" : ""), HttpUtility.HtmlEncode(cEN));
-                                    if (!string.IsNullOrEmpty(dEN)) sb.AppendFormat("<div class=\"sd-ans-opt{0}\"><span class=\"sd-opt-label\">D</span>{1}</div>", correct == "D" ? " sd-opt-correct" : (selected == "D" && !isCorrect ? " sd-opt-wrong" : ""), HttpUtility.HtmlEncode(dEN));
+                                    sb.AppendFormat("<div class=\"tc-student-details-ans-q\">{0}</div>", HttpUtility.HtmlEncode(qEN));
+                                    sb.Append("<div class=\"tc-student-details-ans-options\">");
+                                    if (!string.IsNullOrEmpty(aEN)) sb.AppendFormat("<div class=\"tc-student-details-ans-opt{0}\"><span class=\"tc-student-details-opt-label\">A</span>{1}</div>", correct == "A" ? " tc-student-details-opt-correct" : (selected == "A" && !isCorrect ? " tc-student-details-opt-wrong" : ""), HttpUtility.HtmlEncode(aEN));
+                                    if (!string.IsNullOrEmpty(bEN)) sb.AppendFormat("<div class=\"tc-student-details-ans-opt{0}\"><span class=\"tc-student-details-opt-label\">B</span>{1}</div>", correct == "B" ? " tc-student-details-opt-correct" : (selected == "B" && !isCorrect ? " tc-student-details-opt-wrong" : ""), HttpUtility.HtmlEncode(bEN));
+                                    if (!string.IsNullOrEmpty(cEN)) sb.AppendFormat("<div class=\"tc-student-details-ans-opt{0}\"><span class=\"tc-student-details-opt-label\">C</span>{1}</div>", correct == "C" ? " tc-student-details-opt-correct" : (selected == "C" && !isCorrect ? " tc-student-details-opt-wrong" : ""), HttpUtility.HtmlEncode(cEN));
+                                    if (!string.IsNullOrEmpty(dEN)) sb.AppendFormat("<div class=\"tc-student-details-ans-opt{0}\"><span class=\"tc-student-details-opt-label\">D</span>{1}</div>", correct == "D" ? " tc-student-details-opt-correct" : (selected == "D" && !isCorrect ? " tc-student-details-opt-wrong" : ""), HttpUtility.HtmlEncode(dEN));
                                     sb.Append("</div>");
                                 }
                                 else
                                 {
-                                    sb.AppendFormat("<div class=\"sd-ans-unavail\">{0}</div>", T("Translation unavailable", "Terjemahan tidak tersedia"));
+                                    sb.AppendFormat("<div class=\"tc-student-details-ans-unavail\">{0}</div>", T("Translation unavailable", "Terjemahan tidak tersedia"));
                                 }
                                 sb.Append("</div>");
 
                                 // Bahasa Melayu section
-                                sb.Append("<div class=\"sd-ans-lang-section\">");
-                                sb.AppendFormat("<div class=\"sd-ans-lang-label\">{0}</div>", T("Bahasa Melayu", "Bahasa Melayu"));
+                                sb.Append("<div class=\"tc-student-details-ans-lang-section\">");
+                                sb.AppendFormat("<div class=\"tc-student-details-ans-lang-label\">{0}</div>", T("Bahasa Melayu", "Bahasa Melayu"));
                                 if (!string.IsNullOrEmpty(qBM))
                                 {
-                                    sb.AppendFormat("<div class=\"sd-ans-q\">{0}</div>", HttpUtility.HtmlEncode(qBM));
-                                    sb.Append("<div class=\"sd-ans-options\">");
-                                    if (!string.IsNullOrEmpty(aBM)) sb.AppendFormat("<div class=\"sd-ans-opt{0}\"><span class=\"sd-opt-label\">A</span>{1}</div>", correct == "A" ? " sd-opt-correct" : (selected == "A" && !isCorrect ? " sd-opt-wrong" : ""), HttpUtility.HtmlEncode(aBM));
-                                    if (!string.IsNullOrEmpty(bBM)) sb.AppendFormat("<div class=\"sd-ans-opt{0}\"><span class=\"sd-opt-label\">B</span>{1}</div>", correct == "B" ? " sd-opt-correct" : (selected == "B" && !isCorrect ? " sd-opt-wrong" : ""), HttpUtility.HtmlEncode(bBM));
-                                    if (!string.IsNullOrEmpty(cBM)) sb.AppendFormat("<div class=\"sd-ans-opt{0}\"><span class=\"sd-opt-label\">C</span>{1}</div>", correct == "C" ? " sd-opt-correct" : (selected == "C" && !isCorrect ? " sd-opt-wrong" : ""), HttpUtility.HtmlEncode(cBM));
-                                    if (!string.IsNullOrEmpty(dBM)) sb.AppendFormat("<div class=\"sd-ans-opt{0}\"><span class=\"sd-opt-label\">D</span>{1}</div>", correct == "D" ? " sd-opt-correct" : (selected == "D" && !isCorrect ? " sd-opt-wrong" : ""), HttpUtility.HtmlEncode(dBM));
+                                    sb.AppendFormat("<div class=\"tc-student-details-ans-q\">{0}</div>", HttpUtility.HtmlEncode(qBM));
+                                    sb.Append("<div class=\"tc-student-details-ans-options\">");
+                                    if (!string.IsNullOrEmpty(aBM)) sb.AppendFormat("<div class=\"tc-student-details-ans-opt{0}\"><span class=\"tc-student-details-opt-label\">A</span>{1}</div>", correct == "A" ? " tc-student-details-opt-correct" : (selected == "A" && !isCorrect ? " tc-student-details-opt-wrong" : ""), HttpUtility.HtmlEncode(aBM));
+                                    if (!string.IsNullOrEmpty(bBM)) sb.AppendFormat("<div class=\"tc-student-details-ans-opt{0}\"><span class=\"tc-student-details-opt-label\">B</span>{1}</div>", correct == "B" ? " tc-student-details-opt-correct" : (selected == "B" && !isCorrect ? " tc-student-details-opt-wrong" : ""), HttpUtility.HtmlEncode(bBM));
+                                    if (!string.IsNullOrEmpty(cBM)) sb.AppendFormat("<div class=\"tc-student-details-ans-opt{0}\"><span class=\"tc-student-details-opt-label\">C</span>{1}</div>", correct == "C" ? " tc-student-details-opt-correct" : (selected == "C" && !isCorrect ? " tc-student-details-opt-wrong" : ""), HttpUtility.HtmlEncode(cBM));
+                                    if (!string.IsNullOrEmpty(dBM)) sb.AppendFormat("<div class=\"tc-student-details-ans-opt{0}\"><span class=\"tc-student-details-opt-label\">D</span>{1}</div>", correct == "D" ? " tc-student-details-opt-correct" : (selected == "D" && !isCorrect ? " tc-student-details-opt-wrong" : ""), HttpUtility.HtmlEncode(dBM));
                                     sb.Append("</div>");
                                 }
                                 else
                                 {
-                                    sb.AppendFormat("<div class=\"sd-ans-unavail\">{0}</div>", T("Translation unavailable", "Terjemahan tidak tersedia"));
+                                    sb.AppendFormat("<div class=\"tc-student-details-ans-unavail\">{0}</div>", T("Translation unavailable", "Terjemahan tidak tersedia"));
                                 }
-                                sb.Append("</div>"); // sd-ans-lang-section BM
-                                sb.Append("</div>"); // sd-ans-langs
+                                sb.Append("</div>"); // tc-student-details-ans-lang-section BM
+                                sb.Append("</div>"); // tc-student-details-ans-langs
 
-                                // Student answer summary â€” varies by question type
+                                // Student answer summary — varies by question type
                                 string notAnswered = T("Not Answered", "Tidak Dijawab");
                                 string selectedDisplay = string.IsNullOrEmpty(selected) || selected == "-" ? notAnswered : selected;
                                 string correctDisplay = correct;
 
-                                sb.Append("<div class=\"sd-ans-summary\">");
+                                sb.Append("<div class=\"tc-student-details-ans-summary\">");
 
                                 if (qType.Equals("DragDrop", StringComparison.OrdinalIgnoreCase) || qType.Equals("Drag and Drop", StringComparison.OrdinalIgnoreCase) || qType.Equals("DnD", StringComparison.OrdinalIgnoreCase))
                                 {
                                     // Drag and Drop: display answer text in both languages
-                                    sb.Append("<div class=\"sd-ans-dd-block\">");
-                                    sb.AppendFormat("<div class=\"sd-ans-dd-title\">{0}</div>", T("Student's Answer", "Jawapan Pelajar"));
+                                    sb.Append("<div class=\"tc-student-details-ans-dd-block\">");
+                                    sb.AppendFormat("<div class=\"tc-student-details-ans-dd-title\">{0}</div>", T("Student's Answer", "Jawapan Pelajar"));
                                     if (string.IsNullOrEmpty(selected) || selected == "-")
                                     {
-                                        sb.AppendFormat("<div class=\"sd-ans-dd-val\">{0}</div>", notAnswered);
+                                        sb.AppendFormat("<div class=\"tc-student-details-ans-dd-val\">{0}</div>", notAnswered);
                                     }
                                     else
                                     {
-                                        sb.AppendFormat("<div class=\"sd-ans-dd-lang\"><span class=\"sd-ans-dd-lang-label\">{0}:</span> {1}</div>", T("English", "Bahasa Inggeris"), HttpUtility.HtmlEncode(selected));
-                                        sb.AppendFormat("<div class=\"sd-ans-dd-lang\"><span class=\"sd-ans-dd-lang-label\">{0}:</span> {1}</div>", T("Bahasa Melayu", "Bahasa Melayu"), HttpUtility.HtmlEncode(selected));
+                                        sb.AppendFormat("<div class=\"tc-student-details-ans-dd-lang\"><span class=\"tc-student-details-ans-dd-lang-label\">{0}:</span> {1}</div>", T("English", "Bahasa Inggeris"), HttpUtility.HtmlEncode(selected));
+                                        sb.AppendFormat("<div class=\"tc-student-details-ans-dd-lang\"><span class=\"tc-student-details-ans-dd-lang-label\">{0}:</span> {1}</div>", T("Bahasa Melayu", "Bahasa Melayu"), HttpUtility.HtmlEncode(selected));
                                     }
                                     sb.Append("</div>");
-                                    sb.Append("<div class=\"sd-ans-dd-block\">");
-                                    sb.AppendFormat("<div class=\"sd-ans-dd-title\">{0}</div>", T("Correct Answer", "Jawapan Betul"));
-                                    sb.AppendFormat("<div class=\"sd-ans-dd-lang\"><span class=\"sd-ans-dd-lang-label\">{0}:</span> {1}</div>", T("English", "Bahasa Inggeris"), HttpUtility.HtmlEncode(correct));
-                                    sb.AppendFormat("<div class=\"sd-ans-dd-lang\"><span class=\"sd-ans-dd-lang-label\">{0}:</span> {1}</div>", T("Bahasa Melayu", "Bahasa Melayu"), HttpUtility.HtmlEncode(correct));
+                                    sb.Append("<div class=\"tc-student-details-ans-dd-block\">");
+                                    sb.AppendFormat("<div class=\"tc-student-details-ans-dd-title\">{0}</div>", T("Correct Answer", "Jawapan Betul"));
+                                    sb.AppendFormat("<div class=\"tc-student-details-ans-dd-lang\"><span class=\"tc-student-details-ans-dd-lang-label\">{0}:</span> {1}</div>", T("English", "Bahasa Inggeris"), HttpUtility.HtmlEncode(correct));
+                                    sb.AppendFormat("<div class=\"tc-student-details-ans-dd-lang\"><span class=\"tc-student-details-ans-dd-lang-label\">{0}:</span> {1}</div>", T("Bahasa Melayu", "Bahasa Melayu"), HttpUtility.HtmlEncode(correct));
                                     sb.Append("</div>");
                                 }
                                 else if (qType.Equals("MultiSelect", StringComparison.OrdinalIgnoreCase) || qType.Equals("Multi-select", StringComparison.OrdinalIgnoreCase) || qType.Equals("MS", StringComparison.OrdinalIgnoreCase))
@@ -157,27 +157,27 @@ namespace ScienceBuddy.Teacher
                                     // Multi-select: sort letters alphabetically, display with commas
                                     string sortedSelected = SortLetters(selected, notAnswered);
                                     string sortedCorrect = SortLetters(correct, "-");
-                                    sb.AppendFormat("<div class=\"sd-ans-pair\"><span class=\"sd-ans-pair-label\">{0}:</span><span class=\"sd-ans-pair-val\">{1}</span></div>", T("Student's Answer", "Jawapan Pelajar"), HttpUtility.HtmlEncode(sortedSelected));
-                                    sb.AppendFormat("<div class=\"sd-ans-pair\"><span class=\"sd-ans-pair-label\">{0}:</span><span class=\"sd-ans-pair-val\">{1}</span></div>", T("Correct Answer", "Jawapan Betul"), HttpUtility.HtmlEncode(sortedCorrect));
+                                    sb.AppendFormat("<div class=\"tc-student-details-ans-pair\"><span class=\"tc-student-details-ans-pair-label\">{0}:</span><span class=\"tc-student-details-ans-pair-val\">{1}</span></div>", T("Student's Answer", "Jawapan Pelajar"), HttpUtility.HtmlEncode(sortedSelected));
+                                    sb.AppendFormat("<div class=\"tc-student-details-ans-pair\"><span class=\"tc-student-details-ans-pair-label\">{0}:</span><span class=\"tc-student-details-ans-pair-val\">{1}</span></div>", T("Correct Answer", "Jawapan Betul"), HttpUtility.HtmlEncode(sortedCorrect));
                                 }
                                 else
                                 {
                                     // MCQ / True-False: display option letter only
-                                    sb.AppendFormat("<div class=\"sd-ans-pair\"><span class=\"sd-ans-pair-label\">{0}:</span><span class=\"sd-ans-pair-val\">{1}</span></div>", T("Student's Answer", "Jawapan Pelajar"), HttpUtility.HtmlEncode(selectedDisplay));
-                                    sb.AppendFormat("<div class=\"sd-ans-pair\"><span class=\"sd-ans-pair-label\">{0}:</span><span class=\"sd-ans-pair-val\">{1}</span></div>", T("Correct Answer", "Jawapan Betul"), HttpUtility.HtmlEncode(correctDisplay));
+                                    sb.AppendFormat("<div class=\"tc-student-details-ans-pair\"><span class=\"tc-student-details-ans-pair-label\">{0}:</span><span class=\"tc-student-details-ans-pair-val\">{1}</span></div>", T("Student's Answer", "Jawapan Pelajar"), HttpUtility.HtmlEncode(selectedDisplay));
+                                    sb.AppendFormat("<div class=\"tc-student-details-ans-pair\"><span class=\"tc-student-details-ans-pair-label\">{0}:</span><span class=\"tc-student-details-ans-pair-val\">{1}</span></div>", T("Correct Answer", "Jawapan Betul"), HttpUtility.HtmlEncode(correctDisplay));
                                 }
 
                                 sb.Append("</div>");
 
-                                sb.Append("</div>"); // sd-ans-card
+                                sb.Append("</div>"); // tc-student-details-ans-card
                             }
-                            if (qNum == 0) sb.AppendFormat("<div class=\"sd-empty\">{0}</div>", T("No answer records found.", "Tiada rekod jawapan dijumpai."));
+                            if (qNum == 0) sb.AppendFormat("<div class=\"tc-student-details-empty\">{0}</div>", T("No answer records found.", "Tiada rekod jawapan dijumpai."));
                         }
                     }
                     Response.Write(sb.ToString());
                 }
             }
-            catch { Response.Write("<div class=\"sd-empty\">" + T("Error loading answers.", "Ralat memuatkan jawapan.") + "</div>"); }
+            catch { Response.Write("<div class=\"tc-student-details-empty\">" + T("Error loading answers.", "Ralat memuatkan jawapan.") + "</div>"); }
             Response.End();
         }
 
@@ -214,7 +214,7 @@ namespace ScienceBuddy.Teacher
                     BindQuiz(c, sid, "Unit", rptUnitQuiz, pnlUnitQuizTable, pnlUnitQuizEmpty);
                     BindQuiz(c, sid, "Level", rptLevelQuiz, pnlLevelQuizTable, pnlLevelQuizEmpty);
 
-                    // Weak Topics â€” based on latest quiz attempt vs passing mark from Configuration
+                    // Weak Topics — based on latest quiz attempt vs passing mark from Configuration
                     decimal unitPassMark = 50, levelPassMark = 50; // defaults
                     using (var cfgCmd = new SqlCommand("SELECT [configId],[configValue] FROM dbo.[ConfigurationSetting] WHERE [configId] IN ('CONFIG004','CONFIG005')", c))
                     {

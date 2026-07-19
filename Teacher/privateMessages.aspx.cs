@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -25,7 +25,7 @@ namespace ScienceBuddy.Teacher
             if (!IsPostBack)
             {
                 ddlRecipient.Items.Clear();
-                ddlRecipient.Items.Add(new ListItem(T("— Select Recipient —","— Pilih Penerima —"), ""));
+                ddlRecipient.Items.Add(new ListItem(T("� Select Recipient �","� Pilih Penerima �"), ""));
                 LoadRecipientsJson();
                 CheckUnreadAndNotify();
                 LoadConversations();
@@ -86,7 +86,7 @@ namespace ScienceBuddy.Teacher
                             string initials = parts.Length >= 2 ? (parts[0][0].ToString() + parts[parts.Length - 1][0].ToString()).ToUpper() : name[0].ToString().ToUpper();
                             string lastMsg = r["lastMsg"]?.ToString() ?? "";
                             DateTime? lastTime = r["lastTime"] != DBNull.Value ? (DateTime?)Convert.ToDateTime(r["lastTime"]) : null;
-                            list.Add(new { chatId = r["chatId"].ToString(), name, role, initials, lastMsg = lastMsg.Length > 40 ? lastMsg.Substring(0, 40) + "…" : lastMsg, timeAgo = lastTime.HasValue ? FormatTime(lastTime.Value) : "", unreadCount = Convert.ToInt32(r["unreadCount"]) });
+                            list.Add(new { chatId = r["chatId"].ToString(), name, role, initials, lastMsg = lastMsg.Length > 40 ? lastMsg.Substring(0, 40) + "�" : lastMsg, timeAgo = lastTime.HasValue ? FormatTime(lastTime.Value) : "", unreadCount = Convert.ToInt32(r["unreadCount"]) });
                         }
                 }
             }
@@ -183,7 +183,7 @@ namespace ScienceBuddy.Teacher
             LoadConversations();
         }
 
-        // ── Compose Mode ─────────────────────────────────────────────
+        // -- Compose Mode ---------------------------------------------
         protected void btnCompose_Click(object sender, EventArgs e)
         {
             SelectedChatId = "";
@@ -194,7 +194,7 @@ namespace ScienceBuddy.Teacher
         protected void ddlRecipientType_Changed(object sender, EventArgs e)
         {
             ddlRecipient.Items.Clear();
-            ddlRecipient.Items.Add(new ListItem(T("— Select Recipient —","— Pilih Penerima —"), ""));
+            ddlRecipient.Items.Add(new ListItem(T("� Select Recipient �","� Pilih Penerima �"), ""));
             string type = ddlRecipientType.SelectedValue;
             if (!string.IsNullOrEmpty(type))
             {
@@ -354,7 +354,7 @@ namespace ScienceBuddy.Teacher
             {
                 return "<a href='" + HttpUtility.HtmlAttributeEncode(url) + "' target='_blank' style='display:block;margin-top:6px;'><img src='" + HttpUtility.HtmlAttributeEncode(url) + "' style='max-width:200px;max-height:150px;border-radius:8px;border:1px solid #E5E7EB;' alt='attachment' /></a>";
             }
-            return "<a href='" + HttpUtility.HtmlAttributeEncode(url) + "' target='_blank' class='pm-msg-attach'><i class='bi bi-file-earmark'></i> " + HttpUtility.HtmlEncode(fileName) + "</a>";
+            return "<a href='" + HttpUtility.HtmlAttributeEncode(url) + "' target='_blank' class='tc-private-messages-msg-attach'><i class='bi bi-file-earmark'></i> " + HttpUtility.HtmlEncode(fileName) + "</a>";
         }
 
         /// <summary>

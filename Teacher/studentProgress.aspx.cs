@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -120,7 +120,7 @@ namespace ScienceBuddy.Teacher
                 if (list[i].HasAttempt) podiumStudents.Add(list[i]);
 
             string[] podCssArr = { "first", "second", "third" };
-            string[] medalArr = { "🥇", "🥈", "🥉" };
+            string[] medalArr = { "??", "??", "??" };
             var podiumData = new List<object>();
             for (int p = 0; p < 3; p++)
             {

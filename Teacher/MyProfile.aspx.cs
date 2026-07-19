@@ -1,4 +1,4 @@
-ï»¿using System;
+using System;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.IO;
@@ -25,7 +25,7 @@ namespace ScienceBuddy.Teacher
             if (Session["userId"] == null || Session["role"]?.ToString() != "Teacher")
             { Response.Redirect("~/Login.aspx", false); Context.ApplicationInstance.CompleteRequest(); return; }
 
-            // AJAX handlers â€” use Response.End() to prevent page rendering
+            // AJAX handlers — use Response.End() to prevent page rendering
             string handler = Request.QueryString["handler"];
             if (!string.IsNullOrEmpty(handler))
             {
@@ -92,18 +92,18 @@ namespace ScienceBuddy.Teacher
                         litMemberId.Text = HttpUtility.HtmlEncode(tid);
 
                         // Status badge
-                        string badgeCss = "mp-badge-grey", statusLabel = T("Status Unavailable","Status Tidak Tersedia");
+                        string badgeCss = "tc-my-profile-badge-grey", statusLabel = T("Status Unavailable","Status Tidak Tersedia");
                         string profileStatusText = T("Active","Aktif");
-                        if (IsCertified) { badgeCss = "mp-badge-green"; statusLabel = T("Verified Educator","Pendidik Disahkan"); profileStatusText = T("Verified","Disahkan"); pnlAvatarVerified.Visible = true; }
-                        else if (isPending) { badgeCss = "mp-badge-orange"; statusLabel = T("Unverified Teacher","Guru Belum Disahkan"); profileStatusText = T("Pending","Menunggu"); }
-                        else if (isRejected) { badgeCss = "mp-badge-red"; statusLabel = T("Verification Rejected","Pengesahan Ditolak"); profileStatusText = T("Rejected","Ditolak"); }
-                        litStatusBadge.Text = "<span class='mp-badge " + badgeCss + "'><i class='bi bi-patch-check-fill' style='font-size:.7rem;'></i> " + HttpUtility.HtmlEncode(statusLabel) + "</span>";
+                        if (IsCertified) { badgeCss = "tc-my-profile-badge-green"; statusLabel = T("Verified Educator","Pendidik Disahkan"); profileStatusText = T("Verified","Disahkan"); pnlAvatarVerified.Visible = true; }
+                        else if (isPending) { badgeCss = "tc-my-profile-badge-orange"; statusLabel = T("Unverified Teacher","Guru Belum Disahkan"); profileStatusText = T("Pending","Menunggu"); }
+                        else if (isRejected) { badgeCss = "tc-my-profile-badge-red"; statusLabel = T("Verification Rejected","Pengesahan Ditolak"); profileStatusText = T("Rejected","Ditolak"); }
+                        litStatusBadge.Text = "<span class='tc-my-profile-badge " + badgeCss + "'><i class='bi bi-patch-check-fill' style='font-size:.7rem;'></i> " + HttpUtility.HtmlEncode(statusLabel) + "</span>";
                         litProfileStatus.Text = HttpUtility.HtmlEncode(profileStatusText);
 
                         // Personal info
                         txtName.Text = name;
                         litTID.Text = HttpUtility.HtmlEncode(tid);
-                        litQual.Text = string.IsNullOrEmpty(qual) ? "â€”" : HttpUtility.HtmlEncode(qual);
+                        litQual.Text = string.IsNullOrEmpty(qual) ? "—" : HttpUtility.HtmlEncode(qual);
                         txtPhone.Text = phone;
                         txtBio.Text = bio;
                         txtBio.Attributes["placeholder"] = T("Tell students about yourself...", "Ceritakan tentang diri anda kepada pelajar...");
@@ -118,11 +118,11 @@ namespace ScienceBuddy.Teacher
                             // Set icon based on file type
                             string ext = Path.GetExtension(cert).ToLowerInvariant();
                             string iconClass = "bi bi-file-earmark-fill";
-                            string iconCssClass = "mp-cert-icon other";
-                            if (ext == ".pdf") { iconClass = "bi bi-file-earmark-pdf-fill"; iconCssClass = "mp-cert-icon pdf"; }
-                            else if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".gif" || ext == ".webp") { iconClass = "bi bi-file-earmark-image-fill"; iconCssClass = "mp-cert-icon img"; }
-                            else if (ext == ".doc" || ext == ".docx") { iconClass = "bi bi-file-earmark-word-fill"; iconCssClass = "mp-cert-icon doc"; }
-                            else if (ext == ".ppt" || ext == ".pptx") { iconClass = "bi bi-file-earmark-ppt-fill"; iconCssClass = "mp-cert-icon ppt"; }
+                            string iconCssClass = "tc-my-profile-cert-icon other";
+                            if (ext == ".pdf") { iconClass = "bi bi-file-earmark-pdf-fill"; iconCssClass = "tc-my-profile-cert-icon pdf"; }
+                            else if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".gif" || ext == ".webp") { iconClass = "bi bi-file-earmark-image-fill"; iconCssClass = "tc-my-profile-cert-icon img"; }
+                            else if (ext == ".doc" || ext == ".docx") { iconClass = "bi bi-file-earmark-word-fill"; iconCssClass = "tc-my-profile-cert-icon doc"; }
+                            else if (ext == ".ppt" || ext == ".pptx") { iconClass = "bi bi-file-earmark-ppt-fill"; iconCssClass = "tc-my-profile-cert-icon ppt"; }
                             certIconDiv.Attributes["class"] = iconCssClass;
                             certIconI.Attributes["class"] = iconClass;
 
@@ -201,7 +201,7 @@ namespace ScienceBuddy.Teacher
         private void RenderPermissions(bool isApproved)
         {
             var sb = new System.Text.StringBuilder();
-            sb.Append("<ul class=\"mp-perm-list\">");
+            sb.Append("<ul class=\"tc-my-profile-perm-list\">");
 
             if (isApproved)
             {
@@ -233,9 +233,9 @@ namespace ScienceBuddy.Teacher
             string liClass = allowed ? "enabled" : "restricted";
             string icon = allowed ? "bi bi-check-lg" : "bi bi-lock-fill";
             string statusLabel = allowed ? T("Allowed", "Dibenarkan") : T("Restricted", "Terhad");
-            string statusCss = allowed ? "mp-perm-status allowed" : "mp-perm-status restricted";
+            string statusCss = allowed ? "tc-my-profile-perm-status allowed" : "tc-my-profile-perm-status restricted";
             sb.AppendFormat(
-                "<li class=\"{0}\"><span class=\"mp-perm-ico\"><i class=\"{1}\"></i></span><span class=\"mp-perm-name\">{2}</span><span class=\"{3}\">{4}</span></li>",
+                "<li class=\"{0}\"><span class=\"tc-my-profile-perm-ico\"><i class=\"{1}\"></i></span><span class=\"tc-my-profile-perm-name\">{2}</span><span class=\"{3}\">{4}</span></li>",
                 liClass, icon, HttpUtility.HtmlEncode(name), statusCss, statusLabel);
         }
 

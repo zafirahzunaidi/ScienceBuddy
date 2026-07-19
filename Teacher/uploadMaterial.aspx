@@ -1,96 +1,7 @@
 <%@ Page Language="C#" AutoEventWireup="true" CodeBehind="uploadMaterial.aspx.cs"
     Inherits="ScienceBuddy.Teacher.uploadMaterial" MasterPageFile="~/Site.Master" Title="Upload Material" %>
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
-<style>
-:root{--p:#6C63FF;--p-dk:#5A52E0;--p-lt:#F5F3FF;--w:#FFF;--b:#E5E7EB;--t:#374151;--m:#6B7280;--s:#10B981;--e:#EF4444;}
-.um-back{display:inline-flex;align-items:center;gap:6px;font-size:.88rem;font-weight:700;color:var(--p);text-decoration:none;margin-bottom:1.2rem;}.um-back:hover{color:var(--p-dk);}
-.um-header{margin-bottom:1.5rem;}.um-header h1{font-size:1.5rem;font-weight:800;color:var(--t);margin:0 0 .2rem;}.um-header p{font-size:.88rem;color:var(--m);margin:0;}
-.um-card{background:var(--w);border:1.5px solid var(--b);border-radius:18px;padding:1.75rem 2rem;box-shadow:0 3px 12px rgba(0,0,0,.04);}
-.um-row{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.2rem;}
-.um-row-3col{display:grid;grid-template-columns:15% 20% 30% 1fr;gap:.9rem;margin-bottom:1.2rem;}
-.um-row-full{margin-bottom:1.2rem;}
-.um-field{position:relative;}
-.um-label{display:block;font-size:.92rem;font-weight:800;color:var(--t);margin-bottom:6px;}
-.um-input{width:100%;border-radius:10px;border:1.5px solid var(--b);padding:.65rem .9rem;font-size:.9rem;transition:border-color .2s,box-shadow .2s;background:var(--w);box-sizing:border-box;font-family:inherit;}
-.um-input:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(108,99,255,.08);outline:none;}
-.um-textarea{resize:vertical;min-height:100px;line-height:1.55;}
-.um-val{font-size:.78rem;color:var(--e);margin-top:4px;display:none;font-weight:600;}.um-val.show{display:block;}
-.um-input.invalid{border-color:var(--e)!important;}
-/* Language */
-.um-lang-group{display:flex;border:1.5px solid var(--b);border-radius:10px;overflow:hidden;width:fit-content;}
-.um-lang-btn{padding:.55rem 1.3rem;font-size:.86rem;font-weight:600;border:none;background:var(--w);color:var(--m);cursor:pointer;transition:background .15s,color .15s;}
-.um-lang-btn.active{background:var(--p);color:#fff;}
-/* Upload area */
-.um-drop{border:2px dashed var(--b);border-radius:14px;padding:1.5rem;cursor:pointer;transition:border-color .2s,background .2s;text-align:center;}
-.um-drop:hover,.um-drop.dragover{border-color:var(--p);background:var(--p-lt);}
-.um-drop.invalid{border-color:var(--e)!important;}
-.um-drop-content{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--m);}
-.um-drop-content i{font-size:2rem;color:var(--p);margin-bottom:.4rem;}
-.um-drop-content p{margin:0;font-size:.88rem;font-weight:600;}.um-drop-sub{font-size:.8rem!important;font-weight:400!important;}
-.um-drop-hint{font-size:.76rem;color:var(--m);margin-top:6px;}
-.um-file-card{display:flex;align-items:center;gap:12px;padding:.75rem 1rem;border-radius:12px;margin-top:.75rem;border:1.5px solid var(--b);background:#FAFAFA;}
-.um-file-ico{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
-.um-ico-pdf{background:#FEE2E2;color:#DC2626;}.um-ico-doc{background:#DBEAFE;color:#2563EB;}.um-ico-ppt{background:#FFEDD5;color:#EA580C;}.um-ico-img{background:#D1FAE5;color:#059669;}.um-ico-vid{background:#DBEAFE;color:#2563EB;}.um-ico-oth{background:#F3F4F6;color:#6B7280;}
-.um-file-info{flex:1;}.um-file-name{font-size:.88rem;font-weight:700;color:var(--t);}.um-file-meta{font-size:.76rem;color:var(--m);}
-.um-file-rm{background:none;border:none;color:var(--e);cursor:pointer;font-size:1.1rem;padding:4px;border-radius:6px;}.um-file-rm:hover{background:#FEE2E2;}
-/* Error */
-.um-error{background:#FEF2F2;border:1px solid #FEE2E2;color:#B91C1C;padding:.7rem 1rem;border-radius:10px;font-size:.86rem;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:1rem;}
-/* Actions */
-.um-actions{display:flex;gap:.75rem;justify-content:flex-end;padding-top:1.25rem;border-top:1px solid var(--b);margin-top:1.5rem;}
-.um-btn{border:none;border-radius:10px;padding:.65rem 1.5rem;font-weight:700;font-size:.9rem;cursor:pointer;transition:background .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
-.um-btn-primary{background:#0D9488;color:#fff;box-shadow:0 2px 8px rgba(13,148,136,.22);}.um-btn-primary:hover{background:#0F766E;}
-.um-btn-cancel{background:var(--w);border:1.5px solid var(--b);color:var(--t);}.um-btn-cancel:hover{border-color:var(--m);}
-/* Modal */
-.um-modal-overlay{position:fixed;inset:0;background:rgba(17,24,39,.5);z-index:9000;display:flex;align-items:center;justify-content:center;padding:1rem;}
-.um-modal{background:#fff;border-radius:18px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:umF .2s ease;}
-@keyframes umF{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
-.um-modal-hd{padding:1.25rem 1.5rem;border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between;}
-.um-modal-hd h3{margin:0;font-size:1.05rem;font-weight:800;color:var(--t);}
-.um-modal-close{background:none;border:none;font-size:1.4rem;color:var(--m);cursor:pointer;}.um-modal-close:hover{color:var(--t);}
-.um-modal-body{padding:1.5rem;text-align:center;}.um-modal-body p{font-size:.92rem;color:var(--t);margin:0;}
-.um-modal-ft{display:flex;gap:.75rem;justify-content:center;padding:1rem 1.5rem;border-top:1px solid var(--b);}
-/* Toast */
-.um-toast-wrap{position:fixed;top:1.25rem;right:1.25rem;z-index:9999;}
-.um-toast{background:var(--s);color:#fff;padding:.75rem 1.25rem;border-radius:10px;font-size:.88rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 6px 18px rgba(16,185,129,.25);animation:umF .3s ease;}
-@media(max-width:768px){.um-row,.um-row-3col{grid-template-columns:1fr;}.um-card{padding:1.3rem;}.um-actions{flex-direction:column;}.um-btn{width:100%;justify-content:center;}}
-
-/* ── Rich-text Description Editor ─────────────────────── */
-.um-rte-wrap{border:1.5px solid var(--b);border-radius:10px;background:var(--w);transition:border-color .2s,box-shadow .2s;overflow:hidden;}
-.um-rte-wrap:focus-within{border-color:var(--p);box-shadow:0 0 0 3px rgba(108,99,255,.10);}
-.um-rte-wrap.invalid{border-color:var(--e)!important;box-shadow:none!important;}
-
-/* Toolbar */
-.um-rte-toolbar{display:flex;align-items:center;gap:4px;padding:.45rem .7rem;background:#FAFAFA;border-bottom:1.5px solid var(--b);position:sticky;top:0;z-index:2;flex-wrap:wrap;}
-.um-rte-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border:1.5px solid transparent;border-radius:8px;background:transparent;color:var(--t);cursor:pointer;font-size:1.15rem;font-weight:600;transition:background .15s,border-color .15s,color .15s;flex-shrink:0;-webkit-font-smoothing:antialiased;}
-.um-rte-btn:hover{background:#EEF2FF;border-color:#C7D2FE;color:var(--p);}
-.um-rte-btn.active{background:#EEF2FF;border-color:var(--p);color:var(--p);}
-.um-rte-sep{width:1px;height:20px;background:var(--b);margin:0 4px;flex-shrink:0;}
-
-/* Editor area */
-.um-rte-editor{min-height:130px;max-height:340px;overflow-y:auto;padding:.7rem .9rem;font-size:.9rem;line-height:1.65;color:var(--t);outline:none;font-family:inherit;}
-.um-rte-editor:empty::before{content:attr(data-placeholder);color:#9CA3AF;pointer-events:none;}
-.um-rte-editor ul{list-style-type:disc;padding-left:1.6rem;margin:.3rem 0;}
-.um-rte-editor ol{list-style-type:decimal;padding-left:1.6rem;margin:.3rem 0;}
-.um-rte-editor li{margin-bottom:.3rem;padding-left:.2rem;}
-.um-rte-editor ul ul{list-style-type:circle;margin:.2rem 0;}
-.um-rte-editor ul ul ul{list-style-type:square;}
-.um-rte-editor b,.um-rte-editor strong{font-weight:700;}
-.um-rte-editor i,.um-rte-editor em{font-style:italic;}
-.um-rte-editor u{text-decoration:underline;}
-/* ── Unsaved Changes Modal ── */
-.um-unsaved-overlay{position:fixed;inset:0;background:rgba(30,27,58,.50);z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s;}
-.um-unsaved-overlay.open{opacity:1;pointer-events:all;}
-.um-unsaved-modal{background:#fff;border-radius:20px;padding:2rem;width:380px;max-width:90vw;box-shadow:0 20px 60px rgba(109,94,247,.18);transform:translateY(10px) scale(.97);transition:transform .22s;}
-.um-unsaved-overlay.open .um-unsaved-modal{transform:translateY(0) scale(1);}
-.um-unsaved-icon{width:52px;height:52px;border-radius:14px;background:#FEF3C7;border:1.5px solid #FDE68A;display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:#D97706;margin-bottom:1rem;}
-.um-unsaved-modal h3{font-size:1rem;font-weight:800;color:var(--t);margin:0 0 6px;}
-.um-unsaved-modal p{font-size:.84rem;color:var(--m);margin:0 0 1.5rem;line-height:1.6;}
-.um-unsaved-actions{display:flex;gap:.7rem;}
-.um-unsaved-cancel{flex:1;padding:.65rem;border-radius:11px;border:1.5px solid var(--b);background:#fff;font-size:.84rem;font-weight:700;color:var(--t);cursor:pointer;transition:all .18s;}
-.um-unsaved-cancel:hover{border-color:var(--p);color:var(--p);}
-.um-unsaved-confirm{flex:1;padding:.65rem;border-radius:11px;border:none;background:#DC2626;color:#fff;font-size:.84rem;font-weight:700;cursor:pointer;transition:all .18s;box-shadow:0 3px 10px rgba(220,38,38,.22);}
-.um-unsaved-confirm:hover{background:#B91C1C;box-shadow:0 5px 16px rgba(220,38,38,.32);}
-</style>
+<link href="<%: ResolveUrl("~/Content/Teacher.css") %>" rel="stylesheet" />
 </asp:Content>
 
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
@@ -112,40 +23,40 @@
 <asp:Content ID="cPageTitle" ContentPlaceHolderID="PageTitle" runat="server"><%: T("Upload Material","Muat Naik Bahan") %></asp:Content>
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 
-<a href="<%: ResolveUrl("~/Teacher/manageMaterials.aspx") %>" class="um-back"><i class="bi bi-arrow-left"></i> <%: T("Back to Materials","Kembali ke Bahan") %></a>
-<div class="um-header"><h1><i class="bi bi-cloud-arrow-up" style="color:var(--p);margin-right:.3rem;"></i><%: T("Upload Material","Muat Naik Bahan") %></h1><p><%: T("Upload a new learning material for your students.","Muat naik bahan pembelajaran baharu untuk pelajar.") %></p></div>
+<a href="<%: ResolveUrl("~/Teacher/manageMaterials.aspx") %>" class="tc-upload-material-back"><i class="bi bi-arrow-left"></i> <%: T("Back to Materials","Kembali ke Bahan") %></a>
+<div class="tc-upload-material-header"><h1><i class="bi bi-cloud-arrow-up" style="color:var(--p);margin-right:.3rem;"></i><%: T("Upload Material","Muat Naik Bahan") %></h1><p><%: T("Upload a new learning material for your students.","Muat naik bahan pembelajaran baharu untuk pelajar.") %></p></div>
 
-<div class="um-card">
-    <asp:Panel ID="pnlError" runat="server" Visible="false"><div class="um-error"><i class="bi bi-exclamation-circle"></i> <asp:Literal ID="litError" runat="server" /></div></asp:Panel>
+<div class="tc-upload-material-card">
+    <asp:Panel ID="pnlError" runat="server" Visible="false"><div class="tc-upload-material-error"><i class="bi bi-exclamation-circle"></i> <asp:Literal ID="litError" runat="server" /></div></asp:Panel>
 
     <%-- Row 1: Title full width --%>
-    <div class="um-row-full">
-        <div class="um-field">
-            <label class="um-label"><%: T("Material Title","Tajuk Bahan") %> *</label>
-            <asp:TextBox ID="txtTitle" runat="server" MaxLength="150" CssClass="um-input" placeholder="Enter material title..." />
-            <div class="um-val" id="vTitle"><%: T("Material Title is required.","Tajuk Bahan diperlukan.") %></div>
+    <div class="tc-upload-material-row-full">
+        <div class="tc-upload-material-field">
+            <label class="tc-upload-material-label"><%: T("Material Title","Tajuk Bahan") %> *</label>
+            <asp:TextBox ID="txtTitle" runat="server" MaxLength="150" CssClass="tc-upload-material-input" placeholder="Enter material title..." />
+            <div class="tc-upload-material-val" id="vTitle"><%: T("Material Title is required.","Tajuk Bahan diperlukan.") %></div>
         </div>
     </div>
 
     <%-- Row 2: Description full width — rich-text editor --%>
-    <div class="um-row-full">
-        <div class="um-field">
-            <label class="um-label"><%: T("Description","Penerangan") %></label>
+    <div class="tc-upload-material-row-full">
+        <div class="tc-upload-material-field">
+            <label class="tc-upload-material-label"><%: T("Description","Penerangan") %></label>
             <%-- Hidden textarea — stays connected to backend unchanged --%>
             <asp:TextBox ID="txtDescription" runat="server" TextMode="MultiLine" Rows="4"
-                CssClass="um-input um-textarea" placeholder="Describe what this material covers..."
+                CssClass="tc-upload-material-input tc-upload-material-textarea" placeholder="Describe what this material covers..."
                 ValidateRequestMode="Disabled" style="display:none;" />
             <%-- Rich-text editor shell --%>
-            <div class="um-rte-wrap" id="rteWrap">
-                <div class="um-rte-toolbar" id="rteToolbar">
-                    <button type="button" class="um-rte-btn" id="rteBold"    title="Bold (Ctrl+B)"      onclick="rteCmd('bold')"><i class="bi bi-type-bold"></i></button>
-                    <button type="button" class="um-rte-btn" id="rteItalic"  title="Italic (Ctrl+I)"    onclick="rteCmd('italic')"><i class="bi bi-type-italic"></i></button>
-                    <button type="button" class="um-rte-btn" id="rteUnder"   title="Underline (Ctrl+U)" onclick="rteCmd('underline')"><i class="bi bi-type-underline"></i></button>
-                    <div class="um-rte-sep"></div>
-                    <button type="button" class="um-rte-btn" id="rteBullet"  title="Bulleted List"      onclick="rteCmd('insertUnorderedList')"><i class="bi bi-list-ul"></i></button>
-                    <button type="button" class="um-rte-btn" id="rteNumber"  title="Numbered List"      onclick="rteCmd('insertOrderedList')"><i class="bi bi-list-ol"></i></button>
+            <div class="tc-upload-material-rte-wrap" id="rteWrap">
+                <div class="tc-upload-material-rte-toolbar" id="rteToolbar">
+                    <button type="button" class="tc-upload-material-rte-btn" id="rteBold"    title="Bold (Ctrl+B)"      onclick="rteCmd('bold')"><i class="bi bi-type-bold"></i></button>
+                    <button type="button" class="tc-upload-material-rte-btn" id="rteItalic"  title="Italic (Ctrl+I)"    onclick="rteCmd('italic')"><i class="bi bi-type-italic"></i></button>
+                    <button type="button" class="tc-upload-material-rte-btn" id="rteUnder"   title="Underline (Ctrl+U)" onclick="rteCmd('underline')"><i class="bi bi-type-underline"></i></button>
+                    <div class="tc-upload-material-rte-sep"></div>
+                    <button type="button" class="tc-upload-material-rte-btn" id="rteBullet"  title="Bulleted List"      onclick="rteCmd('insertUnorderedList')"><i class="bi bi-list-ul"></i></button>
+                    <button type="button" class="tc-upload-material-rte-btn" id="rteNumber"  title="Numbered List"      onclick="rteCmd('insertOrderedList')"><i class="bi bi-list-ol"></i></button>
                 </div>
-                <div class="um-rte-editor" id="rteEditor" contenteditable="true"
+                <div class="tc-upload-material-rte-editor" id="rteEditor" contenteditable="true"
                      data-placeholder="Describe what this material covers..."></div>
             </div>
         </div>
@@ -155,89 +66,89 @@
          UpdatePanel keeps dropdown cascading partial — no full reload --%>
     <asp:UpdatePanel ID="upDropdowns" runat="server" UpdateMode="Conditional">
     <ContentTemplate>
-    <div class="um-row-3col">
-        <div class="um-field">
-            <label class="um-label"><%: T("Language","Bahasa") %> *</label>
+    <div class="tc-upload-material-row-3col">
+        <div class="tc-upload-material-field">
+            <label class="tc-upload-material-label"><%: T("Language","Bahasa") %> *</label>
             <asp:HiddenField ID="hidLanguage" runat="server" Value="EN" />
-            <div class="um-lang-group" id="langGrp">
-                <button type="button" class="um-lang-btn active" id="bEN" onclick="setLang('EN')">EN</button>
-                <button type="button" class="um-lang-btn" id="bBM" onclick="setLang('BM')">BM</button>
+            <div class="tc-upload-material-lang-group" id="langGrp">
+                <button type="button" class="tc-upload-material-lang-btn active" id="bEN" onclick="setLang('EN')">EN</button>
+                <button type="button" class="tc-upload-material-lang-btn" id="bBM" onclick="setLang('BM')">BM</button>
             </div>
         </div>
-        <div class="um-field">
-            <label class="um-label"><%: T("Level","Tahap") %> *</label>
-            <asp:DropDownList ID="ddlLevel" runat="server" CssClass="um-input" AutoPostBack="true" OnSelectedIndexChanged="ddlLevel_Changed" />
-            <div class="um-val" id="vLevel"><%: T("Select Level.","Pilih Tahap.") %></div>
+        <div class="tc-upload-material-field">
+            <label class="tc-upload-material-label"><%: T("Level","Tahap") %> *</label>
+            <asp:DropDownList ID="ddlLevel" runat="server" CssClass="tc-upload-material-input" AutoPostBack="true" OnSelectedIndexChanged="ddlLevel_Changed" />
+            <div class="tc-upload-material-val" id="vLevel"><%: T("Select Level.","Pilih Tahap.") %></div>
         </div>
-        <div class="um-field">
-            <label class="um-label"><%: T("Unit","Unit") %> *</label>
-            <asp:DropDownList ID="ddlUnit" runat="server" CssClass="um-input" AutoPostBack="true" OnSelectedIndexChanged="ddlUnit_Changed" />
-            <div class="um-val" id="vUnit"><%: T("Select Unit.","Pilih Unit.") %></div>
+        <div class="tc-upload-material-field">
+            <label class="tc-upload-material-label"><%: T("Unit","Unit") %> *</label>
+            <asp:DropDownList ID="ddlUnit" runat="server" CssClass="tc-upload-material-input" AutoPostBack="true" OnSelectedIndexChanged="ddlUnit_Changed" />
+            <div class="tc-upload-material-val" id="vUnit"><%: T("Select Unit.","Pilih Unit.") %></div>
         </div>
-        <div class="um-field">
-            <label class="um-label"><%: T("Subtopic","Subtopik") %> *</label>
-            <asp:DropDownList ID="ddlSubtopic" runat="server" CssClass="um-input" />
-            <div class="um-val" id="vSub"><%: T("Select Subtopic.","Pilih Subtopik.") %></div>
+        <div class="tc-upload-material-field">
+            <label class="tc-upload-material-label"><%: T("Subtopic","Subtopik") %> *</label>
+            <asp:DropDownList ID="ddlSubtopic" runat="server" CssClass="tc-upload-material-input" />
+            <div class="tc-upload-material-val" id="vSub"><%: T("Select Subtopic.","Pilih Subtopik.") %></div>
         </div>
     </div>
     </ContentTemplate>
     </asp:UpdatePanel>
 
     <%-- Row 4: Upload File full width --%>
-    <div class="um-row-full">
-        <div class="um-field">
-            <label class="um-label"><%: T("Upload File","Muat Naik Fail") %> *</label>
-            <div class="um-drop" id="dropZone" onclick="document.getElementById('<%=fuFile.ClientID%>').click();">
-                <div class="um-drop-content" id="dzContent">
+    <div class="tc-upload-material-row-full">
+        <div class="tc-upload-material-field">
+            <label class="tc-upload-material-label"><%: T("Upload File","Muat Naik Fail") %> *</label>
+            <div class="tc-upload-material-drop" id="dropZone" onclick="document.getElementById('<%=fuFile.ClientID%>').click();">
+                <div class="tc-upload-material-drop-content" id="dzContent">
                     <i class="bi bi-cloud-arrow-up-fill"></i>
                     <p><%: T("Drag & drop or click to browse","Seret & lepas atau klik untuk semak imbas") %></p>
-                    <p class="um-drop-sub">PDF, DOC, DOCX, PPT, PPTX, JPG, PNG, MP4 (max 100 MB)</p>
+                    <p class="tc-upload-material-drop-sub">PDF, DOC, DOCX, PPT, PPTX, JPG, PNG, MP4 (max 100 MB)</p>
                 </div>
             </div>
-            <div class="um-file-card" id="fileCard" style="display:none;">
-                <div class="um-file-ico" id="fIco"><i class="bi bi-file-earmark-fill"></i></div>
-                <div class="um-file-info"><span class="um-file-name" id="fName"></span><span class="um-file-meta" id="fMeta"></span></div>
-                <button type="button" class="um-file-rm" onclick="removeFile(event)"><i class="bi bi-x-lg"></i></button>
+            <div class="tc-upload-material-file-card" id="fileCard" style="display:none;">
+                <div class="tc-upload-material-file-ico" id="fIco"><i class="bi bi-file-earmark-fill"></i></div>
+                <div class="tc-upload-material-file-info"><span class="tc-upload-material-file-name" id="fName"></span><span class="tc-upload-material-file-meta" id="fMeta"></span></div>
+                <button type="button" class="tc-upload-material-file-rm" onclick="removeFile(event)"><i class="bi bi-x-lg"></i></button>
             </div>
-            <div class="um-val" id="vFile"><%: T("Please upload a file.","Sila muat naik fail.") %></div>
+            <div class="tc-upload-material-val" id="vFile"><%: T("Please upload a file.","Sila muat naik fail.") %></div>
             <asp:FileUpload ID="fuFile" runat="server" style="display:none;" onchange="handleFile(this)" />
         </div>
     </div>
 
     <%-- Actions --%>
-    <div class="um-actions">
-        <a href="<%: ResolveUrl("~/Teacher/manageMaterials.aspx") %>" class="um-btn um-btn-cancel"><%: T("Cancel","Batal") %></a>
-        <button type="button" class="um-btn um-btn-primary" onclick="validateForm()"><i class="bi bi-cloud-arrow-up"></i> <%: T("Upload Material","Muat Naik Bahan") %></button>
+    <div class="tc-upload-material-actions">
+        <a href="<%: ResolveUrl("~/Teacher/manageMaterials.aspx") %>" class="tc-upload-material-btn tc-upload-material-btn-cancel"><%: T("Cancel","Batal") %></a>
+        <button type="button" class="tc-upload-material-btn tc-upload-material-btn-primary" onclick="validateForm()"><i class="bi bi-cloud-arrow-up"></i> <%: T("Upload Material","Muat Naik Bahan") %></button>
     </div>
 </div>
 
 <%-- Confirm Modal --%>
-<div id="confirmModal" class="um-modal-overlay" style="display:none;">
-    <div class="um-modal">
-        <div class="um-modal-hd"><h3><%: T("Confirm Upload","Sahkan Muat Naik") %></h3><button type="button" class="um-modal-close" onclick="closeModal()">&#215;</button></div>
-        <div class="um-modal-body"><p><%: T("Upload this material?","Muat naik bahan ini?") %></p></div>
-        <div class="um-modal-ft">
-            <button type="button" class="um-btn um-btn-cancel" onclick="closeModal()"><%: T("Cancel","Batal") %></button>
-            <asp:Button ID="btnUpload" runat="server" Text="Upload" OnClick="btnUpload_Click" CausesValidation="false" CssClass="um-btn um-btn-primary" />
+<div id="confirmModal" class="tc-upload-material-modal-overlay" style="display:none;">
+    <div class="tc-upload-material-modal">
+        <div class="tc-upload-material-modal-hd"><h3><%: T("Confirm Upload","Sahkan Muat Naik") %></h3><button type="button" class="tc-upload-material-modal-close" onclick="closeModal()">&#215;</button></div>
+        <div class="tc-upload-material-modal-body"><p><%: T("Upload this material?","Muat naik bahan ini?") %></p></div>
+        <div class="tc-upload-material-modal-ft">
+            <button type="button" class="tc-upload-material-btn tc-upload-material-btn-cancel" onclick="closeModal()"><%: T("Cancel","Batal") %></button>
+            <asp:Button ID="btnUpload" runat="server" Text="Upload" OnClick="btnUpload_Click" CausesValidation="false" CssClass="tc-upload-material-btn tc-upload-material-btn-primary" />
         </div>
     </div>
 </div>
 
 <%-- Unsaved Changes Modal --%>
-<div class="um-unsaved-overlay" id="umUnsavedOverlay">
-    <div class="um-unsaved-modal">
-        <div class="um-unsaved-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+<div class="tc-upload-material-unsaved-overlay" id="umUnsavedOverlay">
+    <div class="tc-upload-material-unsaved-modal">
+        <div class="tc-upload-material-unsaved-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
         <h3><%: T("Unsaved Changes","Perubahan Belum Disimpan") %></h3>
         <p><%: T("Your unsaved material will be discarded. Are you sure you want to leave this page?","Bahan anda yang belum disimpan akan dibuang. Adakah anda pasti mahu meninggalkan halaman ini?") %></p>
-        <div class="um-unsaved-actions">
-            <button type="button" class="um-unsaved-cancel" onclick="document.getElementById('umUnsavedOverlay').classList.remove('open')"><%: T("Cancel","Batal") %></button>
-            <button type="button" class="um-unsaved-confirm" id="umUnsavedConfirm"><%: T("Confirm","Sahkan") %></button>
+        <div class="tc-upload-material-unsaved-actions">
+            <button type="button" class="tc-upload-material-unsaved-cancel" onclick="document.getElementById('umUnsavedOverlay').classList.remove('open')"><%: T("Cancel","Batal") %></button>
+            <button type="button" class="tc-upload-material-unsaved-confirm" id="umUnsavedConfirm"><%: T("Confirm","Sahkan") %></button>
         </div>
     </div>
 </div>
 
 <asp:HiddenField ID="hidToast" runat="server" Value="" />
-<div class="um-toast-wrap" id="toastWrap"></div>
+<div class="tc-upload-material-toast-wrap" id="toastWrap"></div>
 </asp:Content>
 
 <asp:Content ID="cScripts" ContentPlaceHolderID="ScriptsContent" runat="server">
@@ -245,8 +156,8 @@
 var ALLOWED=['pdf','doc','docx','ppt','pptx','jpg','jpeg','png','mp4'];
 var fileOk=false;
 function setLang(v){document.getElementById('<%=hidLanguage.ClientID%>').value=v;
-    document.getElementById('bEN').className='um-lang-btn'+(v==='EN'?' active':'');
-    document.getElementById('bBM').className='um-lang-btn'+(v==='BM'?' active':'');}
+    document.getElementById('bEN').className='tc-upload-material-lang-btn'+(v==='EN'?' active':'');
+    document.getElementById('bBM').className='tc-upload-material-lang-btn'+(v==='BM'?' active':'');}
 function handleFile(inp){
     hide('vFile');var dz=document.getElementById('dropZone');dz.classList.remove('invalid');
     if(!inp.files||!inp.files[0])return;var f=inp.files[0],ext=f.name.split('.').pop().toLowerCase();
@@ -256,11 +167,11 @@ function handleFile(inp){
     var card=document.getElementById('fileCard');card.style.display='flex';
     document.getElementById('fName').textContent=f.name;
     document.getElementById('fMeta').textContent=fmtSize(f.size)+' \u2022 '+ext.toUpperCase();
-    var ico=document.getElementById('fIco');ico.className='um-file-ico '+getIcoCss(ext);
+    var ico=document.getElementById('fIco');ico.className='tc-upload-material-file-ico '+getIcoCss(ext);
     ico.innerHTML='<i class="bi '+getIcoClass(ext)+'"></i>';}
 function removeFile(e){e.stopPropagation();fileOk=false;document.getElementById('<%=fuFile.ClientID%>').value='';
     document.getElementById('dropZone').style.display='block';document.getElementById('fileCard').style.display='none';}
-function getIcoCss(x){if(x==='pdf')return'um-ico-pdf';if(x==='doc'||x==='docx')return'um-ico-doc';if(x==='ppt'||x==='pptx')return'um-ico-ppt';if(x==='jpg'||x==='jpeg'||x==='png')return'um-ico-img';if(x==='mp4')return'um-ico-vid';return'um-ico-oth';}
+function getIcoCss(x){if(x==='pdf')return'tc-upload-material-ico-pdf';if(x==='doc'||x==='docx')return'tc-upload-material-ico-doc';if(x==='ppt'||x==='pptx')return'tc-upload-material-ico-ppt';if(x==='jpg'||x==='jpeg'||x==='png')return'tc-upload-material-ico-img';if(x==='mp4')return'tc-upload-material-ico-vid';return'tc-upload-material-ico-oth';}
 function getIcoClass(x){if(x==='pdf')return'bi-file-earmark-pdf-fill';if(x==='doc'||x==='docx')return'bi-file-earmark-word-fill';if(x==='ppt'||x==='pptx')return'bi-file-earmark-slides-fill';if(x==='jpg'||x==='jpeg'||x==='png')return'bi-file-earmark-image-fill';if(x==='mp4')return'bi-file-earmark-play-fill';return'bi-file-earmark-fill';}
 function fmtSize(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(1)+' MB';}
 function show(id){document.getElementById(id).classList.add('show');}
@@ -356,7 +267,7 @@ if(dz){['dragenter','dragover'].forEach(function(ev){dz.addEventListener(ev,func
 ['dragleave','drop'].forEach(function(ev){dz.addEventListener(ev,function(e){e.preventDefault();dz.classList.remove('dragover');});});
 dz.addEventListener('drop',function(e){var dt=e.dataTransfer;if(dt.files&&dt.files[0]){var inp=document.getElementById('<%=fuFile.ClientID%>');inp.files=dt.files;handleFile(inp);}});}
 // Toast
-window.addEventListener('load',function(){var h=document.getElementById('<%=hidToast.ClientID%>');if(h&&h.value){var w=document.getElementById('toastWrap'),t=document.createElement('div');t.className='um-toast';t.innerHTML='<i class="bi bi-check-circle-fill"></i> '+h.value;w.appendChild(t);h.value='';setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .3s';},3e3);setTimeout(function(){t.remove();},3500);/* Reset language buttons and file UI after successful upload */setLang('EN');fileOk=false;document.getElementById('dropZone').style.display='block';document.getElementById('fileCard').style.display='none';/* Reset RTE editor */var rte=document.getElementById('rteEditor');if(rte)rte.innerHTML='';}});
+window.addEventListener('load',function(){var h=document.getElementById('<%=hidToast.ClientID%>');if(h&&h.value){var w=document.getElementById('toastWrap'),t=document.createElement('div');t.className='tc-upload-material-toast';t.innerHTML='<i class="bi bi-check-circle-fill"></i> '+h.value;w.appendChild(t);h.value='';setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .3s';},3e3);setTimeout(function(){t.remove();},3500);/* Reset language buttons and file UI after successful upload */setLang('EN');fileOk=false;document.getElementById('dropZone').style.display='block';document.getElementById('fileCard').style.display='none';/* Reset RTE editor */var rte=document.getElementById('rteEditor');if(rte)rte.innerHTML='';}});
 
 /* ═══ UNSAVED CHANGES DETECTION ═══════════════════════════ */
 (function(){
@@ -365,13 +276,13 @@ window.addEventListener('load',function(){var h=document.getElementById('<%=hidT
     var submitting=false;
 
     // Mark dirty on input/change in the form card
-    var card=document.querySelector('.um-card');
+    var card=document.querySelector('.tc-upload-material-card');
     if(card){
         card.addEventListener('input',function(){dirty=true;},true);
         card.addEventListener('change',function(){dirty=true;},true);
     }
     // RTE editor
-    var rte=document.querySelector('.um-rte-editor');
+    var rte=document.querySelector('.tc-upload-material-rte-editor');
     if(rte)rte.addEventListener('input',function(){dirty=true;});
     // File upload
     var fu=document.getElementById('<%=fuFile.ClientID%>');
@@ -393,7 +304,7 @@ window.addEventListener('load',function(){var h=document.getElementById('<%=hidT
     });
 
     // Intercept sidebar links + Back to Materials link
-    document.querySelectorAll('.sb-sidebar-item, .um-back').forEach(function(link){
+    document.querySelectorAll('.sb-sidebar-item, .tc-upload-material-back').forEach(function(link){
         link.addEventListener('click',function(e){
             if(!dirty||submitting)return;
             e.preventDefault();e.stopPropagation();

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -13,7 +13,7 @@ namespace ScienceBuddy.Teacher
 {
     public partial class manageMaterials : Page
     {
-        // ── Language support ─────────────────────────────────────────
+        // -- Language support -----------------------------------------
         protected string CurrentLanguage
         {
             get
@@ -134,7 +134,7 @@ namespace ScienceBuddy.Teacher
 
         private void LoadMaterials()
         {
-            // If not certified, hide all My Materials content — pending panel is shown via SetTabUI
+            // If not certified, hide all My Materials content � pending panel is shown via SetTabUI
             if (!_isCertified)
             {
                 pnlMaterials.Visible = false;
@@ -150,7 +150,7 @@ namespace ScienceBuddy.Teacher
             string type = ddlFilterType.SelectedValue, status = ddlFilterStatus.SelectedValue;
 
             string sql = @"SELECT m.[materialId],m.[materialTitle],m.[materialContent],m.[materialType],
-                m.[fileUrl],m.[createdDate],m.[status],m.[language],ISNULL(st.[subtopicTitleEN],'—') AS subtopicName
+                m.[fileUrl],m.[createdDate],m.[status],m.[language],ISNULL(st.[subtopicTitleEN],'�') AS subtopicName
                 FROM dbo.[Material] m LEFT JOIN dbo.[Subtopic] st ON st.[subtopicId]=m.[subtopicId]
                 LEFT JOIN dbo.[Unit] u ON u.[unitId]=st.[unitId] WHERE m.[createdByUserId]=@userId AND (m.[status] IS NULL OR m.[status]<>'Deleted')";
             if (!string.IsNullOrEmpty(search)) sql += " AND (m.[materialTitle] LIKE @s OR m.[materialContent] LIKE @s)";
@@ -190,7 +190,7 @@ namespace ScienceBuddy.Teacher
             string type = ddlFilterType.SelectedValue;
 
             string sql = @"SELECT m.[materialId],m.[materialTitle],m.[materialContent],m.[materialType],
-                m.[fileUrl],m.[createdDate],m.[language],ISNULL(st.[subtopicTitleEN],'—') AS subtopicName,
+                m.[fileUrl],m.[createdDate],m.[language],ISNULL(st.[subtopicTitleEN],'�') AS subtopicName,
                 COALESCE(t.[name],u2.[username],'Teacher') AS teacherName
                 FROM dbo.[Material] m LEFT JOIN dbo.[Subtopic] st ON st.[subtopicId]=m.[subtopicId]
                 LEFT JOIN dbo.[Unit] un ON un.[unitId]=st.[unitId]
@@ -223,7 +223,7 @@ namespace ScienceBuddy.Teacher
             }
         }
 
-        // ── Empty state content ─────────────────────────────────────
+        // -- Empty state content -------------------------------------
         private void SetEmptyStateContent(string statusFilter)
         {
             switch ((statusFilter ?? "").ToLower())
@@ -251,7 +251,7 @@ namespace ScienceBuddy.Teacher
             }
         }
 
-        // ── Filter events ────────────────────────────────────────────
+        // -- Filter events --------------------------------------------
         protected void btnSearch_Click(object sender, EventArgs e) { LoadForActiveTab(); }
         protected void btnTabMine_Click(object sender, EventArgs e) { hidActiveTab.Value = "mine"; SetTabUI(); LoadForActiveTab(); }
         protected void btnTabDiscover_Click(object sender, EventArgs e) { hidActiveTab.Value = "discover"; SetTabUI(); LoadForActiveTab(); }
@@ -259,8 +259,8 @@ namespace ScienceBuddy.Teacher
         private void SetTabUI()
         {
             bool isMine = hidActiveTab.Value != "discover";
-            btnTabMine.CssClass = "mm-tab" + (isMine ? " active" : "");
-            btnTabDiscover.CssClass = "mm-tab" + (!isMine ? " active" : "");
+            btnTabMine.CssClass = "tc-manage-materials-tab" + (isMine ? " active" : "");
+            btnTabDiscover.CssClass = "tc-manage-materials-tab" + (!isMine ? " active" : "");
 
             // Upload button: visible on Mine tab, enabled only when certified
             pnlUploadBtn.Visible = isMine;
@@ -310,10 +310,10 @@ namespace ScienceBuddy.Teacher
             var btn = sender as LinkButton;
             string status = btn?.CommandArgument ?? "";
             // Update chip UI
-            btnChipAll.CssClass = "mm-chip" + (status == "" ? " active" : "");
-            btnChipApproved.CssClass = "mm-chip" + (status == "Approved" ? " active" : "");
-            btnChipPending.CssClass = "mm-chip" + (status == "Pending" ? " active" : "");
-            btnChipRejected.CssClass = "mm-chip" + (status == "Rejected" ? " active" : "");
+            btnChipAll.CssClass = "tc-manage-materials-chip" + (status == "" ? " active" : "");
+            btnChipApproved.CssClass = "tc-manage-materials-chip" + (status == "Approved" ? " active" : "");
+            btnChipPending.CssClass = "tc-manage-materials-chip" + (status == "Pending" ? " active" : "");
+            btnChipRejected.CssClass = "tc-manage-materials-chip" + (status == "Rejected" ? " active" : "");
             // Set ddlFilterStatus value for the query
             try { ddlFilterStatus.SelectedValue = status; } catch { }
             LoadForActiveTab();
@@ -321,29 +321,29 @@ namespace ScienceBuddy.Teacher
 
         protected string GetIconCss(string t)
         {
-            if (string.IsNullOrEmpty(t)) return "mm-ico-default";
+            if (string.IsNullOrEmpty(t)) return "tc-manage-materials-ico-default";
             string l = t.ToLower();
-            if (l.Contains("pdf")) return "mm-ico-pdf";
-            if (l.Contains("doc")) return "mm-ico-doc";
-            if (l.Contains("ppt")) return "mm-ico-ppt";
-            if (l.Contains("image") || l.Contains("jpg") || l.Contains("png")) return "mm-ico-image";
-            if (l.Contains("video")) return "mm-ico-video";
-            return "mm-ico-default";
+            if (l.Contains("pdf")) return "tc-manage-materials-ico-pdf";
+            if (l.Contains("doc")) return "tc-manage-materials-ico-doc";
+            if (l.Contains("ppt")) return "tc-manage-materials-ico-ppt";
+            if (l.Contains("image") || l.Contains("jpg") || l.Contains("png")) return "tc-manage-materials-ico-image";
+            if (l.Contains("video")) return "tc-manage-materials-ico-video";
+            return "tc-manage-materials-ico-default";
         }
 
         protected string GetTypeBadgeCss(string t)
         {
-            if (string.IsNullOrEmpty(t)) return "mm-meta-badge-default";
+            if (string.IsNullOrEmpty(t)) return "tc-manage-materials-meta-badge-default";
             string l = t.ToLower();
-            if (l.Contains("pdf")) return "mm-meta-badge-pdf";
-            if (l.Contains("doc")) return "mm-meta-badge-doc";
-            if (l.Contains("ppt")) return "mm-meta-badge-ppt";
-            if (l.Contains("image") || l.Contains("jpg") || l.Contains("png")) return "mm-meta-badge-image";
-            if (l.Contains("video")) return "mm-meta-badge-video";
-            return "mm-meta-badge-default";
+            if (l.Contains("pdf")) return "tc-manage-materials-meta-badge-pdf";
+            if (l.Contains("doc")) return "tc-manage-materials-meta-badge-doc";
+            if (l.Contains("ppt")) return "tc-manage-materials-meta-badge-ppt";
+            if (l.Contains("image") || l.Contains("jpg") || l.Contains("png")) return "tc-manage-materials-meta-badge-image";
+            if (l.Contains("video")) return "tc-manage-materials-meta-badge-video";
+            return "tc-manage-materials-meta-badge-default";
         }
 
-        // ── Edit modal load ──────────────────────────────────────────
+        // -- Edit modal load ------------------------------------------
         private void LoadEditForm(string materialId, string userId)
         {
             pnlMain.Visible = true;
@@ -407,12 +407,12 @@ namespace ScienceBuddy.Teacher
 
         private void LoadFormDropdowns(SqlConnection conn, string selLevel, string selUnit, string selSubtopic)
         {
-            ddlLevel.Items.Clear(); ddlLevel.Items.Add(new ListItem("— Select Level —", ""));
+            ddlLevel.Items.Clear(); ddlLevel.Items.Add(new ListItem("� Select Level �", ""));
             using (var cmd = new SqlCommand("SELECT [levelId],[levelNameEN] FROM dbo.[Level] ORDER BY [levelId]", conn))
             using (var r = cmd.ExecuteReader()) while (r.Read()) ddlLevel.Items.Add(new ListItem(r["levelNameEN"].ToString(), r["levelId"].ToString()));
             if (!string.IsNullOrEmpty(selLevel)) try { ddlLevel.SelectedValue = selLevel; } catch { }
 
-            ddlUnit.Items.Clear(); ddlUnit.Items.Add(new ListItem("— Select Unit —", ""));
+            ddlUnit.Items.Clear(); ddlUnit.Items.Add(new ListItem("� Select Unit �", ""));
             if (!string.IsNullOrEmpty(selLevel))
             {
                 using (var cmd = new SqlCommand("SELECT [unitId],[unitNameEN] FROM dbo.[Unit] WHERE [levelId]=@l ORDER BY [orderNo]", conn))
@@ -420,7 +420,7 @@ namespace ScienceBuddy.Teacher
             }
             if (!string.IsNullOrEmpty(selUnit)) try { ddlUnit.SelectedValue = selUnit; } catch { }
 
-            ddlSubtopic.Items.Clear(); ddlSubtopic.Items.Add(new ListItem("— Select Subtopic —", ""));
+            ddlSubtopic.Items.Clear(); ddlSubtopic.Items.Add(new ListItem("� Select Subtopic �", ""));
             if (!string.IsNullOrEmpty(selUnit))
             {
                 using (var cmd = new SqlCommand("SELECT [subtopicId],[subtopicTitleEN] FROM dbo.[Subtopic] WHERE [unitId]=@u ORDER BY [orderNo]", conn))
@@ -434,12 +434,12 @@ namespace ScienceBuddy.Teacher
             using (var conn = new SqlConnection(ConnStr))
             {
                 conn.Open();
-                ddlUnit.Items.Clear(); ddlUnit.Items.Add(new ListItem("— Select Unit —", ""));
+                ddlUnit.Items.Clear(); ddlUnit.Items.Add(new ListItem("� Select Unit �", ""));
                 string lid = ddlLevel.SelectedValue;
                 if (!string.IsNullOrEmpty(lid))
                     using (var cmd = new SqlCommand("SELECT [unitId],[unitNameEN] FROM dbo.[Unit] WHERE [levelId]=@l ORDER BY [orderNo]", conn))
                     { cmd.Parameters.AddWithValue("@l", lid); using (var r = cmd.ExecuteReader()) while (r.Read()) ddlUnit.Items.Add(new ListItem(r["unitNameEN"].ToString(), r["unitId"].ToString())); }
-                ddlSubtopic.Items.Clear(); ddlSubtopic.Items.Add(new ListItem("— Select Subtopic —", ""));
+                ddlSubtopic.Items.Clear(); ddlSubtopic.Items.Add(new ListItem("� Select Subtopic �", ""));
             }
             hidShowEditModal.Value = "1";
         }
@@ -449,7 +449,7 @@ namespace ScienceBuddy.Teacher
             using (var conn = new SqlConnection(ConnStr))
             {
                 conn.Open();
-                ddlSubtopic.Items.Clear(); ddlSubtopic.Items.Add(new ListItem("— Select Subtopic —", ""));
+                ddlSubtopic.Items.Clear(); ddlSubtopic.Items.Add(new ListItem("� Select Subtopic �", ""));
                 string uid = ddlUnit.SelectedValue;
                 if (!string.IsNullOrEmpty(uid))
                     using (var cmd = new SqlCommand("SELECT [subtopicId],[subtopicTitleEN] FROM dbo.[Subtopic] WHERE [unitId]=@u ORDER BY [orderNo]", conn))
@@ -458,7 +458,7 @@ namespace ScienceBuddy.Teacher
             hidShowEditModal.Value = "1";
         }
 
-        // ── Save (update) ────────────────────────────────────────────
+        // -- Save (update) --------------------------------------------
         protected void btnSave_Click(object sender, EventArgs e)
         {
             System.Diagnostics.Debug.WriteLine("[btnSave_Click] START " + DateTime.Now.ToString("HH:mm:ss.fff"));
@@ -472,7 +472,7 @@ namespace ScienceBuddy.Teacher
             string unitVal = ddlUnit.SelectedValue;
             string subtopicId = ddlSubtopic.SelectedValue;
 
-            // ── Server-side validation (same rules as upload) ──
+            // -- Server-side validation (same rules as upload) --
             if (string.IsNullOrEmpty(title))
             { hidToast.Value = "Title is required."; hidShowEditModal.Value = "1"; LoadMaterials(); return; }
             if (string.IsNullOrEmpty(lang))
@@ -487,7 +487,7 @@ namespace ScienceBuddy.Teacher
 
             System.Diagnostics.Debug.WriteLine("[btnSave_Click] Validation passed " + DateTime.Now.ToString("HH:mm:ss.fff"));
 
-            // ── Change detection — compare with original values ──
+            // -- Change detection � compare with original values --
             string origTitle = hidOrigTitle.Value.Trim();
             string origDesc = hidOrigDesc.Value.Trim();
             string origLang = hidOrigLang.Value;
@@ -510,7 +510,7 @@ namespace ScienceBuddy.Teacher
                 LoadMaterials(); return;
             }
 
-            // ── File validation (only if a new file is uploaded) ──
+            // -- File validation (only if a new file is uploaded) --
             string fileUrl = null; string materialType = null;
             if (hasNewFile)
             {
@@ -575,7 +575,7 @@ namespace ScienceBuddy.Teacher
             return stripped.Length == 0;
         }
 
-        // ── Delete (soft delete — set status to 'Deleted') ─────────
+        // -- Delete (soft delete � set status to 'Deleted') ---------
         protected void btnConfirmDelete_Click(object sender, EventArgs e)
         {
             string materialId = hidDeleteId.Value;
@@ -595,7 +595,7 @@ namespace ScienceBuddy.Teacher
             LoadForActiveTab();
         }
 
-        // ── Repeater commands ─────────────────────────────────────────
+        // -- Repeater commands -----------------------------------------
         protected void rptMaterials_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
             HandleFileCommand(e.CommandName, e.CommandArgument?.ToString());
@@ -614,7 +614,7 @@ namespace ScienceBuddy.Teacher
 
             if (commandName == "ViewMaterial")
             {
-                // Redirect to file URL — browser will display inline (preview)
+                // Redirect to file URL � browser will display inline (preview)
                 Response.Redirect(ResolveUrl("~/") + filePath, false);
                 Context.ApplicationInstance.CompleteRequest();
             }
@@ -633,7 +633,7 @@ namespace ScienceBuddy.Teacher
             }
         }
 
-        // ── Utilities ────────────────────────────────────────────────
+        // -- Utilities ------------------------------------------------
         private bool VerifyOwnership(SqlConnection conn, string id, string userId)
         {
             using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.[Material] WHERE [materialId]=@id AND [createdByUserId]=@u", conn))
@@ -658,17 +658,17 @@ namespace ScienceBuddy.Teacher
 
         protected string GetStatusCss(string s)
         {
-            if (string.IsNullOrEmpty(s)) return "mm-badge-pending";
+            if (string.IsNullOrEmpty(s)) return "tc-manage-materials-badge-pending";
             string l = s.ToLower();
-            if (l == "approved") return "mm-badge-approved";
-            if (l == "rejected") return "mm-badge-rejected";
-            return "mm-badge-pending";
+            if (l == "approved") return "tc-manage-materials-badge-approved";
+            if (l == "rejected") return "tc-manage-materials-badge-rejected";
+            return "tc-manage-materials-badge-pending";
         }
 
         protected string TruncateText(string text, int max)
         {
             if (string.IsNullOrEmpty(text)) return "No description";
-            return text.Length <= max ? text : text.Substring(0, max) + "…";
+            return text.Length <= max ? text : text.Substring(0, max) + "�";
         }
 
         /// <summary>Returns the web-relative path for a material file. Handles both

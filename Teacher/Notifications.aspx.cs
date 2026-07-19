@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -44,9 +44,9 @@ namespace ScienceBuddy.Teacher
             litCountRead.Text = countRead.ToString();
 
             // Tab active state
-            btnTabAll.CssClass = "nt-tab" + (tab == "All" ? " active" : "");
-            btnTabUnread.CssClass = "nt-tab" + (tab == "Unread" ? " active" : "");
-            btnTabRead.CssClass = "nt-tab" + (tab == "Read" ? " active" : "");
+            btnTabAll.CssClass = "tc-notifications-tab" + (tab == "All" ? " active" : "");
+            btnTabUnread.CssClass = "tc-notifications-tab" + (tab == "Unread" ? " active" : "");
+            btnTabRead.CssClass = "tc-notifications-tab" + (tab == "Read" ? " active" : "");
 
             // Query
             string sql = "SELECT [notificationId],[titleEN],[titleBM],[messageEN],[messageBM],[isRead],[createdAt] FROM dbo.[Notification] WHERE [toUserId]=@u";

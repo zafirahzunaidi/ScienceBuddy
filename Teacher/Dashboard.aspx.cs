@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -11,7 +11,7 @@ namespace ScienceBuddy.Teacher
 {
     public partial class Dashboard : Page
     {
-        // ── Language support ─────────────────────────────────────────
+        // -- Language support -----------------------------------------
         protected string CurrentLanguage
         {
             get
@@ -24,11 +24,11 @@ namespace ScienceBuddy.Teacher
             return CurrentLanguage == "BM" ? bm : en; 
         }
 
-        // ── Connection string ────────────────────────────────────────
+        // -- Connection string ----------------------------------------
         private string ConnStr =>
             ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
-        // ── Page Load ────────────────────────────────────────────────
+        // -- Page Load ------------------------------------------------
         protected void Page_Load(object sender, EventArgs e)
         {
             // 1. Authorization: check session
@@ -56,7 +56,7 @@ namespace ScienceBuddy.Teacher
             }
         }
 
-        // ── Main load ────────────────────────────────────────────────
+        // -- Main load ------------------------------------------------
         private void LoadTeacherDashboard(string userId)
         {
             try
@@ -104,7 +104,7 @@ namespace ScienceBuddy.Teacher
                         return;
                     }
 
-                    // Teacher is Certified — show full dashboard
+                    // Teacher is Certified � show full dashboard
                     pnlDashboard.Visible = true;
 
                     // Set display info
@@ -133,13 +133,13 @@ namespace ScienceBuddy.Teacher
             }
             catch
             {
-                // Graceful failure — show dashboard with defaults
+                // Graceful failure � show dashboard with defaults
                 pnlDashboard.Visible = true;
                 litTeacherName.Text = "Teacher";
             }
         }
 
-        // ── Handle non-certified statuses ────────────────────────────
+        // -- Handle non-certified statuses ----------------------------
         private void HandleNonCertifiedStatus(string status)
         {
             string normalized = (status ?? "").Trim().ToLower();
@@ -164,7 +164,7 @@ namespace ScienceBuddy.Teacher
             pnlDenied.Visible = true;
         }
 
-        // ── Set master page user widget ──────────────────────────────
+        // -- Set master page user widget ------------------------------
         private void SetMasterUserInfo(string teacherName)
         {
             string displayName = !string.IsNullOrWhiteSpace(teacherName)
@@ -182,7 +182,7 @@ namespace ScienceBuddy.Teacher
             master.SetUserInfo(displayName, "Teacher", initials);
         }
 
-        // ── Load summary counts ──────────────────────────────────────
+        // -- Load summary counts --------------------------------------
         private void LoadSummaryCounts(SqlConnection conn, string userId,
             string teacherId)
         {
@@ -212,12 +212,12 @@ namespace ScienceBuddy.Teacher
                 "@p", teacherId).ToString();
         }
 
-        // ── Load quiz contribution ────────────────────────────────────
+        // -- Load quiz contribution ------------------------------------
         private void LoadQuizContribution(SqlConnection conn, string userId)
         {
             try
             {
-                // Unit Quiz Questions — count approved questions using Question.createdByUserId
+                // Unit Quiz Questions � count approved questions using Question.createdByUserId
                 int myUnit = 0;
                 using (var cmd = new SqlCommand(
                     @"SELECT COUNT(DISTINCT q.[questionId]) FROM dbo.[Question] q
@@ -237,7 +237,7 @@ namespace ScienceBuddy.Teacher
                 int unitPct = totalUnit > 0 ? (int)Math.Round((double)myUnit / totalUnit * 100) : 0;
                 hidUnitPct.Value = unitPct.ToString();
 
-                // Level Quiz Questions — count approved questions using Question.createdByUserId
+                // Level Quiz Questions � count approved questions using Question.createdByUserId
                 int myLevel = 0;
                 using (var cmd = new SqlCommand(
                     @"SELECT COUNT(DISTINCT q.[questionId]) FROM dbo.[Question] q
@@ -264,7 +264,7 @@ namespace ScienceBuddy.Teacher
             }
         }
 
-        // ── Load timeline sessions (new dashboard card) ───────────
+        // -- Load timeline sessions (new dashboard card) -----------
         private void LoadTimelineSessions(SqlConnection conn, string teacherId)
         {
             const string sql = @"
@@ -323,13 +323,13 @@ namespace ScienceBuddy.Teacher
         private static string FormatFriendlyDate(DateTime dt)
         {
             DateTime today = DateTime.Today;
-            if (dt.Date == today) return "Today • " + dt.ToString("h:mm tt");
-            if (dt.Date == today.AddDays(1)) return "Tomorrow • " + dt.ToString("h:mm tt");
-            if (dt.Date < today.AddDays(7)) return dt.ToString("ddd") + " • " + dt.ToString("h:mm tt");
-            return dt.ToString("d MMM") + " • " + dt.ToString("h:mm tt");
+            if (dt.Date == today) return "Today � " + dt.ToString("h:mm tt");
+            if (dt.Date == today.AddDays(1)) return "Tomorrow � " + dt.ToString("h:mm tt");
+            if (dt.Date < today.AddDays(7)) return dt.ToString("ddd") + " � " + dt.ToString("h:mm tt");
+            return dt.ToString("d MMM") + " � " + dt.ToString("h:mm tt");
         }
 
-        // ── Load dashboard notifications (new card) ──────────────────
+        // -- Load dashboard notifications (new card) ------------------
         private void LoadDashNotifications(SqlConnection conn, string userId)
         {
             const string sql = @"
@@ -361,7 +361,7 @@ namespace ScienceBuddy.Teacher
                             list.Add(new
                             {
                                 title,
-                                message = message.Length > 80 ? message.Substring(0, 80) + "…" : message,
+                                message = message.Length > 80 ? message.Substring(0, 80) + "�" : message,
                                 isRead,
                                 timeAgo = FormatTimeAgo(createdAt)
                             });
@@ -382,7 +382,7 @@ namespace ScienceBuddy.Teacher
             }
         }
 
-        // ── Load practice quiz engagement ──────────────────────────
+        // -- Load practice quiz engagement --------------------------
         private void LoadPracticeQuizEngagement(SqlConnection conn, string userId)
         {
             try
@@ -521,7 +521,7 @@ namespace ScienceBuddy.Teacher
             }
         }
 
-        // ── Utility: safe parameterized count ────────────────────────
+        // -- Utility: safe parameterized count ------------------------
         private int SafeCount(SqlConnection conn, string sql,
             string paramName, string paramValue)
         {
@@ -538,7 +538,7 @@ namespace ScienceBuddy.Teacher
             catch { return 0; }
         }
 
-        // ── Utility: relative time ───────────────────────────────────
+        // -- Utility: relative time -----------------------------------
         private static string FormatTimeAgo(DateTime dt)
         {
             var span = DateTime.Now - dt;
@@ -553,7 +553,7 @@ namespace ScienceBuddy.Teacher
             return dt.ToString("d MMM yyyy");
         }
 
-        // ── WebMethod: Available Topics (read-only) ──────────────────
+        // -- WebMethod: Available Topics (read-only) ------------------
         [WebMethod]
         public static List<TopicLevel> GetAvailableTopics()
         {

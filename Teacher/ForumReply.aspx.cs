@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
@@ -23,9 +23,9 @@ namespace ScienceBuddy.Teacher
             set { hidForumId.Value = value; }
         }
 
-        // ════════════════════════════════════════════════════════════
+        // ------------------------------------------------------------
         //  PAGE LOAD
-        // ════════════════════════════════════════════════════════════
+        // ------------------------------------------------------------
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["userId"] == null || Session["role"]?.ToString() != "Teacher")
@@ -79,9 +79,9 @@ namespace ScienceBuddy.Teacher
             catch { return ""; }
         }
 
-        // ════════════════════════════════════════════════════════════
+        // ------------------------------------------------------------
         //  LOAD ALL PAGE DATA
-        // ════════════════════════════════════════════════════════════
+        // ------------------------------------------------------------
         private void LoadPage()
         {
             string userId  = Session["userId"].ToString();
@@ -91,7 +91,7 @@ namespace ScienceBuddy.Teacher
             {
                 conn.Open();
 
-                // ── 1. Main discussion post (Public only) ─────────────
+                // -- 1. Main discussion post (Public only) -------------
                 const string sqlPost = @"
                     SELECT f.[title], f.[message], f.[createdAt], f.[createdBy],
                         COALESCE(t.[name], s.[name], p.[name], u.[username]) AS creatorName,
@@ -139,7 +139,7 @@ namespace ScienceBuddy.Teacher
                     }
                 }
 
-                // ── 2. Replies ────────────────────────────────────────
+                // -- 2. Replies ----------------------------------------
                 const string sqlReplies = @"
                     SELECT fc.[forumChatId], fc.[senderUserId], fc.[message], fc.[createdAt],
                         COALESCE(t.[name], s.[name], p.[name], u.[username]) AS senderName,
@@ -175,7 +175,7 @@ namespace ScienceBuddy.Teacher
                 pnlRepliesEmpty.Visible = replies.Count == 0;
                 if (replies.Count > 0) { rptReplies.DataSource = replies; rptReplies.DataBind(); }
 
-                // ── 3. More Discussions (up to 5, excluding current) ──
+                // -- 3. More Discussions (up to 5, excluding current) --
                 const string sqlMore = @"
                     SELECT TOP 5 f.[forumId], f.[title], f.[createdAt],
                         COALESCE(t.[name], s.[name], p.[name], u.[username]) AS creatorName,
@@ -201,7 +201,7 @@ namespace ScienceBuddy.Teacher
                             DateTime md = r["createdAt"] != DBNull.Value ? Convert.ToDateTime(r["createdAt"]) : DateTime.Now;
                             string mt   = r["title"]?.ToString() ?? "";
                             moreList.Add(new { forumId = r["forumId"].ToString(),
-                                title = mt.Length > 60 ? mt.Substring(0, 60) + "…" : mt,
+                                title = mt.Length > 60 ? mt.Substring(0, 60) + "�" : mt,
                                 creatorName = mn, initials = BuildInitials(mn), timeAgo = FormatTime(md),
                                 roleCss = RoleCss(mRole) });
                         }
@@ -214,11 +214,11 @@ namespace ScienceBuddy.Teacher
             pnlError.Visible = false;
         }
 
-        // ════════════════════════════════════════════════════════════
+        // ------------------------------------------------------------
         //  LIKE / UNLIKE
-        // ════════════════════════════════════════════════════════════
-        //  LIKE (no unlike — one like per user only)
-        // ════════════════════════════════════════════════════════════
+        // ------------------------------------------------------------
+        //  LIKE (no unlike � one like per user only)
+        // ------------------------------------------------------------
         protected void btnLike_Click(object sender, EventArgs e)
         {
             string userId = Session["userId"].ToString();
@@ -226,7 +226,7 @@ namespace ScienceBuddy.Teacher
             using (var conn = new SqlConnection(ConnStr))
             {
                 conn.Open();
-                // Check if already liked — if so, do nothing
+                // Check if already liked � if so, do nothing
                 int exists;
                 using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.[ForumLike] WHERE [forumId]=@f AND [senderUserId]=@u", conn))
                 { cmd.Parameters.AddWithValue("@f", forumId); cmd.Parameters.AddWithValue("@u", userId); exists = Convert.ToInt32(cmd.ExecuteScalar()); }
@@ -249,9 +249,9 @@ namespace ScienceBuddy.Teacher
             LoadPage();
         }
 
-        // ════════════════════════════════════════════════════════════
+        // ------------------------------------------------------------
         //  POST REPLY
-        // ════════════════════════════════════════════════════════════
+        // ------------------------------------------------------------
         protected void btnPostReply_Click(object sender, EventArgs e)
         {
             string replyText = txtReply.Text.Trim();
@@ -310,12 +310,12 @@ namespace ScienceBuddy.Teacher
             LoadPage();
         }
 
-        // ════════════════════════════════════════════════════════════
+        // ------------------------------------------------------------
         //  HELPERS
-        // ════════════════════════════════════════════════════════════
+        // ------------------------------------------------------------
         private void RenderLikeButton(bool liked, int likeCount)
         {
-            btnLike.CssClass = "frd-like-btn " + (liked ? "liked" : "notliked");
+            btnLike.CssClass = "tc-forum-reply-like-btn " + (liked ? "liked" : "notliked");
             string icon  = liked ? "bi bi-heart-fill" : "bi bi-heart";
             string label = liked ? T("Liked", "Disukai") : T("Like", "Suka");
             btnLike.Text = string.Format("<i class=\"{0}\"></i> {1} {2}", icon, likeCount, HttpUtility.HtmlEncode(label));
@@ -323,7 +323,7 @@ namespace ScienceBuddy.Teacher
 
         private string BuildRoleBadge(string role)
         {
-            return string.Format("<span class=\"frd-role-badge {0}\">{1}</span>",
+            return string.Format("<span class=\"tc-forum-reply-role-badge {0}\">{1}</span>",
                 HttpUtility.HtmlAttributeEncode(RoleCss(role)), HttpUtility.HtmlEncode(RoleLabel(role)));
         }
 
