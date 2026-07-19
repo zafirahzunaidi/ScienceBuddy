@@ -44,15 +44,32 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BCrypt-Net-Next, Version=4.2.0.0, Culture=neutral, PublicKeyToken=1e11be04b6288443, processorArchitecture=MSIL">
+      <HintPath>packages\BCrypt.Net-Next.4.2.0\lib\net48\BCrypt-Net-Next.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=2.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Buffers, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.Buffers.4.6.1\lib\net462\System.Buffers.dll</HintPath>
+    </Reference>
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Data" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Memory, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.Memory.4.6.3\lib\net462\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.6.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>packages\System.Numerics.Vectors.4.6.1\lib\net462\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>packages\System.Runtime.CompilerServices.Unsafe.6.1.2\lib\net462\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Drawing" />
@@ -83,12 +100,6 @@
     <Reference Include="itextsharp">
       <HintPath>packages\iTextSharp.5.5.13.4\lib\net461\itextsharp.dll</HintPath>
     </Reference>
-    <Reference Include="BCrypt.Net-Next">
-      <HintPath>packages\BCrypt.Net-Next.4.0.3\lib\net48\BCrypt.Net-Next.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
-      <HintPath>packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
-    </Reference>
     <Reference Include="BouncyCastle.Cryptography">
       <HintPath>packages\BouncyCastle.Cryptography.2.4.0\lib\net461\BouncyCastle.Cryptography.dll</HintPath>
     </Reference>
@@ -115,6 +126,7 @@
     <Content Include="Admin\Profile.aspx" />
     <Content Include="Admin\Settings.aspx" />
     <Content Include="Admin\StudentManagement.aspx" />
+    <Content Include="Admin\RecycleBin.aspx" />
     <Content Include="Admin\ParentManagement.aspx" />
     <Content Include="Admin\TeacherManagement.aspx" />
     <Content Include="Admin\SystemActivityLogs.aspx" />
@@ -193,6 +205,9 @@
     <Content Include="Parent\ChildProfile.aspx" />
     <Content Include="Parent\EnrolledModules.aspx" />
     <Content Include="Parent\ChildProgress.aspx" />
+    <Content Include="Parent\DownloadReport.aspx" />
+    <Content Include="Parent\NotificationCheck.aspx" />
+    <Content Include="Parent\ParentAICoach.aspx" />
     <Content Include="Parent\QuizResults.aspx" />
     <Content Include="Parent\StudyPlan.aspx" />
     <Content Include="Parent\EditStudyPlan.aspx" />
@@ -285,7 +300,6 @@
     <Content Include="Student\Labs\MatterStateChanger.aspx" />
     <Content Include="Student\Labs\SinkOrFloatMaster.aspx" />
     <Content Include="Student\Lesson.aspx" />
-    <Content Include="Student\LevelDetails.aspx" />
     <Content Include="Student\LiveSessions.aspx" />
     <Content Include="Student\Messages.aspx" />
     <Content Include="Student\MyLearning.aspx" />
@@ -298,7 +312,6 @@
     <Content Include="Student\Quiz.aspx" />
     <Content Include="Student\QuizHistory.aspx" />
     <Content Include="Student\QuizResult.aspx" />
-    <Content Include="Student\QuizReview.aspx" />
     <Content Include="Student\RevisionPlan.aspx" />
     <Content Include="Student\UnitDetails.aspx" />
     <Content Include="Student\VirtualLab.aspx" />
@@ -329,6 +342,7 @@
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="App_Code\PasswordHelper.cs" />
+    <Compile Include="Services\NvidiaAIService.cs" />
     <Compile Include="Admin\Dashboard.aspx.designer.cs">
       <DependentUpon>Dashboard.aspx</DependentUpon>
     </Compile>
@@ -359,6 +373,13 @@
     </Compile>
     <Compile Include="Admin\StudentManagement.aspx.designer.cs">
       <DependentUpon>StudentManagement.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\RecycleBin.aspx.cs">
+      <DependentUpon>RecycleBin.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\RecycleBin.aspx.designer.cs">
+      <DependentUpon>RecycleBin.aspx</DependentUpon>
     </Compile>
     <Compile Include="Admin\ParentManagement.aspx.cs">
       <DependentUpon>ParentManagement.aspx</DependentUpon>
@@ -589,6 +610,27 @@
     <Compile Include="Parent\ChildProgress.aspx.designer.cs">
       <DependentUpon>ChildProgress.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Parent\DownloadReport.aspx.cs">
+      <DependentUpon>DownloadReport.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Parent\DownloadReport.aspx.designer.cs">
+      <DependentUpon>DownloadReport.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Parent\NotificationCheck.aspx.cs">
+      <DependentUpon>NotificationCheck.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Parent\NotificationCheck.aspx.designer.cs">
+      <DependentUpon>NotificationCheck.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Parent\ParentAICoach.aspx.cs">
+      <DependentUpon>ParentAICoach.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Parent\ParentAICoach.aspx.designer.cs">
+      <DependentUpon>ParentAICoach.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Parent\QuizResults.aspx.cs">
       <DependentUpon>QuizResults.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -808,13 +850,6 @@
     <Compile Include="Student\Lesson.aspx.designer.cs">
       <DependentUpon>Lesson.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Student\LevelDetails.aspx.cs">
-      <DependentUpon>LevelDetails.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\LevelDetails.aspx.designer.cs">
-      <DependentUpon>LevelDetails.aspx</DependentUpon>
-    </Compile>
     <Compile Include="Student\LiveSessions.aspx.cs">
       <DependentUpon>LiveSessions.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -898,13 +933,6 @@
     </Compile>
     <Compile Include="Student\QuizResult.aspx.designer.cs">
       <DependentUpon>QuizResult.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Student\QuizReview.aspx.cs">
-      <DependentUpon>QuizReview.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\QuizReview.aspx.designer.cs">
-      <DependentUpon>QuizReview.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\RevisionPlan.aspx.cs">
       <DependentUpon>RevisionPlan.aspx</DependentUpon>

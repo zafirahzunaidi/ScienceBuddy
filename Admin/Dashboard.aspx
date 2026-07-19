@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Dashboard.aspx.cs" Inherits="ScienceBuddy.Admin.Dashboard" MasterPageFile="~/Site.Master" Title="Admin Dashboard" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Dashboard.aspx.cs" Inherits="ScienceBuddy.Admin.Dashboard" MasterPageFile="~/Site.Master" Title="Admin Dashboard" %>
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
 <link href="<%: ResolveUrl("~/Content/Admin.css") %>" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
@@ -126,6 +126,16 @@
                 <div class="ad-dashboard-snap-item"><span class="ad-dashboard-snap-item-label"><%= T("Notifications", "Notifikasi") %></span><span class="ad-dashboard-snap-item-pill"><span class="ad-dashboard-snap-dot"></span> <%= T("Healthy", "Sihat") %></span></div>
                 <div class="ad-dashboard-snap-item"><span class="ad-dashboard-snap-item-label"><%= T("Authentication", "Pengesahan") %></span><span class="ad-dashboard-snap-item-pill"><span class="ad-dashboard-snap-dot"></span> <%= T("Healthy", "Sihat") %></span></div>
                 <div class="ad-dashboard-snap-item"><span class="ad-dashboard-snap-item-label"><%= T("Last Backup", "Sandaran Terakhir") %></span><span class="ad-dashboard-snap-item-value" style="font-size:.78rem;"><%= T("Today 2:00 AM", "Hari ini 2:00 AM") %></span></div>
+            </div>
+        </div>
+        <!-- Recycle Bin -->
+        <div class="ad-dashboard-snap-group" style="cursor:pointer;" onclick="window.location.href='<%: ResolveUrl("~/Admin/RecycleBin.aspx") %>'">
+            <div class="ad-dashboard-snap-group-header">
+                <div class="ad-dashboard-snap-group-ico" style="background:#FEE2E2;color:#DC2626;"><i class="bi bi-trash3-fill"></i></div>
+                <div class="ad-dashboard-snap-group-title"><%= T("Recycle Bin", "Tong Kitar Semula") %></div>
+            </div>
+            <div class="ad-dashboard-snap-items">
+                <div class="ad-dashboard-snap-item"><span class="ad-dashboard-snap-item-label"><%= T("Deleted Accounts", "Akaun Dipadam") %></span><span class="ad-dashboard-snap-item-value"><asp:Literal ID="litDeletedAccounts" runat="server" Text="0" /></span></div>
             </div>
         </div>
     </div>

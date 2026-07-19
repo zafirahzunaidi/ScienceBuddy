@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -11,13 +11,13 @@ namespace ScienceBuddy.Student
 {
     public partial class Messages1 : Page
     {
-        // ── Connection string ─────────────────────────────────────────
-        private string ConnStr
+        // Connection string
+        private string ConnectionString
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
 
-        // ── Language helper ────────────────────────────────────────────
+        // Language helper
         public string CurrentLanguage = "EN";
 
         public string T(string en, string bm)
@@ -29,7 +29,7 @@ namespace ScienceBuddy.Student
             return en;
         }
 
-        // ── Page Load ─────────────────────────────────────────────────
+        // Page Load
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["userId"] == null || Session["role"] == null ||
@@ -50,7 +50,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Language initialisation ───────────────────────────────────
+        // Language initialisation
         private void InitLang()
         {
             string lang = Session["preferredLanguage"] as string;
@@ -66,7 +66,7 @@ namespace ScienceBuddy.Student
                 try
                 {
                     const string sql = "SELECT preferredLanguage FROM [User] WHERE userId = @userId";
-                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlConnection connection = new SqlConnection(ConnectionString))
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
                         command.Parameters.AddWithValue("@userId", userId);
@@ -91,29 +91,29 @@ namespace ScienceBuddy.Student
             Session["preferredLanguage"] = "EN";
         }
 
-        // ── Bilingual labels ──────────────────────────────────────────
+        // Bilingual labels
         private void SetLabels()
         {
             litPageTitle.Text = T("Messages", "Mesej");
             litPageSub.Text = T("Chat privately with teachers for learning support.", "Berbual secara peribadi dengan guru untuk sokongan pembelajaran.");
-            litTabChats.Text = T("My Chats", "Chat Saya");
-            litTabTeachers.Text = T("Teachers", "Guru");
+            btnTabChats.Text = "<i class=\"bi bi-chat-left-text\"></i> " + T("My Chats", "Chat Saya");
+            btnTabTeachers.Text = "<i class=\"bi bi-people\"></i> " + T("Teachers", "Guru");
             litChatsEmptyTitle.Text = T("You have not started any teacher chats yet.", "Anda belum memulakan sebarang chat dengan guru.");
             litChatsEmptyDesc.Text = T("Chat privately with teachers for learning support.", "Berbual secara peribadi dengan guru untuk sokongan pembelajaran.");
             litTeachersEmptyTitle.Text = T("No teachers available.", "Tiada guru tersedia.");
             litTeachersEmptyDesc.Text = T("Teachers will appear here once they are certified.", "Guru akan muncul di sini setelah mereka bertauliah.");
         }
 
-        // ── Load chats ────────────────────────────────────────────────
+        // Load chats
         private void LoadChats()
         {
             string uid = Session["userId"].ToString();
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
-                if (!Tbl(connection, "userChat") || !Tbl(connection, "privateMessage"))
+                if (!TableExists(connection, "userChat") || !TableExists(connection, "privateMessage"))
                 {
                     pnlChatsContent.Visible = false;
                     pnlChatsEmpty.Visible = true;
@@ -288,14 +288,14 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Load teachers ─────────────────────────────────────────────
+        // Load teachers
         private void LoadTeachers()
         {
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
-                if (!Tbl(connection, "Teacher"))
+                if (!TableExists(connection, "Teacher"))
                 {
                     pnlTeachersContent.Visible = false;
                     pnlTeachersEmpty.Visible = true;
@@ -380,7 +380,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Tab switching ─────────────────────────────────────────────
+        // Tab switching
         protected void btnTabChats_Click(object sender, EventArgs e)
         {
             hfTab.Value = "chats";
@@ -388,7 +388,16 @@ namespace ScienceBuddy.Student
             pnlTeachers.Visible = false;
             btnTabChats.CssClass = "st-messages-tab active";
             btnTabTeachers.CssClass = "st-messages-tab";
-            LoadChats();
+            try
+            {
+                LoadChats();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("LoadChats error: " + ex.Message);
+                pnlChatsContent.Visible = false;
+                pnlChatsEmpty.Visible = true;
+            }
         }
 
         protected void btnTabTeachers_Click(object sender, EventArgs e)
@@ -398,10 +407,19 @@ namespace ScienceBuddy.Student
             pnlTeachers.Visible = true;
             btnTabChats.CssClass = "st-messages-tab";
             btnTabTeachers.CssClass = "st-messages-tab active";
-            LoadTeachers();
+            try
+            {
+                LoadTeachers();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("LoadTeachers error: " + ex.Message);
+                pnlTeachersContent.Visible = false;
+                pnlTeachersEmpty.Visible = true;
+            }
         }
 
-        // ── Start Chat command ────────────────────────────────────────
+        // Start Chat command
         protected void rptTeachers_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
             if (e.CommandName != "StartChat")
@@ -412,11 +430,11 @@ namespace ScienceBuddy.Student
             string teacherUserId = e.CommandArgument.ToString();
             string uid = Session["userId"].ToString();
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
-                if (!Tbl(connection, "userChat"))
+                if (!TableExists(connection, "userChat"))
                 {
                     // Table doesn't exist, can't proceed
                     return;
@@ -471,7 +489,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Repeater label helpers (called from ASPX) ─────────────────
+        // Repeater label helpers (called from ASPX)
         public string GetOpenChatLabel()
         {
             return T("Open Chat", "Buka Chat");
@@ -492,7 +510,7 @@ namespace ScienceBuddy.Student
             return T("Certified", "Bertauliah");
         }
 
-        // ── Utility helpers ───────────────────────────────────────────
+        // Utility helpers
         private static string GetInitials(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -533,7 +551,7 @@ namespace ScienceBuddy.Student
         /// Returns true if the given table exists in the current database.
         /// Uses INFORMATION_SCHEMA so it never throws on a missing table.
         /// </summary>
-        private static bool Tbl(SqlConnection connection, string tableName)
+        private static bool TableExists(SqlConnection connection, string tableName)
         {
             const string sql = @"
                 SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES

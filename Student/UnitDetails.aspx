@@ -109,6 +109,9 @@
             <div class="st-unitdetails-bar"><div class="st-unitdetails-bar-fill" id="heroBar" runat="server" style="width:0%"></div></div>
             <div class="st-unitdetails-bar-lbl"><span><asp:Literal ID="litBarLbl" runat="server" /></span><span><asp:Literal ID="litBarPct" runat="server" Text="0%" /></span></div>
         </div>
+        <div class="st-unit-flashcard-hero-action">
+            <asp:Button ID="btnGenerateFlashcards" runat="server" Text="Create AI Flashcards" CssClass="st-unit-flashcard-generate" OnClick="btnGenerateFlashcards_Click" OnClientClick="this.value=this.getAttribute('data-creating');this.disabled=true;" UseSubmitBehavior="false" />
+        </div>
     </div>
 
 
@@ -201,6 +204,91 @@
 
     </asp:Panel>
 
+    <%-- AI Flashcards Modal --%>
+    <asp:Panel ID="pnlAIFlashcards" runat="server" Visible="false">
+        <div id="flashcardModalOverlay" class="st-unit-flashcard-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:2000;">
+            <div class="st-unit-flashcard-backdrop" onclick="closeFlashcardModal(event);">
+                <div class="st-unit-flashcard-dialog" role="dialog" aria-modal="true" aria-labelledby="flashcardModalTitle" onclick="event.stopPropagation();">
+                    <button type="button" class="st-unit-flashcard-close" aria-label="Close flashcards" onclick="closeFlashcardModal();">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                    <div class="st-unit-flashcard-dialog-header">
+                        <div class="st-unit-flashcard-dialog-header-left">
+                            <div class="st-unit-flashcard-dialog-icon"><i class="bi bi-stars"></i></div>
+                            <div>
+                                <h2 id="flashcardModalTitle" class="st-unit-flashcard-dialog-title"><asp:Literal ID="litFlashcardTitle" runat="server" /></h2>
+                                <asp:Literal ID="litFlashcardDesc" runat="server" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <%-- Loading --%>
+                    <asp:Panel ID="pnlFlashcardLoading" runat="server" Visible="false">
+                        <div class="st-unit-flashcard-loading">
+                            <div class="st-unit-flashcard-loading-spinner"></div>
+                            <div class="st-unit-flashcard-loading-text">
+                                <span><asp:Literal ID="litFlashcardLoading" runat="server" /></span>
+                                <span class="st-unit-flashcard-loading-sub"><asp:Literal ID="litFlashcardLoadingSub" runat="server" /></span>
+                            </div>
+                        </div>
+                    </asp:Panel>
+
+                    <%-- Error --%>
+                    <asp:Panel ID="pnlFlashcardError" runat="server" Visible="false">
+                        <div class="st-unit-flashcard-error">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <div>
+                                <span><asp:Literal ID="litFlashcardError" runat="server" /></span>
+                            </div>
+                        </div>
+                    </asp:Panel>
+
+                    <%-- Flashcard Deck --%>
+                    <asp:Button ID="btnRegenerateFlashcards" runat="server" Text="Create New Cards" CssClass="st-unit-flashcard-regenerate" OnClick="btnGenerateFlashcards_Click" style="display:none;" />
+                    <div class="st-unit-flashcard-deck">
+                        <div class="st-unit-flashcard-stage">
+                            <asp:Repeater ID="rptAIFlashcards" runat="server">
+                                <ItemTemplate>
+                                    <div class="st-unit-flashcard-slide" data-card-index="<%# Container.ItemIndex %>">
+                                        <div class="st-unit-flashcard-card" tabindex="0" role="button" aria-label="Flip flashcard" onclick="flipFlashcard(this);" onkeydown="handleFlashcardKey(event, this);">
+                                            <div class="st-unit-flashcard-inner">
+                                                <div class="st-unit-flashcard-face st-unit-flashcard-front">
+                                                    <div class="st-unit-flashcard-top">
+                                                        <span class="st-unit-flashcard-number"><%#: Eval("CardNumber") %></span>
+                                                        <span class="st-unit-flashcard-label"><%#: FlashcardQuestionLabel %></span>
+                                                    </div>
+                                                    <div class="st-unit-flashcard-question"><%#: Eval("Question") %></div>
+                                                    <div class="st-unit-flashcard-hint"><i class="bi bi-hand-index"></i> <%#: FlashcardTapToReveal %></div>
+                                                </div>
+                                                <div class="st-unit-flashcard-face st-unit-flashcard-back">
+                                                    <div class="st-unit-flashcard-top">
+                                                        <span class="st-unit-flashcard-number"><%#: Eval("CardNumber") %></span>
+                                                        <span class="st-unit-flashcard-label st-unit-flashcard-label-answer"><%#: FlashcardAnswerLabel %></span>
+                                                    </div>
+                                                    <div class="st-unit-flashcard-answer"><%#: Eval("Answer") %></div>
+                                                    <div class="st-unit-flashcard-hint st-unit-flashcard-hint-back"><i class="bi bi-arrow-repeat"></i> <%#: FlashcardTapToQuestion %></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ItemTemplate>
+                            </asp:Repeater>
+                        </div>
+                        <div id="flashcardDots" class="st-unit-flashcard-dots"></div>
+                        <div class="st-unit-flashcard-navigation">
+                            <button type="button" id="btnPreviousFlashcard" class="st-unit-flashcard-nav-btn" onclick="showPreviousFlashcard();">
+                                <i class="bi bi-arrow-left"></i> <span><%: FlashcardPrevText %></span>
+                            </button>
+                            <button type="button" id="btnNextFlashcard" class="st-unit-flashcard-nav-btn st-unit-flashcard-nav-primary" onclick="showNextFlashcard();">
+                                <span id="flashcardNextLabel"><%: FlashcardNextText %></span> <i class="bi bi-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </asp:Panel>
+
     <script type="text/javascript">
     function openMaterialPreview(url, title) {
         document.getElementById('materialPreviewTitle').innerText = title;
@@ -211,6 +299,133 @@
         document.getElementById('materialPreviewModal').style.display = 'none';
         document.getElementById('materialPreviewFrame').src = 'about:blank';
     }
+
+    /* --- Flashcard Modal --- */
+    var currentFlashcardIndex = 0;
+    var flashcardNextText = '<%: FlashcardNextText %>';
+    var flashcardFinishedText = '<%: FlashcardFinishedText %>';
+
+    function openFlashcardModal() {
+        var modal = document.getElementById('flashcardModalOverlay');
+        if (modal) {
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            initialiseFlashcardDeck();
+        }
+    }
+
+    function closeFlashcardModal(event) {
+        if (event) { event.preventDefault(); }
+        var modal = document.getElementById('flashcardModalOverlay');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    }
+
+    function getFlashcardSlides() {
+        return document.querySelectorAll('.st-unit-flashcard-slide');
+    }
+
+    function initialiseFlashcardDeck() {
+        currentFlashcardIndex = 0;
+        createFlashcardDots();
+        showFlashcard(0);
+    }
+
+    function showFlashcard(index) {
+        var slides = getFlashcardSlides();
+        if (!slides || slides.length === 0) { return; }
+        if (index < 0) { index = 0; }
+        if (index >= slides.length) { index = slides.length - 1; }
+
+        for (var i = 0; i < slides.length; i++) {
+            slides[i].classList.remove('is-active');
+            var card = slides[i].querySelector('.st-unit-flashcard-card');
+            if (card) { card.classList.remove('is-flipped'); }
+        }
+
+        currentFlashcardIndex = index;
+        slides[index].classList.add('is-active');
+        updateFlashcardDots();
+        updateFlashcardButtons(slides.length);
+
+        var activeCard = slides[index].querySelector('.st-unit-flashcard-card');
+        if (activeCard) { activeCard.focus(); }
+    }
+
+    function showNextFlashcard() {
+        var slides = getFlashcardSlides();
+        if (currentFlashcardIndex < slides.length - 1) {
+            showFlashcard(currentFlashcardIndex + 1);
+        }
+    }
+
+    function showPreviousFlashcard() {
+        if (currentFlashcardIndex > 0) {
+            showFlashcard(currentFlashcardIndex - 1);
+        }
+    }
+
+    function updateFlashcardButtons(total) {
+        var prevBtn = document.getElementById('btnPreviousFlashcard');
+        var nextBtn = document.getElementById('btnNextFlashcard');
+        var nextLabel = document.getElementById('flashcardNextLabel');
+        if (prevBtn) { prevBtn.disabled = (currentFlashcardIndex === 0); }
+        if (nextBtn) { nextBtn.disabled = (currentFlashcardIndex === total - 1); }
+        if (nextLabel) {
+            nextLabel.textContent = (currentFlashcardIndex === total - 1) ? flashcardFinishedText : flashcardNextText;
+        }
+    }
+
+    function createFlashcardDots() {
+        var dotsContainer = document.getElementById('flashcardDots');
+        if (!dotsContainer) { return; }
+        var slides = getFlashcardSlides();
+        dotsContainer.innerHTML = '';
+        for (var i = 0; i < slides.length; i++) {
+            var dot = document.createElement('button');
+            dot.type = 'button';
+            dot.className = 'st-unit-flashcard-dot';
+            dot.setAttribute('aria-label', 'Go to card ' + (i + 1));
+            dot.setAttribute('data-dot-index', i);
+            dot.onclick = (function (idx) { return function () { showFlashcard(idx); }; })(i);
+            dotsContainer.appendChild(dot);
+        }
+    }
+
+    function updateFlashcardDots() {
+        var dots = document.querySelectorAll('.st-unit-flashcard-dot');
+        for (var i = 0; i < dots.length; i++) {
+            if (i === currentFlashcardIndex) {
+                dots[i].classList.add('is-active');
+            } else {
+                dots[i].classList.remove('is-active');
+            }
+        }
+    }
+
+    function flipFlashcard(card) {
+        if (card) { card.classList.toggle('is-flipped'); }
+    }
+
+    function handleFlashcardKey(event, card) {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            flipFlashcard(card);
+        }
+    }
+
+    /* Keyboard navigation */
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') { closeFlashcardModal(); return; }
+        var modal = document.getElementById('flashcardModalOverlay');
+        if (!modal || modal.style.display === 'none') { return; }
+        var tag = document.activeElement ? document.activeElement.tagName : '';
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') { return; }
+        if (e.key === 'ArrowRight') { e.preventDefault(); showNextFlashcard(); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); showPreviousFlashcard(); }
+    });
     </script>
 
 </asp:Content>

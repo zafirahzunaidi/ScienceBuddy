@@ -10,7 +10,7 @@ namespace ScienceBuddy.Student
 {
     public partial class Lesson1 : Page
     {
-        private string ConnStr
+        private string ConnectionString
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
@@ -63,7 +63,7 @@ namespace ScienceBuddy.Student
             {
                 try
                 {
-                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlConnection connection = new SqlConnection(ConnectionString))
                     using (SqlCommand command = new SqlCommand("SELECT preferredLanguage FROM [User] WHERE userId=@u", connection))
                     {
                         command.Parameters.AddWithValue("@u", uid);
@@ -92,13 +92,13 @@ namespace ScienceBuddy.Student
         {
             string lessonId = Request.QueryString["lessonId"];
             string userId = Session["userId"].ToString();
-            if (string.IsNullOrEmpty(lessonId) || !Tbl("Lesson") || !Tbl("Student"))
+            if (string.IsNullOrEmpty(lessonId) || !TableExists("Lesson") || !TableExists("Student"))
             {
                 ShowLocked(T("Invalid", "Tidak sah"), T("No lesson specified.", "Tiada pelajaran dinyatakan."));
                 return;
             }
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
                 string curLevel = "LV001";
@@ -242,7 +242,7 @@ namespace ScienceBuddy.Student
                 litContent.Text = content;
 
                 bool isDone = false;
-                if (Tbl("LessonProgress"))
+                if (TableExists("LessonProgress"))
                 {
                     using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM LessonProgress WHERE studentId=@s AND lessonId=@l AND isCompleted=1", connection))
                     {
@@ -315,7 +315,7 @@ namespace ScienceBuddy.Student
                 return;
             }
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
                 string studentId = null;
@@ -334,7 +334,7 @@ namespace ScienceBuddy.Student
                 }
 
                 bool already = false;
-                if (Tbl("LessonProgress"))
+                if (TableExists("LessonProgress"))
                 {
                     using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM LessonProgress WHERE studentId=@s AND lessonId=@l AND isCompleted=1", connection))
                     {
@@ -344,7 +344,7 @@ namespace ScienceBuddy.Student
                     }
                 }
 
-                if (!already && Tbl("LessonProgress"))
+                if (!already && TableExists("LessonProgress"))
                 {
                     string progId = "PR001";
                     using (SqlCommand seqCmd = new SqlCommand(@"SELECT ISNULL(MAX(CAST(SUBSTRING(progressId,3,LEN(progressId)-2) AS INT)),0) FROM LessonProgress WHERE progressId LIKE 'PR[0-9]%'", connection))
@@ -375,7 +375,7 @@ namespace ScienceBuddy.Student
         {
             try
             {
-                if (!Tbl("XPAction") || !Tbl("XPTransaction"))
+                if (!TableExists("XPAction") || !TableExists("XPTransaction"))
                 {
                     return;
                 }
@@ -437,14 +437,14 @@ namespace ScienceBuddy.Student
         {
             try
             {
-                if (!Tbl("StudentBadge") || !Tbl("LessonProgress")) return;
+                if (!TableExists("StudentBadge") || !TableExists("LessonProgress")) return;
 
                 // B001 First Step Learner — first lesson completed
                 int lessonCount = 0;
-                using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM LessonProgress WHERE studentId=@s AND isCompleted=1", conn))
+                using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM LessonProgress WHERE studentId=@s AND isCompleted=1", conn))
                 {
-                    cmd.Parameters.AddWithValue("@s", studentId);
-                    lessonCount = (int)cmd.ExecuteScalar();
+                    command.Parameters.AddWithValue("@s", studentId);
+                    lessonCount = (int)command.ExecuteScalar();
                 }
                 if (lessonCount == 1)
                 {
@@ -452,13 +452,13 @@ namespace ScienceBuddy.Student
                 }
 
                 // B010 Consistent Learner — activity on 3+ different days
-                if (Tbl("XPTransaction"))
+                if (TableExists("XPTransaction"))
                 {
                     int distinctDays = 0;
-                    using (SqlCommand cmd = new SqlCommand("SELECT COUNT(DISTINCT CAST(dateEarned AS DATE)) FROM XPTransaction WHERE studentId=@s", conn))
+                    using (SqlCommand command = new SqlCommand("SELECT COUNT(DISTINCT CAST(dateEarned AS DATE)) FROM XPTransaction WHERE studentId=@s", conn))
                     {
-                        cmd.Parameters.AddWithValue("@s", studentId);
-                        distinctDays = (int)cmd.ExecuteScalar();
+                        command.Parameters.AddWithValue("@s", studentId);
+                        distinctDays = (int)command.ExecuteScalar();
                     }
                     if (distinctDays >= 3)
                     {
@@ -474,26 +474,26 @@ namespace ScienceBuddy.Student
 
         private void AwardBadgeIfNotEarned(SqlConnection conn, string studentId, string badgeId)
         {
-            using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM StudentBadge WHERE studentId=@s AND badgeId=@b", conn))
+            using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM StudentBadge WHERE studentId=@s AND badgeId=@b", conn))
             {
-                cmd.Parameters.AddWithValue("@s", studentId);
-                cmd.Parameters.AddWithValue("@b", badgeId);
-                if ((int)cmd.ExecuteScalar() > 0) return;
+                command.Parameters.AddWithValue("@s", studentId);
+                command.Parameters.AddWithValue("@b", badgeId);
+                if ((int)command.ExecuteScalar() > 0) return;
             }
 
             string sbId = "SB001";
-            using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(studentBadgeId,3,LEN(studentBadgeId)-2) AS INT)),0) FROM StudentBadge WHERE studentBadgeId LIKE 'SB[0-9]%'", conn))
+            using (SqlCommand command = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(studentBadgeId,3,LEN(studentBadgeId)-2) AS INT)),0) FROM StudentBadge WHERE studentBadgeId LIKE 'SB[0-9]%'", conn))
             {
-                sbId = "SB" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                sbId = "SB" + (Convert.ToInt32(command.ExecuteScalar()) + 1).ToString("D3");
             }
 
-            using (SqlCommand cmd = new SqlCommand("INSERT INTO StudentBadge(studentBadgeId,studentId,badgeId,earnedAt) VALUES(@id,@s,@b,@dt)", conn))
+            using (SqlCommand command = new SqlCommand("INSERT INTO StudentBadge(studentBadgeId,studentId,badgeId,earnedAt) VALUES(@id,@s,@b,@dt)", conn))
             {
-                cmd.Parameters.AddWithValue("@id", sbId);
-                cmd.Parameters.AddWithValue("@s", studentId);
-                cmd.Parameters.AddWithValue("@b", badgeId);
-                cmd.Parameters.AddWithValue("@dt", DateTime.Now);
-                cmd.ExecuteNonQuery();
+                command.Parameters.AddWithValue("@id", sbId);
+                command.Parameters.AddWithValue("@s", studentId);
+                command.Parameters.AddWithValue("@b", badgeId);
+                command.Parameters.AddWithValue("@dt", DateTime.Now);
+                command.ExecuteNonQuery();
             }
 
             // Send badge earned notification
@@ -564,7 +564,7 @@ namespace ScienceBuddy.Student
             if (string.IsNullOrEmpty(currentLessonId) || string.IsNullOrEmpty(nextLessonId)) return;
 
             // Mark current lesson as complete
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
                 string studentId = null;
@@ -575,7 +575,7 @@ namespace ScienceBuddy.Student
                     if (result != null && result != DBNull.Value) studentId = result.ToString();
                 }
 
-                if (!string.IsNullOrEmpty(studentId) && Tbl("LessonProgress"))
+                if (!string.IsNullOrEmpty(studentId) && TableExists("LessonProgress"))
                 {
                     bool already = false;
                     using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM LessonProgress WHERE studentId=@s AND lessonId=@l AND isCompleted=1", connection))
@@ -632,9 +632,9 @@ namespace ScienceBuddy.Student
             }
         }
 
-        private bool Tbl(string t)
+        private bool TableExists(string t)
         {
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME=@t AND TABLE_TYPE='BASE TABLE'", connection))
             {
                 command.Parameters.AddWithValue("@t", t);
@@ -647,21 +647,21 @@ namespace ScienceBuddy.Student
         {
             try
             {
-                string nId = "NTF001";
-                using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(notificationId,4,LEN(notificationId)-3) AS INT)),0) FROM Notification WHERE notificationId LIKE 'NTF[0-9]%'", conn))
+                string nId = "N001";
+                using (SqlCommand command = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(notificationId,2,LEN(notificationId)-1) AS INT)),0) FROM Notification WHERE notificationId LIKE 'N[0-9]%'", conn))
                 {
-                    nId = "NTF" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                    nId = "N" + (Convert.ToInt32(command.ExecuteScalar()) + 1).ToString("D3");
                 }
-                using (SqlCommand cmd = new SqlCommand("INSERT INTO Notification(notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt) VALUES(@id,@to,@tEN,@tBM,@mEN,@mBM,0,@dt)", conn))
+                using (SqlCommand command = new SqlCommand("INSERT INTO Notification(notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt) VALUES(@id,@to,@tEN,@tBM,@mEN,@mBM,0,@dt)", conn))
                 {
-                    cmd.Parameters.AddWithValue("@id", nId);
-                    cmd.Parameters.AddWithValue("@to", toUserId);
-                    cmd.Parameters.AddWithValue("@tEN", titleEN);
-                    cmd.Parameters.AddWithValue("@tBM", titleBM);
-                    cmd.Parameters.AddWithValue("@mEN", msgEN);
-                    cmd.Parameters.AddWithValue("@mBM", msgBM);
-                    cmd.Parameters.AddWithValue("@dt", DateTime.Now);
-                    cmd.ExecuteNonQuery();
+                    command.Parameters.AddWithValue("@id", nId);
+                    command.Parameters.AddWithValue("@to", toUserId);
+                    command.Parameters.AddWithValue("@tEN", titleEN);
+                    command.Parameters.AddWithValue("@tBM", titleBM);
+                    command.Parameters.AddWithValue("@mEN", msgEN);
+                    command.Parameters.AddWithValue("@mBM", msgBM);
+                    command.Parameters.AddWithValue("@dt", DateTime.Now);
+                    command.ExecuteNonQuery();
                 }
             }
             catch (Exception ex)
@@ -671,3 +671,4 @@ namespace ScienceBuddy.Student
         }
     }
 }
+

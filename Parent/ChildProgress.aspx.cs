@@ -342,6 +342,7 @@ namespace ScienceBuddy.Parent
 
             BuildLearningHeatmap();
             BuildCoachingSection();
+            BuildSciencePowerMap();
         }
 
         // ══════════════════════════════════════════════════════════════
@@ -1149,6 +1150,518 @@ namespace ScienceBuddy.Parent
             }
 
             return recommendation;
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        //  SCIENCE POWER MAP (radar chart with gamified learning stats)
+        // ══════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Calculates 6 "power" scores from real activity data and renders
+        /// an SVG hexagonal radar chart with an explorer identity.
+        /// Scores: Brain Power, Mission Streak, Explorer Energy, Challenge Courage,
+        /// Bounce-Back Power, Team Spirit — all derived from observable system data.
+        /// </summary>
+        private void BuildSciencePowerMap()
+        {
+            pnlPowerMap.Visible = false;
+
+            if (string.IsNullOrEmpty(_selectedChildId))
+                return;
+
+            int brainPower = 0, missionStreak = 0, explorerEnergy = 0;
+            int challengeCourage = 0, bounceBack = 0, teamSpirit = 0;
+
+            try
+            {
+                using (var connection = new SqlConnection(DatabaseConnectionString))
+                {
+                    connection.Open();
+                    brainPower = CalculateBrainPower(connection);
+                    missionStreak = CalculateMissionStreak(connection);
+                    explorerEnergy = CalculateExplorerEnergy(connection);
+                    challengeCourage = CalculateChallengeCourage(connection);
+                    bounceBack = CalculateBounceBackPower(connection);
+                    teamSpirit = CalculateTeamSpirit(connection);
+                }
+            }
+            catch { }
+
+            // Show the chart even with low scores — only hide if there's literally no child selected
+            if (string.IsNullOrEmpty(_selectedChildId))
+                return;
+
+            // Render the section
+            pnlPowerMap.Visible = true;
+            litPowerMapTitle.Text = string.Format(
+                T("{0}'s Science Power Map", "Peta Kuasa Sains {0}"), _selectedChildName);
+            litPowerMapFooter.Text = T(
+                "Scores are calculated from real learning activity — not invented by AI.",
+                "Skor dikira daripada aktiviti pembelajaran sebenar — bukan rekaan AI.");
+
+            // Generate the SVG radar (no numeric scores shown)
+            int[] scores = { brainPower, missionStreak, explorerEnergy,
+                challengeCourage, bounceBack, teamSpirit };
+            string[] labels = {
+                T("Brain Power", "Kuasa Minda"),
+                T("Mission Streak", "Misi Berterusan"),
+                T("Explorer Energy", "Tenaga Peneroka"),
+                T("Challenge Courage", "Keberanian Cabaran"),
+                T("Bounce-Back", "Kuasa Bangkit"),
+                T("Team Spirit", "Semangat Pasukan")
+            };
+            litPowerMapSvg.Text = RenderRadarSvg(scores, labels);
+
+            // Determine explorer identity
+            DetermineExplorerIdentity(scores, labels);
+
+            // Output skill data as JS for the interactive popup
+            OutputSkillDataScript(scores, labels);
+        }
+
+        private void OutputSkillDataScript(int[] scores, string[] labels)
+        {
+            string[] meanings = {
+                T("How well the child understands science ideas, remembers concepts and applies what they learned.",
+                  "Sejauh mana anak memahami idea sains, mengingat konsep dan mengaplikasikan apa yang dipelajari."),
+                T("How regularly the child logs in and completes learning activities throughout the week.",
+                  "Seberapa kerap anak log masuk dan menyelesaikan aktiviti pembelajaran sepanjang minggu."),
+                T("How much of the available learning content the child has explored and completed.",
+                  "Berapa banyak kandungan pembelajaran yang tersedia telah diterokai dan diselesaikan oleh anak."),
+                T("The child's willingness to attempt quizzes and try harder content, even without being certain.",
+                  "Kesediaan anak mencuba kuiz dan kandungan lebih sukar, walaupun tanpa kepastian."),
+                T("Whether the child improves after getting something wrong — retrying and revisiting weak areas.",
+                  "Sama ada anak bertambah baik selepas melakukan kesilapan — mencuba semula dan mengulangkaji."),
+                T("How actively the child participates in discussions, asks questions, or communicates with teachers.",
+                  "Seberapa aktif anak menyertai perbincangan, bertanya soalan, atau berkomunikasi dengan guru.")
+            };
+
+            string[] helpTips = {
+                string.Format(T("Ask {0} to explain one lesson idea in her own words after completing a topic.",
+                    "Minta {0} menerangkan satu idea pelajaran dengan ayat sendiri selepas selesai satu topik."), _selectedChildName),
+                string.Format(T("Set a simple routine: 15 minutes of ScienceBuddy on three evenings this week.",
+                    "Tetapkan rutin mudah: 15 minit ScienceBuddy pada tiga malam minggu ini."), _selectedChildName),
+                string.Format(T("Encourage {0} to open a new lesson or try a virtual lab they haven't seen yet.",
+                    "Galakkan {0} membuka pelajaran baru atau mencuba makmal maya yang belum pernah dicuba."), _selectedChildName),
+                T("Praise the effort of trying, not just the result. Say \"I'm proud you gave it a go!\"",
+                    "Puji usaha mencuba, bukan hanya hasilnya. Katakan \"Saya bangga kamu mencuba!\""),
+                string.Format(T("After a low result, say \"Let's look at which questions were tricky — we can figure them out together.\"",
+                    "Selepas keputusan rendah, katakan \"Jom tengok soalan mana yang susah — kita boleh selesaikan bersama.\""), _selectedChildName),
+                string.Format(T("Ask {0} to share one thing they learned this week in the forum or with their teacher.",
+                    "Minta {0} berkongsi satu perkara yang dipelajari minggu ini di forum atau dengan guru."), _selectedChildName)
+            };
+
+            var sb = new System.Text.StringBuilder();
+            sb.Append("<script>window._skillData=[");
+
+            for (int i = 0; i < 6; i++)
+            {
+                string status = GetFriendlyStatus(scores[i]);
+                string progress = GetProgressSentence(scores[i]);
+
+                if (i > 0) sb.Append(",");
+                sb.Append("{");
+                sb.AppendFormat("name:{0},", JavaScriptStringEncode(labels[i]));
+                sb.AppendFormat("status:{0},", JavaScriptStringEncode(status));
+                sb.AppendFormat("meaning:{0},", JavaScriptStringEncode(meanings[i]));
+                sb.AppendFormat("progress:{0},", JavaScriptStringEncode(progress));
+                sb.AppendFormat("help:{0}", JavaScriptStringEncode(helpTips[i]));
+                sb.Append("}");
+            }
+
+            sb.Append("];</script>");
+            litSkillDataScript.Text = sb.ToString();
+        }
+
+        private string GetFriendlyStatus(int score)
+        {
+            if (score >= 71) return T("Strong", "Mantap");
+            if (score >= 46) return T("Steady", "Stabil");
+            if (score >= 21) return T("Developing", "Berkembang");
+            return T("Growing", "Bermula");
+        }
+
+        private string GetProgressSentence(int score)
+        {
+            if (score >= 71)
+                return string.Format(T("{0} is showing real confidence in this area!", "{0} menunjukkan keyakinan sebenar dalam bidang ini!"), _selectedChildName);
+            if (score >= 46)
+                return string.Format(T("{0} is practising this skill regularly and making progress.", "{0} sedang mengamalkan kemahiran ini secara tetap dan menunjukkan kemajuan."), _selectedChildName);
+            if (score >= 21)
+                return string.Format(T("{0} is beginning to show this skill and building confidence.", "{0} mula menunjukkan kemahiran ini dan membina keyakinan."), _selectedChildName);
+            return string.Format(T("{0} is just getting started with this skill.", "{0} baru sahaja bermula dengan kemahiran ini."), _selectedChildName);
+        }
+
+        private string JavaScriptStringEncode(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return "\"\"";
+            return "\"" + value.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "") + "\"";
+        }
+
+        // ── Individual power calculations ────────────────────────────
+
+        private int CalculateBrainPower(SqlConnection conn)
+        {
+            // Average quiz percentage (0-100)
+            using (var cmd = new SqlCommand(
+                "SELECT AVG(percentage) FROM dbo.QuizResult WHERE studentId = @sid", conn))
+            {
+                cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                object result = cmd.ExecuteScalar();
+                if (result != null && result != DBNull.Value)
+                    return Math.Min(100, (int)Math.Round(Convert.ToDecimal(result)));
+            }
+            return 0;
+        }
+
+        private int CalculateMissionStreak(SqlConnection conn)
+        {
+            // Active days in last 20 days as percentage
+            DateTime since = DateTime.Today.AddDays(-20);
+            using (var cmd = new SqlCommand(
+                @"SELECT COUNT(DISTINCT CAST(d AS DATE)) FROM (
+                    SELECT completedDate AS d FROM dbo.LessonProgress 
+                    WHERE studentId=@sid AND isCompleted=1 AND completedDate>=@since
+                    UNION ALL SELECT completedDate FROM dbo.LabProgress 
+                    WHERE studentId=@sid AND isCompleted=1 AND completedDate>=@since
+                ) x", conn))
+            {
+                cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                cmd.Parameters.AddWithValue("@since", since);
+                int activeDays = (int)cmd.ExecuteScalar();
+                return Math.Min(100, (int)Math.Round((double)activeDays / 20 * 100));
+            }
+        }
+
+        private int CalculateExplorerEnergy(SqlConnection conn)
+        {
+            // Lessons completed / total available lessons (enrolled level)
+            int completed = 0, total = 0;
+            using (var cmd = new SqlCommand(
+                "SELECT COUNT(*) FROM dbo.LessonProgress WHERE studentId=@sid AND isCompleted=1", conn))
+            {
+                cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                completed = (int)cmd.ExecuteScalar();
+            }
+            using (var cmd = new SqlCommand(
+                @"SELECT COUNT(DISTINCT l.lessonId) FROM dbo.Enrollment e
+                INNER JOIN dbo.Unit u ON u.levelId=e.levelId
+                INNER JOIN dbo.Subtopic st ON st.unitId=u.unitId
+                INNER JOIN dbo.Lesson l ON l.subtopicId=st.subtopicId
+                WHERE e.studentId=@sid", conn))
+            {
+                cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                total = (int)cmd.ExecuteScalar();
+            }
+            if (total == 0) return 0;
+            return Math.Min(100, (int)Math.Round((double)completed / total * 100));
+        }
+
+        private int CalculateChallengeCourage(SqlConnection conn)
+        {
+            // Quiz attempts / available quizzes (willingness to try)
+            int attempted = 0, available = 0;
+            using (var cmd = new SqlCommand(
+                "SELECT COUNT(DISTINCT quizId) FROM dbo.QuizResult WHERE studentId=@sid", conn))
+            {
+                cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                attempted = (int)cmd.ExecuteScalar();
+            }
+            using (var cmd = new SqlCommand(
+                @"SELECT COUNT(*) FROM dbo.Quiz q
+                INNER JOIN dbo.Unit u ON q.unitId=u.unitId
+                INNER JOIN dbo.Enrollment e ON e.levelId=u.levelId AND e.studentId=@sid", conn))
+            {
+                cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                available = (int)cmd.ExecuteScalar();
+            }
+            if (available == 0) return 0;
+            return Math.Min(100, (int)Math.Round((double)attempted / available * 100));
+        }
+
+        private int CalculateBounceBackPower(SqlConnection conn)
+        {
+            // Score improvement between first and latest quiz attempts
+            decimal firstAvg = 0, latestAvg = 0;
+            int attemptCount = 0;
+            using (var cmd = new SqlCommand(
+                "SELECT COUNT(*) FROM dbo.QuizResult WHERE studentId=@sid", conn))
+            {
+                cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                attemptCount = (int)cmd.ExecuteScalar();
+            }
+            if (attemptCount < 2) return 0;
+
+            // Average of first 3 attempts
+            using (var cmd = new SqlCommand(
+                @"SELECT AVG(percentage) FROM (
+                    SELECT TOP 3 percentage FROM dbo.QuizResult 
+                    WHERE studentId=@sid ORDER BY attemptedDate ASC
+                ) x", conn))
+            {
+                cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                object r = cmd.ExecuteScalar();
+                if (r != null && r != DBNull.Value) firstAvg = Convert.ToDecimal(r);
+            }
+
+            // Average of latest 3 attempts
+            using (var cmd = new SqlCommand(
+                @"SELECT AVG(percentage) FROM (
+                    SELECT TOP 3 percentage FROM dbo.QuizResult 
+                    WHERE studentId=@sid ORDER BY attemptedDate DESC
+                ) x", conn))
+            {
+                cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                object r = cmd.ExecuteScalar();
+                if (r != null && r != DBNull.Value) latestAvg = Convert.ToDecimal(r);
+            }
+
+            // Improvement scaled to 0-100 (30+ point improvement = 100)
+            decimal improvement = latestAvg - firstAvg;
+            if (improvement <= 0) return 20; // baseline if no decline
+            return Math.Min(100, (int)Math.Round((double)improvement / 30 * 100));
+        }
+
+        private int CalculateTeamSpirit(SqlConnection conn)
+        {
+            // Forum posts + chat messages in last 30 days
+            int forumPosts = 0, chatMessages = 0;
+            string childUserId = "";
+
+            // Get child's userId for forum/chat lookup
+            using (var cmd = new SqlCommand(
+                "SELECT userId FROM dbo.Student WHERE studentId=@sid", conn))
+            {
+                cmd.Parameters.AddWithValue("@sid", _selectedChildId);
+                object r = cmd.ExecuteScalar();
+                if (r != null && r != DBNull.Value) childUserId = r.ToString();
+            }
+
+            if (string.IsNullOrEmpty(childUserId)) return 0;
+
+            DateTime since = DateTime.Today.AddDays(-30);
+
+            using (var cmd = new SqlCommand(
+                "SELECT COUNT(*) FROM dbo.ForumReply WHERE createdByUserId=@uid AND createdAt>=@since", conn))
+            {
+                cmd.Parameters.AddWithValue("@uid", childUserId);
+                cmd.Parameters.AddWithValue("@since", since);
+                forumPosts = (int)cmd.ExecuteScalar();
+            }
+
+            using (var cmd = new SqlCommand(
+                "SELECT COUNT(*) FROM dbo.privateMessage WHERE senderUserId=@uid AND sentAt>=@since", conn))
+            {
+                cmd.Parameters.AddWithValue("@uid", childUserId);
+                cmd.Parameters.AddWithValue("@since", since);
+                chatMessages = (int)cmd.ExecuteScalar();
+            }
+
+            // Scale: 10+ interactions = 100
+            int totalInteractions = forumPosts + chatMessages;
+            return Math.Min(100, (int)Math.Round((double)totalInteractions / 10 * 100));
+        }
+
+        // ── SVG Radar Rendering ──────────────────────────────────────
+
+        private string RenderRadarSvg(int[] scores, string[] labels)
+        {
+            // Hexagonal radar — center (200,200), radius 90, viewBox 400x400
+            double cx = 200, cy = 200, maxR = 90;
+            int axes = 6;
+            double angleStep = 2 * Math.PI / axes;
+
+            // Each power has its own vibrant color
+            string[] fillColors = {
+                "rgba(99,102,241,0.55)",   // Brain Power — indigo
+                "rgba(20,184,166,0.55)",    // Mission Streak — teal
+                "rgba(245,158,11,0.55)",    // Explorer Energy — amber
+                "rgba(239,68,68,0.55)",     // Challenge Courage — red
+                "rgba(168,85,247,0.55)",    // Bounce-Back — violet
+                "rgba(16,185,129,0.55)"     // Team Spirit — emerald
+            };
+            string[] strokeColors = {
+                "#6366F1", "#14B8A6", "#F59E0B",
+                "#EF4444", "#A855F7", "#10B981"
+            };
+            string[] dotColors = {
+                "#6366F1", "#14B8A6", "#F59E0B",
+                "#EF4444", "#A855F7", "#10B981"
+            };
+
+            var svg = new System.Text.StringBuilder();
+            svg.Append("<svg viewBox='0 0 400 400' class='pt-power-map-svg'>");
+
+            // Background grid rings
+            for (int ring = 1; ring <= 4; ring++)
+            {
+                double ringR = maxR * ring / 4.0;
+                svg.Append("<polygon points='");
+                for (int i = 0; i < axes; i++)
+                {
+                    double angle = -Math.PI / 2 + i * angleStep;
+                    double px = cx + ringR * Math.Cos(angle);
+                    double py = cy + ringR * Math.Sin(angle);
+                    if (i > 0) svg.Append(" ");
+                    svg.AppendFormat("{0:F1},{1:F1}", px, py);
+                }
+                svg.Append("' fill='none' stroke='#CBD5E1' stroke-width='0.7' stroke-dasharray='4,4'/>");
+            }
+
+            // Axis lines
+            for (int i = 0; i < axes; i++)
+            {
+                double angle = -Math.PI / 2 + i * angleStep;
+                double px = cx + maxR * Math.Cos(angle);
+                double py = cy + maxR * Math.Sin(angle);
+                svg.AppendFormat("<line x1='{0}' y1='{1}' x2='{2:F1}' y2='{3:F1}' stroke='#E2E8F0' stroke-width='0.7'/>",
+                    cx, cy, px, py);
+            }
+
+            // Draw one colored triangle per axis — each power fills from center to its two neighbours
+            // This creates overlapping color zones like the reference image
+            for (int i = 0; i < axes; i++)
+            {
+                int next = (i + 1) % axes;
+                double scoreR = maxR * scores[i] / 100.0;
+                double nextScoreR = maxR * scores[next] / 100.0;
+
+                double angle1 = -Math.PI / 2 + i * angleStep;
+                double angle2 = -Math.PI / 2 + next * angleStep;
+
+                double px1 = cx + scoreR * Math.Cos(angle1);
+                double py1 = cy + scoreR * Math.Sin(angle1);
+                double px2 = cx + nextScoreR * Math.Cos(angle2);
+                double py2 = cy + nextScoreR * Math.Sin(angle2);
+
+                svg.AppendFormat(
+                    "<polygon points='{0:F1},{1:F1} {2:F1},{3:F1} {4:F1},{5:F1}' fill='{6}' stroke='{7}' stroke-width='1.5' stroke-linejoin='round'/>",
+                    cx, cy, px1, py1, px2, py2,
+                    fillColors[i], strokeColors[i]);
+            }
+
+            // Score value dots — clickable
+            for (int i = 0; i < axes; i++)
+            {
+                double angle = -Math.PI / 2 + i * angleStep;
+                double scoreR = maxR * scores[i] / 100.0;
+                double px = cx + scoreR * Math.Cos(angle);
+                double py = cy + scoreR * Math.Sin(angle);
+                svg.AppendFormat(
+                    "<circle cx='{0:F1}' cy='{1:F1}' r='6' fill='{2}' stroke='#fff' stroke-width='2.5' style='cursor:pointer;' onclick='openSkillPanel({3})'/>",
+                    px, py, dotColors[i], i);
+            }
+
+            // Labels — clickable buttons, no numeric score shown
+            for (int i = 0; i < axes; i++)
+            {
+                double angle = -Math.PI / 2 + i * angleStep;
+                double labelR = maxR + 40;
+                double px = cx + labelR * Math.Cos(angle);
+                double py = cy + labelR * Math.Sin(angle);
+                string anchor = px < cx - 8 ? "end" : px > cx + 8 ? "start" : "middle";
+
+                svg.AppendFormat(
+                    "<text x='{0:F1}' y='{1:F1}' text-anchor='{2}' font-size='12' font-weight='700' fill='{3}' font-family='inherit' class='pt-power-skill-btn' style='cursor:pointer;' onclick='openSkillPanel({4})'>{5}</text>",
+                    px, py, anchor, strokeColors[i], i, labels[i]);
+            }
+
+            svg.Append("</svg>");
+            return svg.ToString();
+        }
+
+        // ── Explorer Identity ────────────────────────────────────────
+
+        private void DetermineExplorerIdentity(int[] scores, string[] labels)
+        {
+            // Find strongest and weakest power
+            int maxIdx = 0, minIdx = 0;
+            for (int i = 1; i < scores.Length; i++)
+            {
+                if (scores[i] > scores[maxIdx]) maxIdx = i;
+                if (scores[i] < scores[minIdx]) minIdx = i;
+            }
+
+            string superpowerLabel = labels[maxIdx];
+            string powerUpLabel = labels[minIdx];
+
+            // Determine explorer type based on dominant powers
+            string explorerType = DetermineExplorerType(scores, maxIdx);
+
+            litExplorerType.Text = string.Format(
+                T("Explorer Type: {0}", "Jenis Peneroka: {0}"), explorerType);
+            litSuperpower.Text = string.Format(
+                T("Superpower: {0}", "Kuasa Istimewa: {0}"), superpowerLabel);
+            litPowerUp.Text = string.Format(
+                T("Next Power-Up: {0}", "Kuasa Seterusnya: {0}"), powerUpLabel);
+
+            // Build advice from analysisJson ParentGuidance or template
+            string advice = BuildPowerMapAdvice(explorerType, superpowerLabel, powerUpLabel);
+            if (!string.IsNullOrEmpty(advice))
+            {
+                litPowerMapAdvice.Text = advice;
+                pnlPowerMapAdvice.Visible = true;
+            }
+        }
+
+        private string DetermineExplorerType(int[] scores, int strongestIndex)
+        {
+            // Check if scores are balanced (all within 20 points of each other)
+            int maxScore = scores[0], minScore = scores[0];
+            for (int i = 1; i < scores.Length; i++)
+            {
+                if (scores[i] > maxScore) maxScore = scores[i];
+                if (scores[i] < minScore) minScore = scores[i];
+            }
+            if (maxScore - minScore <= 20 && maxScore >= 40)
+                return T("All-Round Science Star", "Bintang Sains Serba Boleh");
+
+            // Assign based on strongest power
+            switch (strongestIndex)
+            {
+                case 0: return T("Brainy Inventor", "Pencipta Bijak");
+                case 1: return T("Mission Master", "Penguasa Misi");
+                case 2: return T("Curious Trailblazer", "Perintis Ingin Tahu");
+                case 3: return T("Brave Challenger", "Pencabar Berani");
+                case 4: return T("Comeback Champion", "Juara Bangkit Semula");
+                case 5: return T("Teamwork Scientist", "Saintis Kerjasama");
+                default: return T("Science Explorer", "Peneroka Sains");
+            }
+        }
+
+        private string BuildPowerMapAdvice(string explorerType, string superpower, string powerUp)
+        {
+            // Try to read ParentGuidance from analysisJson first
+            try
+            {
+                using (var connection = new SqlConnection(DatabaseConnectionString))
+                using (var command = new SqlCommand(
+                    "SELECT TOP 1 analysisJson FROM dbo.AILearningAnalysis WHERE studentId=@sid AND isLatest=1",
+                    connection))
+                {
+                    command.Parameters.AddWithValue("@sid", _selectedChildId);
+                    connection.Open();
+                    object result = command.ExecuteScalar();
+                    if (result != null && result != DBNull.Value)
+                    {
+                        string json = result.ToString();
+                        if (!string.IsNullOrEmpty(json))
+                        {
+                            var parsed = Newtonsoft.Json.Linq.JObject.Parse(json);
+                            string parentGuidance = parsed["ParentGuidance"]?.ToString() ?? "";
+                            if (!string.IsNullOrEmpty(parentGuidance))
+                                return Server.HtmlEncode(parentGuidance);
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            // Fallback: template-based advice
+            return Server.HtmlEncode(string.Format(
+                T("{0} is a {1}! Their strongest power is {2}. To grow their {3}, try setting short daily learning missions this week.",
+                  "{0} ialah {1}! Kuasa terkuat mereka ialah {2}. Untuk mengembangkan {3}, cuba tetapkan misi pembelajaran harian pendek minggu ini."),
+                _selectedChildName, explorerType, superpower, powerUp));
         }
 
         // ══════════════════════════════════════════════════════════════

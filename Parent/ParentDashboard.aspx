@@ -4,6 +4,60 @@
 
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
 <link href="<%: ResolveUrl("~/Content/Parent.css") %>?v=6" rel="stylesheet" />
+<script type="text/javascript">
+// Real-time notification toast — polls every 30 seconds
+(function(){
+    var lastCount = -1;
+    var toastTimeout = null;
+
+    function checkNotifications(){
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '<%: ResolveUrl("~/Parent/NotificationCheck.aspx") %>?t=' + Date.now(), true);
+        xhr.onreadystatechange = function(){
+            if(xhr.readyState===4 && xhr.status===200){
+                try{
+                    var data = JSON.parse(xhr.responseText);
+                    // Show toast only when count increases (new notification arrived)
+                    if(lastCount >= 0 && data.count > lastCount && data.latest){
+                        showToast(data.latest, data.count);
+                    }
+                    lastCount = data.count;
+                    // Update sidebar badge if exists
+                    updateBadge(data.count);
+                }catch(e){}
+            }
+        };
+        xhr.send();
+    }
+
+    function showToast(message, count){
+        // Remove existing toast
+        var old = document.getElementById('ptNotifToast');
+        if(old) old.remove();
+
+        var toast = document.createElement('div');
+        toast.id = 'ptNotifToast';
+        toast.className = 'pt-notif-toast pt-notif-toast-show';
+        toast.innerHTML = '<i class="bi bi-bell-fill"></i><span>' + escapeHtml(message) + '</span><button onclick="this.parentElement.remove();">&times;</button>';
+        document.body.appendChild(toast);
+
+        // Auto-hide after 6 seconds
+        if(toastTimeout) clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(function(){ if(toast.parentElement) toast.classList.remove('pt-notif-toast-show'); setTimeout(function(){if(toast.parentElement)toast.remove();},400); }, 6000);
+    }
+
+    function updateBadge(count){
+        var badges = document.querySelectorAll('.pt-sidebar-badge');
+        badges.forEach(function(b){ b.textContent = count > 0 ? count : ''; if(count===0) b.style.display='none'; else b.style.display=''; });
+    }
+
+    function escapeHtml(str){ var d=document.createElement('div'); d.textContent=str; return d.innerHTML; }
+
+    // Start polling after page loads
+    if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',function(){ setTimeout(checkNotifications,2000); setInterval(checkNotifications,30000); }); }
+    else{ setTimeout(checkNotifications,2000); setInterval(checkNotifications,30000); }
+})();
+</script>
 </asp:Content>
 
 <%-- ════ SIDEBAR MENU ════ --%>
@@ -57,6 +111,10 @@
         <a href="<%: ResolveUrl("~/Parent/QuizResults.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-patch-check item-icon"></i>
             <span class="item-label"><%: T("Quiz Results","Keputusan Kuiz") %></span>
+        </a>
+        <a href="<%: ResolveUrl("~/Parent/ParentAICoach.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-robot item-icon"></i>
+            <span class="item-label"><%: T("AI Parent Coach","Jurulatih AI") %></span>
         </a>
     </div>
 

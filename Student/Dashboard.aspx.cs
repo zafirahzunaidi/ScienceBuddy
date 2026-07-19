@@ -12,12 +12,12 @@ namespace ScienceBuddy.Student
 {
     public partial class Dashboard : System.Web.UI.Page
     {
-        private string ConnStr = ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+        private string ConnectionString = ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
-        // ── Language helper ────────────────────────────────────────────
+        // Language helper
         private string CurrentLanguage = "EN";
 
-        // ── Personality colour for ASPX hero styling ──────────────────
+        // Personality colour for ASPX hero styling
         public string PersonalityColour = "#2563EB";
 
         private string T(string en, string bm)
@@ -63,7 +63,7 @@ namespace ScienceBuddy.Student
                 try
                 {
                     const string sql = "SELECT preferredLanguage FROM [User] WHERE userId = @userId";
-                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlConnection connection = new SqlConnection(ConnectionString))
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
                         command.Parameters.AddWithValue("@userId", userId);
@@ -88,11 +88,11 @@ namespace ScienceBuddy.Student
             Session["preferredLanguage"] = "EN";
         }
 
-        // ── Load all dashboard data ───────────────────────────────────
+        // Load all dashboard data
         private void LoadDashboard(string userId)
         {
             // All data fetched in a single open connection for efficiency.
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -272,7 +272,7 @@ namespace ScienceBuddy.Student
             litSeeAll.Text = T("See All", "Lihat Semua");
         }
 
-        // ── Data retrieval helpers ────────────────────────────────────
+        // Data retrieval helpers
 
         /// <summary>
         /// Returns a single row joining Student + Level + Personality + User.
@@ -533,7 +533,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── UI setters ────────────────────────────────────────────────
+        // UI setters
 
         private void SetHero(string name, string nickname, string levelEN,
                               string personalityEN, string avatar, string colour,
@@ -775,7 +775,7 @@ namespace ScienceBuddy.Student
             pnlSectionNotif.Style["order"] = oNotif.ToString();
         }
 
-        // ── Utility helpers ───────────────────────────────────────────
+        // Utility helpers
 
         private string GetMotivation(string personalityId)
         {

@@ -76,12 +76,10 @@ namespace ScienceBuddy.Admin
 
         private void LoadStats(SqlConnection conn)
         {
-            litTotal.Text = SS(conn, "SELECT COUNT(*) FROM dbo.[Certificate]");
-            litGenerated.Text = SS(conn, "SELECT COUNT(*) FROM dbo.[Certificate] WHERE [status] IS NOT NULL");
+            litReady.Text = SS(conn, "SELECT COUNT(*) FROM dbo.[Certificate] WHERE [status]='Pending'");
+            litGenerated.Text = SS(conn, "SELECT COUNT(*) FROM dbo.[Certificate] WHERE [status]='Generated'");
             litSent.Text = SS(conn, "SELECT COUNT(*) FROM dbo.[Certificate] WHERE [status]='Active'");
-            // "Ready" = enrolled students at a level who don't have a cert for that level yet
-            litReady.Text = SS(conn, @"SELECT COUNT(*) FROM dbo.[Enrollment] en
-                WHERE en.[status]='Active' AND NOT EXISTS(SELECT 1 FROM dbo.[Certificate] c WHERE c.[studentId]=en.[studentId] AND c.[levelId]=en.[levelId])");
+            litTotal.Text = SS(conn, "SELECT COUNT(*) FROM dbo.[Certificate]");
         }
 
         private void LoadCerts(SqlConnection conn)
@@ -94,6 +92,7 @@ namespace ScienceBuddy.Admin
                 FROM dbo.[Certificate] c
                 LEFT JOIN dbo.[Student] s ON s.[studentId]=c.[studentId]
                 LEFT JOIN dbo.[Level] lv ON lv.[levelId]=c.[levelId]
+                WHERE c.[status] IN ('Generated','Active')
                 ORDER BY c.[issuedDate] DESC", lCol, tCol);
             using (var cmd = new SqlCommand(sql, conn)) {
                 var da = new SqlDataAdapter(cmd); var dt = new DataTable(); da.Fill(dt);
@@ -116,13 +115,13 @@ namespace ScienceBuddy.Admin
         private void LoadEligible(SqlConnection conn)
         {
             string lCol = CurrentLanguage == "BM" ? "lv.[levelNameBM]" : "lv.[levelNameEN]";
-            string sql = string.Format(@"SELECT en.[studentId], en.[levelId], s.[name] AS studentName, s.[userId] AS studentUserId,
+            string sql = string.Format(@"SELECT c.[certificateId], c.[studentId], c.[levelId],
+                s.[name] AS studentName, s.[userId] AS studentUserId,
                 ISNULL({0},'-') AS levelName
-                FROM dbo.[Enrollment] en
-                JOIN dbo.[Student] s ON s.[studentId]=en.[studentId]
-                LEFT JOIN dbo.[Level] lv ON lv.[levelId]=en.[levelId]
-                WHERE en.[status]='Active'
-                AND NOT EXISTS(SELECT 1 FROM dbo.[Certificate] c WHERE c.[studentId]=en.[studentId] AND c.[levelId]=en.[levelId])
+                FROM dbo.[Certificate] c
+                JOIN dbo.[Student] s ON s.[studentId]=c.[studentId]
+                LEFT JOIN dbo.[Level] lv ON lv.[levelId]=c.[levelId]
+                WHERE c.[status]='Pending'
                 ORDER BY s.[name]", lCol);
             using (var cmd = new SqlCommand(sql, conn)) {
                 var da = new SqlDataAdapter(cmd); var dt = new DataTable(); da.Fill(dt);
@@ -145,35 +144,68 @@ namespace ScienceBuddy.Admin
             string studentId = p[0], levelId = p[1], studentName = p[2], levelName = p[3], studentUserId = p[4];
 
             using (var conn = new SqlConnection(ConnStr)) { conn.Open();
-                string certId = GenId(conn, "Certificate", "CERT");
-                string code = "SB-" + DateTime.Now.ToString("yyyyMMdd") + "-" + certId;
-                
+
+                string prefix;
+                switch (levelId)
+                {
+                    case "LV001": prefix = "SCI-BEG-"; break;
+                    case "LV002": prefix = "SCI-INT-"; break;
+                    case "LV003": prefix = "SCI-ADV-"; break;
+                    default: prefix = "SCI-"; break;
+                }
+                string code = prefix + studentId;
+
                 // Level-specific titles
                 string titleEN, titleBM;
                 switch (levelId)
                 {
                     case "LV002": titleEN = "Intermediate Science Completion Certificate"; titleBM = "Sijil Tamat Sains Pertengahan"; break;
                     case "LV003": titleEN = "Advanced Science Completion Certificate"; titleBM = "Sijil Tamat Sains Lanjutan"; break;
-                    default:      titleEN = "Beginner Science Completion Certificate"; titleBM = "Sijil Tamat Sains Pemula"; break;
+                    default: titleEN = "Beginner Science Completion Certificate"; titleBM = "Sijil Tamat Sains Pemula"; break;
                 }
-                
-                string descEN = "Awarded to " + studentName + " for successfully completing the " + levelName + " level in ScienceBuddy.";
-                string descBM = "Dianugerahkan kepada " + studentName + " kerana berjaya menamatkan tahap " + levelName + " dalam ScienceBuddy.";
+
+                string descEN, descBM;
+                switch (levelId)
+                {
+                    case "LV001":
+                        descEN = "Awarded for successfully completing all Beginner Science learning units and meeting the minimum passing requirements.";
+                        descBM = "Dianugerahkan kerana berjaya menamatkan semua unit pembelajaran Sains Pemula dan memenuhi syarat kelulusan minimum.";
+                        break;
+                    case "LV002":
+                        descEN = "Awarded for successfully completing all Intermediate Science learning units and achieving the required passing score.";
+                        descBM = "Dianugerahkan kerana berjaya menamatkan semua unit pembelajaran Sains Pertengahan dan mencapai markah kelulusan yang ditetapkan.";
+                        break;
+                    case "LV003":
+                        descEN = "Awarded for successfully completing all Advanced Science learning units and demonstrating mastery of advanced science concepts.";
+                        descBM = "Dianugerahkan kerana berjaya menamatkan semua unit pembelajaran Sains Lanjutan dan menunjukkan penguasaan konsep sains lanjutan.";
+                        break;
+                    default: descEN = ""; descBM = ""; break;
+                }
+
                 string fileName = "cert_" + studentId.ToLower() + "_" + levelId.ToLower() + ".pdf";
                 string url = "Images/Certificate/" + fileName;
 
-                // Generate physical certificate file
+                // Generate the physical PDF certificate file
                 GenerateCertificateFile(studentName, levelName, descEN, code, DateTime.Today, fileName, titleEN);
 
-                using (var cmd = new SqlCommand(@"INSERT INTO dbo.[Certificate]
-                    ([certificateId],[studentId],[levelId],[certificateTitleEN],[certificateTitleBM],[certificateDescriptionEN],[certificateDescriptionBM],[issuedDate],[certificateUrl],[certificateCode],[status])
-                    VALUES(@id,@sid,@lid,@tEN,@tBM,@dEN,@dBM,@dt,@url,@code,'Generated')", conn))
-                { cmd.Parameters.AddWithValue("@id", certId); cmd.Parameters.AddWithValue("@sid", studentId);
-                  cmd.Parameters.AddWithValue("@lid", levelId); cmd.Parameters.AddWithValue("@tEN", titleEN);
-                  cmd.Parameters.AddWithValue("@tBM", titleBM); cmd.Parameters.AddWithValue("@dEN", descEN);
-                  cmd.Parameters.AddWithValue("@dBM", descBM); cmd.Parameters.AddWithValue("@dt", DateTime.Today);
-                  cmd.Parameters.AddWithValue("@url", url); cmd.Parameters.AddWithValue("@code", code);
-                  cmd.ExecuteNonQuery(); }
+                // UPDATE the existing Pending certificate record (do NOT insert a new one)
+                using (var cmd = new SqlCommand(@"UPDATE dbo.[Certificate] SET
+                    [certificateTitleEN]=@tEN, [certificateTitleBM]=@tBM,
+                    [certificateDescriptionEN]=@dEN, [certificateDescriptionBM]=@dBM,
+                    [issuedDate]=@dt, [certificateUrl]=@url, [certificateCode]=@code, [status]='Generated'
+                    WHERE [studentId]=@sid AND [levelId]=@lid AND [status]='Pending'", conn))
+                {
+                    cmd.Parameters.AddWithValue("@tEN", titleEN);
+                    cmd.Parameters.AddWithValue("@tBM", titleBM);
+                    cmd.Parameters.AddWithValue("@dEN", descEN);
+                    cmd.Parameters.AddWithValue("@dBM", descBM);
+                    cmd.Parameters.AddWithValue("@dt", DateTime.Today);
+                    cmd.Parameters.AddWithValue("@url", url);
+                    cmd.Parameters.AddWithValue("@code", code);
+                    cmd.Parameters.AddWithValue("@sid", studentId);
+                    cmd.Parameters.AddWithValue("@lid", levelId);
+                    cmd.ExecuteNonQuery();
+                }
 
                 InsertLog(conn, "Certificate Generated", "Generated " + levelName + " certificate for " + studentName + ".", "Success");
             }

@@ -11,13 +11,13 @@ namespace ScienceBuddy.Student
 {
     public partial class CreateForumPost1 : Page
     {
-        // ── Connection string ─────────────────────────────────────────
-        private string ConnStr
+        // Connection string
+        private string ConnectionString
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
 
-        // ── Language helper ────────────────────────────────────────────
+        // Language helper
         public string CurrentLanguage = "EN";
 
         public string T(string en, string bm)
@@ -29,7 +29,7 @@ namespace ScienceBuddy.Student
             return en;
         }
 
-        // ── Mode: "Public" or "Private" from URL param ────────────────
+        // Mode: "Public" or "Private" from URL param
         private string PageMode
         {
             get
@@ -43,7 +43,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Edit mode: forumId from URL param ─────────────────────────
+        // Edit mode: forumId from URL param
         private string EditForumId
         {
             get { return Request.QueryString["forumId"]; }
@@ -54,7 +54,7 @@ namespace ScienceBuddy.Student
             get { return !string.IsNullOrEmpty(EditForumId); }
         }
 
-        // ── Page Load ─────────────────────────────────────────────────
+        // Page Load
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["userId"] == null || Session["role"] == null ||
@@ -81,7 +81,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Language initialization ───────────────────────────────────
+        // Language initialization
         private void InitLang()
         {
             string lang = Session["preferredLanguage"] as string;
@@ -97,7 +97,7 @@ namespace ScienceBuddy.Student
                 try
                 {
                     const string sql = "SELECT preferredLanguage FROM [User] WHERE userId = @userId";
-                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlConnection connection = new SqlConnection(ConnectionString))
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
                         command.Parameters.AddWithValue("@userId", userId);
@@ -122,7 +122,7 @@ namespace ScienceBuddy.Student
             Session["preferredLanguage"] = "EN";
         }
 
-        // ── Set bilingual labels ──────────────────────────────────────
+        // Set bilingual labels
         private void SetLabels()
         {
             bool isPrivate = (PageMode == "Private");
@@ -185,16 +185,16 @@ namespace ScienceBuddy.Student
             txtMessage.Attributes["placeholder"] = T("Write your question or message...", "Tulis soalan atau mesej anda...");
         }
 
-        // ── Check if student has a linked parent ──────────────────────
+        // Check if student has a linked parent
         private void CheckLinkedParent()
         {
             string userId = Session["userId"].ToString();
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
-                if (!Tbl(connection, "Student") || !Tbl(connection, "StudentParent") || !Tbl(connection, "Parent"))
+                if (!TableExists(connection, "Student") || !TableExists(connection, "StudentParent") || !TableExists(connection, "Parent"))
                 {
                     ShowNoParentWarning();
                     return;
@@ -227,7 +227,7 @@ namespace ScienceBuddy.Student
                 "Tiada akaun ibu bapa yang dipautkan ditemui. Anda masih boleh mencipta perbincangan ini, tetapi ibu bapa anda mungkin tidak dapat melihatnya sehingga akaun mereka dipautkan.");
         }
 
-        // ── Build form (load type dropdown and tags) ──────────────────
+        // Build form (load type dropdown and tags)
         private void BuildForm()
         {
             // Type dropdown (Public mode only)
@@ -241,11 +241,11 @@ namespace ScienceBuddy.Student
             // Tags checkboxes
             cblTags.Items.Clear();
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
-                if (!Tbl(connection, "Tag"))
+                if (!TableExists(connection, "Tag"))
                 {
                     return;
                 }
@@ -264,13 +264,13 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Load existing post for editing ───────────────────────────
+        // Load existing post for editing
         private void LoadPostForEdit()
         {
             string userId = Session["userId"].ToString();
             string forumId = EditForumId;
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -290,7 +290,7 @@ namespace ScienceBuddy.Student
                         string createdBy = reader["createdBy"].ToString();
                         if (createdBy != userId)
                         {
-                            // Not owner — redirect
+                            // Not owner � redirect
                             Response.Redirect("~/Student/Forum.aspx", false);
                             return;
                         }
@@ -307,7 +307,7 @@ namespace ScienceBuddy.Student
                 }
 
                 // Load existing tags and pre-select them
-                if (Tbl(connection, "ForumTag") && Tbl(connection, "Tag"))
+                if (TableExists(connection, "ForumTag") && TableExists(connection, "Tag"))
                 {
                     const string tagSql = "SELECT tagId FROM ForumTag WHERE forumId = @fid";
                     using (SqlCommand tagCmd = new SqlCommand(tagSql, connection))
@@ -328,7 +328,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Submit handler ────────────────────────────────────────────
+        // Submit handler
         protected void btnSubmit_Click(object sender, EventArgs e)
         {
             // Re-init language for postback
@@ -372,14 +372,14 @@ namespace ScienceBuddy.Student
                 return;
             }
 
-            // ── EDIT MODE ──
+            // EDIT MODE
             if (IsEditMode)
             {
                 UpdatePost(title, message, discussionType, selectedTagIds);
                 return;
             }
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -502,13 +502,13 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Update existing post ──────────────────────────────────────
+        // Update existing post
         private void UpdatePost(string title, string message, string discussionType, List<string> selectedTagIds)
         {
             string userId = Session["userId"].ToString();
             string forumId = EditForumId;
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -540,7 +540,7 @@ namespace ScienceBuddy.Student
                 }
 
                 // Update tags: remove old, add new
-                if (Tbl(connection, "ForumTag"))
+                if (TableExists(connection, "ForumTag"))
                 {
                     using (SqlCommand delCmd = new SqlCommand("DELETE FROM ForumTag WHERE forumId = @fid", connection))
                     {
@@ -586,7 +586,7 @@ namespace ScienceBuddy.Student
         {
             try
             {
-                if (!Tbl(conn, "StudentBadge") || !Tbl(conn, "Student")) return;
+                if (!TableExists(conn, "StudentBadge") || !TableExists(conn, "Student")) return;
 
                 string studentId = null;
                 using (SqlCommand cmd = new SqlCommand("SELECT studentId FROM Student WHERE userId=@uid", conn))
@@ -662,7 +662,7 @@ namespace ScienceBuddy.Student
         {
             try
             {
-                if (!Tbl(conn, "XPAction") || !Tbl(conn, "XPTransaction") || !Tbl(conn, "Student"))
+                if (!TableExists(conn, "XPAction") || !TableExists(conn, "XPTransaction") || !TableExists(conn, "Student"))
                 {
                     return;
                 }
@@ -724,15 +724,15 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Show error message ────────────────────────────────────────
+        // Show error message
         private void ShowError(string message)
         {
             pnlError.Visible = true;
             litError.Text = HttpUtility.HtmlEncode(message);
         }
 
-        // ── Table existence check ─────────────────────────────────────
-        private static bool Tbl(SqlConnection connection, string tableName)
+        // Table existence check
+        private static bool TableExists(SqlConnection connection, string tableName)
         {
             const string sql = @"
                 SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
@@ -749,10 +749,10 @@ namespace ScienceBuddy.Student
         {
             try
             {
-                string nId = "NTF001";
-                using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(notificationId,4,LEN(notificationId)-3) AS INT)),0) FROM Notification WHERE notificationId LIKE 'NTF[0-9]%'", conn))
+                string nId = "N001";
+                using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(notificationId,2,LEN(notificationId)-1) AS INT)),0) FROM Notification WHERE notificationId LIKE 'N[0-9]%'", conn))
                 {
-                    nId = "NTF" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                    nId = "N" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
                 }
                 using (SqlCommand cmd = new SqlCommand("INSERT INTO Notification(notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt) VALUES(@id,@to,@tEN,@tBM,@mEN,@mBM,0,@dt)", conn))
                 {
@@ -773,4 +773,5 @@ namespace ScienceBuddy.Student
         }
     }
 }
+
 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
@@ -8,7 +8,7 @@ namespace ScienceBuddy.Student
 {
     public partial class VirtualLab1 : Page
     {
-        private string ConnStr
+        private string ConnectionString
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
@@ -65,7 +65,7 @@ namespace ScienceBuddy.Student
             }
 
             // Verify lab exists in database and student has access
-            if (!Tbl("VirtualLab") || !Tbl("Student") || !Tbl("Unit"))
+            if (!TableExists("VirtualLab") || !TableExists("Student") || !TableExists("Unit"))
             {
                 ShowError(T("Lab not available", "Makmal tidak tersedia"),
                     T("Virtual labs are not configured yet.", "Makmal maya belum dikonfigurasi."));
@@ -73,7 +73,7 @@ namespace ScienceBuddy.Student
             }
 
             string userId = Session["userId"].ToString();
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -147,7 +147,7 @@ namespace ScienceBuddy.Student
             {
                 try
                 {
-                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlConnection connection = new SqlConnection(ConnectionString))
                     using (SqlCommand command = new SqlCommand("SELECT preferredLanguage FROM [User] WHERE userId=@u", connection))
                     {
                         command.Parameters.AddWithValue("@u", uid);
@@ -187,9 +187,9 @@ namespace ScienceBuddy.Student
             }
         }
 
-        private bool Tbl(string t)
+        private bool TableExists(string t)
         {
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME=@t AND TABLE_TYPE='BASE TABLE'", connection))
             {
                 command.Parameters.AddWithValue("@t", t);

@@ -53,6 +53,10 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
             <i class="bi bi-patch-check item-icon"></i>
             <span class="item-label"><%: T("Quiz Results","Keputusan Kuiz") %></span>
         </a>
+        <a href="<%: ResolveUrl("~/Parent/ParentAICoach.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-robot item-icon"></i>
+            <span class="item-label"><%: T("AI Parent Coach","Jurulatih AI") %></span>
+        </a>
     </div>
     <div class="sb-nav-section">
         <div class="sb-nav-section-label"><%: T("Study Plan","Pelan Pembelajaran") %></div>

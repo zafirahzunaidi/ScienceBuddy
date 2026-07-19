@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -11,13 +11,13 @@ namespace ScienceBuddy.Student
 {
     public partial class Chat : Page
     {
-        // ── Connection string ─────────────────────────────────────────
-        private string ConnStr
+        // Connection string
+        private string ConnectionString
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
 
-        // ── Language helper ────────────────────────────────────────────
+        // Language helper
         public string CurrentLanguage = "EN";
 
         public string T(string en, string bm)
@@ -29,14 +29,14 @@ namespace ScienceBuddy.Student
             return en;
         }
 
-        // ── State ─────────────────────────────────────────────────────
+        // State
         private string ChatId
         {
             get { return ViewState["ChatId"] as string; }
             set { ViewState["ChatId"] = value; }
         }
 
-        // ── Page Load ─────────────────────────────────────────────────
+        // Page Load
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["userId"] == null || Session["role"] == null ||
@@ -57,18 +57,18 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Initialize chat from URL params ───────────────────────────
+        // Initialize chat from URL params
         private void InitializeChat()
         {
             string uid = Session["userId"].ToString();
             string chatIdParam = Request.QueryString["chatId"];
             string teacherUserIdParam = Request.QueryString["teacherUserId"];
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
-                if (!Tbl(connection, "userChat") || !Tbl(connection, "privateMessage"))
+                if (!TableExists(connection, "userChat") || !TableExists(connection, "privateMessage"))
                 {
                     ShowError();
                     return;
@@ -123,10 +123,15 @@ namespace ScienceBuddy.Student
                     else
                     {
                         // Create new chat
-                        string newChatId = "C" + DateTime.Now.ToString("yyMMddHHmm").Substring(0, 9);
-                        if (newChatId.Length > 10)
+                        string newChatId = "C001";
+                        using (SqlCommand seqCmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(chatId, 2, LEN(chatId) - 1) AS INT)), 0) FROM userChat WHERE chatId LIKE 'C[0-9]%'", connection))
                         {
-                            newChatId = newChatId.Substring(0, 10);
+                            object lastVal = seqCmd.ExecuteScalar();
+                            if (lastVal != null && lastVal != DBNull.Value)
+                            {
+                                int lastNum = Convert.ToInt32(lastVal);
+                                newChatId = "C" + (lastNum + 1).ToString("D3");
+                            }
                         }
 
                         const string insertSql = @"
@@ -160,7 +165,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Mark teacher messages as read ─────────────────────────────
+        // Mark teacher messages as read
         private void MarkAsRead(SqlConnection connection, string uid)
         {
             const string sql = @"
@@ -179,7 +184,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Load chat header (teacher info) ───────────────────────────
+        // Load chat header (teacher info)
         private void LoadChatHeader(SqlConnection connection, string uid)
         {
             // Get the other user's ID from the chat
@@ -211,7 +216,7 @@ namespace ScienceBuddy.Student
             string qualification = "";
             string status = "";
 
-            if (Tbl(connection, "Teacher"))
+            if (TableExists(connection, "Teacher"))
             {
                 const string teacherSql = @"
                     SELECT t.name, t.academicQualification, t.status
@@ -293,11 +298,11 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Load messages ─────────────────────────────────────────────
+        // Load messages
         private void LoadMessages(SqlConnection connection, string uid)
         {
             const string sql = @"
-                SELECT pm.privateMsgId, pm.senderUserId, pm.msgText, pm.sentAt
+                SELECT pm.privateMsgId, pm.senderUserId, pm.msgText, pm.attachmentFile, pm.sentAt
                 FROM   privateMessage pm
                 WHERE  pm.chatId = @chatId
                 ORDER BY pm.sentAt ASC";
@@ -318,6 +323,12 @@ namespace ScienceBuddy.Student
                         if (reader["msgText"] != DBNull.Value)
                         {
                             msgText = reader["msgText"].ToString();
+                        }
+
+                        string attachmentFile = "";
+                        if (reader["attachmentFile"] != DBNull.Value)
+                        {
+                            attachmentFile = reader["attachmentFile"].ToString();
                         }
 
                         DateTime sentAt;
@@ -350,9 +361,33 @@ namespace ScienceBuddy.Student
                             senderInitial = (litHeaderInitials.Text.Length > 0) ? litHeaderInitials.Text : "T";
                         }
 
+                        string attachmentHtml = "";
+                        if (!string.IsNullOrEmpty(attachmentFile))
+                        {
+                            string fileUrl = ResolveUrl("~/" + attachmentFile);
+                            string fileName = System.IO.Path.GetFileName(attachmentFile);
+                            string ext = System.IO.Path.GetExtension(attachmentFile).ToLower();
+
+                            if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".gif" || ext == ".webp")
+                            {
+                                attachmentHtml = "<div class=\"st-chat-msg-attachment\">"
+                                    + "<a href=\"" + HttpUtility.HtmlAttributeEncode(fileUrl) + "\" target=\"_blank\">"
+                                    + "<img src=\"" + HttpUtility.HtmlAttributeEncode(fileUrl) + "\" alt=\"" + HttpUtility.HtmlAttributeEncode(fileName) + "\" class=\"st-chat-msg-img\" />"
+                                    + "</a></div>";
+                            }
+                            else
+                            {
+                                attachmentHtml = "<div class=\"st-chat-msg-attachment\">"
+                                    + "<a href=\"" + HttpUtility.HtmlAttributeEncode(fileUrl) + "\" target=\"_blank\" class=\"st-chat-msg-file\">"
+                                    + "<i class=\"bi bi-file-earmark-arrow-down\"></i> " + HttpUtility.HtmlEncode(fileName)
+                                    + "</a></div>";
+                            }
+                        }
+
                         messages.Add(new
                         {
                             MsgText = HttpUtility.HtmlEncode(msgText),
+                            AttachmentHtml = attachmentHtml,
                             SentAt = sentAt.ToString("dd MMM yyyy, h:mm tt"),
                             IsMine = isMine,
                             SenderName = senderName,
@@ -376,11 +411,13 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Send message ──────────────────────────────────────────────
+        // Send message
         protected void btnSend_Click(object sender, EventArgs e)
         {
             string msgText = txtMessage.Text.Trim();
-            if (string.IsNullOrEmpty(msgText))
+            bool hasFile = fuAttachment.HasFile;
+
+            if (string.IsNullOrEmpty(msgText) && !hasFile)
             {
                 return;
             }
@@ -390,12 +427,51 @@ namespace ScienceBuddy.Student
             }
 
             string uid = Session["userId"].ToString();
+            string attachmentFile = null;
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            // Handle file upload
+            if (hasFile)
+            {
+                string fileName = System.IO.Path.GetFileName(fuAttachment.FileName);
+                string ext = System.IO.Path.GetExtension(fileName).ToLower();
+
+                // Allow common file types
+                string[] allowed = { ".png", ".jpg", ".jpeg", ".gif", ".webp", ".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx", ".txt" };
+                bool isAllowed = false;
+                foreach (string a in allowed)
+                {
+                    if (ext == a) { isAllowed = true; break; }
+                }
+
+                if (isAllowed && fuAttachment.PostedFile.ContentLength <= 10 * 1024 * 1024)
+                {
+                    // Generate unique filename
+                    string uniqueName = uid + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + "_" + fileName;
+                    string savePath = Server.MapPath("~/Images/PrivateMessage/") + uniqueName;
+
+                    // Ensure directory exists
+                    string dir = System.IO.Path.GetDirectoryName(savePath);
+                    if (!System.IO.Directory.Exists(dir))
+                    {
+                        System.IO.Directory.CreateDirectory(dir);
+                    }
+
+                    fuAttachment.SaveAs(savePath);
+                    attachmentFile = "Images/PrivateMessage/" + uniqueName;
+                }
+            }
+
+            // If no text and no valid file, return
+            if (string.IsNullOrEmpty(msgText) && string.IsNullOrEmpty(attachmentFile))
+            {
+                return;
+            }
+
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
-                // Generate unique privateMsgId: "PM" + next sequential 3-digit number (PM001 to PM999)
+                // Generate unique privateMsgId
                 string msgId = "PM001";
                 const string seqSql = @"
                     SELECT ISNULL(MAX(CAST(SUBSTRING(privateMsgId, 3, LEN(privateMsgId) - 2) AS INT)), 0)
@@ -413,19 +489,20 @@ namespace ScienceBuddy.Student
 
                 const string sql = @"
                     INSERT INTO privateMessage (privateMsgId, chatId, senderUserId, msgText, attachmentFile, sentAt, isRead, readAt)
-                    VALUES (@msgId, @chatId, @uid, @msgText, NULL, @sentAt, 0, NULL)";
+                    VALUES (@msgId, @chatId, @uid, @msgText, @attachmentFile, @sentAt, 0, NULL)";
 
                 using (SqlCommand command = new SqlCommand(sql, connection))
                 {
                     command.Parameters.AddWithValue("@msgId", msgId);
                     command.Parameters.AddWithValue("@chatId", ChatId);
                     command.Parameters.AddWithValue("@uid", uid);
-                    command.Parameters.AddWithValue("@msgText", msgText);
+                    command.Parameters.AddWithValue("@msgText", string.IsNullOrEmpty(msgText) ? (object)DBNull.Value : msgText);
+                    command.Parameters.AddWithValue("@attachmentFile", string.IsNullOrEmpty(attachmentFile) ? (object)DBNull.Value : attachmentFile);
                     command.Parameters.AddWithValue("@sentAt", DateTime.Now);
                     command.ExecuteNonQuery();
                 }
 
-                // Notify recipient of new message
+                // Notify recipient
                 try
                 {
                     string recipientUserId = "";
@@ -446,21 +523,21 @@ namespace ScienceBuddy.Student
                     System.Diagnostics.Debug.WriteLine("Chat notification error: " + notifEx.Message);
                 }
 
-                // Clear textbox and reload messages
+                // Clear and reload
                 txtMessage.Text = "";
                 LoadChatHeader(connection, uid);
                 LoadMessages(connection, uid);
             }
         }
 
-        // ── Show error ────────────────────────────────────────────────
+        // Show error
         private void ShowError()
         {
             pnlError.Visible = true;
             pnlChat.Visible = false;
         }
 
-        // ── Language initialisation ───────────────────────────────────
+        // Language initialisation
         private void InitLang()
         {
             string lang = Session["preferredLanguage"] as string;
@@ -476,7 +553,7 @@ namespace ScienceBuddy.Student
                 try
                 {
                     const string sql = "SELECT preferredLanguage FROM [User] WHERE userId = @userId";
-                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlConnection connection = new SqlConnection(ConnectionString))
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
                         command.Parameters.AddWithValue("@userId", userId);
@@ -501,7 +578,7 @@ namespace ScienceBuddy.Student
             Session["preferredLanguage"] = "EN";
         }
 
-        // ── Bilingual labels ──────────────────────────────────────────
+        // Bilingual labels
         private void SetLabels()
         {
             litBack.Text = T("Back to Messages", "Kembali ke Mesej");
@@ -512,7 +589,7 @@ namespace ScienceBuddy.Student
             txtMessage.Attributes["placeholder"] = T("Type your message...", "Taip mesej anda...");
         }
 
-        // ── Utility helpers ───────────────────────────────────────────
+        // Utility helpers
         private static string GetInitials(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -535,7 +612,7 @@ namespace ScienceBuddy.Student
         /// Returns true if the given table exists in the current database.
         /// Uses INFORMATION_SCHEMA so it never throws on a missing table.
         /// </summary>
-        private static bool Tbl(SqlConnection connection, string tableName)
+        private static bool TableExists(SqlConnection connection, string tableName)
         {
             const string sql = @"
                 SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
@@ -552,10 +629,10 @@ namespace ScienceBuddy.Student
         {
             try
             {
-                string nId = "NTF001";
-                using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(notificationId,4,LEN(notificationId)-3) AS INT)),0) FROM Notification WHERE notificationId LIKE 'NTF[0-9]%'", conn))
+                string nId = "N001";
+                using (SqlCommand cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(notificationId,2,LEN(notificationId)-1) AS INT)),0) FROM Notification WHERE notificationId LIKE 'N[0-9]%'", conn))
                 {
-                    nId = "NTF" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                    nId = "N" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
                 }
                 using (SqlCommand cmd = new SqlCommand("INSERT INTO Notification(notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt) VALUES(@id,@to,@tEN,@tBM,@mEN,@mBM,0,@dt)", conn))
                 {
@@ -576,3 +653,4 @@ namespace ScienceBuddy.Student
         }
     }
 }
+

@@ -125,7 +125,7 @@
                 <thead><tr>
                     <th><%= T("Student", "Pelajar") %></th>
                     <th><%= T("Level", "Tahap") %></th>
-                    <th><%= T("Action", "Tindakan") %></th>
+                    <th style="text-align:right;"><%= T("Action", "Tindakan") %></th>
                 </tr></thead>
                 <tbody>
                     <asp:Repeater ID="rptEligible" runat="server" OnItemCommand="rptEligible_ItemCommand">

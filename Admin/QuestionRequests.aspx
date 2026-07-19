@@ -289,8 +289,52 @@ function viewQuiz(quizId) {
             h += '</div>';
         }
         document.getElementById('qrDetails').innerHTML = h;
+        // Trigger AI analysis
+        requestQuizAIReview(quizId, data);
     }).catch(function(err) {
         document.getElementById('qrDetails').innerHTML = '<div style="color:red;">Error loading quiz details.</div>';
+    });
+}
+
+function requestQuizAIReview(quizId, data) {
+    var section = document.getElementById('qrDetails');
+    section.innerHTML += '<div id="quizAISection"><div style="background:#F0F9FF;border:1px solid #BAE6FD;border-radius:12px;padding:16px 20px;margin-top:20px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><i class="bi bi-robot" style="font-size:1.2rem;color:#0284C7;"></i><strong style="color:#0369A1;">AI Quiz Review</strong></div><div style="display:flex;align-items:center;gap:8px;color:#64748B;font-size:.85rem;"><i class="bi bi-arrow-repeat" style="animation:spin 1s linear infinite;"></i> AI is analysing this quiz... Please wait...</div></div></div>';
+
+    var fd = new FormData();
+    fd.append('quizId', quizId);
+    var basePath = window.location.pathname;
+    if (basePath.indexOf('.aspx') === -1) basePath += '.aspx';
+
+    fetch(basePath + '?handler=AIAnalyzeQuiz', { method: 'POST', body: fd })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        var aiDiv = document.getElementById('quizAISection');
+        if (!aiDiv) return;
+        if (!d.success) {
+            var errMsg = d.error || d.msg || 'Unknown error';
+            aiDiv.innerHTML = '<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:16px 20px;margin-top:20px;"><div style="display:flex;align-items:center;gap:8px;"><i class="bi bi-robot" style="font-size:1.2rem;color:#DC2626;"></i><strong style="color:#991B1B;">AI Quiz Review</strong></div><p style="margin-top:8px;font-size:.85rem;color:#7F1D1D;"><strong>Error:</strong> ' + errMsg + '</p></div>';
+            return;
+        }
+        var ai = d.data || {};
+        var recColor = ai.recommendation === 'Approve' ? '#059669' : ai.recommendation === 'Reject' ? '#DC2626' : '#D97706';
+        var h = '<div style="background:#F0F9FF;border:1px solid #BAE6FD;border-radius:12px;padding:16px 20px;margin-top:20px;">';
+        h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;"><i class="bi bi-robot" style="font-size:1.2rem;color:#0284C7;"></i><strong style="color:#0369A1;">AI Quiz Review</strong></div>';
+        h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:.85rem;">';
+        h += '<div><span style="color:#64748B;font-weight:600;">Recommendation</span><div style="font-weight:700;color:' + recColor + ';">' + (ai.recommendation || 'Not Available') + '</div></div>';
+        h += '<div><span style="color:#64748B;font-weight:600;">Confidence</span><div style="font-weight:600;">' + (ai.confidence || 'Not Available') + '</div></div>';
+        h += '<div><span style="color:#64748B;font-weight:600;">Scientific Accuracy</span><div>' + (ai.scientificAccuracy || 'Not Available') + '</div></div>';
+        h += '<div><span style="color:#64748B;font-weight:600;">Correct Answers</span><div>' + (ai.correctAnswers || 'Not Available') + '</div></div>';
+        h += '<div><span style="color:#64748B;font-weight:600;">Duplicate Questions</span><div>' + (ai.duplicateQuestions || 'Not Available') + '</div></div>';
+        h += '<div><span style="color:#64748B;font-weight:600;">Question Clarity</span><div>' + (ai.questionClarity || 'Not Available') + '</div></div>';
+        h += '</div>';
+        if (ai.summary) { h += '<div style="margin-top:12px;padding-top:10px;border-top:1px solid #E0F2FE;"><span style="color:#64748B;font-weight:600;font-size:.8rem;">Summary</span><p style="margin-top:4px;font-size:.85rem;color:#334155;">' + ai.summary + '</p></div>'; }
+        h += '<p style="margin-top:10px;font-size:.75rem;color:#94A3B8;font-style:italic;"><i class="bi bi-info-circle"></i> AI recommendations are advisory only. The administrator makes the final decision.</p>';
+        h += '</div>';
+        aiDiv.innerHTML = h;
+    })
+    .catch(function() {
+        var aiDiv = document.getElementById('quizAISection');
+        if (aiDiv) aiDiv.innerHTML = '<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:16px 20px;margin-top:20px;"><div style="display:flex;align-items:center;gap:8px;"><i class="bi bi-robot" style="font-size:1.2rem;color:#DC2626;"></i><strong style="color:#991B1B;">AI Quiz Review</strong></div><p style="margin-top:8px;font-size:.85rem;color:#7F1D1D;">AI review is currently unavailable.</p></div>';
     });
 }
 </script>

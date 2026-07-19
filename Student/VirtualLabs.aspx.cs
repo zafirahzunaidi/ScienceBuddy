@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -11,7 +11,7 @@ namespace ScienceBuddy.Student
 {
     public partial class VirtualLabs1 : Page
     {
-        private string ConnStr
+        private string ConnectionString
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
@@ -65,7 +65,7 @@ namespace ScienceBuddy.Student
             {
                 try
                 {
-                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlConnection connection = new SqlConnection(ConnectionString))
                     using (SqlCommand command = new SqlCommand("SELECT preferredLanguage FROM [User] WHERE userId=@u", connection))
                     {
                         command.Parameters.AddWithValue("@u", uid);
@@ -110,9 +110,9 @@ namespace ScienceBuddy.Student
             ddlLevel.Items.Clear();
             ddlLevel.Items.Add(new ListItem(T("All Levels", "Semua Tahap"), ""));
 
-            if (Tbl("Level"))
+            if (TableExists("Level"))
             {
-                using (SqlConnection connection = new SqlConnection(ConnStr))
+                using (SqlConnection connection = new SqlConnection(ConnectionString))
                 {
                     connection.Open();
                     using (SqlCommand command = new SqlCommand("SELECT levelId,levelNameEN,levelNameBM FROM Level ORDER BY levelId", connection))
@@ -154,13 +154,13 @@ namespace ScienceBuddy.Student
         private void LoadLabs()
         {
             string userId = Session["userId"].ToString();
-            if (!Tbl("VirtualLab") || !Tbl("Student"))
+            if (!TableExists("VirtualLab") || !TableExists("Student"))
             {
                 ShowEmpty();
                 return;
             }
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
                 string studentId = null;
@@ -204,7 +204,7 @@ namespace ScienceBuddy.Student
 
                 // Progress
                 var doneSet = new HashSet<string>();
-                if (Tbl("LabProgress"))
+                if (TableExists("LabProgress"))
                 {
                     using (SqlCommand command = new SqlCommand("SELECT labId FROM LabProgress WHERE studentId=@s AND isCompleted=1", connection))
                     {
@@ -476,9 +476,9 @@ namespace ScienceBuddy.Student
             }
         }
 
-        private bool Tbl(string t)
+        private bool TableExists(string t)
         {
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME=@t AND TABLE_TYPE='BASE TABLE'", connection))
             {
                 command.Parameters.AddWithValue("@t", t);

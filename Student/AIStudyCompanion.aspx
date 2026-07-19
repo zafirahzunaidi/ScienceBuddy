@@ -133,11 +133,7 @@
             </div>
         </div>
         <div class="st-ai-hero-right">
-            <% if (!string.IsNullOrEmpty(PersonalityAvatar)) { %>
-            <img src="<%= PersonalityAvatar %>" alt="" class="st-ai-hero-avatar" />
-            <% } else { %>
-            <div class="st-ai-hero-avatar-fallback"><i class="bi bi-robot"></i></div>
-            <% } %>
+            <i class="bi bi-robot st-ai-hero-emoji"></i>
         </div>
     </div>
     <span style="display:none;"><asp:Literal ID="litHeroTitle" runat="server" Text="AI Study Companion" /></span>

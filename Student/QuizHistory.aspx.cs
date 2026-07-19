@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -11,7 +11,7 @@ namespace ScienceBuddy.Student
 {
     public partial class QuizHistory1 : Page
     {
-        private string ConnStr
+        private string ConnectionString
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
@@ -51,15 +51,15 @@ namespace ScienceBuddy.Student
                 CurrentLanguage = lang;
                 return;
             }
-            string uid = Session["userId"] as string;
-            if (!string.IsNullOrEmpty(uid))
+            string userId = Session["userId"] as string;
+            if (!string.IsNullOrEmpty(userId))
             {
                 try
                 {
-                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlConnection connection = new SqlConnection(ConnectionString))
                     using (SqlCommand command = new SqlCommand("SELECT preferredLanguage FROM [User] WHERE userId=@u", connection))
                     {
-                        command.Parameters.AddWithValue("@u", uid);
+                        command.Parameters.AddWithValue("@u", userId);
                         connection.Open();
                         object result = command.ExecuteScalar();
                         if (result != null && result != DBNull.Value)
@@ -131,7 +131,7 @@ namespace ScienceBuddy.Student
             SetLabels();
             string userId = Session["userId"].ToString();
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -314,7 +314,7 @@ namespace ScienceBuddy.Student
             return T("Quiz", "Kuiz");
         }
 
-        private static bool Tbl(SqlConnection conn, string tableName)
+        private static bool TableExists(SqlConnection conn, string tableName)
         {
             using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME=@t AND TABLE_TYPE='BASE TABLE'", conn))
             {

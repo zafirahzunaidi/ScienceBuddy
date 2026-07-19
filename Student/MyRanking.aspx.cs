@@ -5,18 +5,19 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Web;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 
 namespace ScienceBuddy.Student
 {
     public partial class MyRanking1 : Page
     {
-        // ── Connection string ─────────────────────────────────────────
-        private string ConnStr
+        // Connection string
+        private string ConnectionString
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
 
-        // ── Language helper ────────────────────────────────────────────
+        // Language helper
         public string CurrentLanguage = "EN";
 
         public string T(string en, string bm)
@@ -28,7 +29,7 @@ namespace ScienceBuddy.Student
             return en;
         }
 
-        // ── Page Load ─────────────────────────────────────────────────
+        // Page Load
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["userId"] == null || Session["role"] == null ||
@@ -48,7 +49,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Language initialization ───────────────────────────────────
+        // Language initialization
         private void InitLang()
         {
             string lang = Session["preferredLanguage"] as string;
@@ -64,7 +65,7 @@ namespace ScienceBuddy.Student
                 try
                 {
                     const string sql = "SELECT preferredLanguage FROM [User] WHERE userId = @userId";
-                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlConnection connection = new SqlConnection(ConnectionString))
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
                         command.Parameters.AddWithValue("@userId", userId);
@@ -89,7 +90,7 @@ namespace ScienceBuddy.Student
             Session["preferredLanguage"] = "EN";
         }
 
-        // ── Set bilingual labels ──────────────────────────────────────
+        // Set bilingual labels
         private void SetLabels()
         {
             litPageTitle.Text = T("My Ranking", "Kedudukan Saya");
@@ -115,12 +116,12 @@ namespace ScienceBuddy.Student
             litFPers.Text = T("My Personality", "Personaliti Saya");
         }
 
-        // ── Load page data ────────────────────────────────────────────
+        // Load page data
         private void LoadPage()
         {
             string userId = Session["userId"].ToString();
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -131,7 +132,7 @@ namespace ScienceBuddy.Student
                     return;
                 }
 
-                bool hasBadgeTable = Tbl(connection, "StudentBadge");
+                bool hasBadgeTable = TableExists(connection, "StudentBadge");
 
                 string badgeSubquery;
                 if (hasBadgeTable)
@@ -265,8 +266,8 @@ namespace ScienceBuddy.Student
                     }
                     else if (rankFilter == "personality" && !string.IsNullOrEmpty(personalityId))
                     {
-                        string rowPers = row["personalityId"]?.ToString() ?? "";
-                        if (rowPers != personalityId)
+                        string rowPersonalityId = row["personalityId"]?.ToString() ?? "";
+                        if (rowPersonalityId != personalityId)
                         {
                             continue;
                         }
@@ -353,7 +354,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Build Top 3 Podium ───────────────────────────────────────
+        // Build Top 3 Podium
         private void BuildPodium(DataTable dataTable, string currentStudentId)
         {
             if (dataTable.Rows.Count == 0)
@@ -362,20 +363,20 @@ namespace ScienceBuddy.Student
                 return;
             }
 
-            List<DataRow> top3 = new List<DataRow>();
+            List<DataRow> topThreeRows = new List<DataRow>();
             for (int i = 0; i < Math.Min(3, dataTable.Rows.Count); i++)
             {
-                top3.Add(dataTable.Rows[i]);
+                topThreeRows.Add(dataTable.Rows[i]);
             }
 
             string html = "<div class=\"st-ranking-podium\">";
 
             int[] order;
-            if (top3.Count >= 3)
+            if (topThreeRows.Count >= 3)
             {
                 order = new[] { 1, 0, 2 };
             }
-            else if (top3.Count == 2)
+            else if (topThreeRows.Count == 2)
             {
                 order = new[] { 1, 0 };
             }
@@ -385,15 +386,15 @@ namespace ScienceBuddy.Student
             }
             string[] classes = { "first", "second", "third" };
 
-            foreach (int idx in order)
+            foreach (int index in order)
             {
-                if (idx >= top3.Count)
+                if (index >= topThreeRows.Count)
                 {
                     continue;
                 }
-                DataRow row = top3[idx];
-                int rank = idx + 1;
-                string placeClass = classes[idx];
+                DataRow row = topThreeRows[index];
+                int rank = index + 1;
+                string placeClass = classes[index];
                 string nickname = row["nickname"]?.ToString();
                 string name = row["name"]?.ToString();
                 string displayName;
@@ -425,14 +426,14 @@ namespace ScienceBuddy.Student
                 {
                     xp = Convert.ToInt32(row["XP"]);
                 }
-                bool isMe = row["studentId"].ToString() == currentStudentId;
+                bool isCurrentStudent = row["studentId"].ToString() == currentStudentId;
 
                 html += "<div class=\"st-ranking-podium-player " + placeClass + "\">";
                 if (rank == 1)
                 {
                     html += "<div class=\"st-ranking-podium-crown\"><i class=\"bi bi-trophy-fill\"></i></div>";
                 }
-                if (isMe)
+                if (isCurrentStudent)
                 {
                     html += "<div class=\"st-ranking-podium-you\">" + T("You", "Anda") + "</div>";
                 }
@@ -447,7 +448,7 @@ namespace ScienceBuddy.Student
             litPodium.Text = html;
         }
 
-        // ── Get student ID from userId ────────────────────────────────
+        // Get student ID from userId
         private string GetStudentId(SqlConnection connection, string userId)
         {
             const string sql = "SELECT studentId FROM Student WHERE userId = @userId";
@@ -463,10 +464,10 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Filter click handler ──────────────────────────────────────
+        // Filter click handler
         protected void btnFilter_Click(object sender, EventArgs e)
         {
-            System.Web.UI.WebControls.LinkButton button = (System.Web.UI.WebControls.LinkButton)sender;
+            LinkButton button = (LinkButton)sender;
             ViewState["RankFilter"] = button.CommandArgument;
             InitLang();
             SetLabels();
@@ -501,7 +502,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Motivational message based on rank ────────────────────────
+        // Motivational message based on rank
         private string GetMotivationalMessage(int rank)
         {
             if (rank == 1)
@@ -521,19 +522,23 @@ namespace ScienceBuddy.Student
                 "Setiap pelajaran memberi XP. Teruskan belajar dan kedudukan anda akan meningkat.");
         }
 
-        // ── Rank CSS class helper (used in aspx markup) ───────────────
+        // Rank CSS class helper (used in aspx markup)
         protected string GetRankClass(int rank)
         {
             switch (rank)
             {
-                case 1: return "st-ranking-board-rank st-ranking-gold";
-                case 2: return "st-ranking-board-rank st-ranking-silver";
-                case 3: return "st-ranking-board-rank st-ranking-bronze";
-                default: return "st-ranking-board-rank st-ranking-normal";
+                case 1:
+                    return "st-ranking-board-rank st-ranking-gold";
+                case 2:
+                    return "st-ranking-board-rank st-ranking-silver";
+                case 3:
+                    return "st-ranking-board-rank st-ranking-bronze";
+                default:
+                    return "st-ranking-board-rank st-ranking-normal";
             }
         }
 
-        // ── Empty state when no data ──────────────────────────────────
+        // Empty state when no data
         private void SetEmptyState()
         {
             litHeroRank.Text = T("My Ranking", "Kedudukan Saya");
@@ -548,8 +553,8 @@ namespace ScienceBuddy.Student
                 "Setiap pelajaran memberi XP. Teruskan belajar dan kedudukan anda akan meningkat.");
         }
 
-        // ── Table existence check ─────────────────────────────────────
-        private static bool Tbl(SqlConnection connection, string tableName)
+        // Table existence check
+        private static bool TableExists(SqlConnection connection, string tableName)
         {
             const string sql = @"
                 SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
@@ -566,13 +571,13 @@ namespace ScienceBuddy.Student
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(ConnStr))
+                using (SqlConnection connection = new SqlConnection(ConnectionString))
                 {
-                    conn.Open();
-                    using (SqlCommand cmd = new SqlCommand("SELECT configValue FROM ConfigurationSetting WHERE configKey=@k", conn))
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand("SELECT configValue FROM ConfigurationSetting WHERE configKey=@k", connection))
                     {
-                        cmd.Parameters.AddWithValue("@k", configKey);
-                        object result = cmd.ExecuteScalar();
+                        command.Parameters.AddWithValue("@k", configKey);
+                        object result = command.ExecuteScalar();
                         if (result != null && result != DBNull.Value)
                         {
                             return Convert.ToInt32(result);

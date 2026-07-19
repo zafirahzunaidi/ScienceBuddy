@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -11,13 +11,13 @@ namespace ScienceBuddy.Student
 {
     public partial class Forum : Page
     {
-        // ── Connection string ─────────────────────────────────────────
-        private string ConnStr
+        // Connection string
+        private string ConnectionString
         {
             get { return ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString; }
         }
 
-        // ── Language helper ────────────────────────────────────────────
+        // Language helper
         public string CurrentLanguage = "EN";
 
         public string T(string en, string bm)
@@ -29,7 +29,7 @@ namespace ScienceBuddy.Student
             return en;
         }
 
-        // ── Page Load ─────────────────────────────────────────────────
+        // Page Load
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["userId"] == null || Session["role"] == null ||
@@ -52,7 +52,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Language initialisation ───────────────────────────────────
+        // Language initialisation
         private void InitLang()
         {
             string lang = Session["preferredLanguage"] as string;
@@ -68,7 +68,7 @@ namespace ScienceBuddy.Student
                 try
                 {
                     const string sql = "SELECT preferredLanguage FROM [User] WHERE userId = @userId";
-                    using (SqlConnection connection = new SqlConnection(ConnStr))
+                    using (SqlConnection connection = new SqlConnection(ConnectionString))
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
                         command.Parameters.AddWithValue("@userId", userId);
@@ -93,7 +93,7 @@ namespace ScienceBuddy.Student
             Session["preferredLanguage"] = "EN";
         }
 
-        // ── Bilingual labels ──────────────────────────────────────────
+        // Bilingual labels
         private void SetLabels()
         {
             bool isPrivate = hfCategory.Value == "private";
@@ -174,7 +174,7 @@ namespace ScienceBuddy.Student
                 btnTabPublic.CssClass = "st-forum-cat-tab active";
         }
 
-        // ── Tab click handlers ────────────────────────────────────────
+        // Tab click handlers
         protected void btnTabPublic_Click(object sender, EventArgs e)
         {
             hfCategory.Value = "public";
@@ -196,10 +196,10 @@ namespace ScienceBuddy.Student
             LoadDiscussions();
         }
 
-        // ── Build filter dropdowns ────────────────────────────────────
+        // Build filter dropdowns
         private void BuildFilters()
         {
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -207,7 +207,7 @@ namespace ScienceBuddy.Student
                 ddlTag.Items.Clear();
                 ddlTag.Items.Add(new ListItem(T("All Tags", "Semua Tag"), ""));
 
-                if (Tbl(connection, "Tag"))
+                if (TableExists(connection, "Tag"))
                 {
                     const string sql = "SELECT tagId, tagName FROM Tag ORDER BY tagName";
                     using (SqlCommand command = new SqlCommand(sql, connection))
@@ -222,7 +222,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Load discussions ──────────────────────────────────────────
+        // Load discussions
         private void LoadDiscussions()
         {
             string userId = Session["userId"].ToString();
@@ -232,17 +232,17 @@ namespace ScienceBuddy.Student
             bool isPrivate = hfCategory.Value == "private";
             bool isMy = hfCategory.Value == "my";
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
-                if (!Tbl(connection, "Forum"))
+                if (!TableExists(connection, "Forum"))
                 {
                     ShowEmpty();
                     return;
                 }
 
-                // ── Build WHERE clause based on category tab ──
+                // Build WHERE clause based on category tab
                 string categoryWhere;
                 List<SqlParameter> extraParams = new List<SqlParameter>();
 
@@ -294,7 +294,7 @@ namespace ScienceBuddy.Student
                 string orderBy = "ORDER BY f.createdAt DESC";
 
                 // Tag filter
-                if (!string.IsNullOrEmpty(tagFilter) && Tbl(connection, "ForumTag"))
+                if (!string.IsNullOrEmpty(tagFilter) && TableExists(connection, "ForumTag"))
                 {
                     joinTag = "JOIN ForumTag ft ON ft.forumId = f.forumId";
                     whereTag = "AND ft.tagId = @tagId";
@@ -352,7 +352,7 @@ namespace ScienceBuddy.Student
 
                     // Get tags for each forum
                     Dictionary<string, string> forumTags = new Dictionary<string, string>();
-                    if (Tbl(connection, "ForumTag") && Tbl(connection, "Tag"))
+                    if (TableExists(connection, "ForumTag") && TableExists(connection, "Tag"))
                     {
                         const string tagSql = @"
                             SELECT ft.forumId, t.tagName
@@ -493,12 +493,12 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // ── Get linked parent userIds ─────────────────────────────────
+        // Get linked parent userIds
         private List<string> GetLinkedParentUserIds(SqlConnection connection, string userId)
         {
             List<string> parentUserIds = new List<string>();
 
-            if (!Tbl(connection, "StudentParent") || !Tbl(connection, "Parent") || !Tbl(connection, "Student"))
+            if (!TableExists(connection, "StudentParent") || !TableExists(connection, "Parent") || !TableExists(connection, "Student"))
             {
                 return parentUserIds;
             }
@@ -528,13 +528,13 @@ namespace ScienceBuddy.Student
             return parentUserIds;
         }
 
-        // ── Filter button click ───────────────────────────────────────
+        // Filter button click
         protected void btnFilter_Click(object sender, EventArgs e)
         {
             LoadDiscussions();
         }
 
-        // ── Like / Unlike ─────────────────────────────────────────────
+        // Like / Unlike
         protected void rptDiscussions_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
             if (e.CommandName == "Delete")
@@ -551,7 +551,7 @@ namespace ScienceBuddy.Student
             string forumId = e.CommandArgument.ToString();
             string userId = Session["userId"].ToString();
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -583,17 +583,17 @@ namespace ScienceBuddy.Student
                 else
                 {
                     // Like — generate sequential ID (likeId is NVARCHAR(10))
-                    string likeId = "FL001";
+                    string likeId = "LIKE001";
                     const string seqSql = @"
-                        SELECT ISNULL(MAX(CAST(SUBSTRING(likeId, 3, LEN(likeId) - 2) AS INT)), 0)
-                        FROM ForumLike WHERE likeId LIKE 'FL[0-9]%'";
+                        SELECT ISNULL(MAX(CAST(SUBSTRING(likeId, 5, LEN(likeId) - 4) AS INT)), 0)
+                        FROM ForumLike WHERE likeId LIKE 'LIKE[0-9]%'";
                     using (SqlCommand seqCmd = new SqlCommand(seqSql, connection))
                     {
                         object lastVal = seqCmd.ExecuteScalar();
                         if (lastVal != null && lastVal != DBNull.Value)
                         {
                             int lastNum = Convert.ToInt32(lastVal);
-                            likeId = "FL" + (lastNum + 1).ToString("D3");
+                            likeId = "LIKE" + (lastNum + 1).ToString("D3");
                         }
                     }
 
@@ -615,12 +615,12 @@ namespace ScienceBuddy.Student
             LoadDiscussions();
         }
 
-        // ── Delete forum post (with ownership check) ───────────────
+        // Delete forum post (with ownership check)
         private void HandleDelete(string forumId)
         {
             string userId = Session["userId"].ToString();
 
-            using (SqlConnection connection = new SqlConnection(ConnStr))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -639,7 +639,7 @@ namespace ScienceBuddy.Student
                 }
 
                 // Delete related records first (ForumTag, ForumLike, ForumChat), then Forum
-                if (Tbl(connection, "ForumTag"))
+                if (TableExists(connection, "ForumTag"))
                 {
                     using (SqlCommand cmd = new SqlCommand("DELETE FROM ForumTag WHERE forumId = @fid", connection))
                     {
@@ -648,7 +648,7 @@ namespace ScienceBuddy.Student
                     }
                 }
 
-                if (Tbl(connection, "ForumLike"))
+                if (TableExists(connection, "ForumLike"))
                 {
                     using (SqlCommand cmd = new SqlCommand("DELETE FROM ForumLike WHERE forumId = @fid", connection))
                     {
@@ -657,7 +657,7 @@ namespace ScienceBuddy.Student
                     }
                 }
 
-                if (Tbl(connection, "ForumChat"))
+                if (TableExists(connection, "ForumChat"))
                 {
                     using (SqlCommand cmd = new SqlCommand("DELETE FROM ForumChat WHERE forumId = @fid", connection))
                     {
@@ -677,7 +677,7 @@ namespace ScienceBuddy.Student
             LoadDiscussions();
         }
 
-        // ── Helpers ───────────────────────────────────────────────────
+        // Helpers
 
         private void ShowEmpty()
         {
@@ -714,7 +714,7 @@ namespace ScienceBuddy.Student
         /// Returns true if the given table exists in the current database.
         /// Uses INFORMATION_SCHEMA so it never throws on a missing table.
         /// </summary>
-        private static bool Tbl(SqlConnection connection, string tableName)
+        private static bool TableExists(SqlConnection connection, string tableName)
         {
             const string sql = @"
                 SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
@@ -728,3 +728,4 @@ namespace ScienceBuddy.Student
         }
     }
 }
+

@@ -80,10 +80,21 @@ namespace ScienceBuddy.Admin
             using (var conn = new SqlConnection(ConnStr))
             {
                 conn.Open();
+                // Only show security-related login events (not successful logins or settings changes)
                 string sql = @"SELECT l.[logId],l.[userId],l.[action],l.[description],l.[logDateTime],l.[status],
                     ISNULL(u.[username],'Unknown') AS username, u.[status] AS userStatus
                     FROM dbo.[Log] l LEFT JOIN dbo.[User] u ON u.[userId]=l.[userId]
-                    WHERE (l.[action] LIKE '%Login%' OR l.[action] LIKE '%Suspicious%' OR l.[action] LIKE '%Security%' OR l.[action] LIKE '%Block%')";
+                    WHERE (l.[action] LIKE '%Failed Login%'
+                        OR l.[action] LIKE '%Suspicious%'
+                        OR l.[action] LIKE '%Account Locked%'
+                        OR l.[action] LIKE '%Account Unlocked%'
+                        OR l.[action] LIKE '%Account Blocked%'
+                        OR l.[action] LIKE '%Account Unblocked%'
+                        OR l.[action] LIKE '%Password Changed%'
+                        OR l.[action] LIKE '%Password Reset%'
+                        OR l.[action] LIKE '%Email Changed%')
+                    AND l.[action] NOT LIKE '%Successful Login%'
+                    AND l.[action] NOT LIKE '%Security Setting%'";
 
                 if (!string.IsNullOrWhiteSpace(search)) sql += " AND u.[username] LIKE @s";
                 if (!string.IsNullOrWhiteSpace(statusF)) sql += " AND l.[status]=@st";
@@ -127,7 +138,7 @@ namespace ScienceBuddy.Admin
                                 : st == "Warning" ? "sb-badge-warning"
                                 : st == "Success" ? "sb-badge-success" : "sb-badge-gray",
                             isBlocked = uStatus == "Blocked",
-                            canBlock = uStatus == "Active" && (NS(r["action"]).Contains("Failed") || NS(r["action"]).Contains("Suspicious"))
+                            canBlock = uStatus == "Active" && NS(r["action"]).Contains("Suspicious")
                         });
                     }
 
@@ -144,12 +155,17 @@ namespace ScienceBuddy.Admin
             using (var conn = new SqlConnection(ConnStr))
             {
                 conn.Open();
-                using (var cmd = new SqlCommand(@"SELECT usa.[actionId],usa.[userId],usa.[actionType],usa.[reason],usa.[actionDate],
-                    ISNULL(u.[username],'Unknown') AS targetUser, ISNULL(adm.[username],'Admin') AS adminUser,
-                    ISNULL(u.[status],'Unknown') AS currentStatus
-                    FROM dbo.[UserStatusAction] usa
-                    LEFT JOIN dbo.[User] u ON u.[userId]=usa.[userId]
+                // Only show users who are CURRENTLY blocked (one row per blocked user, most recent action)
+                using (var cmd = new SqlCommand(@"SELECT u.[userId], u.[username] AS targetUser, u.[status] AS currentStatus,
+                    usa.[reason], usa.[actionDate], ISNULL(adm.[username],'Admin') AS adminUser
+                    FROM dbo.[User] u
+                    INNER JOIN (
+                        SELECT [userId], [reason], [actionDate], [performedBy],
+                            ROW_NUMBER() OVER (PARTITION BY [userId] ORDER BY [actionDate] DESC) AS rn
+                        FROM dbo.[UserStatusAction] WHERE [actionType]='Blocked'
+                    ) usa ON usa.[userId]=u.[userId] AND usa.rn=1
                     LEFT JOIN dbo.[User] adm ON adm.[userId]=usa.[performedBy]
+                    WHERE u.[status]='Blocked'
                     ORDER BY usa.[actionDate] DESC", conn))
                 {
                     var da = new SqlDataAdapter(cmd);
@@ -166,24 +182,20 @@ namespace ScienceBuddy.Admin
                     var list = new List<object>();
                     foreach (DataRow r in dt.Rows)
                     {
-                        string aType = NS(r["actionType"]);
-                        string curStatus = NS(r["currentStatus"]);
                         DateTime actionDate = r["actionDate"] == DBNull.Value ? DateTime.Now : Convert.ToDateTime(r["actionDate"]);
 
                         list.Add(new
                         {
-                            actionId = r["actionId"].ToString(),
+                            actionId = "",
                             userId = NS(r["userId"]),
                             targetUser = NS(r["targetUser"]),
                             adminUser = NS(r["adminUser"]),
-                            actionType = aType,
+                            actionType = "Blocked",
                             reason = NS(r["reason"]),
                             dateStr = actionDate.ToString("d MMM yyyy"),
-                            typeCls = aType == "Blocked" ? "sb-badge-error"
-                                : aType == "Unblocked" ? "sb-badge-success" : "sb-badge-warning",
-                            typeLabel = aType == "Blocked" ? T("Blocked", "Disekat")
-                                : aType == "Unblocked" ? T("Unblocked", "Dinyahsekat") : T("Deleted", "Dipadam"),
-                            canUnblock = (curStatus == "Blocked")
+                            typeCls = "sb-badge-error",
+                            typeLabel = T("Blocked", "Disekat"),
+                            canUnblock = true
                         });
                     }
 
@@ -252,6 +264,17 @@ namespace ScienceBuddy.Admin
             {
                 conn.Open();
 
+                // Get user email and name for notification
+                string userEmail = "", userName = "";
+                using (var cmd = new SqlCommand("SELECT [username],[email] FROM dbo.[User] WHERE [userId]=@uid", conn))
+                {
+                    cmd.Parameters.AddWithValue("@uid", userId);
+                    using (var rd = cmd.ExecuteReader())
+                    {
+                        if (rd.Read()) { userName = NS(rd["username"]); userEmail = NS(rd["email"]); }
+                    }
+                }
+
                 // Unblock the user
                 using (var cmd = new SqlCommand("UPDATE dbo.[User] SET [status]='Active' WHERE [userId]=@uid AND [status]='Blocked'", conn))
                 {
@@ -275,12 +298,15 @@ namespace ScienceBuddy.Admin
                 // Log it
                 string logId = GenId(conn, "Log", "LOG");
                 using (var cmd = new SqlCommand(@"INSERT INTO dbo.[Log]([logId],[userId],[action],[description],[logDateTime],[status])
-                    VALUES(@id,@uid,'Account Unblocked','Administrator unblocked user account.',GETDATE(),'Success')", conn))
+                    VALUES(@id,@uid,'Account Unlocked','Administrator manually restored account.',GETDATE(),'Success')", conn))
                 {
                     cmd.Parameters.AddWithValue("@id", logId);
                     cmd.Parameters.AddWithValue("@uid", adminId);
                     cmd.ExecuteNonQuery();
                 }
+
+                // Send email to the user
+                SendUnlockEmail(userEmail, userName);
             }
             LoadAll();
         }
@@ -332,6 +358,38 @@ namespace ScienceBuddy.Admin
         private static string NS(object v)
         {
             return (v == null || v == DBNull.Value) ? "" : v.ToString();
+        }
+
+        private void SendUnlockEmail(string toEmail, string userName)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(toEmail)) return;
+                string smtpHost = ConfigurationManager.AppSettings["SmtpHost"] ?? "smtp.gmail.com";
+                int smtpPort = int.Parse(ConfigurationManager.AppSettings["SmtpPort"] ?? "587");
+                string smtpUser = ConfigurationManager.AppSettings["SmtpUsername"] ?? "";
+                string smtpPass = ConfigurationManager.AppSettings["SmtpPassword"] ?? "";
+                bool smtpSsl = bool.Parse(ConfigurationManager.AppSettings["SmtpEnableSsl"] ?? "true");
+
+                string subject = "ScienceBuddy Account Restored";
+                string body = "Hello " + userName + ",\n\n"
+                    + "Your ScienceBuddy account has been successfully restored by the administrator.\n\n"
+                    + "You may now log in again using your existing credentials.\n\n"
+                    + "If you did not expect this action, please contact support.\n\n"
+                    + "Regards,\nScienceBuddy";
+
+                using (var mail = new System.Net.Mail.MailMessage(smtpUser, toEmail, subject, body))
+                {
+                    mail.IsBodyHtml = false;
+                    using (var smtp = new System.Net.Mail.SmtpClient(smtpHost, smtpPort))
+                    {
+                        smtp.Credentials = new System.Net.NetworkCredential(smtpUser, smtpPass);
+                        smtp.EnableSsl = smtpSsl;
+                        smtp.Send(mail);
+                    }
+                }
+            }
+            catch { /* Email failure should not block the unlock operation */ }
         }
     }
 }
