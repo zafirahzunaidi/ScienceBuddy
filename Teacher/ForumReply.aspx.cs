@@ -10,12 +10,19 @@ namespace ScienceBuddy.Teacher
 {
     public partial class ForumReply : Page
     {
+        #region Properties
+
         protected string CurrentLanguage
         {
-            get { string l = Session["preferredLanguage"] as string; return string.IsNullOrEmpty(l) ? "EN" : l; }
+            get
+            {
+                string lang = Session["preferredLanguage"] as string;
+                return string.IsNullOrEmpty(lang) ? "EN" : lang;
+            }
         }
-        protected string T(string en, string bm) { return CurrentLanguage == "BM" ? bm : en; }
-        private string ConnStr => ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+
+        private string ConnectionString =>
+            ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
         private string ForumId
         {
@@ -23,35 +30,33 @@ namespace ScienceBuddy.Teacher
             set { hidForumId.Value = value; }
         }
 
-        // ------------------------------------------------------------
-        //  PAGE LOAD
-        // ------------------------------------------------------------
+        #endregion
+
+        #region Page Lifecycle
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["userId"] == null || Session["role"]?.ToString() != "Teacher")
-            { Response.Redirect("~/Login.aspx", false); Context.ApplicationInstance.CompleteRequest(); return; }
+            {
+                Response.Redirect("~/Login.aspx", false);
+                Context.ApplicationInstance.CompleteRequest();
+                return;
+            }
 
-            ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
-
+            ((SiteMaster)Master).LayoutMode = "Sidebar";
             txtReply.Attributes["placeholder"] = T("Write your reply...", "Tulis balasan anda...");
 
             if (!IsPostBack)
             {
-                string qsId = (Request.QueryString["forumId"] ?? "").Trim();
-                if (string.IsNullOrEmpty(qsId))
-                { ShowError(T("No discussion ID was provided.", "Tiada ID perbincangan disediakan.")); return; }
-                ForumId = qsId;
-
-                // Check Teaching License status
-                string licStatus = GetTeacherLicenseStatus();
-                hidLicenseStatus.Value = licStatus;
-                if (licStatus.Equals("Pending", StringComparison.OrdinalIgnoreCase))
+                string forumId = (Request.QueryString["forumId"] ?? "").Trim();
+                if (string.IsNullOrEmpty(forumId))
                 {
-                    txtReply.Enabled = false;
-                    txtReply.Attributes["placeholder"] = T("Replying is disabled until your teaching license has been approved.", "Membalas dilumpuhkan sehingga lesen mengajar anda diluluskan.");
-                    btnPostReply.Enabled = false;
+                    ShowError(T("No discussion ID was provided.", "Tiada ID perbincangan disediakan."));
+                    return;
                 }
 
+                ForumId = forumId;
+                ApplyLicenseRestrictions();
                 LoadPage();
             }
             else
@@ -61,318 +66,479 @@ namespace ScienceBuddy.Teacher
             }
         }
 
+        private void ApplyLicenseRestrictions()
+        {
+            string licenseStatus = GetTeacherLicenseStatus();
+            hidLicenseStatus.Value = licenseStatus;
+
+            if (licenseStatus.Equals("Pending", StringComparison.OrdinalIgnoreCase))
+            {
+                txtReply.Enabled = false;
+                txtReply.Attributes["placeholder"] = T(
+                    "Replying is disabled until your teaching license has been approved.",
+                    "Membalas dilumpuhkan sehingga lesen mengajar anda diluluskan.");
+                btnPostReply.Enabled = false;
+            }
+        }
+
+        #endregion
+
+        #region Event Handlers
+
+        protected void btnLike_Click(object sender, EventArgs e)
+        {
+            string teacherId = Session["userId"].ToString();
+            string forumId = ForumId;
+
+            LikeForumPost(teacherId, forumId);
+            LoadPage();
+        }
+
+        protected void btnPostReply_Click(object sender, EventArgs e)
+        {
+            string replyText = txtReply.Text.Trim();
+
+            if (string.IsNullOrEmpty(replyText))
+            {
+                pnlReplyVal.Visible = true;
+                litReplyVal.Text = T("Reply cannot be empty.", "Balasan tidak boleh kosong.");
+                LoadPage();
+                return;
+            }
+
+            pnlReplyVal.Visible = false;
+            string teacherId = Session["userId"].ToString();
+            string forumId = ForumId;
+
+            CreateReply(teacherId, forumId, replyText);
+            NotifyForumCreator(teacherId, forumId);
+
+            txtReply.Text = "";
+            hidToast.Value = T("Reply posted successfully.", "Balasan berjaya dihantar.");
+            LoadPage();
+        }
+
+        #endregion
+
+        #region Data Loading
+
+        private void LoadPage()
+        {
+            string teacherId = Session["userId"].ToString();
+            string forumId = ForumId;
+
+            using (var conn = new SqlConnection(ConnectionString))
+            {
+                conn.Open();
+
+                if (!LoadMainDiscussion(conn, teacherId, forumId))
+                    return;
+
+                LoadReplies(conn, forumId);
+                LoadMoreDiscussions(conn, forumId);
+            }
+
+            pnlMain.Visible = true;
+            pnlError.Visible = false;
+        }
+
+        /// <summary>
+        /// Loads the main discussion post. Returns false if not found.
+        /// </summary>
+        private bool LoadMainDiscussion(SqlConnection conn, string teacherId, string forumId)
+        {
+            const string sql = @"
+                SELECT f.[title], f.[message], f.[createdAt], f.[createdBy],
+                    COALESCE(t.[name], s.[name], p.[name], u.[username]) AS creatorName,
+                    u.[role],
+                    (SELECT COUNT(*) FROM dbo.[ForumChat] WHERE [forumId]=f.[forumId]) AS replyCount,
+                    (SELECT COUNT(*) FROM dbo.[ForumLike] WHERE [forumId]=f.[forumId]) AS likeCount,
+                    (SELECT COUNT(*) FROM dbo.[ForumLike]
+                        WHERE [forumId]=f.[forumId] AND [senderUserId]=@teacherId) AS myLike
+                FROM dbo.[Forum] f
+                INNER JOIN dbo.[User]    u ON u.[userId]=f.[createdBy]
+                LEFT  JOIN dbo.[Teacher] t ON t.[userId]=u.[userId]
+                LEFT  JOIN dbo.[Student] s ON s.[userId]=u.[userId]
+                LEFT  JOIN dbo.[Parent]  p ON p.[userId]=u.[userId]
+                WHERE f.[forumId]=@forumId AND f.[discussionType]='Public'";
+
+            using (var cmd = new SqlCommand(sql, conn))
+            {
+                cmd.Parameters.AddWithValue("@teacherId", teacherId);
+                cmd.Parameters.AddWithValue("@forumId", forumId);
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    if (!reader.Read())
+                    {
+                        ShowError(T(
+                            "This discussion was not found or is not a public discussion.",
+                            "Perbincangan ini tidak dijumpai atau bukan perbincangan awam."));
+                        return false;
+                    }
+
+                    string creatorName = reader["creatorName"]?.ToString() ?? "User";
+                    string role = reader["role"]?.ToString() ?? "";
+                    int replyCount = Convert.ToInt32(reader["replyCount"]);
+                    int likeCount = Convert.ToInt32(reader["likeCount"]);
+                    bool isLiked = Convert.ToInt32(reader["myLike"]) > 0;
+                    DateTime createdAt = reader["createdAt"] != DBNull.Value
+                        ? Convert.ToDateTime(reader["createdAt"])
+                        : DateTime.Now;
+
+                    litInitials.Text = HttpUtility.HtmlEncode(BuildInitials(creatorName));
+                    litCreatorName.Text = HttpUtility.HtmlEncode(creatorName);
+                    litRoleBadge.Text = BuildRoleBadgeHtml(role);
+                    litPostDate.Text = HttpUtility.HtmlEncode(FormatTimeAgo(createdAt));
+                    litTitle.Text = HttpUtility.HtmlEncode(reader["title"]?.ToString() ?? "");
+                    litMessage.Text = HttpUtility.HtmlEncode(reader["message"]?.ToString() ?? "");
+                    litReplyCount.Text = replyCount.ToString();
+                    litRepliesBadge.Text = replyCount.ToString();
+                    RenderLikeButton(isLiked, likeCount);
+                }
+            }
+
+            return true;
+        }
+
+        private void LoadReplies(SqlConnection conn, string forumId)
+        {
+            const string sql = @"
+                SELECT fc.[forumChatId], fc.[senderUserId], fc.[message], fc.[createdAt],
+                    COALESCE(t.[name], s.[name], p.[name], u.[username]) AS senderName,
+                    u.[role]
+                FROM dbo.[ForumChat] fc
+                INNER JOIN dbo.[User]    u ON u.[userId]=fc.[senderUserId]
+                LEFT  JOIN dbo.[Teacher] t ON t.[userId]=u.[userId]
+                LEFT  JOIN dbo.[Student] s ON s.[userId]=u.[userId]
+                LEFT  JOIN dbo.[Parent]  p ON p.[userId]=u.[userId]
+                WHERE fc.[forumId]=@forumId
+                ORDER BY fc.[createdAt] ASC";
+
+            var replies = new List<object>();
+
+            using (var cmd = new SqlCommand(sql, conn))
+            {
+                cmd.Parameters.AddWithValue("@forumId", forumId);
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string senderName = reader["senderName"]?.ToString() ?? "User";
+                        string role = reader["role"]?.ToString() ?? "";
+                        DateTime sentAt = reader["createdAt"] != DBNull.Value
+                            ? Convert.ToDateTime(reader["createdAt"])
+                            : DateTime.Now;
+
+                        replies.Add(new
+                        {
+                            initials = BuildInitials(senderName),
+                            senderName,
+                            roleCss = GetRoleCss(role),
+                            roleLabel = GetRoleLabel(role),
+                            message = reader["message"]?.ToString() ?? "",
+                            timeAgo = FormatTimeAgo(sentAt)
+                        });
+                    }
+                }
+            }
+
+            pnlReplies.Visible = replies.Count > 0;
+            pnlRepliesEmpty.Visible = replies.Count == 0;
+
+            if (replies.Count > 0)
+            {
+                rptReplies.DataSource = replies;
+                rptReplies.DataBind();
+            }
+        }
+
+        private void LoadMoreDiscussions(SqlConnection conn, string forumId)
+        {
+            const string sql = @"
+                SELECT TOP 5 f.[forumId], f.[title], f.[createdAt],
+                    COALESCE(t.[name], s.[name], p.[name], u.[username]) AS creatorName,
+                    u.[role]
+                FROM dbo.[Forum] f
+                INNER JOIN dbo.[User]    u ON u.[userId]=f.[createdBy]
+                LEFT  JOIN dbo.[Teacher] t ON t.[userId]=u.[userId]
+                LEFT  JOIN dbo.[Student] s ON s.[userId]=u.[userId]
+                LEFT  JOIN dbo.[Parent]  p ON p.[userId]=u.[userId]
+                WHERE f.[discussionType]='Public' AND f.[forumId]<>@forumId
+                ORDER BY f.[createdAt] DESC";
+
+            var discussions = new List<object>();
+
+            using (var cmd = new SqlCommand(sql, conn))
+            {
+                cmd.Parameters.AddWithValue("@forumId", forumId);
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string creatorName = reader["creatorName"]?.ToString() ?? "User";
+                        string role = reader["role"]?.ToString() ?? "";
+                        DateTime createdAt = reader["createdAt"] != DBNull.Value
+                            ? Convert.ToDateTime(reader["createdAt"])
+                            : DateTime.Now;
+                        string title = reader["title"]?.ToString() ?? "";
+
+                        discussions.Add(new
+                        {
+                            forumId = reader["forumId"].ToString(),
+                            title = title.Length > 60 ? title.Substring(0, 60) + "â€¦" : title,
+                            creatorName,
+                            initials = BuildInitials(creatorName),
+                            timeAgo = FormatTimeAgo(createdAt),
+                            roleCss = GetRoleCss(role)
+                        });
+                    }
+                }
+            }
+
+            if (discussions.Count > 0)
+            {
+                rptMore.DataSource = discussions;
+                rptMore.DataBind();
+            }
+        }
+
+        #endregion
+
+        #region Database Operations
+
+        private void LikeForumPost(string teacherId, string forumId)
+        {
+            using (var conn = new SqlConnection(ConnectionString))
+            {
+                conn.Open();
+
+                // Check if already liked â€” only allow one like per user
+                using (var cmd = new SqlCommand(
+                    "SELECT COUNT(*) FROM dbo.[ForumLike] WHERE [forumId]=@forumId AND [senderUserId]=@teacherId", conn))
+                {
+                    cmd.Parameters.AddWithValue("@forumId", forumId);
+                    cmd.Parameters.AddWithValue("@teacherId", teacherId);
+                    int alreadyLiked = Convert.ToInt32(cmd.ExecuteScalar());
+                    if (alreadyLiked > 0) return;
+                }
+
+                using (var txn = conn.BeginTransaction())
+                {
+                    string likeId;
+                    using (var cmd = new SqlCommand(
+                        "SELECT ISNULL(MAX(CAST(SUBSTRING([likeId],5,LEN([likeId])-4) AS INT)),0) FROM dbo.[ForumLike]",
+                        conn, txn))
+                    {
+                        likeId = "LIKE" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                    }
+
+                    using (var cmd = new SqlCommand(
+                        "INSERT INTO dbo.[ForumLike]([likeId],[forumId],[senderUserId],[createdAt]) VALUES(@likeId,@forumId,@teacherId,GETDATE())",
+                        conn, txn))
+                    {
+                        cmd.Parameters.AddWithValue("@likeId", likeId);
+                        cmd.Parameters.AddWithValue("@forumId", forumId);
+                        cmd.Parameters.AddWithValue("@teacherId", teacherId);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    txn.Commit();
+                }
+            }
+        }
+
+        private void CreateReply(string teacherId, string forumId, string replyText)
+        {
+            using (var conn = new SqlConnection(ConnectionString))
+            {
+                conn.Open();
+                using (var txn = conn.BeginTransaction())
+                {
+                    string chatId;
+                    using (var cmd = new SqlCommand(
+                        "SELECT ISNULL(MAX(CAST(SUBSTRING([forumChatId],3,LEN([forumChatId])-2) AS INT)),0) FROM dbo.[ForumChat]",
+                        conn, txn))
+                    {
+                        chatId = "FC" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                    }
+
+                    const string insertSql = @"INSERT INTO dbo.[ForumChat]
+                        ([forumChatId],[forumId],[senderUserId],[message],[createdAt])
+                        VALUES(@chatId, @forumId, @teacherId, @message, GETDATE())";
+
+                    using (var cmd = new SqlCommand(insertSql, conn, txn))
+                    {
+                        cmd.Parameters.AddWithValue("@chatId", chatId);
+                        cmd.Parameters.AddWithValue("@forumId", forumId);
+                        cmd.Parameters.AddWithValue("@teacherId", teacherId);
+                        cmd.Parameters.AddWithValue("@message", replyText);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    txn.Commit();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sends a notification to the original forum creator when a new reply is posted.
+        /// Non-critical â€” failures are silently ignored.
+        /// </summary>
+        private void NotifyForumCreator(string replierId, string forumId)
+        {
+            try
+            {
+                using (var conn = new SqlConnection(ConnectionString))
+                {
+                    conn.Open();
+
+                    // Get original post creator
+                    string creatorId;
+                    using (var cmd = new SqlCommand("SELECT [createdBy] FROM dbo.[Forum] WHERE [forumId]=@forumId", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@forumId", forumId);
+                        creatorId = cmd.ExecuteScalar()?.ToString();
+                    }
+
+                    // Don't notify yourself
+                    if (string.IsNullOrEmpty(creatorId) || creatorId == replierId)
+                        return;
+
+                    // Generate notification ID
+                    string notificationId;
+                    using (var cmd = new SqlCommand(
+                        "SELECT ISNULL(MAX(CAST(SUBSTRING([notificationId],2,LEN([notificationId])-1) AS INT)),0) FROM dbo.[Notification]", conn))
+                    {
+                        notificationId = "N" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3");
+                    }
+
+                    const string insertSql = @"INSERT INTO dbo.[Notification]
+                        ([notificationId],[toUserId],[titleEN],[titleBM],[messageEN],[messageBM],[isRead],[createdAt])
+                        VALUES(@id, @toUserId, @titleEN, @titleBM, @messageEN, @messageBM, 0, GETDATE())";
+
+                    using (var cmd = new SqlCommand(insertSql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", notificationId);
+                        cmd.Parameters.AddWithValue("@toUserId", creatorId);
+                        cmd.Parameters.AddWithValue("@titleEN", "New Forum Reply");
+                        cmd.Parameters.AddWithValue("@titleBM", "Balasan Forum Baharu");
+                        cmd.Parameters.AddWithValue("@messageEN", "Your forum discussion has received a new reply.");
+                        cmd.Parameters.AddWithValue("@messageBM", "Perbincangan forum anda telah menerima balasan baharu.");
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch
+            {
+                // Notification failure is non-critical
+            }
+        }
+
         private string GetTeacherLicenseStatus()
         {
             try
             {
-                using (var conn = new SqlConnection(ConnStr))
+                using (var conn = new SqlConnection(ConnectionString))
                 {
                     conn.Open();
                     using (var cmd = new SqlCommand("SELECT [status] FROM dbo.[Teacher] WHERE [userId]=@u", conn))
                     {
                         cmd.Parameters.AddWithValue("@u", Session["userId"].ToString());
-                        var val = cmd.ExecuteScalar();
-                        return val != null && val != DBNull.Value ? val.ToString() : "";
+                        var result = cmd.ExecuteScalar();
+                        return result != null && result != DBNull.Value ? result.ToString() : "";
                     }
                 }
             }
-            catch { return ""; }
-        }
-
-        // ------------------------------------------------------------
-        //  LOAD ALL PAGE DATA
-        // ------------------------------------------------------------
-        private void LoadPage()
-        {
-            string userId  = Session["userId"].ToString();
-            string forumId = ForumId;
-
-            using (var conn = new SqlConnection(ConnStr))
+            catch
             {
-                conn.Open();
-
-                // -- 1. Main discussion post (Public only) -------------
-                const string sqlPost = @"
-                    SELECT f.[title], f.[message], f.[createdAt], f.[createdBy],
-                        COALESCE(t.[name], s.[name], p.[name], u.[username]) AS creatorName,
-                        u.[role],
-                        (SELECT COUNT(*) FROM dbo.[ForumChat] WHERE [forumId]=f.[forumId]) AS replyCount,
-                        (SELECT COUNT(*) FROM dbo.[ForumLike] WHERE [forumId]=f.[forumId]) AS likeCount,
-                        (SELECT COUNT(*) FROM dbo.[ForumLike]
-                            WHERE [forumId]=f.[forumId] AND [senderUserId]=@uid) AS myLike
-                    FROM dbo.[Forum] f
-                    INNER JOIN dbo.[User]    u ON u.[userId]=f.[createdBy]
-                    LEFT  JOIN dbo.[Teacher] t ON t.[userId]=u.[userId]
-                    LEFT  JOIN dbo.[Student] s ON s.[userId]=u.[userId]
-                    LEFT  JOIN dbo.[Parent]  p ON p.[userId]=u.[userId]
-                    WHERE f.[forumId]=@fid AND f.[discussionType]='Public'";
-
-                string creatorUserId = null;
-                using (var cmd = new SqlCommand(sqlPost, conn))
-                {
-                    cmd.Parameters.AddWithValue("@uid", userId);
-                    cmd.Parameters.AddWithValue("@fid", forumId);
-                    using (var r = cmd.ExecuteReader())
-                    {
-                        if (!r.Read())
-                        {
-                            ShowError(T("This discussion was not found or is not a public discussion.",
-                                "Perbincangan ini tidak dijumpai atau bukan perbincangan awam.")); return;
-                        }
-                        string name    = r["creatorName"]?.ToString() ?? "User";
-                        string role    = r["role"]?.ToString()        ?? "";
-                        int replyCnt   = Convert.ToInt32(r["replyCount"]);
-                        int likeCnt    = Convert.ToInt32(r["likeCount"]);
-                        bool liked     = Convert.ToInt32(r["myLike"]) > 0;
-                        DateTime dt    = r["createdAt"] != DBNull.Value ? Convert.ToDateTime(r["createdAt"]) : DateTime.Now;
-                        creatorUserId  = r["createdBy"]?.ToString();
-
-                        litInitials.Text     = HttpUtility.HtmlEncode(BuildInitials(name));
-                        litCreatorName.Text  = HttpUtility.HtmlEncode(name);
-                        litRoleBadge.Text    = BuildRoleBadge(role);
-                        litPostDate.Text     = HttpUtility.HtmlEncode(FormatTime(dt));
-                        litTitle.Text        = HttpUtility.HtmlEncode(r["title"]?.ToString()   ?? "");
-                        litMessage.Text      = HttpUtility.HtmlEncode(r["message"]?.ToString() ?? "");
-                        litReplyCount.Text   = replyCnt.ToString();
-                        litRepliesBadge.Text = replyCnt.ToString();
-                        RenderLikeButton(liked, likeCnt);
-                    }
-                }
-
-                // -- 2. Replies ----------------------------------------
-                const string sqlReplies = @"
-                    SELECT fc.[forumChatId], fc.[senderUserId], fc.[message], fc.[createdAt],
-                        COALESCE(t.[name], s.[name], p.[name], u.[username]) AS senderName,
-                        u.[role]
-                    FROM dbo.[ForumChat] fc
-                    INNER JOIN dbo.[User]    u ON u.[userId]=fc.[senderUserId]
-                    LEFT  JOIN dbo.[Teacher] t ON t.[userId]=u.[userId]
-                    LEFT  JOIN dbo.[Student] s ON s.[userId]=u.[userId]
-                    LEFT  JOIN dbo.[Parent]  p ON p.[userId]=u.[userId]
-                    WHERE fc.[forumId]=@fid ORDER BY fc.[createdAt] ASC";
-
-                var replies = new List<object>();
-
-                using (var cmd = new SqlCommand(sqlReplies, conn))
-                {
-                    cmd.Parameters.AddWithValue("@fid", forumId);
-                    using (var r = cmd.ExecuteReader())
-                    {
-                        while (r.Read())
-                        {
-                            string sName  = r["senderName"]?.ToString() ?? "User";
-                            string sRole  = r["role"]?.ToString()       ?? "";
-                            DateTime sent = r["createdAt"] != DBNull.Value ? Convert.ToDateTime(r["createdAt"]) : DateTime.Now;
-
-                            replies.Add(new { initials = BuildInitials(sName), senderName = sName,
-                                roleCss = RoleCss(sRole), roleLabel = RoleLabel(sRole),
-                                message = r["message"]?.ToString() ?? "", timeAgo = FormatTime(sent) });
-                        }
-                    }
-                }
-
-                pnlReplies.Visible      = replies.Count > 0;
-                pnlRepliesEmpty.Visible = replies.Count == 0;
-                if (replies.Count > 0) { rptReplies.DataSource = replies; rptReplies.DataBind(); }
-
-                // -- 3. More Discussions (up to 5, excluding current) --
-                const string sqlMore = @"
-                    SELECT TOP 5 f.[forumId], f.[title], f.[createdAt],
-                        COALESCE(t.[name], s.[name], p.[name], u.[username]) AS creatorName,
-                        u.[role]
-                    FROM dbo.[Forum] f
-                    INNER JOIN dbo.[User]    u ON u.[userId]=f.[createdBy]
-                    LEFT  JOIN dbo.[Teacher] t ON t.[userId]=u.[userId]
-                    LEFT  JOIN dbo.[Student] s ON s.[userId]=u.[userId]
-                    LEFT  JOIN dbo.[Parent]  p ON p.[userId]=u.[userId]
-                    WHERE f.[discussionType]='Public' AND f.[forumId]<>@fid
-                    ORDER BY f.[createdAt] DESC";
-
-                var moreList = new List<object>();
-                using (var cmd = new SqlCommand(sqlMore, conn))
-                {
-                    cmd.Parameters.AddWithValue("@fid", forumId);
-                    using (var r = cmd.ExecuteReader())
-                    {
-                        while (r.Read())
-                        {
-                            string mn   = r["creatorName"]?.ToString() ?? "User";
-                            string mRole = r["role"]?.ToString() ?? "";
-                            DateTime md = r["createdAt"] != DBNull.Value ? Convert.ToDateTime(r["createdAt"]) : DateTime.Now;
-                            string mt   = r["title"]?.ToString() ?? "";
-                            moreList.Add(new { forumId = r["forumId"].ToString(),
-                                title = mt.Length > 60 ? mt.Substring(0, 60) + "…" : mt,
-                                creatorName = mn, initials = BuildInitials(mn), timeAgo = FormatTime(md),
-                                roleCss = RoleCss(mRole) });
-                        }
-                    }
-                }
-                if (moreList.Count > 0) { rptMore.DataSource = moreList; rptMore.DataBind(); }
+                return "";
             }
-
-            pnlMain.Visible  = true;
-            pnlError.Visible = false;
         }
 
-        // ------------------------------------------------------------
-        //  LIKE / UNLIKE
-        // ------------------------------------------------------------
-        //  LIKE (no unlike — one like per user only)
-        // ------------------------------------------------------------
-        protected void btnLike_Click(object sender, EventArgs e)
+        #endregion
+
+        #region Helper Methods
+
+        protected string T(string en, string bm)
         {
-            string userId = Session["userId"].ToString();
-            string forumId = ForumId;
-            using (var conn = new SqlConnection(ConnStr))
-            {
-                conn.Open();
-                // Check if already liked — if so, do nothing
-                int exists;
-                using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.[ForumLike] WHERE [forumId]=@f AND [senderUserId]=@u", conn))
-                { cmd.Parameters.AddWithValue("@f", forumId); cmd.Parameters.AddWithValue("@u", userId); exists = Convert.ToInt32(cmd.ExecuteScalar()); }
-
-                if (exists == 0)
-                {
-                    // Insert like
-                    using (var txn = conn.BeginTransaction())
-                    {
-                        string newId;
-                        using (var cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING([likeId],5,LEN([likeId])-4) AS INT)),0) FROM dbo.[ForumLike]", conn, txn))
-                        { newId = "LIKE" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3"); }
-                        using (var cmd = new SqlCommand("INSERT INTO dbo.[ForumLike]([likeId],[forumId],[senderUserId],[createdAt]) VALUES(@id,@f,@u,GETDATE())", conn, txn))
-                        { cmd.Parameters.AddWithValue("@id", newId); cmd.Parameters.AddWithValue("@f", forumId); cmd.Parameters.AddWithValue("@u", userId); cmd.ExecuteNonQuery(); }
-                        txn.Commit();
-                    }
-                }
-                // If already liked, do nothing (no unlike)
-            }
-            LoadPage();
-        }
-
-        // ------------------------------------------------------------
-        //  POST REPLY
-        // ------------------------------------------------------------
-        protected void btnPostReply_Click(object sender, EventArgs e)
-        {
-            string replyText = txtReply.Text.Trim();
-            if (string.IsNullOrEmpty(replyText))
-            {
-                pnlReplyVal.Visible = true;
-                litReplyVal.Text    = T("Reply cannot be empty.", "Balasan tidak boleh kosong.");
-                LoadPage(); return;
-            }
-            pnlReplyVal.Visible = false;
-            string userId  = Session["userId"].ToString();
-            string forumId = ForumId;
-            using (var conn = new SqlConnection(ConnStr))
-            {
-                conn.Open();
-                using (var txn = conn.BeginTransaction())
-                {
-                    string newId;
-                    using (var cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING([forumChatId],3,LEN([forumChatId])-2) AS INT)),0) FROM dbo.[ForumChat]", conn, txn))
-                    { newId = "FC" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3"); }
-                    using (var cmd = new SqlCommand("INSERT INTO dbo.[ForumChat]([forumChatId],[forumId],[senderUserId],[message],[createdAt]) VALUES(@id,@fid,@uid,@msg,GETDATE())", conn, txn))
-                    { cmd.Parameters.AddWithValue("@id", newId); cmd.Parameters.AddWithValue("@fid", forumId); cmd.Parameters.AddWithValue("@uid", userId); cmd.Parameters.AddWithValue("@msg", replyText); cmd.ExecuteNonQuery(); }
-                    txn.Commit();
-                }
-
-                // Notify the original forum creator (if not the same as the replier)
-                try
-                {
-                    string creatorId = null;
-                    using (var cmd = new SqlCommand("SELECT [createdBy] FROM dbo.[Forum] WHERE [forumId]=@fid", conn))
-                    { cmd.Parameters.AddWithValue("@fid", forumId); creatorId = cmd.ExecuteScalar()?.ToString(); }
-
-                    if (!string.IsNullOrEmpty(creatorId) && creatorId != userId)
-                    {
-                        int maxN = 0;
-                        using (var cmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING([notificationId],2,LEN([notificationId])-1) AS INT)),0) FROM dbo.[Notification]", conn))
-                        { maxN = Convert.ToInt32(cmd.ExecuteScalar()); }
-                        string nid = "N" + (maxN + 1).ToString("D3");
-
-                        using (var cmd = new SqlCommand("INSERT INTO dbo.[Notification]([notificationId],[toUserId],[titleEN],[titleBM],[messageEN],[messageBM],[isRead],[createdAt]) VALUES(@id,@uid,@tEN,@tBM,@mEN,@mBM,0,GETDATE())", conn))
-                        {
-                            cmd.Parameters.AddWithValue("@id", nid);
-                            cmd.Parameters.AddWithValue("@uid", creatorId);
-                            cmd.Parameters.AddWithValue("@tEN", "New Forum Reply");
-                            cmd.Parameters.AddWithValue("@tBM", "Balasan Forum Baharu");
-                            cmd.Parameters.AddWithValue("@mEN", "Your forum discussion has received a new reply.");
-                            cmd.Parameters.AddWithValue("@mBM", "Perbincangan forum anda telah menerima balasan baharu.");
-                            cmd.ExecuteNonQuery();
-                        }
-                    }
-                }
-                catch { /* Notification failure is non-critical */ }
-            }
-            txtReply.Text  = "";
-            hidToast.Value = T("Reply posted successfully.", "Balasan berjaya dihantar.");
-            LoadPage();
-        }
-
-        // ------------------------------------------------------------
-        //  HELPERS
-        // ------------------------------------------------------------
-        private void RenderLikeButton(bool liked, int likeCount)
-        {
-            btnLike.CssClass = "tc-forum-reply-like-btn " + (liked ? "liked" : "notliked");
-            string icon  = liked ? "bi bi-heart-fill" : "bi bi-heart";
-            string label = liked ? T("Liked", "Disukai") : T("Like", "Suka");
-            btnLike.Text = string.Format("<i class=\"{0}\"></i> {1} {2}", icon, likeCount, HttpUtility.HtmlEncode(label));
-        }
-
-        private string BuildRoleBadge(string role)
-        {
-            return string.Format("<span class=\"tc-forum-reply-role-badge {0}\">{1}</span>",
-                HttpUtility.HtmlAttributeEncode(RoleCss(role)), HttpUtility.HtmlEncode(RoleLabel(role)));
+            return CurrentLanguage == "BM" ? bm : en;
         }
 
         private void ShowError(string message)
         {
-            litErrMsg.Text   = HttpUtility.HtmlEncode(message);
+            litErrMsg.Text = HttpUtility.HtmlEncode(message);
             pnlError.Visible = true;
-            pnlMain.Visible  = false;
+            pnlMain.Visible = false;
             if (pnlReplyVal != null) pnlReplyVal.Visible = false;
+        }
+
+        private void RenderLikeButton(bool isLiked, int likeCount)
+        {
+            btnLike.CssClass = "tc-forum-reply-like-btn " + (isLiked ? "liked" : "notliked");
+            string iconClass = isLiked ? "bi bi-heart-fill" : "bi bi-heart";
+            string label = isLiked ? T("Liked", "Disukai") : T("Like", "Suka");
+            btnLike.Text = string.Format("<i class=\"{0}\"></i> {1} {2}", iconClass, likeCount, HttpUtility.HtmlEncode(label));
+        }
+
+        private string BuildRoleBadgeHtml(string role)
+        {
+            return string.Format("<span class=\"tc-forum-reply-role-badge {0}\">{1}</span>",
+                HttpUtility.HtmlAttributeEncode(GetRoleCss(role)),
+                HttpUtility.HtmlEncode(GetRoleLabel(role)));
         }
 
         private static string BuildInitials(string name)
         {
             if (string.IsNullOrWhiteSpace(name)) return "U";
+
             string[] parts = name.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length >= 2) return (parts[0][0].ToString() + parts[parts.Length - 1][0].ToString()).ToUpper();
+            if (parts.Length >= 2)
+                return (parts[0][0].ToString() + parts[parts.Length - 1][0].ToString()).ToUpper();
+
             return name.Trim()[0].ToString().ToUpper();
         }
 
-        private static string RoleCss(string role)
+        private static string GetRoleCss(string role)
         {
             switch ((role ?? "").Trim().ToLower())
             {
                 case "teacher": return "teacher";
                 case "student": return "student";
-                case "parent":  return "parent";
-                default:        return "";
+                case "parent": return "parent";
+                default: return "";
             }
         }
 
-        private string RoleLabel(string role)
+        private string GetRoleLabel(string role)
         {
             switch ((role ?? "").Trim().ToLower())
             {
                 case "teacher": return T("Teacher", "Guru");
                 case "student": return T("Student", "Pelajar");
-                case "parent":  return T("Parent",  "Ibu Bapa");
-                default:        return role ?? "";
+                case "parent": return T("Parent", "Ibu Bapa");
+                default: return role ?? "";
             }
         }
 
-        private static string FormatTime(DateTime dt)
+        private static string FormatTimeAgo(DateTime dateTime)
         {
-            TimeSpan span = DateTime.Now - dt;
-            if (span.TotalMinutes < 1)  return "Just now";
-            if (span.TotalHours   < 1)  return (int)span.TotalMinutes + " min ago";
-            if (span.TotalDays    < 1)  return (int)span.TotalHours   + " hr ago";
-            if (span.TotalDays    < 7)  return (int)span.TotalDays + " day" + ((int)span.TotalDays == 1 ? "" : "s") + " ago";
-            return dt.ToString("d MMM yyyy, h:mm tt");
+            TimeSpan elapsed = DateTime.Now - dateTime;
+
+            if (elapsed.TotalMinutes < 1) return "Just now";
+            if (elapsed.TotalHours < 1) return (int)elapsed.TotalMinutes + " min ago";
+            if (elapsed.TotalDays < 1) return (int)elapsed.TotalHours + " hr ago";
+            if (elapsed.TotalDays < 7)
+            {
+                int days = (int)elapsed.TotalDays;
+                return days + " day" + (days == 1 ? "" : "s") + " ago";
+            }
+
+            return dateTime.ToString("d MMM yyyy, h:mm tt");
         }
+
+        #endregion
     }
 }

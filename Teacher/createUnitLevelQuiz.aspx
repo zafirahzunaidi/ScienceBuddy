@@ -1,489 +1,729 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="createUnitLevelQuiz.aspx.cs"
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="createUnitLevelQuiz.aspx.cs"
     Inherits="ScienceBuddy.Teacher.createUnitLevelQuiz" MasterPageFile="~/Site.Master"
     Title="Create Quiz" EnableViewState="true" %>
 
+<%-- Head --%>
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
-<link href="<%: ResolveUrl("~/Content/Teacher.css") %>" rel="stylesheet" />
+    <link href="<%: ResolveUrl("~/Content/Teacher.css") %>" rel="stylesheet" />
 </asp:Content>
 
+<%-- Sidebar --%>
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
-    <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Main","Utama") %></div>
-        <a href="<%: ResolveUrl("~/Teacher/Dashboard.aspx") %>" class="sb-sidebar-item"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label"><%: T("Dashboard","Papan Pemuka") %></span></a>
-        <a href="<%: ResolveUrl("~/Teacher/Notifications.aspx") %>" class="sb-sidebar-item"><i class="bi bi-bell item-icon"></i><span class="item-label"><%: T("Notifications","Notifikasi") %></span></a></div>
-    <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Teaching","Pengajaran") %></div>
-        <a href="<%: ResolveUrl("~/Teacher/manageMaterials.aspx") %>" class="sb-sidebar-item"><i class="bi bi-book item-icon"></i><span class="item-label"><%: T("Manage Materials","Bahan Pembelajaran") %></span></a>
-        <a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx") %>" class="sb-sidebar-item active"><i class="bi bi-patch-question item-icon"></i><span class="item-label"><%: T("Manage Quiz","Kuiz") %></span></a>
-        <a href="<%: ResolveUrl("~/Teacher/studentProgress.aspx") %>" class="sb-sidebar-item"><i class="bi bi-bar-chart item-icon"></i><span class="item-label"><%: T("Student Progress","Prestasi Pelajar") %></span></a>
-        <a href="<%: ResolveUrl("~/Teacher/liveSession.aspx") %>" class="sb-sidebar-item"><i class="bi bi-camera-video item-icon"></i><span class="item-label"><%: T("Schedule Live Class","Kelas Langsung") %></span></a></div>
-    <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Community","Komuniti") %></div>
-        <a href="<%: ResolveUrl("~/Teacher/forum.aspx") %>" class="sb-sidebar-item"><i class="bi bi-chat-dots item-icon"></i><span class="item-label"><%: T("Forum","Forum") %></span></a>
-        <a href="<%: ResolveUrl("~/Teacher/privateMessages.aspx") %>" class="sb-sidebar-item"><i class="bi bi-envelope item-icon"></i><span class="item-label"><%: T("Private Message","Mesej Peribadi") %></span></a></div>
-    <div class="sb-nav-section"><div class="sb-nav-section-label"><%: T("Account","Akaun") %></div>
-        <a href="<%: ResolveUrl("~/Teacher/MyProfile.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person item-icon"></i><span class="item-label"><%: T("My Profile","Profil Saya") %></span></a>
-        <a href="<%: ResolveUrl("~/Logout.aspx") %>" class="sb-sidebar-item"><i class="bi bi-box-arrow-right item-icon"></i><span class="item-label"><%: T("Sign Out","Log Keluar") %></span></a></div>
-</asp:Content>
-<asp:Content ID="cPageTitle" ContentPlaceHolderID="PageTitle" runat="server"><%: T("Create Quiz","Cipta Kuiz") %></asp:Content>
-<asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
-
-<asp:Panel ID="pnlError" runat="server" Visible="false">
-    <div class="tc-question-builder-msg tc-question-builder-msg-error"><i class="bi bi-exclamation-circle"></i> <asp:Literal ID="litError" runat="server" /></div>
-    <a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx") %>" class="tc-question-builder-btn tc-question-builder-btn-outline"><%: T("Back to Quizzes","Kembali ke Kuiz") %></a>
-</asp:Panel>
-
-<asp:Panel ID="pnlBuilder" runat="server" Visible="false">
-
-<%-- ------------------------------------------------------
-     HERO HEADER
-     ------------------------------------------------------ --%>
-<div class="tc-create-quiz-hero">
-    <div class="tc-create-quiz-hero-bg">
-        <svg viewBox="0 0 820 260" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMaxYMid slice">
-            <circle cx="550" cy="62" r="10" fill="#D97B6C"/>
-            <ellipse cx="550" cy="62" rx="36" ry="15" stroke="#D97B6C" stroke-width="2.2" fill="none"/>
-            <ellipse cx="550" cy="62" rx="36" ry="15" stroke="#D97B6C" stroke-width="2.2" fill="none" transform="rotate(60 550 62)"/>
-            <ellipse cx="550" cy="62" rx="36" ry="15" stroke="#D97B6C" stroke-width="2.2" fill="none" transform="rotate(120 550 62)"/>
-            <path d="M650 18 C660 36 672 36 682 18 C692 0 704 0 714 18" stroke="#486F4B" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-            <path d="M650 36 C660 54 672 54 682 36 C692 18 704 18 714 36" stroke="#486F4B" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-            <line x1="659" y1="27" x2="659" y2="43" stroke="#486F4B" stroke-width="1.6"/>
-            <line x1="673" y1="36" x2="673" y2="52" stroke="#486F4B" stroke-width="1.6"/>
-            <line x1="687" y1="27" x2="687" y2="43" stroke="#486F4B" stroke-width="1.6"/>
-            <line x1="701" y1="18" x2="701" y2="34" stroke="#486F4B" stroke-width="1.6"/>
-            <path d="M760 28 L760 66 L780 98 L740 98 Z" stroke="#5F8F63" stroke-width="2.2" fill="none" stroke-linejoin="round"/>
-            <line x1="752" y1="28" x2="768" y2="28" stroke="#5F8F63" stroke-width="2.2"/>
-            <ellipse cx="760" cy="90" rx="13" ry="5" fill="#5F8F63" opacity=".45"/>
-            <circle cx="754" cy="78" r="4" fill="#D97B6C" opacity=".55"/>
-            <circle cx="764" cy="84" r="3" fill="#D8A53A" opacity=".5"/>
-            <rect x="790" y="110" width="24" height="38" rx="4" stroke="#D8A53A" stroke-width="2" fill="none"/>
-            <line x1="802" y1="110" x2="802" y2="96" stroke="#D8A53A" stroke-width="2.2"/>
-            <circle cx="802" cy="92" r="7" stroke="#D8A53A" stroke-width="2" fill="none"/>
-            <line x1="786" y1="148" x2="818" y2="148" stroke="#D8A53A" stroke-width="2.2" stroke-linecap="round"/>
-            <circle cx="700" cy="170" r="7" fill="#D97B6C"/><circle cx="726" cy="150" r="5" fill="#5F8F63"/>
-            <circle cx="748" cy="172" r="7" fill="#D97B6C"/><circle cx="726" cy="192" r="4.5" fill="#D8A53A"/>
-            <line x1="707" y1="170" x2="721" y2="153" stroke="#D97B6C" stroke-width="1.8"/>
-            <line x1="731" y1="153" x2="743" y2="169" stroke="#D97B6C" stroke-width="1.8"/>
-            <line x1="726" y1="155" x2="726" y2="187" stroke="#5F8F63" stroke-width="1.8"/>
-            <path d="M610 110 Q632 88 644 110 Q632 134 610 110 Z" stroke="#486F4B" stroke-width="1.8" fill="none"/>
-            <line x1="610" y1="110" x2="642" y2="110" stroke="#486F4B" stroke-width="1.2"/>
-            <path d="M618 130 Q628 118 636 130 Q628 142 618 130 Z" stroke="#486F4B" stroke-width="1.5" fill="none" opacity=".6"/>
-            <line x1="460" y1="200" x2="520" y2="160" stroke="#D97B6C" stroke-width="2.5" stroke-linecap="round"/>
-            <ellipse cx="461" cy="201" rx="10" ry="6" stroke="#D97B6C" stroke-width="2" fill="none" transform="rotate(-35 461 201)"/>
-            <line x1="520" y1="160" x2="536" y2="158" stroke="#D97B6C" stroke-width="2.5" stroke-linecap="round"/>
-            <line x1="490" y1="220" x2="490" y2="200" stroke="#D97B6C" stroke-width="2" stroke-linecap="round"/>
-            <line x1="476" y1="220" x2="504" y2="220" stroke="#D97B6C" stroke-width="2.5" stroke-linecap="round"/>
-            <path d="M575 155 C580 138 596 135 598 148 C593 140 581 143 575 155 Z" fill="#D8A53A"/>
-            <path d="M420 45 L422.5 52 L430 54.5 L422.5 57 L420 64 L417.5 57 L410 54.5 L417.5 52 Z" fill="#D8A53A" opacity=".75"/>
-            <path d="M668 70 L669.8 75.5 L675.5 77.3 L669.8 79.1 L668 84.6 L666.2 79.1 L660.5 77.3 L666.2 75.5 Z" fill="#D8A53A" opacity=".65"/>
-            <path d="M495 130 L496.4 134 L500.5 135.4 L496.4 136.8 L495 140.8 L493.6 136.8 L489.5 135.4 L493.6 134 Z" fill="#D97B6C" opacity=".6"/>
-            <circle cx="438" cy="105" r="3.2" fill="#D8A53A" opacity=".6"/>
-            <circle cx="462" cy="72" r="2.4" fill="#D97B6C" opacity=".55"/>
-            <circle cx="582" cy="200" r="2.8" fill="#5F8F63" opacity=".5"/>
-            <circle cx="640" cy="230" r="2" fill="#D8A53A" opacity=".5"/>
-            <circle cx="772" cy="60" r="3" fill="#D97B6C" opacity=".45"/>
-            <path d="M380 260 Q470 228 565 242 Q650 256 750 236 Q790 228 820 234 L820 260 Z" fill="#D8A53A" opacity=".18"/>
-            <path d="M0 220 Q80 200 160 215 Q240 230 300 210 L300 260 L0 260 Z" fill="#5F8F63" opacity=".15"/>
-        </svg>
-    </div>
-    <div class="tc-create-quiz-hero-left">
-        <div class="tc-create-quiz-hero-top">
-            <div class="tc-create-quiz-hero-icon"><i class="bi bi-journal-bookmark-fill"></i></div>
-            <div>
-                <h1 class="tc-create-quiz-hero-title"><asp:Literal ID="litMode" runat="server" /></h1>
-                <p class="tc-create-quiz-hero-desc"><%: T("Create and manage questions for this quiz.","Cipta dan urus soalan untuk kuiz ini.") %></p>
-            </div>
-        </div>
-        <div class="tc-create-quiz-hero-meta">
-            <div class="tc-create-quiz-meta-item">
-                <div class="tc-create-quiz-meta-pill tc-create-quiz-meta-pill-unit"><i class="bi bi-layers-fill"></i></div>
-                <div>
-                    <span class="tc-create-quiz-meta-label"><asp:Literal ID="litScopeLabel" runat="server" /></span>
-                    <span class="tc-create-quiz-meta-val"><asp:Literal ID="litScope" runat="server" /></span>
-                </div>
-            </div>
-            <div class="tc-create-quiz-meta-item">
-                <div class="tc-create-quiz-meta-pill tc-create-quiz-meta-pill-subtopic"><i class="bi bi-bookmark-fill"></i></div>
-                <div>
-                    <span class="tc-create-quiz-meta-label"><%: T("Subtopic","Subtopik") %></span>
-                    <span class="tc-create-quiz-meta-val"><asp:Literal ID="litSubtopic" runat="server" /></span>
-                </div>
-            </div>
-        </div>
-    </div>
-</div><%-- /.tc-create-quiz-hero --%>
-
-<%-- Quiz Titles Panel --%>
-<asp:Panel ID="pnlQuizTitles" runat="server" Visible="false">
-<div class="tc-create-quiz-titles-panel">
-    <div class="tc-create-quiz-title-col">
-        <span class="tc-create-quiz-title-badge tc-create-quiz-title-badge-en"><i class="bi bi-translate"></i>&nbsp;English</span>
-        <div class="tc-create-quiz-title-val"><asp:Literal ID="litQuizTitleEN" runat="server" /></div>
-    </div>
-    <div class="tc-create-quiz-title-col">
-        <span class="tc-create-quiz-title-badge tc-create-quiz-title-badge-bm"><i class="bi bi-translate"></i>&nbsp;Bahasa Melayu</span>
-        <div class="tc-create-quiz-title-val"><asp:Literal ID="litQuizTitleBM" runat="server" /></div>
-    </div>
-</div>
-</asp:Panel>
-
-<%-- Subtopic Selection (legacy flow fallback) --%>
-<asp:Panel ID="pnlSubtopicSelect" runat="server" Visible="false">
-<div style="margin-bottom:1.5rem;padding:1.1rem 1.3rem;background:#FAFAF8;border-radius:14px;border:1.5px solid var(--tc-border);">
-    <div style="font-size:.8rem;font-weight:700;color:var(--tc-text);margin-bottom:7px;"><%: T("Select Subtopic","Pilih Subtopik") %> *</div>
-    <asp:DropDownList ID="ddlSubtopic" runat="server" CssClass="tc-question-builder-input" style="padding:.55rem .75rem;" />
-</div>
-</asp:Panel>
-
-<%-- Information Notice --%>
-<div class="tc-create-quiz-info-notice">
-    <div class="tc-create-quiz-info-icon"><i class="bi bi-info-circle-fill"></i></div>
-    <div class="tc-create-quiz-info-body">
-        <div class="tc-create-quiz-info-title"><%: T("Unit Quiz Information","Maklumat Kuiz Unit") %></div>
-        <div class="tc-create-quiz-info-text"><%: T("Each question must include both English and Bahasa Melayu versions before it can be submitted successfully. Complete both language tabs before saving each question.","Setiap soalan mesti mengandungi kedua-dua versi Bahasa Inggeris dan Bahasa Melayu sebelum boleh dihantar. Lengkapkan kedua-dua tab bahasa sebelum menyimpan setiap soalan.") %></div>
-    </div>
-</div>
-
-<%-- Progress Bar (hidden) --%>
-<div class="tc-question-builder-progress" style="display:none;">
-    <div class="tc-question-builder-progress-icon"><i class="bi bi-check2-all"></i></div>
-    <div class="tc-question-builder-progress-bar"><div class="tc-question-builder-progress-fill" id="progressFill" style="width:0%"></div></div>
-    <div class="tc-question-builder-progress-text" id="progressText">0 / 0 <%: T("Questions Saved","Soalan Disimpan") %></div>
-</div>
-
-<%-- Builder Layout --%>
-<div class="tc-question-builder-layout">
-
-<%-- Left Nav --%>
-<div class="tc-question-builder-nav">
-    <div class="tc-question-builder-nav-header">
-        <div class="tc-question-builder-nav-title">
-            <%: T("Questions","Soalan") %>
-            <span class="tc-question-builder-nav-count" id="navCount">0</span>
-        </div>
-    </div>
-    <div class="tc-question-builder-nav-list">
-        <asp:Repeater ID="rptNav" runat="server">
-            <ItemTemplate>
-                <div class="tc-question-builder-nav-row">
-                    <asp:LinkButton ID="btnNavQ" runat="server"
-                        CssClass='<%# "tc-question-builder-nav-item" + (Convert.ToInt32(Eval("Index")) == CurrentIndex ? " active" : "") + (Convert.ToBoolean(Eval("Done")) ? " done" : "") %>'
-                        CommandName="GoTo" CommandArgument='<%# Eval("Index") %>'
-                        OnCommand="btnNav_Command" CausesValidation="false"
-                        data-qidx='<%# Eval("Index") %>'>
-                        <span class="tc-question-builder-nav-badge"><%# Convert.ToInt32(Eval("Index")) + 1 %></span>
-                        <span>Q<%# Convert.ToInt32(Eval("Index")) + 1 %></span>
-                        <i class="bi bi-check-circle-fill tc-question-builder-nav-check"></i>
-                    </asp:LinkButton>
-                    <button type="button" class="tc-question-builder-nav-del"
-                        data-idx="<%# Convert.ToInt32(Eval("Index")) %>"
-                        onclick="confirmDeleteQuestion(+this.dataset.idx)"
-                        title="Delete question">
-                        <i class="bi bi-trash3"></i>
-                    </button>
-                </div>
-            </ItemTemplate>
-        </asp:Repeater>
-    </div>
-    <div class="tc-question-builder-nav-footer">
-        <asp:Button ID="btnAddQuestion" runat="server" CssClass="tc-question-builder-nav-add"
-            OnClientClick="clientAddQuestion();return false;"
-            OnClick="btnAddQuestion_Click" CausesValidation="false" />
-    </div>
-</div>
-
-<%-- Delete confirmation modal (pure UI ? no backend wired yet) --%>
-<div class="tc-question-builder-del-overlay" id="qbDelOverlay" onclick="closeDeleteModal(event)">
-    <div class="tc-question-builder-del-modal">
-        <div class="tc-question-builder-del-modal-icon"><i class="bi bi-trash3-fill"></i></div>
-        <h3><%: T("Delete Question?","Padam Soalan?") %></h3>
-        <p id="qbDelMsg"><%: T("This question will be permanently removed. This action cannot be undone.","Soalan ini akan dipadam secara kekal. Tindakan ini tidak boleh dibatalkan.") %></p>
-        <div class="tc-question-builder-del-modal-actions">
-            <button type="button" class="tc-question-builder-del-btn-cancel" onclick="closeDeleteModal()"><%: T("Cancel","Batal") %></button>
-            <button type="button" class="tc-question-builder-del-btn-confirm" id="qbDelConfirm"><%: T("Delete","Padam") %></button>
-        </div>
-    </div>
-</div>
-
-<%-- Center Editor --%>
-<div class="tc-question-builder-center">
-    <%-- Row 1: Navigation + Submit --%>
-    <div class="tc-question-builder-toolbar">
-        <div class="tc-question-builder-toolbar-nav">
-            <button type="button" id="qbNavPrev" class="tc-question-builder-toolbar-arrow" onclick="navGoTo(window.__CI-1);return false;"><i class="bi bi-chevron-left"></i></button>
-            <span id="qbNavLabel" class="tc-question-builder-toolbar-label"></span>
-            <button type="button" id="qbNavNext" class="tc-question-builder-toolbar-arrow" onclick="navGoTo(window.__CI+1);return false;"><i class="bi bi-chevron-right"></i></button>
-        </div>
-        <asp:Button ID="btnSubmitQuiz" runat="server" CssClass="tc-question-builder-btn tc-question-builder-btn-success" style="margin:0;padding:.55rem 1.2rem;font-size:.82rem;" OnClientClick="return validateFibBlanksAndFlush();" OnClick="btnSubmitQuiz_Click" CausesValidation="false" />
-    </div>
-    <%-- Row 2: Language toggle (no label, white background, inside card) --%>
-    <div class="tc-question-builder-toolbar-lang">
-        <div class="tc-question-builder-tabs">
-            <asp:Button ID="btnTabEN" runat="server" Text="English" CssClass="tc-question-builder-tab active" OnClientClick="switchTab('EN');return false;" CausesValidation="false" />
-            <asp:Button ID="btnTabBM" runat="server" Text="Bahasa Melayu" CssClass="tc-question-builder-tab" OnClientClick="switchTab('BM');return false;" CausesValidation="false" />
-        </div>
-    </div>
-    <%-- Hidden literals & buttons for code-behind compatibility --%>
-    <asp:Literal ID="litQNum" runat="server" Visible="false" />
-    <asp:Literal ID="litQTextLabel" runat="server" Visible="false" />
-
-    <div class="tc-question-builder-editor-body">
-
-    <%-- Question Text ? Rich Editor style --%>
-    <div class="tc-question-builder-field" style="margin-bottom:1.2rem;">
-        <div class="tc-question-builder-label">
-            <span><%: T("Question","Soalan") %> * <span id="qbLangBadge" style="font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:5px;background:#D1FAE5;color:#047857;margin-left:6px;text-transform:none;letter-spacing:0;">EN</span></span>
-            <span class="tc-question-builder-char-count" id="qCharCount">0 / 500</span>
-        </div>
-        <div class="tc-question-builder-tc-rte-wrap">
-            <div class="tc-question-builder-tc-rte-toolbar">
-                <button type="button" class="tc-question-builder-tc-rte-btn" onmousedown="event.preventDefault();rteExec('bold')" title="Bold (Ctrl+B)"><i class="bi bi-type-bold"></i></button>
-                <button type="button" class="tc-question-builder-tc-rte-btn" onmousedown="event.preventDefault();rteExec('italic')" title="Italic (Ctrl+I)"><i class="bi bi-type-italic"></i></button>
-                <button type="button" class="tc-question-builder-tc-rte-btn" onmousedown="event.preventDefault();rteExec('underline')" title="Underline (Ctrl+U)"><i class="bi bi-type-underline"></i></button>
-                <span class="tc-question-builder-tc-rte-sep"></span>
-                <button type="button" class="tc-question-builder-tc-rte-btn" onmousedown="event.preventDefault();rteExec('insertUnorderedList')" title="Bullet List"><i class="bi bi-list-ul"></i></button>
-                <button type="button" class="tc-question-builder-tc-rte-btn" onmousedown="event.preventDefault();rteExec('insertOrderedList')" title="Numbered List"><i class="bi bi-list-ol"></i></button>
-                <span class="tc-question-builder-tc-rte-sep tc-question-builder-tc-fill-blank-only" id="fibToolbarSep" style="display:none;"></span>
-                <span class="tc-fill-blank-counter tc-question-builder-tc-fill-blank-only" id="blankCounter" style="display:none;margin-left:auto;font-size:.75rem;"><%: T("Blanks","Kosong") %>: <strong id="blankNum">0</strong> / 4</span>
-                <button type="button" class="tc-fill-blank-add-btn tc-question-builder-tc-fill-blank-only" id="btnAddBlank" onclick="addBlank()" style="display:none;margin-left:6px;padding:.4rem .8rem;font-size:.76rem;"><i class="bi bi-plus-square-dotted"></i> <%: T("Add Blank","Tambah Kosong") %></button>
-            </div>
-            <div id="qbRteEditor" class="tc-question-builder-tc-rte-editor" contenteditable="true" data-placeholder-en="Type your question here..." data-placeholder-bm="Taip soalan anda di sini..." data-placeholder="<%: T("Type your question here...","Taip soalan anda di sini...") %>"></div>
-        </div>
-        <%-- Hidden textarea for server sync --%>
-        <asp:TextBox ID="txtQuestionText" runat="server" TextMode="MultiLine" Rows="4" CssClass="tc-question-builder-input tc-question-builder-textarea" MaxLength="500" style="display:none;" />
-    </div>
-
-    <%-- Question Image (1 image per question, client-side only preview) --%>
-    <div class="tc-question-builder-img-zone" id="qbImgZone">
-        <div class="tc-question-builder-img-upload" id="qbImgUploadLabel" onclick="document.getElementById('qbImgInput').click()">
-            <div class="tc-question-builder-img-upload-icon"><i class="bi bi-image"></i></div>
-            <span class="tc-question-builder-img-upload-text"><%: T("Upload Image","Muat Naik Imej") %></span>
-            <span class="tc-question-builder-img-upload-sub"><%: T("Optional ? PNG, JPG, GIF up to 5 MB","Pilihan ? PNG, JPG, GIF sehingga 5 MB") %></span>
-        </div>
-        <%-- Server-side file upload control (hidden; triggered by JS click) --%>
-        <asp:FileUpload ID="fuQuestionImage" runat="server" Style="display:none;" />
-        <input type="file" id="qbImgInput" accept="image/*" onchange="handleQImgUpload(this)" style="display:none;" />
-        <div class="tc-question-builder-img-preview" id="qbImgPreview">
-            <img id="qbImgPreviewSrc" src="" alt="" />
-            <button type="button" class="tc-question-builder-img-remove" onclick="removeQImg()"><i class="bi bi-x"></i></button>
-        </div>
-    </div>
-    <asp:HiddenField ID="hidImgFileName" runat="server" Value="" />
-
-    <%-- Answer Section: MCQ (default) --%>
-    <div id="sectionMCQ" class="tc-question-builder-answer-section">
-        <div class="tc-question-builder-section-header">
-            <div class="tc-question-builder-section-header-icon"><i class="bi bi-ui-radios"></i></div>
-            <span class="tc-question-builder-section-header-text"><asp:Literal ID="litOptionsLabel" runat="server" /></span>
-            <span class="tc-question-builder-section-header-sub"><%: T("Select one correct answer","Pilih satu jawapan betul") %></span>
-            <div class="tc-question-builder-section-divider"></div>
-        </div>
-        <div class="tc-question-builder-opts">
-            <div class="tc-question-builder-opt" id="optAWrap" runat="server">
-                <div class="tc-question-builder-opt-band">A</div>
-                <div class="tc-question-builder-opt-body"><asp:RadioButton ID="radA" runat="server" GroupName="correct" /><asp:TextBox ID="txtOptA" runat="server" CssClass="tc-question-builder-opt-input" /></div>
-                <div class="tc-question-builder-opt-selector" onclick="selectCorrectOpt(this)"></div>
-            </div>
-            <div class="tc-question-builder-opt" id="optBWrap" runat="server">
-                <div class="tc-question-builder-opt-band">B</div>
-                <div class="tc-question-builder-opt-body"><asp:RadioButton ID="radB" runat="server" GroupName="correct" /><asp:TextBox ID="txtOptB" runat="server" CssClass="tc-question-builder-opt-input" /></div>
-                <div class="tc-question-builder-opt-selector" onclick="selectCorrectOpt(this)"></div>
-            </div>
-            <div class="tc-question-builder-opt" id="optCWrap" runat="server">
-                <div class="tc-question-builder-opt-band">C</div>
-                <div class="tc-question-builder-opt-body"><asp:RadioButton ID="radC" runat="server" GroupName="correct" /><asp:TextBox ID="txtOptC" runat="server" CssClass="tc-question-builder-opt-input" /></div>
-                <div class="tc-question-builder-opt-selector" onclick="selectCorrectOpt(this)"></div>
-            </div>
-            <div class="tc-question-builder-opt" id="optDWrap" runat="server">
-                <div class="tc-question-builder-opt-band">D</div>
-                <div class="tc-question-builder-opt-body"><asp:RadioButton ID="radD" runat="server" GroupName="correct" /><asp:TextBox ID="txtOptD" runat="server" CssClass="tc-question-builder-opt-input" /></div>
-                <div class="tc-question-builder-opt-selector" onclick="selectCorrectOpt(this)"></div>
-            </div>
-        </div>
-    </div>
-
-    <%-- Answer Section: True/False --%>
-    <div id="sectionTF" class="tc-question-builder-answer-section" style="display:none;">
-        <div class="tc-question-builder-section-header">
-            <div class="tc-question-builder-section-header-icon"><i class="bi bi-toggles"></i></div>
-            <span class="tc-question-builder-section-header-text"><%: T("Select the correct answer","Pilih jawapan yang betul") %></span>
-            <div class="tc-question-builder-section-divider"></div>
-        </div>
-        <div class="tc-question-builder-tf-grid">
-            <label class="tc-question-builder-tf-card" id="tfTrueCard"><input type="radio" name="tfAnswer" value="A" onchange="updateTFCards()"/><i class="bi bi-check-circle-fill"></i><span id="tfTrueLabel">TRUE</span></label>
-            <label class="tc-question-builder-tf-card" id="tfFalseCard"><input type="radio" name="tfAnswer" value="B" onchange="updateTFCards()"/><i class="bi bi-x-circle-fill"></i><span id="tfFalseLabel">FALSE</span></label>
-        </div>
-    </div>
-
-    <%-- Answer Section: Multiselect --%>
-    <div id="sectionMS" class="tc-question-builder-answer-section" style="display:none;">
-        <div class="tc-question-builder-section-header">
-            <div class="tc-question-builder-section-header-icon"><i class="bi bi-check2-square"></i></div>
-            <span class="tc-question-builder-section-header-text"><%: T("Select all correct answers","Pilih semua jawapan betul") %></span>
-            <span class="tc-question-builder-ms-count" id="msCount" style="margin-left:0;">0 <%: T("selected","dipilih") %></span>
-            <div class="tc-question-builder-section-divider"></div>
-        </div>
-        <div class="tc-question-builder-opts">
-            <div class="tc-question-builder-opt tc-question-builder-ms-opt">
-                <div class="tc-question-builder-opt-band">A</div>
-                <div class="tc-question-builder-opt-body"><input type="checkbox" class="ms-check" onchange="updateMSCards()"/><input type="text" class="tc-question-builder-opt-input ms-text" placeholder="<%: T("Type option A...","Taip pilihan A...") %>" /></div>
-            </div>
-            <div class="tc-question-builder-opt tc-question-builder-ms-opt">
-                <div class="tc-question-builder-opt-band">B</div>
-                <div class="tc-question-builder-opt-body"><input type="checkbox" class="ms-check" onchange="updateMSCards()"/><input type="text" class="tc-question-builder-opt-input ms-text" placeholder="<%: T("Type option B...","Taip pilihan B...") %>" /></div>
-            </div>
-            <div class="tc-question-builder-opt tc-question-builder-ms-opt">
-                <div class="tc-question-builder-opt-band">C</div>
-                <div class="tc-question-builder-opt-body"><input type="checkbox" class="ms-check" onchange="updateMSCards()"/><input type="text" class="tc-question-builder-opt-input ms-text" placeholder="<%: T("Type option C...","Taip pilihan C...") %>" /></div>
-            </div>
-            <div class="tc-question-builder-opt tc-question-builder-ms-opt">
-                <div class="tc-question-builder-opt-band">D</div>
-                <div class="tc-question-builder-opt-body"><input type="checkbox" class="ms-check" onchange="updateMSCards()"/><input type="text" class="tc-question-builder-opt-input ms-text" placeholder="<%: T("Type option D...","Taip pilihan D...") %>" /></div>
-            </div>
-        </div>
-    </div>
-
-    <%-- Answer Section: Drag & Drop --%>
-    <div id="sectionFIB" class="tc-question-builder-answer-section" style="display:none;">
-
-        <%-- Answer Options --%>
-        <div class="tc-fill-blank-section-label" style="font-size:.92rem;font-weight:800;"><%: T("Answer Options","Pilihan Jawapan") %> * <span class="tc-fill-blank-sub-label">(<%: T("Max 4 words","Maks 4 perkataan") %>)</span></div>
-        <div class="tc-question-builder-tc-fill-blank-words" id="fibWordsContainer">
-            <div class="tc-question-builder-tc-fill-blank-word"><span class="tc-question-builder-tc-fill-blank-num">1</span><input type="text" class="tc-question-builder-opt-input tc-fill-blank-word-input" placeholder="<%: T("Word 1","Perkataan 1") %>" oninput="onFibWordChange()" /></div>
-            <div class="tc-question-builder-tc-fill-blank-word"><span class="tc-question-builder-tc-fill-blank-num">2</span><input type="text" class="tc-question-builder-opt-input tc-fill-blank-word-input" placeholder="<%: T("Word 2","Perkataan 2") %>" oninput="onFibWordChange()" /></div>
-            <div class="tc-question-builder-tc-fill-blank-word"><span class="tc-question-builder-tc-fill-blank-num">3</span><input type="text" class="tc-question-builder-opt-input tc-fill-blank-word-input" placeholder="<%: T("Word 3","Perkataan 3") %>" oninput="onFibWordChange()" /></div>
-            <div class="tc-question-builder-tc-fill-blank-word"><span class="tc-question-builder-tc-fill-blank-num">4</span><input type="text" class="tc-question-builder-opt-input tc-fill-blank-word-input" placeholder="<%: T("Word 4","Perkataan 4") %>" oninput="onFibWordChange()" /></div>
-        </div>
-        <div id="fibMappingSection" class="tc-fill-blank-mapping-wrap" style="display:none;">
-            <div class="tc-fill-blank-section-label" style="font-size:.92rem;font-weight:800;"><i class="bi bi-arrow-left-right"></i> <%: T("Correct Answer Mapping","Pemetaan Jawapan Betul") %> *</div>
-            <div class="tc-question-builder-tc-fill-blank-mappings" id="fibMappings"></div>
-            <div class="tc-fill-blank-warning" id="fibMappingError" style="display:none;margin-top:6px;">
-                <i class="bi bi-exclamation-circle-fill"></i> <%: T("Each blank must map to a unique word.","Setiap kosong mesti dipetakan kepada perkataan unik.") %>
-            </div>
-        </div>
-        <div id="fibPreviewSection" class="tc-fill-blank-preview-wrap" style="display:none;">
-            <div class="tc-question-builder-tc-fill-blank-preview-card">
-                <div class="tc-question-builder-tc-fill-blank-preview-title"><i class="bi bi-eye"></i> <%: T("Student Preview","Pratonton Pelajar") %></div>
-                <div class="tc-question-builder-tc-fill-blank-preview-sub"><%: T("Students will drag the correct words into the blanks below.","Pelajar akan menyeret perkataan betul ke dalam kosong di bawah.") %></div>
-                <div class="tc-question-builder-tc-fill-blank-preview-text" id="fibPreviewText"></div>
-                <div style="margin-top:.75rem;">
-                    <div style="font-size:.72rem;font-weight:600;color:var(--tc-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;"><%: T("Available Words","Perkataan Tersedia") %></div>
-                    <div class="tc-question-builder-tc-fill-blank-preview-words" id="fibPreviewWords"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <%-- Explanations --%>
-    <div class="tc-question-builder-section-header" style="margin-top:.5rem;">
-        <div class="tc-question-builder-section-header-icon"><i class="bi bi-chat-quote-fill"></i></div>
-        <span class="tc-question-builder-section-header-text"><%: T("Explanations","Penjelasan") %></span>
-        <div class="tc-question-builder-section-divider"></div>
-    </div>
-    <%-- Correct Explanation ? soft green --%>
-    <div class="tc-question-builder-exp-block tc-question-builder-exp-correct">
-        <div class="tc-question-builder-exp-block-header">
-            <div class="tc-question-builder-exp-block-icon"><i class="bi bi-check-circle-fill"></i></div>
-            <span class="tc-question-builder-exp-block-label"><asp:Literal ID="litCorrectExpLabel" runat="server" /> *</span>
-            <span class="tc-question-builder-exp-block-count" id="ceCharCount">0 / 500</span>
-        </div>
-        <asp:TextBox ID="txtCorrectExp" runat="server" TextMode="MultiLine" Rows="2" CssClass="tc-question-builder-input tc-question-builder-textarea" MaxLength="500" />
-    </div>
-    <%-- Wrong Explanation ? soft red --%>
-    <div class="tc-question-builder-exp-block tc-question-builder-exp-wrong">
-        <div class="tc-question-builder-exp-block-header">
-            <div class="tc-question-builder-exp-block-icon"><i class="bi bi-x-circle-fill"></i></div>
-            <span class="tc-question-builder-exp-block-label"><asp:Literal ID="litWrongExpLabel" runat="server" /> *</span>
-            <span class="tc-question-builder-exp-block-count" id="weCharCount">0 / 500</span>
-        </div>
-        <asp:TextBox ID="txtWrongExp" runat="server" TextMode="MultiLine" Rows="2" CssClass="tc-question-builder-input tc-question-builder-textarea" MaxLength="500" />
-    </div>
-
-    <%-- Save Status (hidden ? auto-save handles this) --%>
-    <div class="tc-question-builder-save-status" id="saveStatus" style="display:none;"><i class="bi bi-circle"></i> <span id="saveStatusText"><%: T("Question Incomplete","Soalan Tidak Lengkap") %></span></div>
-
-    </div><%-- /.tc-question-builder-editor-body --%>
-
-    <%-- Hidden server buttons for postback compatibility --%>
-    <div style="display:none;">
-        <asp:Button ID="btnPrev" runat="server" Text="? Previous" CssClass="tc-question-builder-btn tc-question-builder-btn-outline" OnClientClick="return navGoTo(window.__CI-1);" CausesValidation="false" />
-        <asp:Button ID="btnNext" runat="server" Text="Next ?" CssClass="tc-question-builder-btn tc-question-builder-btn-outline" OnClientClick="return navGoTo(window.__CI+1);" CausesValidation="false" />
-        <asp:Button ID="btnSaveQ" runat="server" Text="Save Question" CssClass="tc-question-builder-btn tc-question-builder-btn-primary" OnClientClick="flushToServer();" OnClick="btnSaveQ_Click" CausesValidation="false" />
-    </div>
-</div><%-- /.tc-question-builder-center --%>
-
-<%-- Right Props --%>
-<div class="tc-question-builder-props">
-    <div class="tc-question-builder-props-header">
-        <div class="tc-question-builder-props-header-icon"><i class="bi bi-sliders"></i></div>
-        <div class="tc-question-builder-props-title"><%: T("Properties","Sifat") %></div>
-    </div>
-    <div class="tc-question-builder-props-body">
-        <div class="tc-question-builder-prop-field">
-            <div class="tc-question-builder-prop-label">
-                <span class="tc-question-builder-prop-label-icon type"><i class="bi bi-ui-checks"></i></span>
-                <%: T("Question Type","Jenis Soalan") %>
-            </div>
-            <asp:DropDownList ID="ddlQType" runat="server" CssClass="tc-question-builder-input">
-                <asp:ListItem Value="MCQ" Text="MCQ" />
-                <asp:ListItem Value="True/False" Text="True / False" />
-                <asp:ListItem Value="Multiselect" Text="Multiselect" />
-                <asp:ListItem Value="Drag & Drop" Text="Drag & Drop" />
-            </asp:DropDownList>
-        </div>
-        <div class="tc-question-builder-prop-field">
-            <div class="tc-question-builder-prop-label">
-                <span class="tc-question-builder-prop-label-icon diff"><i class="bi bi-bar-chart-fill"></i></span>
-                <%: T("Difficulty","Kesukaran") %>
-            </div>
-            <asp:DropDownList ID="ddlQDiff" runat="server" CssClass="tc-question-builder-input">
-                <asp:ListItem Value="Easy" Text="Easy" />
-                <asp:ListItem Value="Medium" Text="Medium" />
-                <asp:ListItem Value="Hard" Text="Hard" />
-            </asp:DropDownList>
-        </div>
-    </div>
-</div>
-<asp:Literal ID="litPropSubtopic" runat="server" Visible="false" />
-
-</div><%-- /.tc-question-builder-layout --%>
-
-<asp:HiddenField ID="hidCurrentTab" runat="server" Value="EN" />
-<asp:HiddenField ID="hidCurrentIndex" runat="server" Value="0" />
-<asp:HiddenField ID="hidQuestionsJson" runat="server" Value="" />
-<asp:HiddenField ID="hidToast" runat="server" Value="" />
-<asp:HiddenField ID="hidDeleteIndex" runat="server" Value="-1" />
-<asp:HiddenField ID="hidSubmitSuccess" runat="server" Value="" />
-<asp:Button ID="btnDeleteQuestion" runat="server" Style="display:none;" OnClick="btnDeleteQuestion_Click" CausesValidation="false" />
-<asp:Button ID="btnNavGo" runat="server" Style="display:none;" OnClick="btnNavGo_Click" CausesValidation="false" />
-<asp:Literal ID="litQuestionsJson" runat="server" />
-</asp:Panel>
-
-<%-- -- Submit Success Modal ------------------------------- --%>
-<div class="tc-question-builder-success-overlay" id="qbSuccessOverlay">
-    <div class="tc-question-builder-success-modal">
-        <div class="tc-question-builder-success-icon"><i class="bi bi-patch-check-fill"></i></div>
-        <h3><%: T("Quiz Submitted Successfully","Kuiz Berjaya Dihantar") %></h3>
-        <p><%: T("Your questions have been submitted and are now pending review.","Soalan anda telah dihantar dan sedang menunggu semakan.") %></p>
-        <a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx") %>" class="tc-question-builder-btn tc-question-builder-btn-primary" style="margin-top:.5rem;text-decoration:none;">
-            <%: T("Back to Manage Quizzes","Kembali ke Urus Kuiz") %>
+    <div class="sb-nav-section">
+        <div class="sb-nav-section-label"><%: T("Main","Utama") %></div>
+        <a href="<%: ResolveUrl("~/Teacher/Dashboard.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-speedometer2 item-icon"></i>
+            <span class="item-label"><%: T("Dashboard","Papan Pemuka") %></span>
+        </a>
+        <a href="<%: ResolveUrl("~/Teacher/Notifications.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-bell item-icon"></i>
+            <span class="item-label"><%: T("Notifications","Notifikasi") %></span>
         </a>
     </div>
-</div>
 
-<%-- -- Unsaved Changes Modal ------------------------------- --%>
-<div class="tc-question-builder-unsaved-overlay" id="qbUnsavedOverlay">
-    <div class="tc-question-builder-unsaved-modal">
-        <div class="tc-question-builder-unsaved-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
-        <h3><%: T("Unsaved Changes","Perubahan Belum Disimpan") %></h3>
-        <p><%: T("Your unsaved question will be discarded. Are you sure you want to leave this page?","Soalan anda yang belum disimpan akan dibuang. Adakah anda pasti mahu meninggalkan halaman ini?") %></p>
-        <div class="tc-question-builder-unsaved-actions">
-            <button type="button" class="tc-question-builder-unsaved-cancel" onclick="closeUnsavedModal()"><%: T("Cancel","Batal") %></button>
-            <button type="button" class="tc-question-builder-unsaved-confirm" id="qbUnsavedConfirm"><%: T("Confirm","Sahkan") %></button>
-        </div>
+    <div class="sb-nav-section">
+        <div class="sb-nav-section-label"><%: T("Teaching","Pengajaran") %></div>
+        <a href="<%: ResolveUrl("~/Teacher/manageMaterials.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-book item-icon"></i>
+            <span class="item-label"><%: T("Manage Materials","Bahan Pembelajaran") %></span>
+        </a>
+        <a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx") %>" class="sb-sidebar-item active">
+            <i class="bi bi-patch-question item-icon"></i>
+            <span class="item-label"><%: T("Manage Quiz","Kuiz") %></span>
+        </a>
+        <a href="<%: ResolveUrl("~/Teacher/studentProgress.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-bar-chart item-icon"></i>
+            <span class="item-label"><%: T("Student Progress","Prestasi Pelajar") %></span>
+        </a>
+        <a href="<%: ResolveUrl("~/Teacher/liveSession.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-camera-video item-icon"></i>
+            <span class="item-label"><%: T("Schedule Live Class","Kelas Langsung") %></span>
+        </a>
     </div>
-</div>
 
-<div id="qbToast" class="tc-question-builder-toast-container"></div>
+    <div class="sb-nav-section">
+        <div class="sb-nav-section-label"><%: T("Community","Komuniti") %></div>
+        <a href="<%: ResolveUrl("~/Teacher/forum.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-chat-dots item-icon"></i>
+            <span class="item-label"><%: T("Forum","Forum") %></span>
+        </a>
+        <a href="<%: ResolveUrl("~/Teacher/privateMessages.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-envelope item-icon"></i>
+            <span class="item-label"><%: T("Private Message","Mesej Peribadi") %></span>
+        </a>
+    </div>
+
+    <div class="sb-nav-section">
+        <div class="sb-nav-section-label"><%: T("Account","Akaun") %></div>
+        <a href="<%: ResolveUrl("~/Teacher/MyProfile.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-person item-icon"></i>
+            <span class="item-label"><%: T("My Profile","Profil Saya") %></span>
+        </a>
+        <a href="<%: ResolveUrl("~/Logout.aspx") %>" class="sb-sidebar-item">
+            <i class="bi bi-box-arrow-right item-icon"></i>
+            <span class="item-label"><%: T("Sign Out","Log Keluar") %></span>
+        </a>
+    </div>
 </asp:Content>
 
+<%-- Page Title --%>
+<asp:Content ID="cPageTitle" ContentPlaceHolderID="PageTitle" runat="server">
+    <%: T("Create Quiz","Cipta Kuiz") %>
+</asp:Content>
+
+<%-- Main Content --%>
+<asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
+
+    <%-- Error Panel --%>
+    <asp:Panel ID="pnlError" runat="server" Visible="false">
+        <div class="tc-question-builder-msg tc-question-builder-msg-error">
+            <i class="bi bi-exclamation-circle"></i>
+            <asp:Literal ID="litError" runat="server" />
+        </div>
+        <a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx") %>" class="tc-question-builder-btn tc-question-builder-btn-outline">
+            <%: T("Back to Quizzes","Kembali ke Kuiz") %>
+        </a>
+    </asp:Panel>
+
+    <asp:Panel ID="pnlBuilder" runat="server" Visible="false">
+
+    <%-- Hero --%>
+    <div class="tc-create-quiz-hero">
+        <div class="tc-create-quiz-hero-bg">
+            <svg viewBox="0 0 820 260" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMaxYMid slice">
+                <circle cx="550" cy="62" r="10" fill="#D97B6C"/>
+                <ellipse cx="550" cy="62" rx="36" ry="15" stroke="#D97B6C" stroke-width="2.2" fill="none"/>
+                <ellipse cx="550" cy="62" rx="36" ry="15" stroke="#D97B6C" stroke-width="2.2" fill="none" transform="rotate(60 550 62)"/>
+                <ellipse cx="550" cy="62" rx="36" ry="15" stroke="#D97B6C" stroke-width="2.2" fill="none" transform="rotate(120 550 62)"/>
+                <path d="M650 18 C660 36 672 36 682 18 C692 0 704 0 714 18" stroke="#486F4B" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+                <path d="M650 36 C660 54 672 54 682 36 C692 18 704 18 714 36" stroke="#486F4B" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+                <line x1="659" y1="27" x2="659" y2="43" stroke="#486F4B" stroke-width="1.6"/>
+                <line x1="673" y1="36" x2="673" y2="52" stroke="#486F4B" stroke-width="1.6"/>
+                <line x1="687" y1="27" x2="687" y2="43" stroke="#486F4B" stroke-width="1.6"/>
+                <line x1="701" y1="18" x2="701" y2="34" stroke="#486F4B" stroke-width="1.6"/>
+                <path d="M760 28 L760 66 L780 98 L740 98 Z" stroke="#5F8F63" stroke-width="2.2" fill="none" stroke-linejoin="round"/>
+                <line x1="752" y1="28" x2="768" y2="28" stroke="#5F8F63" stroke-width="2.2"/>
+                <ellipse cx="760" cy="90" rx="13" ry="5" fill="#5F8F63" opacity=".45"/>
+                <circle cx="754" cy="78" r="4" fill="#D97B6C" opacity=".55"/>
+                <circle cx="764" cy="84" r="3" fill="#D8A53A" opacity=".5"/>
+                <rect x="790" y="110" width="24" height="38" rx="4" stroke="#D8A53A" stroke-width="2" fill="none"/>
+                <line x1="802" y1="110" x2="802" y2="96" stroke="#D8A53A" stroke-width="2.2"/>
+                <circle cx="802" cy="92" r="7" stroke="#D8A53A" stroke-width="2" fill="none"/>
+                <line x1="786" y1="148" x2="818" y2="148" stroke="#D8A53A" stroke-width="2.2" stroke-linecap="round"/>
+                <circle cx="700" cy="170" r="7" fill="#D97B6C"/>
+                <circle cx="726" cy="150" r="5" fill="#5F8F63"/>
+                <circle cx="748" cy="172" r="7" fill="#D97B6C"/>
+                <circle cx="726" cy="192" r="4.5" fill="#D8A53A"/>
+                <line x1="707" y1="170" x2="721" y2="153" stroke="#D97B6C" stroke-width="1.8"/>
+                <line x1="731" y1="153" x2="743" y2="169" stroke="#D97B6C" stroke-width="1.8"/>
+                <line x1="726" y1="155" x2="726" y2="187" stroke="#5F8F63" stroke-width="1.8"/>
+                <path d="M610 110 Q632 88 644 110 Q632 134 610 110 Z" stroke="#486F4B" stroke-width="1.8" fill="none"/>
+                <line x1="610" y1="110" x2="642" y2="110" stroke="#486F4B" stroke-width="1.2"/>
+                <path d="M618 130 Q628 118 636 130 Q628 142 618 130 Z" stroke="#486F4B" stroke-width="1.5" fill="none" opacity=".6"/>
+                <line x1="460" y1="200" x2="520" y2="160" stroke="#D97B6C" stroke-width="2.5" stroke-linecap="round"/>
+                <ellipse cx="461" cy="201" rx="10" ry="6" stroke="#D97B6C" stroke-width="2" fill="none" transform="rotate(-35 461 201)"/>
+                <line x1="520" y1="160" x2="536" y2="158" stroke="#D97B6C" stroke-width="2.5" stroke-linecap="round"/>
+                <line x1="490" y1="220" x2="490" y2="200" stroke="#D97B6C" stroke-width="2" stroke-linecap="round"/>
+                <line x1="476" y1="220" x2="504" y2="220" stroke="#D97B6C" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M575 155 C580 138 596 135 598 148 C593 140 581 143 575 155 Z" fill="#D8A53A"/>
+                <path d="M420 45 L422.5 52 L430 54.5 L422.5 57 L420 64 L417.5 57 L410 54.5 L417.5 52 Z" fill="#D8A53A" opacity=".75"/>
+                <path d="M668 70 L669.8 75.5 L675.5 77.3 L669.8 79.1 L668 84.6 L666.2 79.1 L660.5 77.3 L666.2 75.5 Z" fill="#D8A53A" opacity=".65"/>
+                <path d="M495 130 L496.4 134 L500.5 135.4 L496.4 136.8 L495 140.8 L493.6 136.8 L489.5 135.4 L493.6 134 Z" fill="#D97B6C" opacity=".6"/>
+                <circle cx="438" cy="105" r="3.2" fill="#D8A53A" opacity=".6"/>
+                <circle cx="462" cy="72" r="2.4" fill="#D97B6C" opacity=".55"/>
+                <circle cx="582" cy="200" r="2.8" fill="#5F8F63" opacity=".5"/>
+                <circle cx="640" cy="230" r="2" fill="#D8A53A" opacity=".5"/>
+                <circle cx="772" cy="60" r="3" fill="#D97B6C" opacity=".45"/>
+                <path d="M380 260 Q470 228 565 242 Q650 256 750 236 Q790 228 820 234 L820 260 Z" fill="#D8A53A" opacity=".18"/>
+                <path d="M0 220 Q80 200 160 215 Q240 230 300 210 L300 260 L0 260 Z" fill="#5F8F63" opacity=".15"/>
+            </svg>
+        </div>
+        <div class="tc-create-quiz-hero-left">
+            <div class="tc-create-quiz-hero-top">
+                <div class="tc-create-quiz-hero-icon"><i class="bi bi-journal-bookmark-fill"></i></div>
+                <div>
+                    <h1 class="tc-create-quiz-hero-title">
+                        <asp:Literal ID="litMode" runat="server" />
+                    </h1>
+                    <p class="tc-create-quiz-hero-desc">
+                        <%: T("Create and manage questions for this quiz.","Cipta dan urus soalan untuk kuiz ini.") %>
+                    </p>
+                </div>
+            </div>
+            <div class="tc-create-quiz-hero-meta">
+                <div class="tc-create-quiz-meta-item">
+                    <div class="tc-create-quiz-meta-pill tc-create-quiz-meta-pill-unit">
+                        <i class="bi bi-layers-fill"></i>
+                    </div>
+                    <div>
+                        <span class="tc-create-quiz-meta-label">
+                            <asp:Literal ID="litScopeLabel" runat="server" />
+                        </span>
+                        <span class="tc-create-quiz-meta-val">
+                            <asp:Literal ID="litScope" runat="server" />
+                        </span>
+                    </div>
+                </div>
+                <div class="tc-create-quiz-meta-item">
+                    <div class="tc-create-quiz-meta-pill tc-create-quiz-meta-pill-subtopic">
+                        <i class="bi bi-bookmark-fill"></i>
+                    </div>
+                    <div>
+                        <span class="tc-create-quiz-meta-label"><%: T("Subtopic","Subtopik") %></span>
+                        <span class="tc-create-quiz-meta-val">
+                            <asp:Literal ID="litSubtopic" runat="server" />
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div><%-- /.tc-create-quiz-hero --%>
+
+    <%-- Quiz Titles Panel --%>
+    <asp:Panel ID="pnlQuizTitles" runat="server" Visible="false">
+        <div class="tc-create-quiz-titles-panel">
+            <div class="tc-create-quiz-title-col">
+                <span class="tc-create-quiz-title-badge tc-create-quiz-title-badge-en">
+                    <i class="bi bi-translate"></i>&nbsp;English
+                </span>
+                <div class="tc-create-quiz-title-val">
+                    <asp:Literal ID="litQuizTitleEN" runat="server" />
+                </div>
+            </div>
+            <div class="tc-create-quiz-title-col">
+                <span class="tc-create-quiz-title-badge tc-create-quiz-title-badge-bm">
+                    <i class="bi bi-translate"></i>&nbsp;Bahasa Melayu
+                </span>
+                <div class="tc-create-quiz-title-val">
+                    <asp:Literal ID="litQuizTitleBM" runat="server" />
+                </div>
+            </div>
+        </div>
+    </asp:Panel>
+
+    <%-- Subtopic Selection (legacy flow fallback) --%>
+    <asp:Panel ID="pnlSubtopicSelect" runat="server" Visible="false">
+        <div style="margin-bottom:1.5rem;padding:1.1rem 1.3rem;background:#FAFAF8;border-radius:14px;border:1.5px solid var(--tc-border);">
+            <div style="font-size:.8rem;font-weight:700;color:var(--tc-text);margin-bottom:7px;">
+                <%: T("Select Subtopic","Pilih Subtopik") %> *
+            </div>
+            <asp:DropDownList ID="ddlSubtopic" runat="server"
+                CssClass="tc-question-builder-input"
+                style="padding:.55rem .75rem;" />
+        </div>
+    </asp:Panel>
+
+    <%-- Information Notice --%>
+    <div class="tc-create-quiz-info-notice">
+        <div class="tc-create-quiz-info-icon"><i class="bi bi-info-circle-fill"></i></div>
+        <div class="tc-create-quiz-info-body">
+            <div class="tc-create-quiz-info-title"><%: T("Unit Quiz Information","Maklumat Kuiz Unit") %></div>
+            <div class="tc-create-quiz-info-text">
+                <%: T("Each question must include both English and Bahasa Melayu versions before it can be submitted successfully. Complete both language tabs before saving each question.","Setiap soalan mesti mengandungi kedua-dua versi Bahasa Inggeris dan Bahasa Melayu sebelum boleh dihantar. Lengkapkan kedua-dua tab bahasa sebelum menyimpan setiap soalan.") %>
+            </div>
+        </div>
+    </div>
+
+    <%-- Progress Bar (hidden) --%>
+    <div class="tc-question-builder-progress" style="display:none;">
+        <div class="tc-question-builder-progress-icon"><i class="bi bi-check2-all"></i></div>
+        <div class="tc-question-builder-progress-bar">
+            <div class="tc-question-builder-progress-fill" id="progressFill" style="width:0%"></div>
+        </div>
+        <div class="tc-question-builder-progress-text" id="progressText">
+            0 / 0 <%: T("Questions Saved","Soalan Disimpan") %>
+        </div>
+    </div>
+
+    <%-- Question Builder --%>
+    <div class="tc-question-builder-layout">
+
+        <%-- Left Nav --%>
+        <div class="tc-question-builder-nav">
+            <div class="tc-question-builder-nav-header">
+                <div class="tc-question-builder-nav-title">
+                    <%: T("Questions","Soalan") %>
+                    <span class="tc-question-builder-nav-count" id="navCount">0</span>
+                </div>
+            </div>
+            <div class="tc-question-builder-nav-list">
+                <asp:Repeater ID="rptNav" runat="server">
+                    <ItemTemplate>
+                        <div class="tc-question-builder-nav-row">
+                            <asp:LinkButton ID="btnNavQ" runat="server"
+                                CssClass='<%# "tc-question-builder-nav-item" + (Convert.ToInt32(Eval("Index")) == CurrentIndex ? " active" : "") + (Convert.ToBoolean(Eval("Done")) ? " done" : "") %>'
+                                CommandName="GoTo"
+                                CommandArgument='<%# Eval("Index") %>'
+                                OnCommand="btnNav_Command"
+                                CausesValidation="false"
+                                data-qidx='<%# Eval("Index") %>'>
+                                <span class="tc-question-builder-nav-badge"><%# Convert.ToInt32(Eval("Index")) + 1 %></span>
+                                <span>Q<%# Convert.ToInt32(Eval("Index")) + 1 %></span>
+                                <i class="bi bi-check-circle-fill tc-question-builder-nav-check"></i>
+                            </asp:LinkButton>
+                            <button type="button" class="tc-question-builder-nav-del"
+                                data-idx="<%# Convert.ToInt32(Eval("Index")) %>"
+                                onclick="confirmDeleteQuestion(+this.dataset.idx)"
+                                title="Delete question">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </div>
+                    </ItemTemplate>
+                </asp:Repeater>
+            </div>
+            <div class="tc-question-builder-nav-footer">
+                <asp:Button ID="btnAddQuestion" runat="server"
+                    CssClass="tc-question-builder-nav-add"
+                    OnClientClick="clientAddQuestion();return false;"
+                    OnClick="btnAddQuestion_Click"
+                    CausesValidation="false" />
+            </div>
+        </div>
+
+        <%-- Delete confirmation modal --%>
+        <div class="tc-question-builder-del-overlay" id="qbDelOverlay" onclick="closeDeleteModal(event)">
+            <div class="tc-question-builder-del-modal">
+                <div class="tc-question-builder-del-modal-icon"><i class="bi bi-trash3-fill"></i></div>
+                <h3><%: T("Delete Question?","Padam Soalan?") %></h3>
+                <p id="qbDelMsg">
+                    <%: T("This question will be permanently removed. This action cannot be undone.","Soalan ini akan dipadam secara kekal. Tindakan ini tidak boleh dibatalkan.") %>
+                </p>
+                <div class="tc-question-builder-del-modal-actions">
+                    <button type="button" class="tc-question-builder-del-btn-cancel" onclick="closeDeleteModal()">
+                        <%: T("Cancel","Batal") %>
+                    </button>
+                    <button type="button" class="tc-question-builder-del-btn-confirm" id="qbDelConfirm">
+                        <%: T("Delete","Padam") %>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <%-- Center Editor --%>
+        <div class="tc-question-builder-center">
+
+            <%-- Toolbar: Navigation + Submit --%>
+            <div class="tc-question-builder-toolbar">
+                <div class="tc-question-builder-toolbar-nav">
+                    <button type="button" id="qbNavPrev" class="tc-question-builder-toolbar-arrow"
+                        onclick="navGoTo(window.__CI-1);return false;">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <span id="qbNavLabel" class="tc-question-builder-toolbar-label"></span>
+                    <button type="button" id="qbNavNext" class="tc-question-builder-toolbar-arrow"
+                        onclick="navGoTo(window.__CI+1);return false;">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+                <asp:Button ID="btnSubmitQuiz" runat="server"
+                    CssClass="tc-question-builder-btn tc-question-builder-btn-success"
+                    style="margin:0;padding:.55rem 1.2rem;font-size:.82rem;"
+                    OnClientClick="return validateFibBlanksAndFlush();"
+                    OnClick="btnSubmitQuiz_Click"
+                    CausesValidation="false" />
+            </div>
+
+            <%-- Language toggle --%>
+            <div class="tc-question-builder-toolbar-lang">
+                <div class="tc-question-builder-tabs">
+                    <asp:Button ID="btnTabEN" runat="server" Text="English"
+                        CssClass="tc-question-builder-tab active"
+                        OnClientClick="switchTab('EN');return false;"
+                        CausesValidation="false" />
+                    <asp:Button ID="btnTabBM" runat="server" Text="Bahasa Melayu"
+                        CssClass="tc-question-builder-tab"
+                        OnClientClick="switchTab('BM');return false;"
+                        CausesValidation="false" />
+                </div>
+            </div>
+
+            <%-- Hidden literals for code-behind compatibility --%>
+            <asp:Literal ID="litQNum" runat="server" Visible="false" />
+            <asp:Literal ID="litQTextLabel" runat="server" Visible="false" />
+
+            <div class="tc-question-builder-editor-body">
+
+                <%-- Question Text: Rich Editor --%>
+                <div class="tc-question-builder-field" style="margin-bottom:1.2rem;">
+                    <div class="tc-question-builder-label">
+                        <span>
+                            <%: T("Question","Soalan") %> *
+                            <span id="qbLangBadge"
+                                style="font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:5px;background:#D1FAE5;color:#047857;margin-left:6px;text-transform:none;letter-spacing:0;">
+                                EN
+                            </span>
+                        </span>
+                        <span class="tc-question-builder-char-count" id="qCharCount">0 / 500</span>
+                    </div>
+                    <div class="tc-question-builder-tc-rte-wrap">
+                        <div class="tc-question-builder-tc-rte-toolbar">
+                            <button type="button" class="tc-question-builder-tc-rte-btn" onmousedown="event.preventDefault();rteExec('bold')" title="Bold (Ctrl+B)"><i class="bi bi-type-bold"></i></button>
+                            <button type="button" class="tc-question-builder-tc-rte-btn" onmousedown="event.preventDefault();rteExec('italic')" title="Italic (Ctrl+I)"><i class="bi bi-type-italic"></i></button>
+                            <button type="button" class="tc-question-builder-tc-rte-btn" onmousedown="event.preventDefault();rteExec('underline')" title="Underline (Ctrl+U)"><i class="bi bi-type-underline"></i></button>
+                            <span class="tc-question-builder-tc-rte-sep"></span>
+                            <button type="button" class="tc-question-builder-tc-rte-btn" onmousedown="event.preventDefault();rteExec('insertUnorderedList')" title="Bullet List"><i class="bi bi-list-ul"></i></button>
+                            <button type="button" class="tc-question-builder-tc-rte-btn" onmousedown="event.preventDefault();rteExec('insertOrderedList')" title="Numbered List"><i class="bi bi-list-ol"></i></button>
+                            <span class="tc-question-builder-tc-rte-sep tc-question-builder-tc-fill-blank-only" id="fibToolbarSep" style="display:none;"></span>
+                            <span class="tc-fill-blank-counter tc-question-builder-tc-fill-blank-only" id="blankCounter" style="display:none;margin-left:auto;font-size:.75rem;">
+                                <%: T("Blanks","Kosong") %>: <strong id="blankNum">0</strong> / 4
+                            </span>
+                            <button type="button" class="tc-fill-blank-add-btn tc-question-builder-tc-fill-blank-only" id="btnAddBlank" onclick="addBlank()" style="display:none;margin-left:6px;padding:.4rem .8rem;font-size:.76rem;">
+                                <i class="bi bi-plus-square-dotted"></i> <%: T("Add Blank","Tambah Kosong") %>
+                            </button>
+                        </div>
+                        <div id="qbRteEditor" class="tc-question-builder-tc-rte-editor"
+                            contenteditable="true"
+                            data-placeholder-en="Type your question here..."
+                            data-placeholder-bm="Taip soalan anda di sini..."
+                            data-placeholder="<%: T("Type your question here...","Taip soalan anda di sini...") %>">
+                        </div>
+                    </div>
+                    <%-- Hidden textarea for server sync --%>
+                    <asp:TextBox ID="txtQuestionText" runat="server"
+                        TextMode="MultiLine" Rows="4"
+                        CssClass="tc-question-builder-input tc-question-builder-textarea"
+                        MaxLength="500" style="display:none;" />
+                </div>
+
+                <%-- Question Image --%>
+                <div class="tc-question-builder-img-zone" id="qbImgZone">
+                    <div class="tc-question-builder-img-upload" id="qbImgUploadLabel"
+                        onclick="document.getElementById('qbImgInput').click()">
+                        <div class="tc-question-builder-img-upload-icon"><i class="bi bi-image"></i></div>
+                        <span class="tc-question-builder-img-upload-text"><%: T("Upload Image","Muat Naik Imej") %></span>
+                        <span class="tc-question-builder-img-upload-sub"><%: T("Optional ? PNG, JPG, GIF up to 5 MB","Pilihan ? PNG, JPG, GIF sehingga 5 MB") %></span>
+                    </div>
+                    <asp:FileUpload ID="fuQuestionImage" runat="server" Style="display:none;" />
+                    <input type="file" id="qbImgInput" accept="image/*" onchange="handleQImgUpload(this)" style="display:none;" />
+                    <div class="tc-question-builder-img-preview" id="qbImgPreview">
+                        <img id="qbImgPreviewSrc" src="" alt="" />
+                        <button type="button" class="tc-question-builder-img-remove" onclick="removeQImg()">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+                </div>
+                <asp:HiddenField ID="hidImgFileName" runat="server" Value="" />
+
+                <%-- Answer Section: MCQ (default) --%>
+                <div id="sectionMCQ" class="tc-question-builder-answer-section">
+                    <div class="tc-question-builder-section-header">
+                        <div class="tc-question-builder-section-header-icon"><i class="bi bi-ui-radios"></i></div>
+                        <span class="tc-question-builder-section-header-text">
+                            <asp:Literal ID="litOptionsLabel" runat="server" />
+                        </span>
+                        <span class="tc-question-builder-section-header-sub">
+                            <%: T("Select one correct answer","Pilih satu jawapan betul") %>
+                        </span>
+                        <div class="tc-question-builder-section-divider"></div>
+                    </div>
+                    <div class="tc-question-builder-opts">
+                        <div class="tc-question-builder-opt" id="optAWrap" runat="server">
+                            <div class="tc-question-builder-opt-band">A</div>
+                            <div class="tc-question-builder-opt-body">
+                                <asp:RadioButton ID="radA" runat="server" GroupName="correct" />
+                                <asp:TextBox ID="txtOptA" runat="server" CssClass="tc-question-builder-opt-input" />
+                            </div>
+                            <div class="tc-question-builder-opt-selector" onclick="selectCorrectOpt(this)"></div>
+                        </div>
+                        <div class="tc-question-builder-opt" id="optBWrap" runat="server">
+                            <div class="tc-question-builder-opt-band">B</div>
+                            <div class="tc-question-builder-opt-body">
+                                <asp:RadioButton ID="radB" runat="server" GroupName="correct" />
+                                <asp:TextBox ID="txtOptB" runat="server" CssClass="tc-question-builder-opt-input" />
+                            </div>
+                            <div class="tc-question-builder-opt-selector" onclick="selectCorrectOpt(this)"></div>
+                        </div>
+                        <div class="tc-question-builder-opt" id="optCWrap" runat="server">
+                            <div class="tc-question-builder-opt-band">C</div>
+                            <div class="tc-question-builder-opt-body">
+                                <asp:RadioButton ID="radC" runat="server" GroupName="correct" />
+                                <asp:TextBox ID="txtOptC" runat="server" CssClass="tc-question-builder-opt-input" />
+                            </div>
+                            <div class="tc-question-builder-opt-selector" onclick="selectCorrectOpt(this)"></div>
+                        </div>
+                        <div class="tc-question-builder-opt" id="optDWrap" runat="server">
+                            <div class="tc-question-builder-opt-band">D</div>
+                            <div class="tc-question-builder-opt-body">
+                                <asp:RadioButton ID="radD" runat="server" GroupName="correct" />
+                                <asp:TextBox ID="txtOptD" runat="server" CssClass="tc-question-builder-opt-input" />
+                            </div>
+                            <div class="tc-question-builder-opt-selector" onclick="selectCorrectOpt(this)"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <%-- Answer Section: True/False --%>
+                <div id="sectionTF" class="tc-question-builder-answer-section" style="display:none;">
+                    <div class="tc-question-builder-section-header">
+                        <div class="tc-question-builder-section-header-icon"><i class="bi bi-toggles"></i></div>
+                        <span class="tc-question-builder-section-header-text">
+                            <%: T("Select the correct answer","Pilih jawapan yang betul") %>
+                        </span>
+                        <div class="tc-question-builder-section-divider"></div>
+                    </div>
+                    <div class="tc-question-builder-tf-grid">
+                        <label class="tc-question-builder-tf-card" id="tfTrueCard">
+                            <input type="radio" name="tfAnswer" value="A" onchange="updateTFCards()"/>
+                            <i class="bi bi-check-circle-fill"></i>
+                            <span id="tfTrueLabel">TRUE</span>
+                        </label>
+                        <label class="tc-question-builder-tf-card" id="tfFalseCard">
+                            <input type="radio" name="tfAnswer" value="B" onchange="updateTFCards()"/>
+                            <i class="bi bi-x-circle-fill"></i>
+                            <span id="tfFalseLabel">FALSE</span>
+                        </label>
+                    </div>
+                </div>
+
+                <%-- Answer Section: Multiselect --%>
+                <div id="sectionMS" class="tc-question-builder-answer-section" style="display:none;">
+                    <div class="tc-question-builder-section-header">
+                        <div class="tc-question-builder-section-header-icon"><i class="bi bi-check2-square"></i></div>
+                        <span class="tc-question-builder-section-header-text">
+                            <%: T("Select all correct answers","Pilih semua jawapan betul") %>
+                        </span>
+                        <span class="tc-question-builder-ms-count" id="msCount" style="margin-left:0;">
+                            0 <%: T("selected","dipilih") %>
+                        </span>
+                        <div class="tc-question-builder-section-divider"></div>
+                    </div>
+                    <div class="tc-question-builder-opts">
+                        <div class="tc-question-builder-opt tc-question-builder-ms-opt">
+                            <div class="tc-question-builder-opt-band">A</div>
+                            <div class="tc-question-builder-opt-body">
+                                <input type="checkbox" class="ms-check" onchange="updateMSCards()"/>
+                                <input type="text" class="tc-question-builder-opt-input ms-text" placeholder="<%: T("Type option A...","Taip pilihan A...") %>" />
+                            </div>
+                        </div>
+                        <div class="tc-question-builder-opt tc-question-builder-ms-opt">
+                            <div class="tc-question-builder-opt-band">B</div>
+                            <div class="tc-question-builder-opt-body">
+                                <input type="checkbox" class="ms-check" onchange="updateMSCards()"/>
+                                <input type="text" class="tc-question-builder-opt-input ms-text" placeholder="<%: T("Type option B...","Taip pilihan B...") %>" />
+                            </div>
+                        </div>
+                        <div class="tc-question-builder-opt tc-question-builder-ms-opt">
+                            <div class="tc-question-builder-opt-band">C</div>
+                            <div class="tc-question-builder-opt-body">
+                                <input type="checkbox" class="ms-check" onchange="updateMSCards()"/>
+                                <input type="text" class="tc-question-builder-opt-input ms-text" placeholder="<%: T("Type option C...","Taip pilihan C...") %>" />
+                            </div>
+                        </div>
+                        <div class="tc-question-builder-opt tc-question-builder-ms-opt">
+                            <div class="tc-question-builder-opt-band">D</div>
+                            <div class="tc-question-builder-opt-body">
+                                <input type="checkbox" class="ms-check" onchange="updateMSCards()"/>
+                                <input type="text" class="tc-question-builder-opt-input ms-text" placeholder="<%: T("Type option D...","Taip pilihan D...") %>" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <%-- Answer Section: Drag & Drop --%>
+                <div id="sectionFIB" class="tc-question-builder-answer-section" style="display:none;">
+                    <div class="tc-fill-blank-section-label" style="font-size:.92rem;font-weight:800;">
+                        <%: T("Answer Options","Pilihan Jawapan") %> *
+                        <span class="tc-fill-blank-sub-label">(<%: T("Max 4 words","Maks 4 perkataan") %>)</span>
+                    </div>
+                    <div class="tc-question-builder-tc-fill-blank-words" id="fibWordsContainer">
+                        <div class="tc-question-builder-tc-fill-blank-word">
+                            <span class="tc-question-builder-tc-fill-blank-num">1</span>
+                            <input type="text" class="tc-question-builder-opt-input tc-fill-blank-word-input" placeholder="<%: T("Word 1","Perkataan 1") %>" oninput="onFibWordChange()" />
+                        </div>
+                        <div class="tc-question-builder-tc-fill-blank-word">
+                            <span class="tc-question-builder-tc-fill-blank-num">2</span>
+                            <input type="text" class="tc-question-builder-opt-input tc-fill-blank-word-input" placeholder="<%: T("Word 2","Perkataan 2") %>" oninput="onFibWordChange()" />
+                        </div>
+                        <div class="tc-question-builder-tc-fill-blank-word">
+                            <span class="tc-question-builder-tc-fill-blank-num">3</span>
+                            <input type="text" class="tc-question-builder-opt-input tc-fill-blank-word-input" placeholder="<%: T("Word 3","Perkataan 3") %>" oninput="onFibWordChange()" />
+                        </div>
+                        <div class="tc-question-builder-tc-fill-blank-word">
+                            <span class="tc-question-builder-tc-fill-blank-num">4</span>
+                            <input type="text" class="tc-question-builder-opt-input tc-fill-blank-word-input" placeholder="<%: T("Word 4","Perkataan 4") %>" oninput="onFibWordChange()" />
+                        </div>
+                    </div>
+
+                    <div id="fibMappingSection" class="tc-fill-blank-mapping-wrap" style="display:none;">
+                        <div class="tc-fill-blank-section-label" style="font-size:.92rem;font-weight:800;">
+                            <i class="bi bi-arrow-left-right"></i>
+                            <%: T("Correct Answer Mapping","Pemetaan Jawapan Betul") %> *
+                        </div>
+                        <div class="tc-question-builder-tc-fill-blank-mappings" id="fibMappings"></div>
+                        <div class="tc-fill-blank-warning" id="fibMappingError" style="display:none;margin-top:6px;">
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                            <%: T("Each blank must map to a unique word.","Setiap kosong mesti dipetakan kepada perkataan unik.") %>
+                        </div>
+                    </div>
+
+                    <div id="fibPreviewSection" class="tc-fill-blank-preview-wrap" style="display:none;">
+                        <div class="tc-question-builder-tc-fill-blank-preview-card">
+                            <div class="tc-question-builder-tc-fill-blank-preview-title">
+                                <i class="bi bi-eye"></i> <%: T("Student Preview","Pratonton Pelajar") %>
+                            </div>
+                            <div class="tc-question-builder-tc-fill-blank-preview-sub">
+                                <%: T("Students will drag the correct words into the blanks below.","Pelajar akan menyeret perkataan betul ke dalam kosong di bawah.") %>
+                            </div>
+                            <div class="tc-question-builder-tc-fill-blank-preview-text" id="fibPreviewText"></div>
+                            <div style="margin-top:.75rem;">
+                                <div style="font-size:.72rem;font-weight:600;color:var(--tc-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">
+                                    <%: T("Available Words","Perkataan Tersedia") %>
+                                </div>
+                                <div class="tc-question-builder-tc-fill-blank-preview-words" id="fibPreviewWords"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <%-- Explanations --%>
+                <div class="tc-question-builder-section-header" style="margin-top:.5rem;">
+                    <div class="tc-question-builder-section-header-icon"><i class="bi bi-chat-quote-fill"></i></div>
+                    <span class="tc-question-builder-section-header-text"><%: T("Explanations","Penjelasan") %></span>
+                    <div class="tc-question-builder-section-divider"></div>
+                </div>
+
+                <%-- Correct Explanation --%>
+                <div class="tc-question-builder-exp-block tc-question-builder-exp-correct">
+                    <div class="tc-question-builder-exp-block-header">
+                        <div class="tc-question-builder-exp-block-icon"><i class="bi bi-check-circle-fill"></i></div>
+                        <span class="tc-question-builder-exp-block-label">
+                            <asp:Literal ID="litCorrectExpLabel" runat="server" /> *
+                        </span>
+                        <span class="tc-question-builder-exp-block-count" id="ceCharCount">0 / 500</span>
+                    </div>
+                    <asp:TextBox ID="txtCorrectExp" runat="server"
+                        TextMode="MultiLine" Rows="2"
+                        CssClass="tc-question-builder-input tc-question-builder-textarea"
+                        MaxLength="500" />
+                </div>
+
+                <%-- Wrong Explanation --%>
+                <div class="tc-question-builder-exp-block tc-question-builder-exp-wrong">
+                    <div class="tc-question-builder-exp-block-header">
+                        <div class="tc-question-builder-exp-block-icon"><i class="bi bi-x-circle-fill"></i></div>
+                        <span class="tc-question-builder-exp-block-label">
+                            <asp:Literal ID="litWrongExpLabel" runat="server" /> *
+                        </span>
+                        <span class="tc-question-builder-exp-block-count" id="weCharCount">0 / 500</span>
+                    </div>
+                    <asp:TextBox ID="txtWrongExp" runat="server"
+                        TextMode="MultiLine" Rows="2"
+                        CssClass="tc-question-builder-input tc-question-builder-textarea"
+                        MaxLength="500" />
+                </div>
+
+                <%-- Save Status (hidden) --%>
+                <div class="tc-question-builder-save-status" id="saveStatus" style="display:none;">
+                    <i class="bi bi-circle"></i>
+                    <span id="saveStatusText"><%: T("Question Incomplete","Soalan Tidak Lengkap") %></span>
+                </div>
+
+            </div><%-- /.tc-question-builder-editor-body --%>
+
+            <%-- Hidden server buttons for postback compatibility --%>
+            <div style="display:none;">
+                <asp:Button ID="btnPrev" runat="server" Text="? Previous"
+                    CssClass="tc-question-builder-btn tc-question-builder-btn-outline"
+                    OnClientClick="return navGoTo(window.__CI-1);"
+                    CausesValidation="false" />
+                <asp:Button ID="btnNext" runat="server" Text="Next ?"
+                    CssClass="tc-question-builder-btn tc-question-builder-btn-outline"
+                    OnClientClick="return navGoTo(window.__CI+1);"
+                    CausesValidation="false" />
+                <asp:Button ID="btnSaveQ" runat="server" Text="Save Question"
+                    CssClass="tc-question-builder-btn tc-question-builder-btn-primary"
+                    OnClientClick="flushToServer();"
+                    OnClick="btnSaveQ_Click"
+                    CausesValidation="false" />
+            </div>
+
+        </div><%-- /.tc-question-builder-center --%>
+
+        <%-- Right Props --%>
+        <div class="tc-question-builder-props">
+            <div class="tc-question-builder-props-header">
+                <div class="tc-question-builder-props-header-icon"><i class="bi bi-sliders"></i></div>
+                <div class="tc-question-builder-props-title"><%: T("Properties","Sifat") %></div>
+            </div>
+            <div class="tc-question-builder-props-body">
+                <div class="tc-question-builder-prop-field">
+                    <div class="tc-question-builder-prop-label">
+                        <span class="tc-question-builder-prop-label-icon type"><i class="bi bi-ui-checks"></i></span>
+                        <%: T("Question Type","Jenis Soalan") %>
+                    </div>
+                    <asp:DropDownList ID="ddlQType" runat="server" CssClass="tc-question-builder-input">
+                        <asp:ListItem Value="MCQ" Text="MCQ" />
+                        <asp:ListItem Value="True/False" Text="True / False" />
+                        <asp:ListItem Value="Multiselect" Text="Multiselect" />
+                        <asp:ListItem Value="Drag & Drop" Text="Drag & Drop" />
+                    </asp:DropDownList>
+                </div>
+                <div class="tc-question-builder-prop-field">
+                    <div class="tc-question-builder-prop-label">
+                        <span class="tc-question-builder-prop-label-icon diff"><i class="bi bi-bar-chart-fill"></i></span>
+                        <%: T("Difficulty","Kesukaran") %>
+                    </div>
+                    <asp:DropDownList ID="ddlQDiff" runat="server" CssClass="tc-question-builder-input">
+                        <asp:ListItem Value="Easy" Text="Easy" />
+                        <asp:ListItem Value="Medium" Text="Medium" />
+                        <asp:ListItem Value="Hard" Text="Hard" />
+                    </asp:DropDownList>
+                </div>
+            </div>
+        </div>
+        <asp:Literal ID="litPropSubtopic" runat="server" Visible="false" />
+
+    </div><%-- /.tc-question-builder-layout --%>
+
+    <%-- Hidden Fields --%>
+    <asp:HiddenField ID="hidCurrentTab" runat="server" Value="EN" />
+    <asp:HiddenField ID="hidCurrentIndex" runat="server" Value="0" />
+    <asp:HiddenField ID="hidQuestionsJson" runat="server" Value="" />
+    <asp:HiddenField ID="hidToast" runat="server" Value="" />
+    <asp:HiddenField ID="hidDeleteIndex" runat="server" Value="-1" />
+    <asp:HiddenField ID="hidSubmitSuccess" runat="server" Value="" />
+    <asp:Button ID="btnDeleteQuestion" runat="server" Style="display:none;" OnClick="btnDeleteQuestion_Click" CausesValidation="false" />
+    <asp:Button ID="btnNavGo" runat="server" Style="display:none;" OnClick="btnNavGo_Click" CausesValidation="false" />
+    <asp:Literal ID="litQuestionsJson" runat="server" />
+
+    </asp:Panel>
+
+    <%-- Submit Success Modal --%>
+    <div class="tc-question-builder-success-overlay" id="qbSuccessOverlay">
+        <div class="tc-question-builder-success-modal">
+            <div class="tc-question-builder-success-icon"><i class="bi bi-patch-check-fill"></i></div>
+            <h3><%: T("Quiz Submitted Successfully","Kuiz Berjaya Dihantar") %></h3>
+            <p><%: T("Your questions have been submitted and are now pending review.","Soalan anda telah dihantar dan sedang menunggu semakan.") %></p>
+            <a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx") %>"
+                class="tc-question-builder-btn tc-question-builder-btn-primary"
+                style="margin-top:.5rem;text-decoration:none;">
+                <%: T("Back to Manage Quizzes","Kembali ke Urus Kuiz") %>
+            </a>
+        </div>
+    </div>
+
+    <%-- Unsaved Changes Modal --%>
+    <div class="tc-question-builder-unsaved-overlay" id="qbUnsavedOverlay">
+        <div class="tc-question-builder-unsaved-modal">
+            <div class="tc-question-builder-unsaved-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+            <h3><%: T("Unsaved Changes","Perubahan Belum Disimpan") %></h3>
+            <p><%: T("Your unsaved question will be discarded. Are you sure you want to leave this page?","Soalan anda yang belum disimpan akan dibuang. Adakah anda pasti mahu meninggalkan halaman ini?") %></p>
+            <div class="tc-question-builder-unsaved-actions">
+                <button type="button" class="tc-question-builder-unsaved-cancel" onclick="closeUnsavedModal()">
+                    <%: T("Cancel","Batal") %>
+                </button>
+                <button type="button" class="tc-question-builder-unsaved-confirm" id="qbUnsavedConfirm">
+                    <%: T("Confirm","Sahkan") %>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="qbToast" class="tc-question-builder-toast-container"></div>
+
+</asp:Content>
+
+<%-- Scripts --%>
 <asp:Content ID="cScripts" ContentPlaceHolderID="ScriptsContent" runat="server">
 <script>
 /* -----------------------------------------------------------

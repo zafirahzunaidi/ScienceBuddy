@@ -11,7 +11,11 @@ namespace ScienceBuddy.Teacher
 {
     public partial class Dashboard : Page
     {
-        // -- Language support -----------------------------------------
+        #region Properties
+
+        private string ConnStr =>
+            ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+
         protected string CurrentLanguage
         {
             get
@@ -20,32 +24,20 @@ namespace ScienceBuddy.Teacher
                 return string.IsNullOrEmpty(lang) ? "EN" : lang;
             }
         }
-        protected string T(string en, string bm) { 
-            return CurrentLanguage == "BM" ? bm : en; 
-        }
 
-        // -- Connection string ----------------------------------------
-        private string ConnStr =>
-            ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+        #endregion
 
-        // -- Page Load ------------------------------------------------
+        #region Page Lifecycle
+
         protected void Page_Load(object sender, EventArgs e)
         {
-            // 1. Authorization: check session
-            if (Session["userId"] == null)
-            {
-                Response.Redirect("~/Login.aspx", false);
-                Context.ApplicationInstance.CompleteRequest();
-                return;
-            }
-            if (Session["role"] == null || Session["role"].ToString() != "Teacher")
+            if (Session["userId"] == null || Session["role"]?.ToString() != "Teacher")
             {
                 Response.Redirect("~/Login.aspx", false);
                 Context.ApplicationInstance.CompleteRequest();
                 return;
             }
 
-            // 2. Tell master page to use sidebar layout
             var master = (ScienceBuddy.SiteMaster)Master;
             master.LayoutMode = "Sidebar";
 
@@ -56,7 +48,10 @@ namespace ScienceBuddy.Teacher
             }
         }
 
-        // -- Main load ------------------------------------------------
+        #endregion
+
+        #region Data Loading
+
         private void LoadTeacherDashboard(string userId)
         {
             try
@@ -65,19 +60,17 @@ namespace ScienceBuddy.Teacher
                 {
                     conn.Open();
 
-                    // Retrieve teacher record
                     string teacherId = null;
                     string teacherName = null;
                     string teacherStatus = null;
 
-                    const string sqlTeacher = @"
-                        SELECT [teacherId], [name], [status]
-                        FROM dbo.[Teacher]
-                        WHERE [userId] = @userId";
-
-                    using (var cmd = new SqlCommand(sqlTeacher, conn))
+                    using (var cmd = new SqlCommand(
+                        @"SELECT [teacherId], [name], [status]
+                          FROM dbo.[Teacher]
+                          WHERE [userId] = @userId", conn))
                     {
                         cmd.Parameters.AddWithValue("@userId", userId);
+
                         using (var reader = cmd.ExecuteReader())
                         {
                             if (reader.Read())
@@ -89,57 +82,512 @@ namespace ScienceBuddy.Teacher
                         }
                     }
 
-                    // If no teacher record found, deny access
                     if (string.IsNullOrEmpty(teacherId))
                     {
-                        ShowDeniedPanel();
+                        pnlDenied.Visible = true;
                         return;
                     }
 
-                    // Check teacher status
-                    if (!string.Equals(teacherStatus, "Certified",
-                        StringComparison.OrdinalIgnoreCase))
+                    if (!string.Equals(teacherStatus, "Certified", StringComparison.OrdinalIgnoreCase))
                     {
                         HandleNonCertifiedStatus(teacherStatus);
                         return;
                     }
 
-                    // Teacher is Certified — show full dashboard
+                    // Teacher is Certified â€” show full dashboard
                     pnlDashboard.Visible = true;
 
-                    // Set display info
-                    string displayName = !string.IsNullOrWhiteSpace(teacherName)
-                        ? teacherName : "Teacher";
+                    string displayName = !string.IsNullOrWhiteSpace(teacherName) ? teacherName : "Teacher";
                     litTeacherName.Text = HttpUtility.HtmlEncode(displayName);
 
-                    // Set master page user info
                     SetMasterUserInfo(teacherName);
-
-                    // Load summary counts
                     LoadSummaryCounts(conn, userId, teacherId);
-
-                    // Load quiz contribution
                     LoadQuizContribution(conn, userId);
-
-                    // Load timeline sessions (new card)
                     LoadTimelineSessions(conn, teacherId);
-
-                    // Load dashboard notifications (new card)
-                    LoadDashNotifications(conn, userId);
-
-                    // Load practice quiz engagement
+                    LoadDashboardNotifications(conn, userId);
                     LoadPracticeQuizEngagement(conn, userId);
                 }
             }
             catch
             {
-                // Graceful failure — show dashboard with defaults
                 pnlDashboard.Visible = true;
                 litTeacherName.Text = "Teacher";
             }
         }
 
-        // -- Handle non-certified statuses ----------------------------
+        private void LoadSummaryCounts(SqlConnection conn, string userId, string teacherId)
+        {
+            litTotalLessons.Text = SafeCount(conn,
+                "SELECT COUNT(*) FROM dbo.[Material] WHERE [createdByUserId] = @p",
+                "@p", userId).ToString();
+
+            litTotalQuizzes.Text = SafeCount(conn,
+                "SELECT COUNT(*) FROM dbo.[Quiz] WHERE [createdByUserId] = @p",
+                "@p", userId).ToString();
+
+            litUpcomingSessions.Text = SafeCount(conn,
+                @"SELECT COUNT(*) FROM dbo.[LiveConsultationSession]
+                  WHERE [teacherId] = @p AND [startDateTime] > GETDATE()",
+                "@p", teacherId).ToString();
+
+            litTotalStudents.Text = SafeCount(conn,
+                @"SELECT COUNT(DISTINCT lsp.[studentId])
+                  FROM dbo.[LiveSessionParticipant] lsp
+                  INNER JOIN dbo.[LiveConsultationSession] lcs
+                    ON lcs.[sessionId] = lsp.[sessionId]
+                  WHERE lcs.[teacherId] = @p",
+                "@p", teacherId).ToString();
+        }
+
+        /// <summary>
+        /// Loads the teacher's quiz contribution stats (approved questions for Unit and Level quizzes).
+        /// </summary>
+        private void LoadQuizContribution(SqlConnection conn, string userId)
+        {
+            try
+            {
+                int myUnitCount = GetApprovedQuestionCount(conn, userId, "Unit");
+                int totalUnitCount = GetTotalApprovedQuestionCount(conn, "Unit");
+
+                litUnitMyCount.Text = myUnitCount.ToString();
+                litUnitTotal.Text = totalUnitCount.ToString();
+                hidUnitPct.Value = CalculatePercentage(myUnitCount, totalUnitCount).ToString();
+
+                int myLevelCount = GetApprovedQuestionCount(conn, userId, "Level");
+                int totalLevelCount = GetTotalApprovedQuestionCount(conn, "Level");
+
+                litLevelMyCount.Text = myLevelCount.ToString();
+                litLevelTotal.Text = totalLevelCount.ToString();
+                hidLevelPct.Value = CalculatePercentage(myLevelCount, totalLevelCount).ToString();
+            }
+            catch
+            {
+                litUnitMyCount.Text = "0";
+                litUnitTotal.Text = "0";
+                hidUnitPct.Value = "0";
+                litLevelMyCount.Text = "0";
+                litLevelTotal.Text = "0";
+                hidLevelPct.Value = "0";
+            }
+        }
+
+        /// <summary>
+        /// Loads upcoming live sessions for the timeline card (top 3 future sessions).
+        /// </summary>
+        private void LoadTimelineSessions(SqlConnection conn, string teacherId)
+        {
+            const string sql = @"
+                SELECT TOP 3
+                    lcs.[sessionTitle], lcs.[startDateTime], lcs.[endDateTime],
+                    ISNULL(st.[subtopicTitleEN],'') AS subtopicName
+                FROM dbo.[LiveConsultationSession] lcs
+                LEFT JOIN dbo.[Subtopic] st ON st.[subtopicId] = lcs.[subtopicId]
+                WHERE lcs.[teacherId] = @tid AND lcs.[endDateTime] > GETDATE()
+                ORDER BY lcs.[startDateTime] ASC";
+
+            var sessions = new List<object>();
+
+            try
+            {
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@tid", teacherId);
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            DateTime startTime = reader["startDateTime"] != DBNull.Value
+                                ? Convert.ToDateTime(reader["startDateTime"]) : DateTime.Now;
+                            DateTime endTime = reader["endDateTime"] != DBNull.Value
+                                ? Convert.ToDateTime(reader["endDateTime"]) : DateTime.Now;
+                            string sessionTitle = reader["sessionTitle"]?.ToString() ?? "";
+                            string subtopicName = reader["subtopicName"]?.ToString() ?? "";
+
+                            string dotCss, badgeCss, btnCss, statusLabel, btnLabel;
+                            DetermineSessionStatus(startTime, endTime,
+                                out dotCss, out badgeCss, out btnCss, out statusLabel, out btnLabel);
+
+                            sessions.Add(new
+                            {
+                                title = sessionTitle,
+                                topic = subtopicName,
+                                friendlyDate = FormatFriendlyDate(startTime),
+                                dotCss,
+                                badgeCss,
+                                btnCss,
+                                statusLabel,
+                                btnLabel
+                            });
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            if (sessions.Count > 0)
+            {
+                pnlTimelineSessions.Visible = true;
+                pnlTimelineEmpty.Visible = false;
+                rptTimelineSessions.DataSource = sessions;
+                rptTimelineSessions.DataBind();
+            }
+            else
+            {
+                pnlTimelineSessions.Visible = false;
+                pnlTimelineEmpty.Visible = true;
+            }
+        }
+
+        /// <summary>
+        /// Loads the 4 most recent notifications for the dashboard card.
+        /// </summary>
+        private void LoadDashboardNotifications(SqlConnection conn, string userId)
+        {
+            const string sql = @"
+                SELECT TOP 4
+                    [titleEN], [titleBM], [messageEN], [messageBM], [isRead], [createdAt]
+                FROM dbo.[Notification]
+                WHERE [toUserId] = @uid
+                ORDER BY [createdAt] DESC";
+
+            var notifications = new List<object>();
+
+            try
+            {
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@uid", userId);
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string title = CurrentLanguage == "BM"
+                                ? (reader["titleBM"]?.ToString() ?? reader["titleEN"]?.ToString() ?? "")
+                                : (reader["titleEN"]?.ToString() ?? "");
+
+                            string message = CurrentLanguage == "BM"
+                                ? (reader["messageBM"]?.ToString() ?? reader["messageEN"]?.ToString() ?? "")
+                                : (reader["messageEN"]?.ToString() ?? "");
+
+                            bool isRead = reader["isRead"] != DBNull.Value && Convert.ToBoolean(reader["isRead"]);
+                            DateTime createdAt = reader["createdAt"] != DBNull.Value
+                                ? Convert.ToDateTime(reader["createdAt"]) : DateTime.Now;
+
+                            notifications.Add(new
+                            {
+                                title,
+                                message = message.Length > 80 ? message.Substring(0, 80) + "â€¦" : message,
+                                isRead,
+                                timeAgo = FormatTimeAgo(createdAt)
+                            });
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            if (notifications.Count > 0)
+            {
+                pnlDashNotifs.Visible = true;
+                pnlDashNotifsEmpty.Visible = false;
+                rptDashNotifs.DataSource = notifications;
+                rptDashNotifs.DataBind();
+            }
+            else
+            {
+                pnlDashNotifs.Visible = false;
+                pnlDashNotifsEmpty.Visible = true;
+            }
+        }
+
+        /// <summary>
+        /// Loads approved practice quizzes with engagement stats (students attempted, avg score).
+        /// </summary>
+        private void LoadPracticeQuizEngagement(SqlConnection conn, string userId)
+        {
+            try
+            {
+                const string sql = @"
+                    SELECT [quizId], [quizTitleEN], [quizTitleBM], [language],
+                           [levelId], [unitId], [status]
+                    FROM dbo.[Quiz]
+                    WHERE [createdByUserId] = @userId
+                      AND [quizType] = 'Practice'
+                      AND [status] = 'Approved'
+                    ORDER BY [quizId] DESC";
+
+                var quizRecords = new List<Dictionary<string, string>>();
+
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@userId", userId);
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            quizRecords.Add(new Dictionary<string, string>
+                            {
+                                ["quizId"] = reader["quizId"]?.ToString() ?? "",
+                                ["quizTitleEN"] = reader["quizTitleEN"]?.ToString() ?? "",
+                                ["quizTitleBM"] = reader["quizTitleBM"]?.ToString() ?? "",
+                                ["language"] = reader["language"]?.ToString() ?? "EN",
+                                ["levelId"] = reader["levelId"]?.ToString() ?? "",
+                                ["unitId"] = reader["unitId"]?.ToString() ?? ""
+                            });
+                        }
+                    }
+                }
+
+                if (quizRecords.Count == 0)
+                {
+                    pnlPQCards.Visible = false;
+                    pnlPQEmpty.Visible = true;
+                    return;
+                }
+
+                var quizCards = new List<object>();
+
+                foreach (var quiz in quizRecords)
+                {
+                    string quizLanguage = quiz["language"];
+                    string quizTitle = ResolveQuizTitle(quiz, quizLanguage);
+                    string levelName = GetLevelName(conn, quiz["levelId"]);
+                    string subtopicName = GetQuizSubtopicName(conn, quiz["quizId"]);
+                    int questionCount = SafeCount(conn,
+                        "SELECT COUNT(*) FROM dbo.[Question] WHERE [quizId] = @p",
+                        "@p", quiz["quizId"]);
+                    int studentsAttempted = SafeCount(conn,
+                        "SELECT COUNT(DISTINCT [studentId]) FROM dbo.[QuizResult] WHERE [quizId] = @p",
+                        "@p", quiz["quizId"]);
+                    int totalAttempts = SafeCount(conn,
+                        "SELECT COUNT(*) FROM dbo.[QuizResult] WHERE [quizId] = @p",
+                        "@p", quiz["quizId"]);
+                    string averageScore = GetAverageScore(conn, quiz["quizId"]);
+
+                    quizCards.Add(new
+                    {
+                        title = quizTitle,
+                        levelName,
+                        subtopicName,
+                        langLabel = quizLanguage == "BM" ? "Bahasa Melayu" : "English",
+                        questionCount,
+                        studentsAttempted,
+                        totalAttempts,
+                        avgScore = averageScore
+                    });
+                }
+
+                pnlPQCards.Visible = true;
+                pnlPQEmpty.Visible = false;
+                rptPracticeQuizCards.DataSource = quizCards;
+                rptPracticeQuizCards.DataBind();
+            }
+            catch
+            {
+                pnlPQCards.Visible = false;
+                pnlPQEmpty.Visible = true;
+            }
+        }
+
+        #endregion
+
+        #region Database Operations
+
+        private int GetApprovedQuestionCount(SqlConnection conn, string userId, string quizType)
+        {
+            using (var cmd = new SqlCommand(
+                @"SELECT COUNT(DISTINCT q.[questionId]) FROM dbo.[Question] q
+                  INNER JOIN dbo.[Quiz] qz ON qz.[quizId] = q.[quizId]
+                  WHERE q.[createdByUserId] = @p AND qz.[quizType] = @t AND q.[status] = 'Approved'", conn))
+            {
+                cmd.Parameters.AddWithValue("@p", userId);
+                cmd.Parameters.AddWithValue("@t", quizType);
+                var result = cmd.ExecuteScalar();
+                return (result != null && result != DBNull.Value) ? Convert.ToInt32(result) : 0;
+            }
+        }
+
+        private int GetTotalApprovedQuestionCount(SqlConnection conn, string quizType)
+        {
+            using (var cmd = new SqlCommand(
+                @"SELECT COUNT(DISTINCT q.[questionId]) FROM dbo.[Question] q
+                  INNER JOIN dbo.[Quiz] qz ON qz.[quizId] = q.[quizId]
+                  WHERE qz.[quizType] = @t AND q.[status] = 'Approved'", conn))
+            {
+                cmd.Parameters.AddWithValue("@t", quizType);
+                var result = cmd.ExecuteScalar();
+                return (result != null && result != DBNull.Value) ? Convert.ToInt32(result) : 0;
+            }
+        }
+
+        private string GetLevelName(SqlConnection conn, string levelId)
+        {
+            if (string.IsNullOrEmpty(levelId)) return "";
+
+            using (var cmd = new SqlCommand(
+                "SELECT [levelNameEN] FROM dbo.[Level] WHERE [levelId] = @lid", conn))
+            {
+                cmd.Parameters.AddWithValue("@lid", levelId);
+                var result = cmd.ExecuteScalar();
+                return (result != null && result != DBNull.Value) ? result.ToString() : "";
+            }
+        }
+
+        /// <summary>
+        /// Gets the subtopic name from the first question linked to this quiz.
+        /// </summary>
+        private string GetQuizSubtopicName(SqlConnection conn, string quizId)
+        {
+            using (var cmd = new SqlCommand(
+                @"SELECT TOP 1 st.[subtopicTitleEN]
+                  FROM dbo.[Question] qn
+                  INNER JOIN dbo.[Subtopic] st ON st.[subtopicId] = qn.[subtopicId]
+                  WHERE qn.[quizId] = @qid", conn))
+            {
+                cmd.Parameters.AddWithValue("@qid", quizId);
+                var result = cmd.ExecuteScalar();
+                return (result != null && result != DBNull.Value) ? result.ToString() : "";
+            }
+        }
+
+        private string GetAverageScore(SqlConnection conn, string quizId)
+        {
+            using (var cmd = new SqlCommand(
+                "SELECT AVG(CAST([percentage] AS DECIMAL(5,2))) FROM dbo.[QuizResult] WHERE [quizId] = @qid", conn))
+            {
+                cmd.Parameters.AddWithValue("@qid", quizId);
+                var result = cmd.ExecuteScalar();
+                return (result != null && result != DBNull.Value)
+                    ? Convert.ToDecimal(result).ToString("0.0") + "%"
+                    : "0.0%";
+            }
+        }
+
+        private int SafeCount(SqlConnection conn, string sql, string paramName, string paramValue)
+        {
+            try
+            {
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue(paramName, paramValue);
+                    var result = cmd.ExecuteScalar();
+                    return (result != null && result != DBNull.Value) ? Convert.ToInt32(result) : 0;
+                }
+            }
+            catch { return 0; }
+        }
+
+        #endregion
+
+        #region AJAX Handlers
+
+        /// <summary>
+        /// Returns the full topic hierarchy (Level â†’ Unit â†’ Subtopics) for the curriculum browser.
+        /// </summary>
+        [WebMethod]
+        public static List<TopicLevel> GetAvailableTopics()
+        {
+            var result = new List<TopicLevel>();
+            string connStr = ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+
+            try
+            {
+                using (var conn = new SqlConnection(connStr))
+                {
+                    conn.Open();
+
+                    var levels = new List<TopicLevel>();
+                    using (var cmd = new SqlCommand(
+                        "SELECT [levelId],[levelNameEN] FROM dbo.[Level] ORDER BY [levelId]", conn))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            levels.Add(new TopicLevel
+                            {
+                                LevelId = reader["levelId"].ToString(),
+                                LevelName = reader["levelNameEN"]?.ToString() ?? "",
+                                Units = new List<TopicUnit>()
+                            });
+                        }
+                    }
+
+                    var unitsByLevel = new Dictionary<string, List<TopicUnit>>();
+                    var allUnits = new List<TopicUnit>();
+
+                    using (var cmd = new SqlCommand(
+                        "SELECT [unitId],[unitNameEN],[levelId] FROM dbo.[Unit] ORDER BY [levelId],[orderNo]", conn))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string levelId = reader["levelId"].ToString();
+                            var unit = new TopicUnit
+                            {
+                                UnitId = reader["unitId"].ToString(),
+                                UnitName = reader["unitNameEN"]?.ToString() ?? "",
+                                Subtopics = new List<string>()
+                            };
+
+                            if (!unitsByLevel.ContainsKey(levelId))
+                                unitsByLevel[levelId] = new List<TopicUnit>();
+
+                            unitsByLevel[levelId].Add(unit);
+                            allUnits.Add(unit);
+                        }
+                    }
+
+                    var subtopicsByUnit = new Dictionary<string, List<string>>();
+
+                    using (var cmd = new SqlCommand(
+                        "SELECT [subtopicTitleEN],[unitId] FROM dbo.[Subtopic] ORDER BY [unitId],[orderNo]", conn))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string unitId = reader["unitId"].ToString();
+                            string subtopicTitle = reader["subtopicTitleEN"]?.ToString() ?? "";
+
+                            if (!subtopicsByUnit.ContainsKey(unitId))
+                                subtopicsByUnit[unitId] = new List<string>();
+
+                            subtopicsByUnit[unitId].Add(subtopicTitle);
+                        }
+                    }
+
+                    // Assemble the hierarchy
+                    foreach (var unit in allUnits)
+                    {
+                        if (subtopicsByUnit.ContainsKey(unit.UnitId))
+                            unit.Subtopics = subtopicsByUnit[unit.UnitId];
+                    }
+
+                    foreach (var level in levels)
+                    {
+                        if (unitsByLevel.ContainsKey(level.LevelId))
+                            level.Units = unitsByLevel[level.LevelId];
+                    }
+
+                    result = levels;
+                }
+            }
+            catch { }
+
+            return result;
+        }
+
+        #endregion
+
+        #region Helper Methods
+
+        protected string T(string en, string bm)
+        {
+            return CurrentLanguage == "BM" ? bm : en;
+        }
+
         private void HandleNonCertifiedStatus(string status)
         {
             string normalized = (status ?? "").Trim().ToLower();
@@ -154,494 +602,115 @@ namespace ScienceBuddy.Teacher
             }
             else
             {
-                // Suspended, Blocked, Deleted, or any other non-Certified status
                 pnlDenied.Visible = true;
             }
         }
 
-        private void ShowDeniedPanel()
-        {
-            pnlDenied.Visible = true;
-        }
-
-        // -- Set master page user widget ------------------------------
         private void SetMasterUserInfo(string teacherName)
         {
-            string displayName = !string.IsNullOrWhiteSpace(teacherName)
-                ? teacherName : "Teacher";
-            string initials = "T";
-
-            var parts = displayName.Trim().Split(' ');
-            if (parts.Length >= 2)
-                initials = (parts[0][0].ToString() +
-                    parts[parts.Length - 1][0].ToString()).ToUpper();
-            else if (displayName.Length >= 1)
-                initials = displayName[0].ToString().ToUpper();
+            string displayName = !string.IsNullOrWhiteSpace(teacherName) ? teacherName : "Teacher";
+            string initials = BuildInitials(displayName);
 
             var master = (ScienceBuddy.SiteMaster)Master;
             master.SetUserInfo(displayName, "Teacher", initials);
         }
 
-        // -- Load summary counts --------------------------------------
-        private void LoadSummaryCounts(SqlConnection conn, string userId,
-            string teacherId)
+        private static string BuildInitials(string name)
         {
-            // Total Lessons (Materials created by this teacher)
-            litTotalLessons.Text = SafeCount(conn,
-                "SELECT COUNT(*) FROM dbo.[Material] WHERE [createdByUserId] = @p",
-                "@p", userId).ToString();
+            if (string.IsNullOrWhiteSpace(name)) return "T";
 
-            // Total Quizzes created by this teacher
-            litTotalQuizzes.Text = SafeCount(conn,
-                "SELECT COUNT(*) FROM dbo.[Quiz] WHERE [createdByUserId] = @p",
-                "@p", userId).ToString();
+            var parts = name.Trim().Split(' ');
+            if (parts.Length >= 2)
+                return (parts[0][0].ToString() + parts[parts.Length - 1][0].ToString()).ToUpper();
 
-            // Upcoming live sessions
-            litUpcomingSessions.Text = SafeCount(conn,
-                @"SELECT COUNT(*) FROM dbo.[LiveConsultationSession]
-                  WHERE [teacherId] = @p AND [startDateTime] > GETDATE()",
-                "@p", teacherId).ToString();
-
-            // Total distinct students who participated in this teacher's sessions
-            litTotalStudents.Text = SafeCount(conn,
-                @"SELECT COUNT(DISTINCT lsp.[studentId])
-                  FROM dbo.[LiveSessionParticipant] lsp
-                  INNER JOIN dbo.[LiveConsultationSession] lcs
-                    ON lcs.[sessionId] = lsp.[sessionId]
-                  WHERE lcs.[teacherId] = @p",
-                "@p", teacherId).ToString();
+            return name[0].ToString().ToUpper();
         }
 
-        // -- Load quiz contribution ------------------------------------
-        private void LoadQuizContribution(SqlConnection conn, string userId)
+        /// <summary>
+        /// Determines the visual status (CSS classes, labels) for a session based on timing.
+        /// </summary>
+        private void DetermineSessionStatus(DateTime startTime, DateTime endTime,
+            out string dotCss, out string badgeCss, out string btnCss,
+            out string statusLabel, out string btnLabel)
         {
-            try
+            DateTime now = DateTime.Now;
+
+            if (now >= startTime && now <= endTime)
             {
-                // Unit Quiz Questions — count approved questions using Question.createdByUserId
-                int myUnit = 0;
-                using (var cmd = new SqlCommand(
-                    @"SELECT COUNT(DISTINCT q.[questionId]) FROM dbo.[Question] q
-                      INNER JOIN dbo.[Quiz] qz ON qz.[quizId]=q.[quizId]
-                      WHERE q.[createdByUserId]=@p AND qz.[quizType]='Unit' AND q.[status]='Approved'", conn))
-                { cmd.Parameters.AddWithValue("@p", userId); var v = cmd.ExecuteScalar(); myUnit = (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0; }
-
-                int totalUnit = 0;
-                using (var cmd = new SqlCommand(
-                    @"SELECT COUNT(DISTINCT q.[questionId]) FROM dbo.[Question] q
-                      INNER JOIN dbo.[Quiz] qz ON qz.[quizId]=q.[quizId]
-                      WHERE qz.[quizType]='Unit' AND q.[status]='Approved'", conn))
-                { var v = cmd.ExecuteScalar(); totalUnit = (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0; }
-
-                litUnitMyCount.Text = myUnit.ToString();
-                litUnitTotal.Text = totalUnit.ToString();
-                int unitPct = totalUnit > 0 ? (int)Math.Round((double)myUnit / totalUnit * 100) : 0;
-                hidUnitPct.Value = unitPct.ToString();
-
-                // Level Quiz Questions — count approved questions using Question.createdByUserId
-                int myLevel = 0;
-                using (var cmd = new SqlCommand(
-                    @"SELECT COUNT(DISTINCT q.[questionId]) FROM dbo.[Question] q
-                      INNER JOIN dbo.[Quiz] qz ON qz.[quizId]=q.[quizId]
-                      WHERE q.[createdByUserId]=@p AND qz.[quizType]='Level' AND q.[status]='Approved'", conn))
-                { cmd.Parameters.AddWithValue("@p", userId); var v = cmd.ExecuteScalar(); myLevel = (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0; }
-
-                int totalLevel = 0;
-                using (var cmd = new SqlCommand(
-                    @"SELECT COUNT(DISTINCT q.[questionId]) FROM dbo.[Question] q
-                      INNER JOIN dbo.[Quiz] qz ON qz.[quizId]=q.[quizId]
-                      WHERE qz.[quizType]='Level' AND q.[status]='Approved'", conn))
-                { var v = cmd.ExecuteScalar(); totalLevel = (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0; }
-
-                litLevelMyCount.Text = myLevel.ToString();
-                litLevelTotal.Text = totalLevel.ToString();
-                int levelPct = totalLevel > 0 ? (int)Math.Round((double)myLevel / totalLevel * 100) : 0;
-                hidLevelPct.Value = levelPct.ToString();
+                dotCss = "dot-green";
+                badgeCss = "badge-green";
+                btnCss = "btn-green";
+                statusLabel = "LIVE NOW";
+                btnLabel = T("Start Now", "Mula Sekarang");
             }
-            catch
+            else if (startTime <= now.AddMinutes(15))
             {
-                litUnitMyCount.Text = "0"; litUnitTotal.Text = "0"; hidUnitPct.Value = "0";
-                litLevelMyCount.Text = "0"; litLevelTotal.Text = "0"; hidLevelPct.Value = "0";
-            }
-        }
-
-        // -- Load timeline sessions (new dashboard card) -----------
-        private void LoadTimelineSessions(SqlConnection conn, string teacherId)
-        {
-            const string sql = @"
-                SELECT TOP 3
-                    lcs.[sessionTitle], lcs.[startDateTime], lcs.[endDateTime],
-                    ISNULL(st.[subtopicTitleEN],'') AS subtopicName
-                FROM dbo.[LiveConsultationSession] lcs
-                LEFT JOIN dbo.[Subtopic] st ON st.[subtopicId] = lcs.[subtopicId]
-                WHERE lcs.[teacherId] = @tid AND lcs.[endDateTime] > GETDATE()
-                ORDER BY lcs.[startDateTime] ASC";
-
-            var list = new List<object>();
-            try
-            {
-                using (var cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@tid", teacherId);
-                    using (var r = cmd.ExecuteReader())
-                    {
-                        while (r.Read())
-                        {
-                            DateTime start = r["startDateTime"] != DBNull.Value ? Convert.ToDateTime(r["startDateTime"]) : DateTime.Now;
-                            DateTime end = r["endDateTime"] != DBNull.Value ? Convert.ToDateTime(r["endDateTime"]) : DateTime.Now;
-                            string title = r["sessionTitle"]?.ToString() ?? "";
-                            string topic = r["subtopicName"]?.ToString() ?? "";
-                            DateTime now = DateTime.Now;
-
-                            string dotCss, badgeCss, btnCss, statusLabel, btnLabel;
-                            if (now >= start && now <= end)
-                            { dotCss = "dot-green"; badgeCss = "badge-green"; btnCss = "btn-green"; statusLabel = "LIVE NOW"; btnLabel = T("Start Now", "Mula Sekarang"); }
-                            else if (start <= now.AddMinutes(15))
-                            { dotCss = "dot-yellow"; badgeCss = "badge-yellow"; btnCss = "btn-yellow"; statusLabel = T("Starting Soon", "Bermula Segera"); btnLabel = T("Starting Soon", "Bermula Segera"); }
-                            else
-                            { dotCss = "dot-blue"; badgeCss = "badge-blue"; btnCss = "btn-blue"; statusLabel = T("Upcoming", "Akan Datang"); btnLabel = T("View Details", "Lihat Butiran"); }
-
-                            string friendlyDate = FormatFriendlyDate(start);
-
-                            list.Add(new { title, topic, friendlyDate, dotCss, badgeCss, btnCss, statusLabel, btnLabel });
-                        }
-                    }
-                }
-            }
-            catch { }
-
-            if (list.Count > 0)
-            {
-                pnlTimelineSessions.Visible = true; pnlTimelineEmpty.Visible = false;
-                rptTimelineSessions.DataSource = list; rptTimelineSessions.DataBind();
+                dotCss = "dot-yellow";
+                badgeCss = "badge-yellow";
+                btnCss = "btn-yellow";
+                statusLabel = T("Starting Soon", "Bermula Segera");
+                btnLabel = T("Starting Soon", "Bermula Segera");
             }
             else
             {
-                pnlTimelineSessions.Visible = false; pnlTimelineEmpty.Visible = true;
+                dotCss = "dot-blue";
+                badgeCss = "badge-blue";
+                btnCss = "btn-blue";
+                statusLabel = T("Upcoming", "Akan Datang");
+                btnLabel = T("View Details", "Lihat Butiran");
             }
         }
 
-        private static string FormatFriendlyDate(DateTime dt)
+        private static string FormatFriendlyDate(DateTime dateTime)
         {
             DateTime today = DateTime.Today;
-            if (dt.Date == today) return "Today • " + dt.ToString("h:mm tt");
-            if (dt.Date == today.AddDays(1)) return "Tomorrow • " + dt.ToString("h:mm tt");
-            if (dt.Date < today.AddDays(7)) return dt.ToString("ddd") + " • " + dt.ToString("h:mm tt");
-            return dt.ToString("d MMM") + " • " + dt.ToString("h:mm tt");
+
+            if (dateTime.Date == today)
+                return "Today â€” " + dateTime.ToString("h:mm tt");
+            if (dateTime.Date == today.AddDays(1))
+                return "Tomorrow â€” " + dateTime.ToString("h:mm tt");
+            if (dateTime.Date < today.AddDays(7))
+                return dateTime.ToString("ddd") + " â€” " + dateTime.ToString("h:mm tt");
+
+            return dateTime.ToString("d MMM") + " â€” " + dateTime.ToString("h:mm tt");
         }
 
-        // -- Load dashboard notifications (new card) ------------------
-        private void LoadDashNotifications(SqlConnection conn, string userId)
+        private static string FormatTimeAgo(DateTime dateTime)
         {
-            const string sql = @"
-                SELECT TOP 4
-                    [titleEN], [titleBM], [messageEN], [messageBM], [isRead], [createdAt]
-                FROM dbo.[Notification]
-                WHERE [toUserId] = @uid
-                ORDER BY [createdAt] DESC";
+            var elapsed = DateTime.Now - dateTime;
 
-            var list = new List<object>();
-            try
+            if (elapsed.TotalMinutes < 1) return "Just now";
+            if (elapsed.TotalHours < 1) return (int)elapsed.TotalMinutes + " min ago";
+            if (elapsed.TotalDays < 1) return (int)elapsed.TotalHours + " hr ago";
+            if (elapsed.TotalDays < 7)
             {
-                using (var cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@uid", userId);
-                    using (var r = cmd.ExecuteReader())
-                    {
-                        while (r.Read())
-                        {
-                            string title = CurrentLanguage == "BM"
-                                ? (r["titleBM"]?.ToString() ?? r["titleEN"]?.ToString() ?? "")
-                                : (r["titleEN"]?.ToString() ?? "");
-                            string message = CurrentLanguage == "BM"
-                                ? (r["messageBM"]?.ToString() ?? r["messageEN"]?.ToString() ?? "")
-                                : (r["messageEN"]?.ToString() ?? "");
-                            bool isRead = r["isRead"] != DBNull.Value && Convert.ToBoolean(r["isRead"]);
-                            DateTime createdAt = r["createdAt"] != DBNull.Value ? Convert.ToDateTime(r["createdAt"]) : DateTime.Now;
+                int days = (int)elapsed.TotalDays;
+                return days + " day" + (days == 1 ? "" : "s") + " ago";
+            }
 
-                            list.Add(new
-                            {
-                                title,
-                                message = message.Length > 80 ? message.Substring(0, 80) + "…" : message,
-                                isRead,
-                                timeAgo = FormatTimeAgo(createdAt)
-                            });
-                        }
-                    }
-                }
-            }
-            catch { }
-
-            if (list.Count > 0)
-            {
-                pnlDashNotifs.Visible = true; pnlDashNotifsEmpty.Visible = false;
-                rptDashNotifs.DataSource = list; rptDashNotifs.DataBind();
-            }
-            else
-            {
-                pnlDashNotifs.Visible = false; pnlDashNotifsEmpty.Visible = true;
-            }
+            return dateTime.ToString("d MMM yyyy");
         }
 
-        // -- Load practice quiz engagement --------------------------
-        private void LoadPracticeQuizEngagement(SqlConnection conn, string userId)
+        private static int CalculatePercentage(int part, int total)
         {
-            try
-            {
-                const string sql = @"
-                    SELECT [quizId], [quizTitleEN], [quizTitleBM], [language],
-                           [levelId], [unitId], [status]
-                    FROM dbo.[Quiz]
-                    WHERE [createdByUserId]=@userId
-                      AND [quizType]='Practice'
-                      AND [status]='Approved'
-                    ORDER BY [quizId] DESC";
-
-                var quizzes = new List<Dictionary<string, string>>();
-                using (var cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@userId", userId);
-                    using (var r = cmd.ExecuteReader())
-                    {
-                        while (r.Read())
-                        {
-                            var q = new Dictionary<string, string>();
-                            q["quizId"] = r["quizId"]?.ToString() ?? "";
-                            q["quizTitleEN"] = r["quizTitleEN"]?.ToString() ?? "";
-                            q["quizTitleBM"] = r["quizTitleBM"]?.ToString() ?? "";
-                            q["language"] = r["language"]?.ToString() ?? "EN";
-                            q["levelId"] = r["levelId"]?.ToString() ?? "";
-                            q["unitId"] = r["unitId"]?.ToString() ?? "";
-                            q["status"] = r["status"]?.ToString() ?? "";
-                            quizzes.Add(q);
-                        }
-                    }
-                }
-
-                if (quizzes.Count == 0)
-                {
-                    pnlPQCards.Visible = false;
-                    pnlPQEmpty.Visible = true;
-                    return;
-                }
-
-                var list = new List<object>();
-                foreach (var q in quizzes)
-                {
-                    string lang = q["language"];
-                    string title = lang == "BM" ? q["quizTitleBM"] : q["quizTitleEN"];
-                    if (string.IsNullOrWhiteSpace(title))
-                        title = q["quizTitleEN"];
-                    if (string.IsNullOrWhiteSpace(title))
-                        title = "Untitled";
-
-                    // Level name
-                    string levelName = "";
-                    if (!string.IsNullOrEmpty(q["levelId"]))
-                    {
-                        using (var cmd = new SqlCommand("SELECT [levelNameEN] FROM dbo.[Level] WHERE [levelId]=@lid", conn))
-                        {
-                            cmd.Parameters.AddWithValue("@lid", q["levelId"]);
-                            var v = cmd.ExecuteScalar();
-                            levelName = (v != null && v != DBNull.Value) ? v.ToString() : "";
-                        }
-                    }
-
-                    // Subtopic name (from the first Question linked to this quiz)
-                    string subtopicName = "";
-                    using (var cmd = new SqlCommand(
-                        @"SELECT TOP 1 st.[subtopicTitleEN]
-                          FROM dbo.[Question] qn
-                          INNER JOIN dbo.[Subtopic] st ON st.[subtopicId]=qn.[subtopicId]
-                          WHERE qn.[quizId]=@qid", conn))
-                    {
-                        cmd.Parameters.AddWithValue("@qid", q["quizId"]);
-                        var v = cmd.ExecuteScalar();
-                        subtopicName = (v != null && v != DBNull.Value) ? v.ToString() : "";
-                    }
-
-                    // Question count per quiz
-                    int questionCount = 0;
-                    using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.[Question] WHERE [quizId]=@qid", conn))
-                    {
-                        cmd.Parameters.AddWithValue("@qid", q["quizId"]);
-                        var v = cmd.ExecuteScalar();
-                        questionCount = (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
-                    }
-
-                    // Students attempted (distinct studentId from QuizResult)
-                    int studentsAttempted = 0;
-                    using (var cmd = new SqlCommand("SELECT COUNT(DISTINCT [studentId]) FROM dbo.[QuizResult] WHERE [quizId]=@qid", conn))
-                    {
-                        cmd.Parameters.AddWithValue("@qid", q["quizId"]);
-                        var v = cmd.ExecuteScalar();
-                        studentsAttempted = (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
-                    }
-
-                    // Total attempts (count of QuizResult records)
-                    int totalAttempts = 0;
-                    using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.[QuizResult] WHERE [quizId]=@qid", conn))
-                    {
-                        cmd.Parameters.AddWithValue("@qid", q["quizId"]);
-                        var v = cmd.ExecuteScalar();
-                        totalAttempts = (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
-                    }
-
-                    // Average score (AVG percentage from QuizResult)
-                    string avgScore = "0.0%";
-                    using (var cmd = new SqlCommand("SELECT AVG(CAST([percentage] AS DECIMAL(5,2))) FROM dbo.[QuizResult] WHERE [quizId]=@qid", conn))
-                    {
-                        cmd.Parameters.AddWithValue("@qid", q["quizId"]);
-                        var v = cmd.ExecuteScalar();
-                        if (v != null && v != DBNull.Value)
-                            avgScore = Convert.ToDecimal(v).ToString("0.0") + "%";
-                    }
-
-                    list.Add(new
-                    {
-                        title,
-                        levelName,
-                        subtopicName,
-                        langLabel = lang == "BM" ? "Bahasa Melayu" : "English",
-                        questionCount,
-                        studentsAttempted,
-                        totalAttempts,
-                        avgScore
-                    });
-                }
-
-                pnlPQCards.Visible = true;
-                pnlPQEmpty.Visible = false;
-                rptPracticeQuizCards.DataSource = list;
-                rptPracticeQuizCards.DataBind();
-            }
-            catch (Exception)
-            {
-                pnlPQCards.Visible = false;
-                pnlPQEmpty.Visible = true;
-            }
+            return total > 0 ? (int)Math.Round((double)part / total * 100) : 0;
         }
 
-        // -- Utility: safe parameterized count ------------------------
-        private int SafeCount(SqlConnection conn, string sql,
-            string paramName, string paramValue)
+        private static string ResolveQuizTitle(Dictionary<string, string> quiz, string language)
         {
-            try
-            {
-                using (var cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue(paramName, paramValue);
-                    var val = cmd.ExecuteScalar();
-                    return val != null && val != DBNull.Value
-                        ? Convert.ToInt32(val) : 0;
-                }
-            }
-            catch { return 0; }
+            string title = language == "BM" ? quiz["quizTitleBM"] : quiz["quizTitleEN"];
+
+            if (string.IsNullOrWhiteSpace(title))
+                title = quiz["quizTitleEN"];
+            if (string.IsNullOrWhiteSpace(title))
+                title = "Untitled";
+
+            return title;
         }
 
-        // -- Utility: relative time -----------------------------------
-        private static string FormatTimeAgo(DateTime dt)
-        {
-            var span = DateTime.Now - dt;
-            if (span.TotalMinutes < 1) return "Just now";
-            if (span.TotalHours < 1)
-                return (int)span.TotalMinutes + " min ago";
-            if (span.TotalDays < 1)
-                return (int)span.TotalHours + " hr ago";
-            if (span.TotalDays < 7)
-                return (int)span.TotalDays + " day"
-                    + ((int)span.TotalDays == 1 ? "" : "s") + " ago";
-            return dt.ToString("d MMM yyyy");
-        }
+        #endregion
 
-        // -- WebMethod: Available Topics (read-only) ------------------
-        [WebMethod]
-        public static List<TopicLevel> GetAvailableTopics()
-        {
-            var result = new List<TopicLevel>();
-            string connStr = ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
-
-            try
-            {
-                using (var conn = new SqlConnection(connStr))
-                {
-                    conn.Open();
-
-                    // Load all levels
-                    var levels = new List<TopicLevel>();
-                    using (var cmd = new SqlCommand(
-                        "SELECT [levelId],[levelNameEN] FROM dbo.[Level] ORDER BY [levelId]", conn))
-                    using (var r = cmd.ExecuteReader())
-                    {
-                        while (r.Read())
-                        {
-                            levels.Add(new TopicLevel
-                            {
-                                LevelId = r["levelId"].ToString(),
-                                LevelName = r["levelNameEN"]?.ToString() ?? "",
-                                Units = new List<TopicUnit>()
-                            });
-                        }
-                    }
-
-                    // Load all units
-                    var unitMap = new Dictionary<string, List<TopicUnit>>();
-                    var allUnits = new List<TopicUnit>();
-                    using (var cmd = new SqlCommand(
-                        "SELECT [unitId],[unitNameEN],[levelId] FROM dbo.[Unit] ORDER BY [levelId],[orderNo]", conn))
-                    using (var r = cmd.ExecuteReader())
-                    {
-                        while (r.Read())
-                        {
-                            string levelId = r["levelId"].ToString();
-                            var unit = new TopicUnit
-                            {
-                                UnitId = r["unitId"].ToString(),
-                                UnitName = r["unitNameEN"]?.ToString() ?? "",
-                                Subtopics = new List<string>()
-                            };
-                            if (!unitMap.ContainsKey(levelId))
-                                unitMap[levelId] = new List<TopicUnit>();
-                            unitMap[levelId].Add(unit);
-                            allUnits.Add(unit);
-                        }
-                    }
-
-                    // Load all subtopics
-                    var subtopicMap = new Dictionary<string, List<string>>();
-                    using (var cmd = new SqlCommand(
-                        "SELECT [subtopicTitleEN],[unitId] FROM dbo.[Subtopic] ORDER BY [unitId],[orderNo]", conn))
-                    using (var r = cmd.ExecuteReader())
-                    {
-                        while (r.Read())
-                        {
-                            string unitId = r["unitId"].ToString();
-                            string title = r["subtopicTitleEN"]?.ToString() ?? "";
-                            if (!subtopicMap.ContainsKey(unitId))
-                                subtopicMap[unitId] = new List<string>();
-                            subtopicMap[unitId].Add(title);
-                        }
-                    }
-
-                    // Assemble hierarchy
-                    foreach (var unit in allUnits)
-                    {
-                        if (subtopicMap.ContainsKey(unit.UnitId))
-                            unit.Subtopics = subtopicMap[unit.UnitId];
-                    }
-
-                    foreach (var level in levels)
-                    {
-                        if (unitMap.ContainsKey(level.LevelId))
-                            level.Units = unitMap[level.LevelId];
-                    }
-
-                    result = levels;
-                }
-            }
-            catch { }
-
-            return result;
-        }
+        #region Inner Classes
 
         public class TopicLevel
         {
@@ -656,5 +725,7 @@ namespace ScienceBuddy.Teacher
             public string UnitName { get; set; }
             public List<string> Subtopics { get; set; }
         }
+
+        #endregion
     }
 }

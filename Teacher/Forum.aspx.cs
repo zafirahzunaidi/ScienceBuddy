@@ -10,76 +10,136 @@ namespace ScienceBuddy.Teacher
 {
     public partial class Forum : Page
     {
-        // -- Language --------------------------------------------------
+        #region Properties
+
         protected string CurrentLanguage
         {
-            get { string l = Session["preferredLanguage"] as string; return string.IsNullOrEmpty(l) ? "EN" : l; }
+            get
+            {
+                string lang = Session["preferredLanguage"] as string;
+                return string.IsNullOrEmpty(lang) ? "EN" : lang;
+            }
         }
-        protected string T(string en, string bm) { return CurrentLanguage == "BM" ? bm : en; }
 
-        private string ConnStr =>
+        private string ConnectionString =>
             ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
-        // -- State: track whether the current load is a search ---------
-        private bool IsSearch
+        private bool IsSearchActive
         {
             get { return ViewState["IsSearch"] as bool? ?? false; }
             set { ViewState["IsSearch"] = value; }
         }
 
-        // ------------------------------------------------------------
-        //  PAGE LOAD
-        // ------------------------------------------------------------
+        #endregion
+
+        #region Page Lifecycle
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["userId"] == null || Session["role"]?.ToString() != "Teacher")
-            { Response.Redirect("~/Login.aspx", false); Context.ApplicationInstance.CompleteRequest(); return; }
+            {
+                Response.Redirect("~/Login.aspx", false);
+                Context.ApplicationInstance.CompleteRequest();
+                return;
+            }
 
-            ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
+            ((SiteMaster)Master).LayoutMode = "Sidebar";
 
             if (!IsPostBack)
             {
-                // Localise dynamic controls
-                txtSearch.Attributes["placeholder"] = T("Search forum...", "Cari forum...");
-                btnSearch.Text = T("Search", "Cari");
-                btnPost.Text   = T("Post Discussion", "Hantar Perbincangan");
-                btnReset.Text  = T("? Reset search", "? Set semula carian");
-                IsSearch       = false;
-
-                // Check Teaching License status
+                InitializeControls();
                 hidLicenseStatus.Value = GetTeacherLicenseStatus();
-
                 LoadPosts(searchTerm: "");
             }
         }
 
-        private string GetTeacherLicenseStatus()
+        private void InitializeControls()
         {
-            try
-            {
-                using (var conn = new SqlConnection(ConnStr))
-                {
-                    conn.Open();
-                    using (var cmd = new SqlCommand("SELECT [status] FROM dbo.[Teacher] WHERE [userId]=@u", conn))
-                    {
-                        cmd.Parameters.AddWithValue("@u", Session["userId"].ToString());
-                        var val = cmd.ExecuteScalar();
-                        return val != null && val != DBNull.Value ? val.ToString() : "";
-                    }
-                }
-            }
-            catch { return ""; }
+            txtSearch.Attributes["placeholder"] = T("Search forum...", "Cari forum...");
+            btnSearch.Text = T("Search", "Cari");
+            btnPost.Text = T("Post Discussion", "Hantar Perbincangan");
+            btnReset.Text = T("↻ Reset search", "↻ Set semula carian");
+            IsSearchActive = false;
         }
 
-        // ------------------------------------------------------------
-        //  LOAD POSTS
-        // ------------------------------------------------------------
+        #endregion
+
+        #region Event Handlers
+
+        protected void btnSearch_Click(object sender, EventArgs e)
+        {
+            IsSearchActive = true;
+            LoadPosts(txtSearch.Text.Trim());
+        }
+
+        protected void btnReset_Click(object sender, EventArgs e)
+        {
+            txtSearch.Text = "";
+            IsSearchActive = false;
+            LoadPosts(searchTerm: "");
+        }
+
+        protected void btnPost_Click(object sender, EventArgs e)
+        {
+            string title = txtTitle.Text.Trim();
+            string message = txtMessage.Text.Trim();
+
+            if (string.IsNullOrEmpty(title) || string.IsNullOrEmpty(message))
+            {
+                pnlModalVal.Visible = true;
+                litModalVal.Text = T("Title and Message are required.", "Tajuk dan Mesej diperlukan.");
+                hidShowModal.Value = "1";
+                LoadPosts(IsSearchActive ? txtSearch.Text.Trim() : "");
+                return;
+            }
+
+            string teacherId = Session["userId"].ToString();
+            CreateForumPost(teacherId, title, message);
+
+            hidToast.Value = T("Forum post created successfully.", "Catatan forum berjaya dicipta.");
+            txtTitle.Text = "";
+            txtMessage.Text = "";
+            pnlModalVal.Visible = false;
+            txtSearch.Text = "";
+            IsSearchActive = false;
+            LoadPosts(searchTerm: "");
+        }
+
+        #endregion
+
+        #region Data Loading
+
         private void LoadPosts(string searchTerm)
         {
-            string userId = Session["userId"].ToString();
-            string s = (searchTerm ?? "").Trim();
+            string search = (searchTerm ?? "").Trim();
+            bool isSearching = !string.IsNullOrEmpty(search);
 
-            // Search includes creator name as per spec
+            var posts = FetchForumPosts(search);
+
+            if (posts.Count > 0)
+            {
+                pnlList.Visible = true;
+                pnlDbEmpty.Visible = false;
+                pnlSearchEmpty.Visible = false;
+                rptPosts.DataSource = posts;
+                rptPosts.DataBind();
+            }
+            else if (isSearching)
+            {
+                pnlList.Visible = false;
+                pnlDbEmpty.Visible = false;
+                pnlSearchEmpty.Visible = true;
+            }
+            else
+            {
+                pnlList.Visible = false;
+                pnlDbEmpty.Visible = true;
+                pnlSearchEmpty.Visible = false;
+            }
+        }
+
+        private List<object> FetchForumPosts(string searchTerm)
+        {
             string sql = @"
                 SELECT f.[forumId], f.[title], f.[message], f.[createdAt],
                     COALESCE(t.[name], s2.[name], p.[name], u.[username]) AS creatorName,
@@ -93,191 +153,179 @@ namespace ScienceBuddy.Teacher
                 LEFT  JOIN dbo.[Parent]  p  ON p.[userId]  = u.[userId]
                 WHERE f.[discussionType] = 'Public'";
 
-            if (!string.IsNullOrEmpty(s))
-                sql += @" AND (f.[title]   LIKE @s
-                           OR  f.[message] LIKE @s
-                           OR  COALESCE(t.[name], s2.[name], p.[name], u.[username]) LIKE @s)";
+            bool hasSearch = !string.IsNullOrEmpty(searchTerm);
+            if (hasSearch)
+            {
+                sql += @" AND (f.[title] LIKE @s
+                           OR f.[message] LIKE @s
+                           OR COALESCE(t.[name], s2.[name], p.[name], u.[username]) LIKE @s)";
+            }
 
             sql += " ORDER BY f.[createdAt] DESC";
 
-            var list = new List<object>();
-            using (var conn = new SqlConnection(ConnStr))
+            var posts = new List<object>();
+
+            using (var conn = new SqlConnection(ConnectionString))
             {
                 conn.Open();
                 using (var cmd = new SqlCommand(sql, conn))
                 {
-                    cmd.Parameters.AddWithValue("@uid", userId);
-                    if (!string.IsNullOrEmpty(s))
-                        cmd.Parameters.AddWithValue("@s", "%" + s + "%");
+                    cmd.Parameters.AddWithValue("@uid", Session["userId"].ToString());
+                    if (hasSearch)
+                        cmd.Parameters.AddWithValue("@s", "%" + searchTerm + "%");
 
-                    using (var r = cmd.ExecuteReader())
+                    using (var reader = cmd.ExecuteReader())
                     {
-                        while (r.Read())
+                        while (reader.Read())
                         {
-                            string name  = r["creatorName"]?.ToString() ?? "User";
-                            string role  = r["role"]?.ToString()        ?? "";
-                            string msg   = r["message"]?.ToString()     ?? "";
-                            DateTime dt  = r["createdAt"] != DBNull.Value
-                                ? Convert.ToDateTime(r["createdAt"]) : DateTime.Now;
+                            string creatorName = reader["creatorName"]?.ToString() ?? "User";
+                            string role = reader["role"]?.ToString() ?? "";
+                            string message = reader["message"]?.ToString() ?? "";
+                            DateTime createdAt = reader["createdAt"] != DBNull.Value
+                                ? Convert.ToDateTime(reader["createdAt"])
+                                : DateTime.Now;
 
-                            list.Add(new
+                            posts.Add(new
                             {
-                                forumId    = r["forumId"].ToString(),
-                                title      = r["title"]?.ToString() ?? "",
-                                msgPreview = msg.Length > 180 ? msg.Substring(0, 180) + "�" : msg,
-                                creatorName = name,
-                                initials   = BuildInitials(name),
-                                roleCss    = RoleCss(role),
-                                roleLabel  = RoleLabel(role),
-                                timeAgo    = FormatTime(dt),
-                                replyCount = Convert.ToInt32(r["replyCount"]),
-                                likeCount  = Convert.ToInt32(r["likeCount"])
+                                forumId = reader["forumId"].ToString(),
+                                title = reader["title"]?.ToString() ?? "",
+                                msgPreview = message.Length > 180 ? message.Substring(0, 180) + "…" : message,
+                                creatorName,
+                                initials = BuildInitials(creatorName),
+                                roleCss = GetRoleCss(role),
+                                roleLabel = GetRoleLabel(role),
+                                timeAgo = FormatTimeAgo(createdAt),
+                                replyCount = Convert.ToInt32(reader["replyCount"]),
+                                likeCount = Convert.ToInt32(reader["likeCount"])
                             });
                         }
                     }
                 }
             }
 
-            // Decide which panel to show
-            bool searching = !string.IsNullOrEmpty(s);
-
-            if (list.Count > 0)
-            {
-                pnlList.Visible        = true;
-                pnlDbEmpty.Visible     = false;
-                pnlSearchEmpty.Visible = false;
-                rptPosts.DataSource    = list;
-                rptPosts.DataBind();
-            }
-            else if (searching)
-            {
-                pnlList.Visible        = false;
-                pnlDbEmpty.Visible     = false;
-                pnlSearchEmpty.Visible = true;
-            }
-            else
-            {
-                pnlList.Visible        = false;
-                pnlDbEmpty.Visible     = true;
-                pnlSearchEmpty.Visible = false;
-            }
+            return posts;
         }
 
-        // ------------------------------------------------------------
-        //  SEARCH
-        // ------------------------------------------------------------
-        protected void btnSearch_Click(object sender, EventArgs e)
+        #endregion
+
+        #region Database Operations
+
+        private void CreateForumPost(string teacherId, string title, string message)
         {
-            IsSearch = true;
-            LoadPosts(txtSearch.Text.Trim());
-        }
-
-        // ------------------------------------------------------------
-        //  RESET SEARCH
-        // ------------------------------------------------------------
-        protected void btnReset_Click(object sender, EventArgs e)
-        {
-            txtSearch.Text = "";
-            IsSearch       = false;
-            LoadPosts(searchTerm: "");
-        }
-
-        // ------------------------------------------------------------
-        //  CREATE POST
-        // ------------------------------------------------------------
-        protected void btnPost_Click(object sender, EventArgs e)
-        {
-            string title = txtTitle.Text.Trim();
-            string msg   = txtMessage.Text.Trim();
-
-            if (string.IsNullOrEmpty(title) || string.IsNullOrEmpty(msg))
-            {
-                pnlModalVal.Visible = true;
-                litModalVal.Text    = T("Title and Message are required.", "Tajuk dan Mesej diperlukan.");
-                hidShowModal.Value  = "1";
-                // Re-render list so page doesn't go blank
-                LoadPosts(IsSearch ? txtSearch.Text.Trim() : "");
-                return;
-            }
-
-            string userId = Session["userId"].ToString();
-            using (var conn = new SqlConnection(ConnStr))
+            using (var conn = new SqlConnection(ConnectionString))
             {
                 conn.Open();
                 using (var txn = conn.BeginTransaction())
                 {
-                    string newId;
+                    // Generate next forum ID
+                    string newForumId;
                     using (var cmd = new SqlCommand(
                         "SELECT ISNULL(MAX(CAST(SUBSTRING([forumId],2,LEN([forumId])-1) AS INT)),0) FROM dbo.[Forum]",
                         conn, txn))
-                    { newId = "F" + (Convert.ToInt32(cmd.ExecuteScalar()) + 1).ToString("D3"); }
-
-                    using (var cmd = new SqlCommand(
-                        "INSERT INTO dbo.[Forum]([forumId],[createdBy],[title],[message],[discussionType],[createdAt]) " +
-                        "VALUES(@id,@uid,@t,@m,'Public',GETDATE())", conn, txn))
                     {
-                        cmd.Parameters.AddWithValue("@id",  newId);
-                        cmd.Parameters.AddWithValue("@uid", userId);
-                        cmd.Parameters.AddWithValue("@t",   title);
-                        cmd.Parameters.AddWithValue("@m",   msg);
+                        int nextNumber = Convert.ToInt32(cmd.ExecuteScalar()) + 1;
+                        newForumId = "F" + nextNumber.ToString("D3");
+                    }
+
+                    // Insert new post
+                    const string insertSql = @"INSERT INTO dbo.[Forum]
+                        ([forumId], [createdBy], [title], [message], [discussionType], [createdAt])
+                        VALUES (@forumId, @teacherId, @title, @message, 'Public', GETDATE())";
+
+                    using (var cmd = new SqlCommand(insertSql, conn, txn))
+                    {
+                        cmd.Parameters.AddWithValue("@forumId", newForumId);
+                        cmd.Parameters.AddWithValue("@teacherId", teacherId);
+                        cmd.Parameters.AddWithValue("@title", title);
+                        cmd.Parameters.AddWithValue("@message", message);
                         cmd.ExecuteNonQuery();
                     }
+
                     txn.Commit();
                 }
             }
-
-            hidToast.Value      = T("Forum post created successfully.", "Catatan forum berjaya dicipta.");
-            txtTitle.Text       = "";
-            txtMessage.Text     = "";
-            pnlModalVal.Visible = false;
-            txtSearch.Text      = "";
-            IsSearch            = false;
-            LoadPosts(searchTerm: "");
         }
 
-        // ------------------------------------------------------------
-        //  HELPERS
-        // ------------------------------------------------------------
+        private string GetTeacherLicenseStatus()
+        {
+            try
+            {
+                using (var conn = new SqlConnection(ConnectionString))
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand("SELECT [status] FROM dbo.[Teacher] WHERE [userId]=@u", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@u", Session["userId"].ToString());
+                        var result = cmd.ExecuteScalar();
+                        return result != null && result != DBNull.Value ? result.ToString() : "";
+                    }
+                }
+            }
+            catch
+            {
+                return "";
+            }
+        }
+
+        #endregion
+
+        #region Helper Methods
+
+        protected string T(string en, string bm)
+        {
+            return CurrentLanguage == "BM" ? bm : en;
+        }
+
         private static string BuildInitials(string name)
         {
             if (string.IsNullOrWhiteSpace(name)) return "U";
+
             string[] parts = name.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
             if (parts.Length >= 2)
                 return (parts[0][0].ToString() + parts[parts.Length - 1][0].ToString()).ToUpper();
+
             return name.Trim()[0].ToString().ToUpper();
         }
 
-        private static string RoleCss(string role)
+        private static string GetRoleCss(string role)
         {
             switch ((role ?? "").Trim().ToLower())
             {
                 case "teacher": return "teacher";
                 case "student": return "student";
-                case "parent":  return "parent";
-                default:        return "";
+                case "parent": return "parent";
+                default: return "";
             }
         }
 
-        private string RoleLabel(string role)
+        private string GetRoleLabel(string role)
         {
             switch ((role ?? "").Trim().ToLower())
             {
                 case "teacher": return T("Teacher", "Guru");
                 case "student": return T("Student", "Pelajar");
-                case "parent":  return T("Parent",  "Ibu Bapa");
-                default:        return role ?? "";
+                case "parent": return T("Parent", "Ibu Bapa");
+                default: return role ?? "";
             }
         }
 
-        private static string FormatTime(DateTime dt)
+        private static string FormatTimeAgo(DateTime dateTime)
         {
-            TimeSpan span = DateTime.Now - dt;
-            if (span.TotalMinutes < 1)  return "Just now";
-            if (span.TotalHours   < 1)  return (int)span.TotalMinutes + " min ago";
-            if (span.TotalDays    < 1)  return (int)span.TotalHours   + " hr ago";
-            if (span.TotalDays    < 7)
-                return (int)span.TotalDays + " day" + ((int)span.TotalDays == 1 ? "" : "s") + " ago";
-            return dt.ToString("d MMM yyyy, h:mm tt");
+            TimeSpan elapsed = DateTime.Now - dateTime;
+
+            if (elapsed.TotalMinutes < 1) return "Just now";
+            if (elapsed.TotalHours < 1) return (int)elapsed.TotalMinutes + " min ago";
+            if (elapsed.TotalDays < 1) return (int)elapsed.TotalHours + " hr ago";
+            if (elapsed.TotalDays < 7)
+            {
+                int days = (int)elapsed.TotalDays;
+                return days + " day" + (days == 1 ? "" : "s") + " ago";
+            }
+
+            return dateTime.ToString("d MMM yyyy, h:mm tt");
         }
+
+        #endregion
     }
 }
