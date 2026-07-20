@@ -95,7 +95,7 @@
             </div>
             <div class="ad-question-bank-card-actions">
                 <a href="javascript:;" class="ad-question-bank-abtn ad-question-bank-abtn-view" data-json='<%# HttpUtility.HtmlAttributeEncode(Eval("jsonData").ToString()) %>' onclick="viewQ(JSON.parse(this.getAttribute('data-json')))"><i class="bi bi-eye"></i> <%= T("View","Lihat") %></a>
-                <a href="javascript:;" class="ad-question-bank-abtn ad-question-bank-abtn-edit" onclick="editQ('<%# Eval("questionId") %>')"><i class="bi bi-pencil"></i> <%= T("Edit","Sunting") %></a>
+                <a href="javascript:;" class="ad-question-bank-abtn ad-question-bank-abtn-edit" onclick="editQ('<%# Eval("questionId") %>')" style='<%# HideIf(!(bool)Eval("canEdit")) %>'><i class="bi bi-pencil"></i> <%= T("Edit","Sunting") %></a>
             </div>
         </div>
     </ItemTemplate></asp:Repeater>
@@ -133,11 +133,26 @@ function viewQ(d){
     h+='<div class="ad-question-bank-info-item"><div class="lbl"><i class="bi bi-translate"></i> <%= T("Language","Bahasa") %></div><div class="val">'+(d.lang||'-')+'</div></div>';
     h+='<div class="ad-question-bank-info-item"><div class="lbl"><i class="bi bi-calendar3"></i> <%= T("Created","Dicipta") %></div><div class="val">'+d.date+'</div></div>';
     h+='<div class="ad-question-bank-info-item"><div class="lbl"><i class="bi bi-info-circle"></i> <%= T("Status","Status") %></div><div class="val">'+d.status+'</div></div>';
-    if(d.optA){
+    var isDragDrop = (d.type||'').toLowerCase().indexOf('drag') >= 0;
+    if(isDragDrop){
+        // Drag & Drop: show expected order sequence
+        h+='<div class="ad-question-bank-full"><h4><i class="bi bi-sort-numeric-down"></i> <%= T("Expected Order","Susunan Yang Betul") %></h4>';
+        var colors=['#7C3AED','#2563EB','#059669','#D97706','#DC2626','#0891B2'];
+        var items=(d.correct||'').split(',');
+        for(var i=0;i<items.length;i++){
+            var item=items[i].trim();if(!item)continue;
+            if(i>0) h+='<div style="text-align:center;padding:2px 0;color:#94A3B8;font-size:.7rem;"><i class="bi bi-arrow-down"></i></div>';
+            h+='<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;">';
+            h+='<span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:'+colors[i%colors.length]+';color:#fff;font-size:.75rem;font-weight:700;flex-shrink:0;">'+(i+1)+'</span>';
+            h+='<span style="font-size:.875rem;font-weight:600;color:#1E293B;">'+item+'</span></div>';
+        }
+        if(d.explanation){h+='<div style="margin-top:10px;font-size:.8rem;color:#4B5563;line-height:1.5;"><strong><%= T("Explanation","Penjelasan") %>:</strong> '+d.explanation+'</div>';}
+        h+='</div>';
+    } else if(d.optA){
         h+='<div class="ad-question-bank-full"><h4><i class="bi bi-list-check"></i> <%= T("Answer Options","Pilihan Jawapan") %></h4>';
         [{l:"A",v:d.optA},{l:"B",v:d.optB},{l:"C",v:d.optC},{l:"D",v:d.optD}].forEach(function(o){
             if(!o.v)return;
-            var c=(d.correct===o.l);
+            var c=(d.correct.indexOf(o.l)>=0);
             h+='<div class="ad-question-bank-opt'+(c?' correct':'')+'"><strong>'+o.l+')</strong> '+o.v+(c?' <i class="bi bi-check-circle-fill" style="color:#059669;margin-left:6px;"></i>':'')+'</div>';
         });
         h+='<div style="margin-top:10px;padding:8px 12px;background:#D1FAE5;border-radius:8px;font-size:.8rem;color:#065F46;font-weight:600;"><i class="bi bi-check-circle-fill"></i> <%= T("Correct Answer","Jawapan Betul") %>: '+d.correct+'</div>';
@@ -154,16 +169,25 @@ function editQ(qId){
     .then(function(r){return r.json();}).then(function(d){
         if(!d.success){Swal.fire({icon:'error',title:'Error',text:d.msg});return;}
         var q=d.data;
+        var isDragDrop = (q.type||'').toLowerCase().indexOf('drag') >= 0;
         var h='<div class="ad-question-bank-edit-form">';
         h+='<div style="font-size:.8rem;color:var(--color-text-muted);margin-bottom:12px;">ID: <strong>'+q.id+'</strong></div>';
         h+='<div class="ad-question-bank-info-grid">';
         h+='<div class="ad-question-bank-info-item" style="grid-column:1/-1;"><label class="lbl"><%= T("Question Text (EN)","Teks Soalan (EN)") %></label><textarea id="eTextEN" style="width:100%;min-height:70px;padding:9px 12px;border:1.5px solid var(--border-color);border-radius:8px;font-size:.875rem;resize:vertical;">'+escH(q.textEN)+'</textarea></div>';
         h+='<div class="ad-question-bank-info-item" style="grid-column:1/-1;"><label class="lbl"><%= T("Question Text (BM)","Teks Soalan (BM)") %></label><textarea id="eTextBM" style="width:100%;min-height:70px;padding:9px 12px;border:1.5px solid var(--border-color);border-radius:8px;font-size:.875rem;resize:vertical;">'+escH(q.textBM)+'</textarea></div>';
-        h+='<div class="ad-question-bank-info-item"><label class="lbl">Option A</label><input id="eOptA" value="'+escA(q.optA)+'" style="width:100%;padding:8px 12px;border:1.5px solid var(--border-color);border-radius:8px;font-size:.85rem;"/></div>';
-        h+='<div class="ad-question-bank-info-item"><label class="lbl">Option B</label><input id="eOptB" value="'+escA(q.optB)+'" style="width:100%;padding:8px 12px;border:1.5px solid var(--border-color);border-radius:8px;font-size:.85rem;"/></div>';
-        h+='<div class="ad-question-bank-info-item"><label class="lbl">Option C</label><input id="eOptC" value="'+escA(q.optC)+'" style="width:100%;padding:8px 12px;border:1.5px solid var(--border-color);border-radius:8px;font-size:.85rem;"/></div>';
-        h+='<div class="ad-question-bank-info-item"><label class="lbl">Option D</label><input id="eOptD" value="'+escA(q.optD)+'" style="width:100%;padding:8px 12px;border:1.5px solid var(--border-color);border-radius:8px;font-size:.85rem;"/></div>';
-        h+='<div class="ad-question-bank-info-item"><label class="lbl"><%= T("Correct Answer","Jawapan Betul") %></label><select id="eCorrect" style="width:100%;padding:8px;border:1.5px solid var(--border-color);border-radius:8px;"><option value="A"'+(q.correct==="A"?' selected':'')+'>A</option><option value="B"'+(q.correct==="B"?' selected':'')+'>B</option><option value="C"'+(q.correct==="C"?' selected':'')+'>C</option><option value="D"'+(q.correct==="D"?' selected':'')+'>D</option></select></div>';
+        if(isDragDrop){
+            h+='<div class="ad-question-bank-info-item"><label class="lbl">Option A (<%= T("Drag Item","Item Seret") %>)</label><input id="eOptA" value="'+escA(q.optA)+'" style="width:100%;padding:8px 12px;border:1.5px solid var(--border-color);border-radius:8px;font-size:.85rem;"/></div>';
+            h+='<div class="ad-question-bank-info-item"><label class="lbl">Option B (<%= T("Drag Item","Item Seret") %>)</label><input id="eOptB" value="'+escA(q.optB)+'" style="width:100%;padding:8px 12px;border:1.5px solid var(--border-color);border-radius:8px;font-size:.85rem;"/></div>';
+            h+='<div class="ad-question-bank-info-item"><label class="lbl">Option C (<%= T("Drag Item","Item Seret") %>)</label><input id="eOptC" value="'+escA(q.optC)+'" style="width:100%;padding:8px 12px;border:1.5px solid var(--border-color);border-radius:8px;font-size:.85rem;"/></div>';
+            h+='<div class="ad-question-bank-info-item"><label class="lbl">Option D (<%= T("Drag Item","Item Seret") %>)</label><input id="eOptD" value="'+escA(q.optD)+'" style="width:100%;padding:8px 12px;border:1.5px solid var(--border-color);border-radius:8px;font-size:.85rem;"/></div>';
+            h+='<div class="ad-question-bank-info-item" style="grid-column:1/-1;"><label class="lbl"><%= T("Correct Sequence (comma-separated)","Susunan Betul (dipisahkan koma)") %></label><input id="eCorrect" value="'+escA(q.correct)+'" style="width:100%;padding:8px 12px;border:1.5px solid var(--border-color);border-radius:8px;font-size:.85rem;" placeholder="e.g. Sun,Earth,Red"/></div>';
+        } else {
+            h+='<div class="ad-question-bank-info-item"><label class="lbl">Option A</label><input id="eOptA" value="'+escA(q.optA)+'" style="width:100%;padding:8px 12px;border:1.5px solid var(--border-color);border-radius:8px;font-size:.85rem;"/></div>';
+            h+='<div class="ad-question-bank-info-item"><label class="lbl">Option B</label><input id="eOptB" value="'+escA(q.optB)+'" style="width:100%;padding:8px 12px;border:1.5px solid var(--border-color);border-radius:8px;font-size:.85rem;"/></div>';
+            h+='<div class="ad-question-bank-info-item"><label class="lbl">Option C</label><input id="eOptC" value="'+escA(q.optC)+'" style="width:100%;padding:8px 12px;border:1.5px solid var(--border-color);border-radius:8px;font-size:.85rem;"/></div>';
+            h+='<div class="ad-question-bank-info-item"><label class="lbl">Option D</label><input id="eOptD" value="'+escA(q.optD)+'" style="width:100%;padding:8px 12px;border:1.5px solid var(--border-color);border-radius:8px;font-size:.85rem;"/></div>';
+            h+='<div class="ad-question-bank-info-item"><label class="lbl"><%= T("Correct Answer","Jawapan Betul") %></label><select id="eCorrect" style="width:100%;padding:8px;border:1.5px solid var(--border-color);border-radius:8px;"><option value="A"'+(q.correct==="A"?' selected':'')+'>A</option><option value="B"'+(q.correct==="B"?' selected':'')+'>B</option><option value="C"'+(q.correct==="C"?' selected':'')+'>C</option><option value="D"'+(q.correct==="D"?' selected':'')+'>D</option></select></div>';
+        }
         h+='<div class="ad-question-bank-info-item"><label class="lbl"><%= T("Difficulty","Kesukaran") %></label><select id="eDiff" style="width:100%;padding:8px;border:1.5px solid var(--border-color);border-radius:8px;"><option value="Easy"'+(q.diff==="Easy"?' selected':'')+'>Easy</option><option value="Medium"'+(q.diff==="Medium"?' selected':'')+'>Medium</option><option value="Hard"'+(q.diff==="Hard"?' selected':'')+'>Hard</option></select></div>';
         h+='</div>';
         h+='<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:14px;border-top:1px solid var(--border-color);">';

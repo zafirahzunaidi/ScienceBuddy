@@ -81,7 +81,7 @@
     <asp:Repeater ID="rptXPActions" runat="server">
         <ItemTemplate>
             <div class="ad-student-performance-xp-card">
-                <div class="ad-student-performance-xp-ico" style='<%# Eval("icoStyle") %>'><i class='<%# Eval("icoClass") %>'></i></div>
+                <div class="ad-student-performance-xp-ico" style="<%# Eval("icoStyle") %>"><i class='<%# Eval("icoClass") %>'></i></div>
                 <div class="ad-student-performance-xp-body">
                     <div class="ad-student-performance-xp-name"><%# HttpUtility.HtmlEncode(Eval("nameEN")) %></div>
                     <div class="ad-student-performance-xp-name-bm"><%# HttpUtility.HtmlEncode(Eval("nameBM")) %></div>
@@ -109,7 +109,7 @@
                         <ItemTemplate>
                             <div class="ad-student-performance-rank-card">
                                 <div class="ad-student-performance-rank-num">#<%# Eval("rank") %></div>
-                                <div class="ad-student-performance-rank-avatar" style='background:<%# Eval("avatarBg") %>;'><%# Eval("initials") %></div>
+                                <div class="ad-student-performance-rank-avatar" style="background:<%# Eval("avatarBg") %>;"><%# Eval("initials") %></div>
                                 <div class="ad-student-performance-rank-name"><%# HttpUtility.HtmlEncode(Eval("studentName")) %></div>
                                 <div class="ad-student-performance-rank-xp"><%# Eval("totalXP") %> XP</div>
                             </div>
@@ -132,7 +132,7 @@
     <asp:Repeater ID="rptXPTab" runat="server">
         <ItemTemplate>
             <div class="ad-student-performance-xp-card">
-                <div class="ad-student-performance-xp-ico" style='<%# Eval("icoStyle") %>'><i class='<%# Eval("icoClass") %>'></i></div>
+                <div class="ad-student-performance-xp-ico" style="<%# Eval("icoStyle") %>"><i class='<%# Eval("icoClass") %>'></i></div>
                 <div class="ad-student-performance-xp-body">
                     <div class="ad-student-performance-xp-name"><%# HttpUtility.HtmlEncode(Eval("nameEN")) %></div>
                     <div class="ad-student-performance-xp-name-bm"><%# HttpUtility.HtmlEncode(Eval("nameBM")) %></div>

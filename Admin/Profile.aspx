@@ -55,7 +55,10 @@
 
 <!-- HERO PROFILE BANNER -->
 <div class="ad-profile-hero">
-    <button type="button" class="ad-profile-edit-btn" onclick="openEditModal()"><i class="bi bi-pencil-square"></i> <%= T("Edit Profile", "Sunting Profil") %></button>
+    <div style="display:flex;gap:10px;position:absolute;top:20px;right:24px;z-index:2;flex-wrap:nowrap;">
+        <button type="button" class="ad-profile-edit-btn" onclick="openEditModal()" style="position:static;white-space:nowrap;"><i class="bi bi-pencil-square"></i> <%= T("Edit Profile", "Sunting Profil") %></button>
+        <button type="button" class="ad-profile-edit-btn" onclick="openChangePwdModal()" style="position:static;white-space:nowrap;background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.3);color:#fff;"><i class="bi bi-key"></i> <%= T("Change Password", "Tukar Kata Laluan") %></button>
+    </div>
     <div class="ad-profile-hero-body">
         <div class="ad-profile-avatar" id="heroAvatar"><asp:Literal ID="litInitials" runat="server" Text="A" /></div>
         <div class="ad-profile-hero-info">
@@ -116,7 +119,7 @@
 
         <!-- Editable Fields -->
         <div class="ad-profile-form-group">
-            <label class="ad-profile-form-label" for="editDisplayName"><%= T("Display Name", "Nama Paparan") %></label>
+            <label class="ad-profile-form-label" for="editDisplayName"><%= T("Username", "Nama Pengguna") %></label>
             <input type="text" class="ad-profile-form-input" id="editDisplayName" maxlength="50" />
             <div class="ad-profile-form-error" id="errDisplayName"></div>
         </div>
@@ -154,6 +157,46 @@
         <div class="ad-profile-modal-actions">
             <button type="button" class="ad-profile-btn ad-profile-btn-secondary" onclick="closeEditModal()"><%= T("Cancel", "Batal") %></button>
             <button type="button" class="ad-profile-btn ad-profile-btn-primary" id="btnSaveProfile" onclick="confirmSave()"><i class="bi bi-check-lg"></i> <%= T("Save Changes", "Simpan Perubahan") %></button>
+        </div>
+    </div>
+</div>
+
+<!-- CHANGE PASSWORD MODAL -->
+<div class="ad-profile-modal-overlay" id="changePwdModal">
+    <div class="ad-profile-modal" style="max-width:440px;">
+        <div class="ad-profile-modal-header">
+            <div class="ad-profile-modal-title"><i class="bi bi-key" style="color:#2563EB;"></i> <%= T("Change Password", "Tukar Kata Laluan") %></div>
+            <div class="ad-profile-modal-subtitle"><%= T("Enter your current password and a new password.", "Masukkan kata laluan semasa dan kata laluan baharu.") %></div>
+        </div>
+
+        <div class="ad-profile-form-group">
+            <label class="ad-profile-form-label" for="pwdCurrent"><%= T("Current Password", "Kata Laluan Semasa") %></label>
+            <div style="position:relative;">
+                <input type="password" class="ad-profile-form-input" id="pwdCurrent" autocomplete="current-password" style="padding-right:40px;" />
+                <button type="button" class="ad-profile-pwd-toggle" onclick="togglePwd('pwdCurrent',this)"><i class="bi bi-eye"></i></button>
+            </div>
+            <div class="ad-profile-form-error" id="errPwdCurrent"></div>
+        </div>
+        <div class="ad-profile-form-group">
+            <label class="ad-profile-form-label" for="pwdNew"><%= T("New Password", "Kata Laluan Baharu") %></label>
+            <div style="position:relative;">
+                <input type="password" class="ad-profile-form-input" id="pwdNew" autocomplete="new-password" style="padding-right:40px;" />
+                <button type="button" class="ad-profile-pwd-toggle" onclick="togglePwd('pwdNew',this)"><i class="bi bi-eye"></i></button>
+            </div>
+            <div class="ad-profile-form-error" id="errPwdNew"></div>
+        </div>
+        <div class="ad-profile-form-group">
+            <label class="ad-profile-form-label" for="pwdConfirm"><%= T("Confirm New Password", "Sahkan Kata Laluan Baharu") %></label>
+            <div style="position:relative;">
+                <input type="password" class="ad-profile-form-input" id="pwdConfirm" autocomplete="new-password" style="padding-right:40px;" />
+                <button type="button" class="ad-profile-pwd-toggle" onclick="togglePwd('pwdConfirm',this)"><i class="bi bi-eye"></i></button>
+            </div>
+            <div class="ad-profile-form-error" id="errPwdConfirm"></div>
+        </div>
+
+        <div class="ad-profile-modal-actions">
+            <button type="button" class="ad-profile-btn ad-profile-btn-secondary" onclick="closeChangePwdModal()"><%= T("Cancel", "Batal") %></button>
+            <button type="button" class="ad-profile-btn ad-profile-btn-primary" id="btnSavePwd" onclick="confirmChangePwd()"><i class="bi bi-check-lg"></i> <%= T("Save Password", "Simpan Kata Laluan") %></button>
         </div>
     </div>
 </div>
@@ -201,7 +244,7 @@
         var email = document.getElementById('editEmail').value.trim();
 
         if (!name) {
-            showError('editDisplayName', 'errDisplayName', '<%= T("Display name cannot be empty.", "Nama paparan tidak boleh kosong.") %>');
+            showError('editDisplayName', 'errDisplayName', '<%= T("Username cannot be empty.", "Nama Pengguna tidak boleh kosong.") %>');
             valid = false;
         }
 
@@ -313,6 +356,146 @@
             Swal.fire({ title: '<%= T("Error", "Ralat") %>', text: '<%= T("Network error. Please try again.", "Ralat rangkaian. Sila cuba lagi.") %>', icon: 'error', confirmButtonColor: '#2563EB' });
         });
     }
+    // ── Change Password Modal ────────────────────────────────────
+    window.openChangePwdModal = function () {
+        document.getElementById('pwdCurrent').value = '';
+        document.getElementById('pwdNew').value = '';
+        document.getElementById('pwdConfirm').value = '';
+        clearPwdErrors();
+        document.getElementById('changePwdModal').classList.add('active');
+    };
+
+    window.closeChangePwdModal = function () {
+        document.getElementById('changePwdModal').classList.remove('active');
+    };
+
+    document.getElementById('changePwdModal').addEventListener('click', function (e) {
+        if (e.target === this) closeChangePwdModal();
+    });
+
+    window.togglePwd = function (inputId, btn) {
+        var input = document.getElementById(inputId);
+        var icon = btn.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'bi bi-eye-slash';
+        } else {
+            input.type = 'password';
+            icon.className = 'bi bi-eye';
+        }
+    };
+
+    function clearPwdErrors() {
+        ['errPwdCurrent', 'errPwdNew', 'errPwdConfirm'].forEach(function (id) {
+            var el = document.getElementById(id);
+            el.classList.remove('visible');
+            el.textContent = '';
+        });
+        ['pwdCurrent', 'pwdNew', 'pwdConfirm'].forEach(function (id) {
+            document.getElementById(id).classList.remove('error');
+        });
+    }
+
+    function showPwdError(inputId, errorId, msg) {
+        document.getElementById(inputId).classList.add('error');
+        var err = document.getElementById(errorId);
+        err.textContent = msg;
+        err.classList.add('visible');
+    }
+
+    function validatePwd() {
+        clearPwdErrors();
+        var valid = true;
+        var cur = document.getElementById('pwdCurrent').value;
+        var newP = document.getElementById('pwdNew').value;
+        var conf = document.getElementById('pwdConfirm').value;
+
+        if (!cur) {
+            showPwdError('pwdCurrent', 'errPwdCurrent', '<%= T("Current password cannot be empty.", "Kata laluan semasa tidak boleh kosong.") %>');
+            valid = false;
+        }
+        if (!newP) {
+            showPwdError('pwdNew', 'errPwdNew', '<%= T("New password cannot be empty.", "Kata laluan baharu tidak boleh kosong.") %>');
+            valid = false;
+        } else if (newP.length < 8) {
+            showPwdError('pwdNew', 'errPwdNew', '<%= T("New password must be at least 8 characters.", "Kata laluan baharu mesti sekurang-kurangnya 8 aksara.") %>');
+            valid = false;
+        }
+        if (!conf) {
+            showPwdError('pwdConfirm', 'errPwdConfirm', '<%= T("Confirm password cannot be empty.", "Sahkan kata laluan tidak boleh kosong.") %>');
+            valid = false;
+        } else if (newP && conf !== newP) {
+            showPwdError('pwdConfirm', 'errPwdConfirm', '<%= T("Passwords do not match.", "Kata laluan tidak sepadan.") %>');
+            valid = false;
+        }
+
+        return valid;
+    }
+
+    window.confirmChangePwd = function () {
+        if (!validatePwd()) return;
+
+        Swal.fire({
+            title: '<%= T("Change Password?", "Tukar Kata Laluan?") %>',
+            text: '<%= T("Are you sure you want to change your password?", "Adakah anda pasti mahu menukar kata laluan anda?") %>',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#2563EB',
+            cancelButtonColor: '#64748B',
+            confirmButtonText: '<%= T("Change", "Tukar") %>',
+            cancelButtonText: '<%= T("Cancel", "Batal") %>',
+            reverseButtons: true
+        }).then(function (result) {
+            if (result.isConfirmed) savePassword();
+        });
+    };
+
+    function savePassword() {
+        var btn = document.getElementById('btnSavePwd');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-arrow-repeat"></i> <%= T("Saving...", "Menyimpan...") %>';
+
+        var payload = {
+            currentPassword: document.getElementById('pwdCurrent').value,
+            newPassword: document.getElementById('pwdNew').value,
+            confirmPassword: document.getElementById('pwdConfirm').value
+        };
+
+        fetch('<%= ResolveUrl("~/Admin/Profile.aspx/ChangePassword") %>', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-check-lg"></i> <%= T("Save Password", "Simpan Kata Laluan") %>';
+
+            if (data.d && data.d.success) {
+                closeChangePwdModal();
+                Swal.fire({
+                    title: '<%= T("Password Changed!", "Kata Laluan Ditukar!") %>',
+                    text: '<%= T("Your password has been updated successfully.", "Kata laluan anda telah berjaya dikemas kini.") %>',
+                    icon: 'success',
+                    confirmButtonColor: '#2563EB',
+                    confirmButtonText: '<%= T("OK", "OK") %>'
+                });
+            } else {
+                Swal.fire({
+                    title: '<%= T("Error", "Ralat") %>',
+                    text: data.d ? data.d.message : '<%= T("An error occurred.", "Ralat berlaku.") %>',
+                    icon: 'error',
+                    confirmButtonColor: '#2563EB'
+                });
+            }
+        })
+        .catch(function () {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-check-lg"></i> <%= T("Save Password", "Simpan Kata Laluan") %>';
+            Swal.fire({ title: '<%= T("Error", "Ralat") %>', text: '<%= T("Network error. Please try again.", "Ralat rangkaian. Sila cuba lagi.") %>', icon: 'error', confirmButtonColor: '#2563EB' });
+        });
+    }
+
 })();
 </script>
 

@@ -51,6 +51,7 @@ namespace ScienceBuddy.Admin
             btnSend.Text   = T("Send Notification", "Hantar Notifikasi");
             btnSearch.Text = T("Search", "Cari");
             btnReset.Text  = T("Reset", "Tetapkan Semula");
+            btnCloseModal.Text = T("Close", "Tutup");
             txtSearch.Attributes["placeholder"] = T("Search by recipient, title or type…", "Cari mengikut penerima, tajuk atau jenis…");
         }
 
@@ -351,6 +352,7 @@ namespace ScienceBuddy.Admin
 
                         list.Add(new
                         {
+                            notificationId = NullSafe(row["notificationId"]),
                             recipient     = recipient,
                             recipientType = recipientType,
                             title         = title,
@@ -391,6 +393,91 @@ namespace ScienceBuddy.Admin
             txtSearch.Text = "";
             ddlFilter.SelectedIndex = 0;
             LoadSentTable("", "");
+        }
+
+        // ── View Notification Modal ─────────────────────────────────
+        protected void rptSent_ItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+            if (e.CommandName != "ViewNotification") return;
+
+            string notifId = e.CommandArgument.ToString();
+
+            using (var conn = new SqlConnection(ConnStr))
+            {
+                conn.Open();
+
+                string sql = @"SELECT n.[notificationId], n.[toUserId], n.[titleEN], n.[titleBM],
+                       n.[messageEN], n.[messageBM], n.[isRead], n.[createdAt],
+                       u.[username], u.[role],
+                       COALESCE(s.[name], p.[name], t.[name], u.[username]) AS recipientName
+                FROM dbo.[Notification] n
+                LEFT JOIN dbo.[User] u ON u.[userId] = n.[toUserId]
+                LEFT JOIN dbo.[Student] s ON s.[userId] = n.[toUserId]
+                LEFT JOIN dbo.[Parent] p ON p.[userId] = n.[toUserId]
+                LEFT JOIN dbo.[Teacher] t ON t.[userId] = n.[toUserId]
+                WHERE n.[notificationId] = @id";
+
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", notifId);
+                    using (var rd = cmd.ExecuteReader())
+                    {
+                        if (!rd.Read()) return;
+
+                        string titleEN = NullSafe(rd["titleEN"]);
+                        string titleBM = NullSafe(rd["titleBM"]);
+                        string msgEN = NullSafe(rd["messageEN"]);
+                        string msgBM = NullSafe(rd["messageBM"]);
+                        string username = NullSafe(rd["username"]);
+                        string role = NullSafe(rd["role"]);
+                        string recipientName = NullSafe(rd["recipientName"]);
+                        bool isRead = rd["isRead"] != DBNull.Value && Convert.ToBoolean(rd["isRead"]);
+                        DateTime createdAt = rd["createdAt"] == DBNull.Value ? DateTime.Now : Convert.ToDateTime(rd["createdAt"]);
+
+                        litMNotifId.Text = HttpUtility.HtmlEncode(notifId);
+                        litMId.Text = HttpUtility.HtmlEncode(notifId);
+                        litMRecipientName.Text = HttpUtility.HtmlEncode(string.IsNullOrEmpty(recipientName) ? "-" : recipientName);
+                        litMRecipientUsername.Text = HttpUtility.HtmlEncode(string.IsNullOrEmpty(username) ? "-" : username);
+                        litMRecipientRole.Text = HttpUtility.HtmlEncode(TranslateRole(role));
+                        litMStatus.Text = isRead
+                            ? "<span class=\"sb-badge sb-badge-gray\">" + T("Read", "Dibaca") + "</span>"
+                            : "<span class=\"sb-badge sb-badge-warning\">" + T("Unread", "Belum Dibaca") + "</span>";
+                        litMDateSent.Text = HttpUtility.HtmlEncode(createdAt.ToString("d MMM yyyy h:mm tt"));
+
+                        string icon = GetNotificationIcon(titleEN);
+                        litMIconTitle.Text = "<i class=\"bi " + icon + "\" style=\"color:#2563EB;\"></i> " + HttpUtility.HtmlEncode(string.IsNullOrEmpty(titleEN) ? "-" : titleEN);
+                        litMTitleBM.Text = HttpUtility.HtmlEncode(string.IsNullOrEmpty(titleBM) ? "-" : titleBM);
+                        litMMsgEN.Text = string.IsNullOrEmpty(msgEN) ? "<em style=\"color:var(--color-text-muted);\">" + T("No message", "Tiada mesej") + "</em>" : HttpUtility.HtmlEncode(msgEN).Replace("\n", "<br/>");
+                        litMMsgBM.Text = string.IsNullOrEmpty(msgBM) ? "<em style=\"color:var(--color-text-muted);\">" + T("No message", "Tiada mesej") + "</em>" : HttpUtility.HtmlEncode(msgBM).Replace("\n", "<br/>");
+                    }
+                }
+            }
+
+            pnlModal.Visible = true;
+        }
+
+        protected void btnCloseModal_Click(object sender, EventArgs e)
+        {
+            pnlModal.Visible = false;
+        }
+
+        private static string GetNotificationIcon(string titleEN)
+        {
+            if (string.IsNullOrEmpty(titleEN)) return "bi-bell";
+            string t = titleEN.ToLower();
+            if (t.Contains("welcome")) return "bi-house-heart";
+            if (t.Contains("certificate")) return "bi-award";
+            if (t.Contains("badge")) return "bi-patch-check";
+            if (t.Contains("level unlocked") || t.Contains("new level")) return "bi-stars";
+            if (t.Contains("study reminder") || t.Contains("study")) return "bi-book";
+            if (t.Contains("come back")) return "bi-arrow-repeat";
+            if (t.Contains("forum") || t.Contains("reply")) return "bi-chat-dots";
+            if (t.Contains("question updated") || t.Contains("updated")) return "bi-pencil-square";
+            if (t.Contains("approved") || t.Contains("teacher approved")) return "bi-person-check";
+            if (t.Contains("live session") || t.Contains("session reminder")) return "bi-camera-video";
+            if (t.Contains("material") || t.Contains("published")) return "bi-journal-bookmark";
+            if (t.Contains("added question") || t.Contains("question added")) return "bi-patch-plus";
+            return "bi-bell";
         }
 
         // ── Helpers ──────────────────────────────────────────────────

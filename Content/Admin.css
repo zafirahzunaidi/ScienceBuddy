@@ -4001,3 +4001,7 @@
     .ad-recycle-bin-empty-msg { font-size: 1rem; font-weight: 700; color: var(--color-text-secondary); }
     @media (max-width: 1279px) { .ad-recycle-bin-stats { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 767px) { .ad-recycle-bin-stats { grid-template-columns: 1fr; } }
+
+/* ── Admin Profile - Change Password Toggle ─────────────────── */
+.ad-profile-pwd-toggle{position:absolute;top:50%;right:10px;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--color-text-muted,#64748B);font-size:1rem;padding:4px 6px;line-height:1;border-radius:4px;transition:color .2s;}
+.ad-profile-pwd-toggle:hover{color:var(--color-text-primary,#1E293B);}

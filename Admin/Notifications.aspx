@@ -141,10 +141,11 @@
                         <th><%= T("Title", "Tajuk") %></th>
                         <th><%= T("Date Sent", "Tarikh Dihantar") %></th>
                         <th><%= T("Status", "Status") %></th>
+                        <th style="text-align:center;"><%= T("Action", "Tindakan") %></th>
                     </tr>
                 </thead>
                 <tbody>
-                    <asp:Repeater ID="rptSent" runat="server">
+                    <asp:Repeater ID="rptSent" runat="server" OnItemCommand="rptSent_ItemCommand">
                         <ItemTemplate>
                             <tr>
                                 <td data-label="Recipient"><%# HttpUtility.HtmlEncode(Eval("recipient")) %></td>
@@ -152,6 +153,11 @@
                                 <td data-label="Title"><strong><%# HttpUtility.HtmlEncode(Eval("title")) %></strong></td>
                                 <td data-label="Date"><span style="font-size:.8125rem;color:var(--color-text-muted);"><%# Eval("dateStr") %></span></td>
                                 <td data-label="Status"><%# BuildReadBadge(Eval("isRead")) %></td>
+                                <td class="col-actions" style="text-align:center;">
+                                    <asp:LinkButton ID="lnkView" runat="server" CssClass="sb-btn sb-btn-outline-primary sb-btn-xs" CommandName="ViewNotification" CommandArgument='<%# Eval("notificationId") %>'>
+                                        <i class="bi bi-eye"></i> <%= T("View", "Lihat") %>
+                                    </asp:LinkButton>
+                                </td>
                             </tr>
                         </ItemTemplate>
                     </asp:Repeater>
@@ -170,6 +176,71 @@
 <%-- Toast --%>
 <asp:Panel ID="pnlToast" runat="server" Visible="false">
     <asp:Literal ID="litToast" runat="server" />
+</asp:Panel>
+
+<%-- VIEW NOTIFICATION MODAL --%>
+<asp:Panel ID="pnlModal" runat="server" Visible="false" CssClass="ad-lesson-management-modal-wrap">
+<div class="sb-modal-overlay active" style="display:flex;">
+    <div class="sb-modal" style="max-width:720px;width:94vw;max-height:92vh;overflow-y:auto;">
+        <%-- Gradient Header --%>
+        <div style="background:linear-gradient(135deg,#2563EB,#7C3AED);padding:var(--space-lg) var(--space-xl);color:#fff;border-radius:var(--border-radius-xl) var(--border-radius-xl) 0 0;display:flex;align-items:center;gap:var(--space-md);">
+            <div style="width:44px;height:44px;border-radius:var(--border-radius);background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.25rem;"><i class="bi bi-bell-fill"></i></div>
+            <div>
+                <div style="font-family:var(--font-primary);font-size:1.125rem;font-weight:800;"><%= T("Notification Details", "Maklumat Notifikasi") %></div>
+                <div style="font-size:.8125rem;opacity:.8;"><asp:Literal ID="litMNotifId" runat="server" /></div>
+            </div>
+        </div>
+
+        <%-- Section 1: Notification Information --%>
+        <div style="padding:var(--space-xl);">
+            <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--color-text-muted);margin-bottom:var(--space-md);display:flex;align-items:center;gap:4px;"><i class="bi bi-info-circle"></i> <%= T("Notification Information", "Maklumat Notifikasi") %></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);">
+                <div><div style="font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--color-text-muted);margin-bottom:2px;"><%= T("Notification ID", "ID Notifikasi") %></div><div style="font-size:.9375rem;font-weight:600;color:var(--color-text);"><asp:Literal ID="litMId" runat="server" /></div></div>
+                <div><div style="font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--color-text-muted);margin-bottom:2px;"><%= T("Recipient Name", "Nama Penerima") %></div><div style="font-size:.9375rem;font-weight:600;color:var(--color-text);"><asp:Literal ID="litMRecipientName" runat="server" /></div></div>
+                <div><div style="font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--color-text-muted);margin-bottom:2px;"><%= T("Recipient Username", "Nama Pengguna") %></div><div style="font-size:.9375rem;font-weight:600;color:var(--color-text);"><asp:Literal ID="litMRecipientUsername" runat="server" /></div></div>
+                <div><div style="font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--color-text-muted);margin-bottom:2px;"><%= T("Recipient Role", "Peranan Penerima") %></div><div style="font-size:.9375rem;font-weight:600;color:var(--color-text);"><asp:Literal ID="litMRecipientRole" runat="server" /></div></div>
+                <div><div style="font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--color-text-muted);margin-bottom:2px;"><%= T("Status", "Status") %></div><div style="font-size:.9375rem;font-weight:600;"><asp:Literal ID="litMStatus" runat="server" /></div></div>
+                <div><div style="font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--color-text-muted);margin-bottom:2px;"><%= T("Date Sent", "Tarikh Dihantar") %></div><div style="font-size:.9375rem;font-weight:600;color:var(--color-text);"><asp:Literal ID="litMDateSent" runat="server" /></div></div>
+            </div>
+        </div>
+
+        <%-- Section 2: Notification Content --%>
+        <div style="padding:0 var(--space-xl) var(--space-xl);">
+            <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--color-text-muted);margin-bottom:var(--space-md);display:flex;align-items:center;gap:4px;"><i class="bi bi-chat-text"></i> <%= T("Notification Content", "Kandungan Notifikasi") %></div>
+
+            <%-- Icon + Title EN --%>
+            <div style="margin-bottom:var(--space-md);">
+                <div style="font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--color-text-muted);margin-bottom:2px;"><%= T("Title (English)", "Tajuk (Bahasa Inggeris)") %></div>
+                <div style="font-size:.9375rem;font-weight:600;color:var(--color-text);display:flex;align-items:center;gap:6px;"><asp:Literal ID="litMIconTitle" runat="server" /></div>
+            </div>
+
+            <%-- Title BM --%>
+            <div style="margin-bottom:var(--space-md);">
+                <div style="font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--color-text-muted);margin-bottom:2px;"><%= T("Title (Bahasa Melayu)", "Tajuk (Bahasa Melayu)") %></div>
+                <div style="font-size:.9375rem;font-weight:600;color:var(--color-text);"><asp:Literal ID="litMTitleBM" runat="server" /></div>
+            </div>
+
+            <%-- Message EN --%>
+            <div style="margin-bottom:var(--space-md);">
+                <div style="font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--color-text-muted);margin-bottom:var(--space-sm);"><%= T("Message (English)", "Mesej (Bahasa Inggeris)") %></div>
+                <div style="background:var(--color-surface-alt);border-radius:var(--border-radius-lg);padding:var(--space-lg);font-size:.875rem;color:var(--color-text);line-height:1.7;max-height:200px;overflow-y:auto;">
+                    <asp:Literal ID="litMMsgEN" runat="server" />
+                </div>
+            </div>
+
+            <%-- Message BM --%>
+            <div>
+                <div style="font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--color-text-muted);margin-bottom:var(--space-sm);"><%= T("Message (Bahasa Melayu)", "Mesej (Bahasa Melayu)") %></div>
+                <div style="background:var(--color-surface-alt);border-radius:var(--border-radius-lg);padding:var(--space-lg);font-size:.875rem;color:var(--color-text);line-height:1.7;max-height:200px;overflow-y:auto;">
+                    <asp:Literal ID="litMMsgBM" runat="server" />
+                </div>
+            </div>
+        </div>
+
+        <%-- Footer --%>
+        <div class="sb-modal-footer"><asp:Button ID="btnCloseModal" runat="server" CssClass="sb-btn sb-btn-ghost sb-btn-sm" OnClick="btnCloseModal_Click" /></div>
+    </div>
+</div>
 </asp:Panel>
 
 </asp:Content>

@@ -54,7 +54,7 @@
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
 <div class="ad-quiz-management-header">
     <h1 class="ad-quiz-management-title"><i class="bi bi-patch-question-fill" style="color:var(--ad-quiz-management-accent);"></i> <%= T("Quiz Management", "Pengurusan Kuiz") %></h1>
-    <p class="ad-quiz-management-sub"><%= T("Manage quizzes, approve teacher requests and monitor student performance.", "Urus kuiz, luluskan permintaan guru dan pantau prestasi pelajar.") %></p>
+    <p class="ad-quiz-management-sub"><%= T("Manage quizzes in the ScienceBuddy System.", "Urus kuiz di Sistem ScienceBuddy") %></p>
 </div>
 
 <div class="ad-quiz-management-stats">
@@ -131,13 +131,24 @@
                 <asp:Repeater ID="rptQuestions" runat="server">
                     <ItemTemplate>
                         <div class="ad-quiz-management-q-card">
-                            <div class="ad-quiz-management-q-num"><%= T("Question", "Soalan") %> <%# Eval("num") %> <span class="sb-badge sb-badge-gray" style="margin-left:4px;"><%# HttpUtility.HtmlEncode(Eval("difficulty")) %></span></div>
+                            <div class="ad-quiz-management-q-num"><%= T("Question", "Soalan") %> <%# Eval("num") %> <span class="sb-badge sb-badge-gray" style="margin-left:4px;"><%# HttpUtility.HtmlEncode(Eval("difficulty")) %></span> <span class="sb-badge sb-badge-primary" style="margin-left:4px;"><%# HttpUtility.HtmlEncode(Eval("questionType")) %></span></div>
                             <div class="ad-quiz-management-q-text"><%# HttpUtility.HtmlEncode(Eval("questionText")) %></div>
-                            <div class="ad-quiz-management-q-opts">
-                                <div class='ad-quiz-management-q-opt <%# Eval("correctAnswer").ToString()=="A" ? "correct" : "" %>'>A) <%# HttpUtility.HtmlEncode(Eval("optA")) %></div>
-                                <div class='ad-quiz-management-q-opt <%# Eval("correctAnswer").ToString()=="B" ? "correct" : "" %>'>B) <%# HttpUtility.HtmlEncode(Eval("optB")) %></div>
-                                <div class='ad-quiz-management-q-opt <%# Eval("correctAnswer").ToString()=="C" ? "correct" : "" %>'>C) <%# HttpUtility.HtmlEncode(Eval("optC")) %></div>
-                                <div class='ad-quiz-management-q-opt <%# Eval("correctAnswer").ToString()=="D" ? "correct" : "" %>'>D) <%# HttpUtility.HtmlEncode(Eval("optD")) %></div>
+                            <%-- MCQ / TrueFalse / Multiselect: show options with highlighting --%>
+                            <div style='<%# HideIf((bool)Eval("isDragDrop") || (bool)Eval("isFillBlank")) %>'>
+                                <div class='ad-quiz-management-q-opt <%# Eval("correctAnswer").ToString().Contains("A") ? "correct" : "" %>' style='<%# HideIf(string.IsNullOrWhiteSpace(Eval("optA").ToString())) %>'>A) <%# HttpUtility.HtmlEncode(Eval("optA")) %></div>
+                                <div class='ad-quiz-management-q-opt <%# Eval("correctAnswer").ToString().Contains("B") ? "correct" : "" %>' style='<%# HideIf(string.IsNullOrWhiteSpace(Eval("optB").ToString())) %>'>B) <%# HttpUtility.HtmlEncode(Eval("optB")) %></div>
+                                <div class='ad-quiz-management-q-opt <%# Eval("correctAnswer").ToString().Contains("C") ? "correct" : "" %>' style='<%# HideIf(string.IsNullOrWhiteSpace(Eval("optC").ToString())) %>'>C) <%# HttpUtility.HtmlEncode(Eval("optC")) %></div>
+                                <div class='ad-quiz-management-q-opt <%# Eval("correctAnswer").ToString().Contains("D") ? "correct" : "" %>' style='<%# HideIf(string.IsNullOrWhiteSpace(Eval("optD").ToString())) %>'>D) <%# HttpUtility.HtmlEncode(Eval("optD")) %></div>
+                            </div>
+                            <%-- Fill in the Blank: show correct answer text --%>
+                            <div style='<%# GetFillBlankStyle((bool)Eval("isFillBlank")) %>'>
+                                <div style="font-size:.75rem;font-weight:700;color:#065F46;margin-bottom:4px;"><i class="bi bi-check-circle-fill"></i> <%= T("Correct Answer", "Jawapan Betul") %></div>
+                                <div style="font-size:.875rem;font-weight:600;color:#064E3B;"><%# HttpUtility.HtmlEncode(Eval("correctAnswer")) %></div>
+                            </div>
+                            <%-- Drag & Drop: show correct sequence --%>
+                            <div style='<%# GetDragDropStyle((bool)Eval("isDragDrop")) %>'>
+                                <div style="font-size:.75rem;font-weight:700;color:#1E40AF;margin-bottom:10px;display:flex;align-items:center;gap:6px;"><i class="bi bi-sort-numeric-down"></i> <%= T("Expected Order", "Susunan Yang Betul") %></div>
+                                <div style="display:flex;flex-direction:column;gap:0;"><%# FormatDragDropAnswer(Eval("correctAnswer").ToString()) %></div>
                             </div>
                         </div>
                     </ItemTemplate>

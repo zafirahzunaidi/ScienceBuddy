@@ -344,6 +344,8 @@ namespace ScienceBuddy.Admin
 
         // --- Helpers ---
 
+        protected string WidthPct(object pct) { return "width:" + pct + "%;"; }
+
         private string SafeScalar(SqlConnection conn, string sql)
         {
             try
@@ -496,7 +498,22 @@ namespace ScienceBuddy.Admin
                           cmd.Parameters.AddWithValue("@nick", nickname);
                           cmd.Parameters.AddWithValue("@pc", parentCode); cmd.ExecuteNonQuery(); }
 
-                        // 3. Insert Log
+                        // 3. Insert Enrollment (auto-enroll at Beginner Level)
+                        string enrollmentId = GenId(conn, "Enrollment", "enrollmentId", "EN", txn);
+                        using (var cmd = new SqlCommand("INSERT INTO dbo.[Enrollment]([enrollmentId],[studentId],[levelId],[enrolledDate],[status]) VALUES(@eid,@sid,'LV001',GETDATE(),'Active')", conn, txn))
+                        { cmd.Parameters.AddWithValue("@eid", enrollmentId); cmd.Parameters.AddWithValue("@sid", studentId); cmd.ExecuteNonQuery(); }
+
+                        // 4. Insert Welcome Notification
+                        string notifId = GenId(conn, "Notification", "notificationId", "N", txn);
+                        using (var cmd = new SqlCommand("INSERT INTO dbo.[Notification]([notificationId],[toUserId],[titleEN],[titleBM],[messageEN],[messageBM],[isRead],[createdAt]) VALUES(@nid,@uid,@tEN,@tBM,@mEN,@mBM,0,GETDATE())", conn, txn))
+                        { cmd.Parameters.AddWithValue("@nid", notifId); cmd.Parameters.AddWithValue("@uid", userId);
+                          cmd.Parameters.AddWithValue("@tEN", "Welcome to ScienceBuddy");
+                          cmd.Parameters.AddWithValue("@tBM", "Selamat Datang ke ScienceBuddy");
+                          cmd.Parameters.AddWithValue("@mEN", "Welcome! Your account has been successfully created. Start your first Science lesson today and enjoy learning.");
+                          cmd.Parameters.AddWithValue("@mBM", "Selamat datang! Akaun anda telah berjaya didaftarkan. Mulakan pelajaran Sains pertama anda hari ini dan selamat belajar.");
+                          cmd.ExecuteNonQuery(); }
+
+                        // 5. Insert Log
                         string logId = GenId(conn, "Log", "logId", "LOG", txn);
                         using (var cmd = new SqlCommand("INSERT INTO dbo.[Log]([logId],[userId],[action],[description],[logDateTime],[status]) VALUES(@a,@b,@c,@d,@e,'Success')", conn, txn))
                         { cmd.Parameters.AddWithValue("@a", logId); cmd.Parameters.AddWithValue("@b", adminId); cmd.Parameters.AddWithValue("@c", "Student Created"); cmd.Parameters.AddWithValue("@d", "Administrator created student account " + studentId + " (" + name + ")."); cmd.Parameters.AddWithValue("@e", DateTime.Now); cmd.ExecuteNonQuery(); }

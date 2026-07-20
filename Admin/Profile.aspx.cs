@@ -149,5 +149,74 @@ namespace ScienceBuddy.Admin
                 return new { success = false, message = "An error occurred: " + ex.Message };
             }
         }
+
+        // ── AJAX WebMethod for password change ───────────────────────
+        [WebMethod(EnableSession = true)]
+        public static object ChangePassword(string currentPassword, string newPassword, string confirmPassword)
+        {
+            // Session check
+            if (HttpContext.Current.Session["userId"] == null ||
+                HttpContext.Current.Session["role"]?.ToString() != "Admin")
+            {
+                return new { success = false, message = "Unauthorized." };
+            }
+
+            string userId = HttpContext.Current.Session["userId"].ToString();
+
+            // Validation
+            if (string.IsNullOrEmpty(currentPassword))
+                return new { success = false, message = "Please enter your current password." };
+            if (string.IsNullOrEmpty(newPassword))
+                return new { success = false, message = "Please enter a new password." };
+            if (newPassword.Length < 8)
+                return new { success = false, message = "New password must be at least 8 characters." };
+            if (newPassword != confirmPassword)
+                return new { success = false, message = "New passwords do not match." };
+
+            string connStr = ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+
+            try
+            {
+                using (var conn = new SqlConnection(connStr))
+                {
+                    conn.Open();
+
+                    // Retrieve the stored password hash
+                    string storedPasswordHash = "";
+                    using (var cmd = new SqlCommand(
+                        "SELECT [password] FROM dbo.[User] WHERE [userId]=@uid", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@uid", userId);
+                        object result = cmd.ExecuteScalar();
+                        if (result != null && result != DBNull.Value)
+                        {
+                            storedPasswordHash = result.ToString();
+                        }
+                    }
+
+                    // Verify current password using PasswordHelper
+                    if (!PasswordHelper.VerifyPassword(currentPassword, storedPasswordHash))
+                    {
+                        return new { success = false, message = "Current password is incorrect." };
+                    }
+
+                    // Hash the new password and update the database
+                    string newHash = PasswordHelper.HashPassword(newPassword);
+                    using (var cmd = new SqlCommand(
+                        "UPDATE dbo.[User] SET [password]=@newHash WHERE [userId]=@uid", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@newHash", newHash);
+                        cmd.Parameters.AddWithValue("@uid", userId);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                return new { success = true, message = "Password changed successfully!" };
+            }
+            catch
+            {
+                return new { success = false, message = "An error occurred while changing password." };
+            }
+        }
     }
 }

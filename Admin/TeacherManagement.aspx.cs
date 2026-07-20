@@ -402,17 +402,17 @@ namespace ScienceBuddy.Admin
                 { chk.Parameters.AddWithValue("@p", phone);
                   if (Convert.ToInt32(chk.ExecuteScalar()) > 0) { Response.Write("{\"success\":false,\"msg\":\"Phone number already exists.\"}"); return; } }
 
-                // Save certificate file to ~/Uploads/TeacherCertificates/ before starting transaction
+                // Save certificate to images/teacher
                 string certPath = "";
                 try
                 {
-                    string folder = HttpContext.Current.Server.MapPath("~/Uploads/TeacherCertificates/");
+                    string folder = HttpContext.Current.Server.MapPath("~/Images/Teacher/");
                     if (!System.IO.Directory.Exists(folder))
                         System.IO.Directory.CreateDirectory(folder);
                     string safeName = System.IO.Path.GetFileNameWithoutExtension(certFile.FileName).Replace(" ", "_");
                     string fileName = "cert_" + safeName + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".pdf";
                     certFile.SaveAs(System.IO.Path.Combine(folder, fileName));
-                    certPath = "Uploads/TeacherCertificates/" + fileName;
+                    certPath = "Images/Teacher/" + fileName;
                 }
                 catch (Exception ex)
                 { Response.Write("{\"success\":false,\"msg\":\"Failed to save certificate: " + EscJ(ex.Message) + "\"}"); return; }
@@ -438,7 +438,17 @@ namespace ScienceBuddy.Admin
                           cmd.Parameters.AddWithValue("@cert", certPath);
                           cmd.ExecuteNonQuery(); }
 
-                        // 3. Insert Log
+                        // 3. Insert Welcome Notification
+                        string notifId = GenId(conn, "Notification", "notificationId", "N", txn);
+                        using (var cmd = new SqlCommand("INSERT INTO dbo.[Notification]([notificationId],[toUserId],[titleEN],[titleBM],[messageEN],[messageBM],[isRead],[createdAt]) VALUES(@nid,@uid,@tEN,@tBM,@mEN,@mBM,0,GETDATE())", conn, txn))
+                        { cmd.Parameters.AddWithValue("@nid", notifId); cmd.Parameters.AddWithValue("@uid", userId);
+                          cmd.Parameters.AddWithValue("@tEN", "Welcome to ScienceBuddy");
+                          cmd.Parameters.AddWithValue("@tBM", "Selamat Datang ke ScienceBuddy");
+                          cmd.Parameters.AddWithValue("@mEN", "Welcome! Your teacher account has been successfully created. Your account is currently under review by the administrator. Once your teaching credentials are approved, you will be able to upload learning materials, create practice quizzes and conduct live consultation sessions. Thank you for joining ScienceBuddy.");
+                          cmd.Parameters.AddWithValue("@mBM", "Selamat datang! Akaun guru anda telah berjaya didaftarkan. Akaun anda sedang menunggu semakan dan kelulusan daripada pentadbir. Selepas sijil pengajaran anda diluluskan, anda boleh memuat naik bahan pembelajaran, mencipta kuiz latihan serta menjalankan sesi konsultasi secara langsung. Terima kasih kerana menyertai ScienceBuddy.");
+                          cmd.ExecuteNonQuery(); }
+
+                        // 4. Insert Log
                         string logId = GenId(conn, "Log", "logId", "LOG", txn);
                         using (var cmd = new SqlCommand("INSERT INTO dbo.[Log]([logId],[userId],[action],[description],[logDateTime],[status]) VALUES(@a,@b,'Teacher Created',@c,@d,'Success')", conn, txn))
                         { cmd.Parameters.AddWithValue("@a", logId); cmd.Parameters.AddWithValue("@b", adminId);
