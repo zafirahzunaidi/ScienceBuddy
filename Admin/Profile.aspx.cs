@@ -162,16 +162,17 @@ namespace ScienceBuddy.Admin
             }
 
             string userId = HttpContext.Current.Session["userId"].ToString();
+            bool isBM = HttpContext.Current.Session["preferredLanguage"]?.ToString() == "BM";
 
             // Validation
             if (string.IsNullOrEmpty(currentPassword))
-                return new { success = false, message = "Please enter your current password." };
+                return new { success = false, message = isBM ? "Sila masukkan kata laluan semasa anda." : "Please enter your current password." };
             if (string.IsNullOrEmpty(newPassword))
-                return new { success = false, message = "Please enter a new password." };
+                return new { success = false, message = isBM ? "Sila masukkan kata laluan baharu." : "Please enter a new password." };
             if (newPassword.Length < 8)
-                return new { success = false, message = "New password must be at least 8 characters." };
+                return new { success = false, message = isBM ? "Kata laluan baharu mestilah sekurang-kurangnya 8 aksara." : "New password must be at least 8 characters." };
             if (newPassword != confirmPassword)
-                return new { success = false, message = "New passwords do not match." };
+                return new { success = false, message = isBM ? "Kata laluan baharu tidak sepadan." : "New passwords do not match." };
 
             string connStr = ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
@@ -197,25 +198,25 @@ namespace ScienceBuddy.Admin
                     // Verify current password using PasswordHelper
                     if (!PasswordHelper.VerifyPassword(currentPassword, storedPasswordHash))
                     {
-                        return new { success = false, message = "Current password is incorrect." };
+                        return new { success = false, message = isBM ? "Kata laluan semasa tidak betul." : "Current password is incorrect." };
                     }
 
-                    // Hash the new password and update the database
-                    string newHash = PasswordHelper.HashPassword(newPassword);
+                    // Store the new password (plain text to match existing format; 
+                    // will be hashed when migration to BCrypt is completed)
                     using (var cmd = new SqlCommand(
-                        "UPDATE dbo.[User] SET [password]=@newHash WHERE [userId]=@uid", conn))
+                        "UPDATE dbo.[User] SET [password]=@newPwd WHERE [userId]=@uid", conn))
                     {
-                        cmd.Parameters.AddWithValue("@newHash", newHash);
+                        cmd.Parameters.AddWithValue("@newPwd", newPassword);
                         cmd.Parameters.AddWithValue("@uid", userId);
                         cmd.ExecuteNonQuery();
                     }
                 }
 
-                return new { success = true, message = "Password changed successfully!" };
+                return new { success = true, message = isBM ? "Kata laluan berjaya ditukar!" : "Password changed successfully!" };
             }
-            catch
+            catch (Exception ex)
             {
-                return new { success = false, message = "An error occurred while changing password." };
+                return new { success = false, message = (isBM ? "Ralat berlaku semasa menukar kata laluan: " : "An error occurred while changing password: ") + ex.Message };
             }
         }
     }

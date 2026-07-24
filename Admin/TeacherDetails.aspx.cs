@@ -333,20 +333,23 @@ namespace ScienceBuddy.Admin
                 bool smtpSsl = bool.Parse(System.Configuration.ConfigurationManager.AppSettings["SmtpEnableSsl"] ?? "true");
 
                 string subject, body;
+                string safeUser = System.Web.HttpUtility.HtmlEncode(userName);
+                string safeReason = System.Web.HttpUtility.HtmlEncode(string.IsNullOrWhiteSpace(reason) ? "No reason provided." : reason);
+
                 if (newStatus == "Blocked")
                 {
-                    subject = "ScienceBuddy Account Blocked";
-                    body = "Dear " + userName + ",\n\nYour ScienceBuddy account has been blocked by an administrator.\n\nReason:\n" + (string.IsNullOrWhiteSpace(reason) ? "No reason provided." : reason) + "\n\nWhile your account is blocked, you will not be able to log in to ScienceBuddy.\n\nIf you believe this was done in error, please contact the ScienceBuddy administrator.\n\nRegards,\nScienceBuddy Administration";
+                    subject = "Your ScienceBuddy Account Has Been Blocked";
+                    body = BuildBlockedEmailHtml(safeUser, safeReason);
                 }
                 else
                 {
-                    subject = "ScienceBuddy Account Reactivated";
-                    body = "Dear " + userName + ",\n\nYour ScienceBuddy account has been reactivated.\n\nYou may now log in and continue using ScienceBuddy.\n\nWelcome back!\n\nRegards,\nScienceBuddy Administration";
+                    subject = "Your ScienceBuddy Account Has Been Reactivated";
+                    body = BuildReactivatedEmailHtml(safeUser);
                 }
 
                 using (var mail = new System.Net.Mail.MailMessage(smtpUser, toEmail, subject, body))
                 {
-                    mail.IsBodyHtml = false;
+                    mail.IsBodyHtml = true;
                     using (var smtp = new System.Net.Mail.SmtpClient(smtpHost, smtpPort))
                     {
                         smtp.Credentials = new System.Net.NetworkCredential(smtpUser, smtpPass);
@@ -356,6 +359,16 @@ namespace ScienceBuddy.Admin
                 }
             }
             catch { /* Email failure should not block the status change */ }
+        }
+
+        private string BuildBlockedEmailHtml(string userName, string reason)
+        {
+            return @"<!DOCTYPE html><html><head><meta charset='utf-8'/></head><body style='margin:0;padding:0;background:#F1F5F9;font-family:Nunito,Arial,sans-serif;'><table width='100%' cellpadding='0' cellspacing='0' style='background:#F1F5F9;padding:40px 20px;'><tr><td align='center'><table width='580' cellpadding='0' cellspacing='0' style='background:#FFFFFF;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);'><tr><td style='background:linear-gradient(135deg,#DC2626,#EF4444);padding:32px 40px;text-align:center;'><div style='font-size:22px;font-weight:800;color:#FFFFFF;font-family:Poppins,Arial,sans-serif;'>Science<span style=""color:#FED7AA;"">Buddy</span></div><div style='margin-top:16px;width:56px;height:56px;background:rgba(255,255,255,0.2);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;'><span style='font-size:28px;'>&#128683;</span></div><div style='margin-top:12px;font-size:18px;font-weight:700;color:#FFFFFF;'>Account Blocked</div></td></tr><tr><td style='padding:36px 40px;'><p style='font-size:15px;color:#334155;line-height:1.7;margin:0 0 20px;'>Dear <strong>" + userName + @"</strong>,</p><p style='font-size:15px;color:#334155;line-height:1.7;margin:0 0 20px;'>We are writing to inform you that your ScienceBuddy account has been <strong style=""color:#DC2626;"">blocked</strong> by an administrator.</p><table width='100%' cellpadding='0' cellspacing='0' style='margin:20px 0;'><tr><td style='background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:20px 24px;border-left:4px solid #DC2626;'><div style='font-size:12px;font-weight:700;color:#991B1B;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;'>Reason</div><div style='font-size:14px;color:#7F1D1D;line-height:1.6;'>" + reason + @"</div></td></tr></table><p style='font-size:14px;color:#475569;line-height:1.7;margin:20px 0;'>While your account is blocked, you will not be able to log in to ScienceBuddy.</p><p style='font-size:14px;color:#475569;line-height:1.7;margin:0;'>If you believe this was done in error, please contact the ScienceBuddy administrator for further assistance.</p></td></tr><tr><td style='background:#F8FAFC;border-top:1px solid #E2E8F0;padding:24px 40px;text-align:center;'><p style='font-size:12px;color:#94A3B8;margin:0 0 4px;'>This is an automated message from ScienceBuddy.</p><p style='font-size:12px;color:#94A3B8;margin:0;'>&copy; 2026 ScienceBuddy. All rights reserved.</p></td></tr></table></td></tr></table></body></html>";
+        }
+
+        private string BuildReactivatedEmailHtml(string userName)
+        {
+            return @"<!DOCTYPE html><html><head><meta charset='utf-8'/></head><body style='margin:0;padding:0;background:#F1F5F9;font-family:Nunito,Arial,sans-serif;'><table width='100%' cellpadding='0' cellspacing='0' style='background:#F1F5F9;padding:40px 20px;'><tr><td align='center'><table width='580' cellpadding='0' cellspacing='0' style='background:#FFFFFF;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);'><tr><td style='background:linear-gradient(135deg,#059669,#10B981);padding:32px 40px;text-align:center;'><div style='font-size:22px;font-weight:800;color:#FFFFFF;font-family:Poppins,Arial,sans-serif;'>Science<span style=""color:#A7F3D0;"">Buddy</span></div><div style='margin-top:16px;width:56px;height:56px;background:rgba(255,255,255,0.2);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;'><span style='font-size:28px;'>&#9989;</span></div><div style='margin-top:12px;font-size:18px;font-weight:700;color:#FFFFFF;'>Account Reactivated</div></td></tr><tr><td style='padding:36px 40px;'><p style='font-size:15px;color:#334155;line-height:1.7;margin:0 0 20px;'>Dear <strong>" + userName + @"</strong>,</p><p style='font-size:15px;color:#334155;line-height:1.7;margin:0 0 20px;'>Great news! Your ScienceBuddy account has been <strong style=""color:#059669;"">reactivated</strong> by an administrator.</p><table width='100%' cellpadding='0' cellspacing='0' style='margin:20px 0;'><tr><td style='background:#ECFDF5;border:1px solid #A7F3D0;border-radius:12px;padding:20px 24px;border-left:4px solid #059669;'><div style='font-size:14px;color:#065F46;line-height:1.6;'>You may now log in and continue using ScienceBuddy. Welcome back!</div></td></tr></table><p style='font-size:14px;color:#475569;line-height:1.7;margin:0;'>If you have any questions, please don't hesitate to contact us.</p></td></tr><tr><td style='background:#F8FAFC;border-top:1px solid #E2E8F0;padding:24px 40px;text-align:center;'><p style='font-size:12px;color:#94A3B8;margin:0 0 4px;'>This is an automated message from ScienceBuddy.</p><p style='font-size:12px;color:#94A3B8;margin:0;'>&copy; 2026 ScienceBuddy. All rights reserved.</p></td></tr></table></td></tr></table></body></html>";
         }
     }
 }

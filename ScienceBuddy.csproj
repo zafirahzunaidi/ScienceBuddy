@@ -114,7 +114,6 @@
     <Content Include="Admin\Dashboard.aspx" />
     <Content Include="Admin\Notifications.aspx" />
     <Content Include="Admin\Profile.aspx" />
-    <Content Include="Admin\Settings.aspx" />
     <Content Include="Admin\StudentManagement.aspx" />
     <Content Include="Admin\RecycleBin.aspx" />
     <Content Include="Admin\ParentManagement.aspx" />
@@ -348,13 +347,6 @@
     </Compile>
     <Compile Include="Admin\Profile.aspx.designer.cs">
       <DependentUpon>Profile.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Admin\Settings.aspx.cs">
-      <DependentUpon>Settings.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Admin\Settings.aspx.designer.cs">
-      <DependentUpon>Settings.aspx</DependentUpon>
     </Compile>
     <Compile Include="Admin\StudentManagement.aspx.cs">
       <DependentUpon>StudentManagement.aspx</DependentUpon>
