@@ -5960,3 +5960,111 @@
     justify-content: center;
     flex-wrap: wrap;
 }
+
+
+/* --- Profile edit hints --- */
+.pt-profile-edit-hint {
+    font-size: 0.82rem;
+    color: #64748B;
+    margin-bottom: 14px;
+    font-style: italic;
+}
+
+.pt-field-editable .pt-input {
+    border-left: 3px solid #2563EB;
+    background: #F8FBFF;
+}
+
+.pt-field-editable .pt-input:focus {
+    border-left-color: #1D4ED8;
+    background: #fff;
+}
+
+.pt-input-locked {
+    background: #F1F5F9 !important;
+    color: #94A3B8 !important;
+    cursor: not-allowed;
+}
+
+.pt-field-note {
+    font-size: 0.7rem;
+    color: #94A3B8;
+    margin-top: 2px;
+    display: block;
+}
+
+
+/* --- Validation error state --- */
+.pt-input-error {
+    border-color: #DC2626 !important;
+    border-left-color: #DC2626 !important;
+    background: #FEF2F2 !important;
+}
+
+/* --- Password eye toggle --- */
+.pt-pwd-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.pt-pwd-wrap .pt-input {
+    flex: 1;
+    padding-right: 40px;
+}
+
+.pt-pwd-eye {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    color: #94A3B8;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 4px;
+}
+
+.pt-pwd-eye:hover {
+    color: #475569;
+}
+
+
+/* --- Password change step layout --- */
+.pt-pwd-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.pt-pwd-requirements {
+    margin: 10px 0;
+    font-size: 0.8rem;
+    color: #64748B;
+}
+
+.pt-pwd-requirements strong {
+    color: #334155;
+    font-size: 0.82rem;
+}
+
+.pt-pwd-requirements ul {
+    margin: 4px 0 0 16px;
+    padding: 0;
+    list-style: disc;
+}
+
+.pt-pwd-requirements li {
+    margin-bottom: 2px;
+}
+
+@media (max-width: 480px) {
+    .pt-pwd-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+
+/* Hide browser's built-in password reveal button (Edge/Chrome) */
+.pt-pwd-wrap input::-ms-reveal { display: none; }
+.pt-pwd-wrap input::-webkit-credentials-auto-fill-button { display: none; }
