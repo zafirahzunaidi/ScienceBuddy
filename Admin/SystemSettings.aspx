@@ -5,7 +5,7 @@
 <asp:Content ID="cHead" ContentPlaceHolderID="HeadContent" runat="server">
     <link href="<%: ResolveUrl("~/Content/Admin.css") %>" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
-    <script src="<%: ResolveUrl("~/Scripts/admin-signout.js") %>"></script>
+    <script src="<%: ResolveUrl("~/Scripts/signout.js") %>"></script>
 </asp:Content>
 
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">

@@ -28,7 +28,7 @@
     <%-- SweetAlert2 + Sign Out Modal (global) --%>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="<%: ResolveUrl("~/Scripts/admin-signout.js") %>"></script>
+    <script src="<%: ResolveUrl("~/Scripts/signout.js") %>"></script>
 
     <%-- Page-level head content --%>
     <asp:ContentPlaceHolder ID="HeadContent" runat="server" />
@@ -126,8 +126,6 @@
                 </span>
                 <ul class="sb-footer-links">
                     <li><a runat="server" href="~/Contact">Contact</a></li>
-                    <li><a href="#">Privacy</a></li>
-                    <li><a href="#">Terms</a></li>
                 </ul>
             </div>
         </footer>
@@ -211,15 +209,6 @@
                             OnClick="btnLangBM_Click" CausesValidation="false">BM</asp:LinkButton>
                     </div>
 
-                    <%-- Notification bell --%>
-                    <a href="<%: ResolveUrl("~/Admin/Notifications.aspx") %>"
-                            class="sb-nav-notification"
-                            aria-label="Notifications"
-                            data-tooltip="Notifications">
-                        <i class="bi bi-bell"></i>
-                        <asp:Panel ID="pnlNotifDot" runat="server" CssClass="notification-dot" Visible="false" />
-                    </a>
-
                     <%-- User avatar / dropdown trigger --%>
                     <div class="sb-dropdown">
                         <button type="button"
@@ -249,8 +238,8 @@
                         <div class="sb-dropdown-menu" id="userDropdown" role="menu" aria-label="User menu">
                             <asp:ContentPlaceHolder ID="UserDropdownMenu" runat="server">
                                 <%-- Default items; role-specific pages can override --%>
-                                <a runat="server" href="~/Admin/Profile.aspx" class="sb-dropdown-item" role="menuitem">
-                                    <i class="bi bi-person"></i> My Profile
+                                <a runat="server" href="~/Contact.aspx" class="sb-dropdown-item" role="menuitem">
+                                    <i class="bi bi-envelope"></i> Contact
                                 </a>
                                 <div class="sb-dropdown-divider"></div>
                                 <a href="javascript:;" class="sb-dropdown-item danger" role="menuitem"

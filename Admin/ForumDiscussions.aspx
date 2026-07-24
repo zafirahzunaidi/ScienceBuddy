@@ -6,7 +6,7 @@
     <link href="<%: ResolveUrl("~/Content/Admin.css") %>" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="<%: ResolveUrl("~/Scripts/admin-signout.js") %>"></script>
+    <script src="<%: ResolveUrl("~/Scripts/signout.js") %>"></script>
 </asp:Content>
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
 <div class="sb-nav-section"><div class="sb-nav-section-label"><%= T("Main", "Utama") %></div><a href="<%: ResolveUrl("~/Admin/Dashboard.aspx") %>" class="sb-sidebar-item"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label"><%= T("Dashboard", "Papan Pemuka") %></span></a></div>

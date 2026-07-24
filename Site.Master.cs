@@ -305,7 +305,7 @@ namespace ScienceBuddy
 
         public void ShowNotificationDot()
         {
-            if (pnlNotifDot != null) pnlNotifDot.Visible = true;
+            // Notification bell removed from header; method kept for compatibility
         }
 
         public void ShowBreadcrumb()

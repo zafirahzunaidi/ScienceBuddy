@@ -81,9 +81,6 @@
     <asp:Literal ID="litPageTitle" runat="server" Text="My Learning" />
 </asp:Content>
 
-<asp:Content ID="StudentUserDropdownMenu" ContentPlaceHolderID="UserDropdownMenu" runat="server">
-</asp:Content>
-
 <asp:Content ID="MyLearningBreadcrumb" ContentPlaceHolderID="BreadcrumbContent" runat="server">
 </asp:Content>
 
