@@ -155,6 +155,16 @@
 <script>
 function reviewQuiz(quizId, action, btn) {
     var row = btn ? btn.closest('tr') : null;
+    // Check quiz type from the row
+    var typeCell = row ? row.querySelectorAll('td')[2] : null;
+    var quizType = typeCell ? typeCell.textContent.trim() : '';
+
+    // Unit and Level quizzes: the ID is actually a questionId, review individually
+    if (quizType === 'Unit' || quizType === 'Level') {
+        reviewQuestion(quizId, action, btn);
+        return;
+    }
+
     var msg = action === 'Approve'
         ? '<%= T("Approve this quiz and all its questions?","Luluskan kuiz ini dan semua soalannya?") %>'
         : '<%= T("Reject this quiz and all its questions?","Tolak kuiz ini dan semua soalannya?") %>';
@@ -244,6 +254,109 @@ function reviewQuiz(quizId, action, btn) {
     });
 }
 
+function reviewQuestion(questionId, action, btn) {
+    var row = btn ? btn.closest('tr') : null;
+    var cells = row ? row.querySelectorAll('td') : [];
+    var qIdText = cells[0] ? cells[0].innerHTML : '';
+    var qTitle = cells[1] ? cells[1].innerHTML : '';
+    var qType = cells[2] ? cells[2].innerHTML : '';
+    var teacher = cells[4] ? cells[4].innerHTML : '';
+
+    var confirmMsg = action === 'Approve'
+        ? '<%= T("Approve this question?","Luluskan soalan ini?") %>'
+        : '<%= T("Reject this question?","Tolak soalan ini?") %>';
+    Swal.fire({
+        title: confirmMsg, icon: 'question', showCancelButton: true,
+        confirmButtonColor: action === 'Approve' ? '#059669' : '#DC2626',
+        confirmButtonText: action === 'Approve' ? '<%= T("Approve","Luluskan") %>' : '<%= T("Reject","Tolak") %>',
+        cancelButtonText: '<%= T("Cancel","Batal") %>'
+    }).then(function(r) {
+        if (!r.isConfirmed) return;
+        var basePath = window.location.pathname;
+        if (basePath.indexOf('.aspx') === -1) basePath += '.aspx';
+        var url = basePath + '?handler=ReviewQuestion&questionId=' + encodeURIComponent(questionId) + '&action=' + action;
+
+        fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(function(resp) { return resp.json(); })
+        .then(function(data) {
+            if (!data.success) { Swal.fire({ icon: 'error', title: 'Error', text: data.msg }); return; }
+
+            // Remove the row from the pending table
+            if (row) {
+                row.style.transition = 'opacity .4s, transform .4s';
+                row.style.opacity = '0';
+                row.style.transform = 'translateX(30px)';
+                setTimeout(function() {
+                    row.remove();
+                    var pendingBody = document.querySelector('#pendingTable tbody');
+                    if (pendingBody && pendingBody.children.length === 0) {
+                        var pendingWrap = document.getElementById('pnlPendingWrap');
+                        var pendingEmptyWrap = document.getElementById('pnlPendingEmptyWrap');
+                        if (pendingWrap) pendingWrap.style.display = 'none';
+                        if (pendingEmptyWrap) pendingEmptyWrap.style.display = '';
+                    }
+                }, 400);
+            }
+
+            // Add to history table
+            var histTable = document.getElementById('historyTable');
+            var histBody = histTable ? histTable.querySelector('tbody') : null;
+            if (histBody) {
+                var histWrap = document.getElementById('pnlHistoryWrap');
+                var histEmptyWrap = document.getElementById('pnlHistoryEmptyWrap');
+                if (histWrap) histWrap.style.display = '';
+                if (histEmptyWrap) histEmptyWrap.style.display = 'none';
+
+                var statusBadge = action === 'Approve'
+                    ? '<span class="sb-badge sb-badge-success"><i class="bi bi-check-circle-fill"></i> Approved</span>'
+                    : '<span class="sb-badge sb-badge-error"><i class="bi bi-x-circle-fill"></i> Rejected</span>';
+
+                var today = new Date();
+                var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                var dateStr = today.getDate().toString().padStart(2,'0') + ' ' + months[today.getMonth()] + ' ' + today.getFullYear();
+
+                var newRow = document.createElement('tr');
+                newRow.className = action === 'Approve' ? 'ad-question-request-highlight-approved' : 'ad-question-request-highlight-rejected';
+                newRow.innerHTML = '<td>' + qIdText + '</td><td>' + qTitle + '</td><td>' + qType + '</td><td>' + teacher + '</td><td><span class="sb-badge sb-badge-gray">1</span></td><td><span style="font-size:.8rem;color:var(--color-text-muted);">' + dateStr + '</span></td><td>' + statusBadge + '</td>';
+                histBody.insertBefore(newRow, histBody.firstChild);
+                setTimeout(function() { newRow.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 500);
+                setTimeout(function() { newRow.classList.remove('ad-question-request-highlight-approved', 'ad-question-request-highlight-rejected'); }, 5000);
+            }
+
+            // Update the question card in the modal if open
+            var card = document.getElementById('qcard-' + questionId);
+            if (card) {
+                var statusEl = card.querySelector('.q-review-status');
+                var actionsEl = card.querySelector('.q-review-actions');
+                if (statusEl) {
+                    statusEl.innerHTML = data.newStatus === 'Approved'
+                        ? '<span class="sb-badge sb-badge-success"><i class="bi bi-check-circle-fill"></i> Approved</span>'
+                        : '<span class="sb-badge sb-badge-error"><i class="bi bi-x-circle-fill"></i> Rejected</span>';
+                }
+                if (actionsEl) {
+                    actionsEl.innerHTML = '<span style="font-size:.8rem;color:var(--color-text-muted);"><i class="bi bi-check"></i> <%= T("Reviewed","Disemak") %></span>';
+                }
+            }
+
+            // Update stats
+            var elPending = document.getElementById('statPending');
+            var elApproved = document.getElementById('statApproved');
+            var elRejected = document.getElementById('statRejected');
+            var elToday = document.getElementById('statToday');
+            if (elPending) elPending.textContent = data.pending;
+            if (elApproved) elApproved.textContent = data.approved;
+            if (elRejected) elRejected.textContent = data.rejected;
+            if (elToday) elToday.textContent = data.today;
+            var badge = document.getElementById('pendingBadge');
+            if (badge) badge.innerHTML = data.pending > 0 ? '<span class="sb-badge sb-badge-warning" style="margin-left:6px;">' + data.pending + '</span>' : '';
+
+            Swal.fire({ icon: 'success', title: '<%= T("Question reviewed.","Soalan telah disemak.") %>', timer: 1500, timerProgressBar: true, showConfirmButton: false, position: 'top-end', toast: true });
+        }).catch(function(err) {
+            Swal.fire({ icon: 'error', title: 'Error', text: err.message || 'Network error.' });
+        });
+    });
+}
+
 function viewQuiz(quizId) {
     document.getElementById('qrDetails').innerHTML = '<div style="text-align:center;padding:40px;"><i class="bi bi-arrow-repeat" style="font-size:2rem;color:var(--ad-question-request);animation:spin 1s linear infinite;"></i><div style="margin-top:12px;color:var(--color-text-muted);">Loading...</div></div>';
     document.getElementById('qrModal').classList.add('active');
@@ -270,11 +383,35 @@ function viewQuiz(quizId) {
         h += '</div>';
 
         if (data.questions && data.questions.length > 0) {
+            var isIndividualReview = (q.quizType === 'Unit' || q.quizType === 'Level');
             h += '<div style="margin-top:20px;"><div style="font-size:.8rem;font-weight:700;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;"><i class="bi bi-list-check"></i> Questions in this Quiz</div>';
             data.questions.forEach(function(qn, idx) {
-                h += '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px 18px;margin-bottom:10px;">';
+                h += '<div id="qcard-' + qn.questionId + '" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px 18px;margin-bottom:10px;">';
+                h += '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">';
+                h += '<div style="flex:1;min-width:0;">';
                 h += '<div style="font-weight:700;color:var(--color-text);margin-bottom:6px;">Q' + (idx + 1) + '. ' + qn.text + '</div>';
-                if (qn.difficulty) { h += '<span class="sb-badge sb-badge-gray" style="margin-bottom:8px;">' + qn.difficulty + '</span> '; }
+                h += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">';
+                if (qn.questionId) { h += '<span class="sb-badge sb-badge-gray" style="font-size:.7rem;font-family:monospace;">' + qn.questionId + '</span> '; }
+                if (qn.type) { h += '<span class="sb-badge sb-badge-primary">' + qn.type + '</span> '; }
+                if (qn.difficulty) { h += '<span class="sb-badge sb-badge-gray">' + qn.difficulty + '</span> '; }
+                h += '<span class="q-review-status">';
+                if (qn.status === 'Approved') h += '<span class="sb-badge sb-badge-success"><i class="bi bi-check-circle-fill"></i> Approved</span>';
+                else if (qn.status === 'Rejected') h += '<span class="sb-badge sb-badge-error"><i class="bi bi-x-circle-fill"></i> Rejected</span>';
+                else h += '<span class="sb-badge sb-badge-warning">Pending</span>';
+                h += '</span>';
+                h += '</div>';
+                h += '</div>';
+                if (isIndividualReview) {
+                    h += '<div class="q-review-actions" style="display:flex;gap:6px;flex-shrink:0;">';
+                    if (qn.status === 'Pending') {
+                        h += '<a href="javascript:;" class="sb-btn sb-btn-success sb-btn-xs" onclick="reviewQuestion(\'' + qn.questionId + '\',\'Approve\',this)"><i class="bi bi-check-lg"></i> <%= T("Approve","Luluskan") %></a>';
+                        h += '<a href="javascript:;" class="sb-btn sb-btn-danger sb-btn-xs" onclick="reviewQuestion(\'' + qn.questionId + '\',\'Reject\',this)"><i class="bi bi-x-lg"></i> <%= T("Reject","Tolak") %></a>';
+                    } else {
+                        h += '<span style="font-size:.8rem;color:var(--color-text-muted);"><i class="bi bi-check"></i> <%= T("Reviewed","Disemak") %></span>';
+                    }
+                    h += '</div>';
+                }
+                h += '</div>';
                 var opts = [{l:'A',v:qn.optA},{l:'B',v:qn.optB},{l:'C',v:qn.optC},{l:'D',v:qn.optD}];
                 opts.forEach(function(o) {
                     if (!o.v) return;
@@ -283,6 +420,9 @@ function viewQuiz(quizId) {
                 });
                 if (qn.explanation) {
                     h += '<div style="margin-top:8px;background:#D1FAE5;border-radius:8px;padding:8px 12px;font-size:.8rem;color:#047857;"><strong>Explanation:</strong> ' + qn.explanation + '</div>';
+                }
+                if (qn.reviewedDate) {
+                    h += '<div style="margin-top:6px;font-size:.75rem;color:var(--color-text-muted);"><i class="bi bi-calendar-check"></i> <%= T("Reviewed","Disemak") %>: ' + qn.reviewedDate + '</div>';
                 }
                 h += '</div>';
             });

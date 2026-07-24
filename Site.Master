@@ -52,9 +52,7 @@
         </Scripts>
     </asp:ScriptManager>
 
-    <%-- ══════════════════════════════════════════════════════
-         LAYOUT: GUEST / DASHBOARD  →  Top Navigation Only
-         ══════════════════════════════════════════════════════ --%>
+    <%-- LAYOUT: GUEST / DASHBOARD  ->  Top Navigation Only --%>
     <asp:Panel ID="pnlTopNavLayout" runat="server" CssClass="sb-layout-topnav" Visible="false">
 
         <%-- TOP NAVIGATION --%>
@@ -136,9 +134,7 @@
 
     </asp:Panel>
 
-    <%-- ══════════════════════════════════════════════════════
-         LAYOUT: LOGGED-IN NON-DASHBOARD  →  Sidebar + Header
-         ══════════════════════════════════════════════════════ --%>
+    <%-- LAYOUT: LOGGED-IN NON-DASHBOARD  ->  Sidebar + Header --%>
     <asp:Panel ID="pnlSidebarLayout" runat="server" CssClass="sb-layout-sidebar" Visible="false">
 
         <%-- SIDEBAR OVERLAY (mobile backdrop) --%>
