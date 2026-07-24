@@ -17,7 +17,14 @@ namespace ScienceBuddy.Parent
             if (Session["userId"] == null || Session["role"] == null || Session["role"].ToString() != "Parent") { Response.Redirect("~/Login.aspx", false); Context.ApplicationInstance.CompleteRequest(); return; }
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar"; LoadSidebarChildren();
             string l = Session["preferredLanguage"] as string; if (!string.IsNullOrEmpty(l)) CurrentLanguage = l;
-            if (!IsPostBack) { btnSubmit.Text = T("Create", "Buat"); LoadTags(); PreSelectType(); }
+            if (!IsPostBack) { btnSubmit.Text = T("Create", "Buat"); LoadDiscussionTypes(); LoadTags(); PreSelectType(); }
+        }
+
+        private void LoadDiscussionTypes()
+        {
+            ddlType.Items.Clear();
+            ddlType.Items.Add(new System.Web.UI.WebControls.ListItem(T("Public", "Awam"), "Public"));
+            ddlType.Items.Add(new System.Web.UI.WebControls.ListItem(T("Family", "Keluarga"), "Private"));
         }
 
         private void PreSelectType()

@@ -123,6 +123,24 @@ namespace ScienceBuddy.Parent
             btnLink.Text            = T("Link Child", "Paut Anak");
             litLinkedTitle.Text     = T("Linked Children", "Anak Dipautkan");
             litNoLinked.Text        = T("No linked children yet.", "Tiada anak dipautkan lagi.");
+            LoadRelationshipDropdown();
+        }
+
+        private void LoadRelationshipDropdown()
+        {
+            string prev = ddlRelationship.SelectedValue;
+            ddlRelationship.Items.Clear();
+
+            ddlRelationship.Items.Add(new System.Web.UI.WebControls.ListItem(T("Mother", "Ibu"), "Mother"));
+            ddlRelationship.Items.Add(new System.Web.UI.WebControls.ListItem(T("Father", "Bapa"), "Father"));
+            ddlRelationship.Items.Add(new System.Web.UI.WebControls.ListItem(T("Guardian", "Penjaga"), "Guardian"));
+            ddlRelationship.Items.Add(new System.Web.UI.WebControls.ListItem(T("Other", "Lain-lain"), "Other"));
+
+            if (!string.IsNullOrEmpty(prev) &&
+                ddlRelationship.Items.FindByValue(prev) != null)
+            {
+                ddlRelationship.SelectedValue = prev;
+            }
         }
 
         private void PopulateSidebarChild()

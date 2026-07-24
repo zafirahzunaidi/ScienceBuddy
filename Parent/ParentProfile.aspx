@@ -223,7 +223,7 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
                         </div>
                         <asp:Button ID="btnDeleteAccount" runat="server" CssClass="pt-delete-button"
                             OnClick="BtnDeleteAccount_Click" CausesValidation="false"
-                            OnClientClick="return confirmCloseAccount();" />
+                            OnClientClick="return showDeleteModal();" />
                     </div>
                 </div>
             </div>
@@ -231,9 +231,47 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
 
     </div>
 
+    <%-- Delete confirmation popup --%>
+    <div class="pt-delete-modal-overlay" id="deleteModal" style="display:none;">
+        <div class="pt-delete-modal-card">
+            <div class="pt-delete-modal-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+            <div class="pt-delete-modal-title"><%: T("Close Your Account?","Tutup Akaun Anda?") %></div>
+            <div class="pt-delete-modal-msg"><%: T("Your account will be marked as deleted and you will no longer be able to log in. To recover your account, contact the admin.","Akaun anda akan ditandakan sebagai dipadam dan anda tidak akan dapat log masuk. Untuk memulihkan akaun, hubungi pentadbir.") %></div>
+            <div class="pt-delete-modal-actions">
+                <button type="button" class="pt-btn soft" onclick="closeDeleteModal()"><%: T("Cancel","Batal") %></button>
+                <button type="button" class="pt-delete-button" onclick="confirmDelete()"><%: T("Yes, Close My Account","Ya, Tutup Akaun Saya") %></button>
+            </div>
+        </div>
+    </div>
+
     <script type="text/javascript">
-    function toggleAccordion(id){var el=document.getElementById(id);if(!el)return;el.classList.toggle('pt-profile-accordion-open');}
-    function confirmCloseAccount(){var cb=document.getElementById('<%= chkDeleteConfirm.ClientID %>');if(!cb||!cb.checked){return true;}return confirm('<%= T("Are you sure you want to close your account? Your account will be marked as deleted and you will no longer be able to log in. To recover your account, contact the admin.","Adakah anda pasti mahu menutup akaun anda? Akaun anda akan ditandakan sebagai dipadam dan anda tidak akan dapat log masuk. Untuk memulihkan akaun, hubungi pentadbir.") %>');}
+    function toggleAccordion(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.classList.toggle('pt-profile-accordion-open');
+    }
+
+    var deleteOk = false;
+
+    function showDeleteModal() {
+        var cb = document.getElementById('<%= chkDeleteConfirm.ClientID %>');
+        if (!cb || !cb.checked) return true; // let server validate
+
+        if (deleteOk) return true; // already confirmed, proceed
+
+        document.getElementById('deleteModal').style.display = 'flex';
+        return false; // block postback until confirmed
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+    }
+
+    function confirmDelete() {
+        deleteOk = true;
+        closeDeleteModal();
+        document.getElementById('<%= btnDeleteAccount.ClientID %>').click();
+    }
     </script>
 
 </div>

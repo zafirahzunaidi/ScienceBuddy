@@ -5907,3 +5907,56 @@
         border-radius: 12px;
     }
 }
+
+
+/* ── Delete Account Confirmation Modal ────────────────────── */
+.pt-delete-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.pt-delete-modal-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 32px 28px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.pt-delete-modal-icon {
+    font-size: 2.5rem;
+    color: #DC2626;
+    margin-bottom: 12px;
+}
+
+.pt-delete-modal-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #1E293B;
+    margin-bottom: 10px;
+}
+
+.pt-delete-modal-msg {
+    font-size: 0.85rem;
+    color: #475569;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.pt-delete-modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}

@@ -544,7 +544,7 @@ namespace ScienceBuddy.Parent
             {
                 const string sql = @"SELECT b.badgeId, b.badgeNameEN, b.badgeNameBM, 
                     b.badgeDescriptionEN, b.badgeDescriptionBM,
-                    b.requirementDescriptionEN, b.xpReward, sb.earnedAt
+                    b.requirementDescriptionEN, b.requirementDescriptionBM, b.xpReward, sb.earnedAt
                     FROM dbo.[Badge] b
                     LEFT JOIN dbo.[StudentBadge] sb ON b.badgeId = sb.badgeId AND sb.studentId = @studentId
                     ORDER BY CASE WHEN sb.earnedAt IS NOT NULL THEN 0 ELSE 1 END, 
@@ -583,9 +583,13 @@ namespace ScienceBuddy.Parent
                                         ? reader["badgeDescriptionEN"].ToString()
                                         : "";
 
-                            string reqText = reader["requirementDescriptionEN"] != DBNull.Value
-                                ? reader["requirementDescriptionEN"].ToString()
-                                : "";
+                            string reqText = CurrentLanguage == "BM"
+                                && reader["requirementDescriptionBM"] != DBNull.Value
+                                && !string.IsNullOrEmpty(reader["requirementDescriptionBM"].ToString())
+                                    ? reader["requirementDescriptionBM"].ToString()
+                                    : reader["requirementDescriptionEN"] != DBNull.Value
+                                        ? reader["requirementDescriptionEN"].ToString()
+                                        : "";
                             int xpReward = reader["xpReward"] != DBNull.Value
                                 ? Convert.ToInt32(reader["xpReward"])
                                 : 0;

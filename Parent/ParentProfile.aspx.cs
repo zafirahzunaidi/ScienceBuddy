@@ -32,9 +32,9 @@ namespace ScienceBuddy.Parent
             }
 
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
+            _userId = Session["userId"].ToString();
             LoadLang();
             LoadUnreadBadge();
-            _userId = Session["userId"].ToString();
             LoadParentId();
 
             if (!IsPostBack)
@@ -307,6 +307,11 @@ namespace ScienceBuddy.Parent
             if (string.IsNullOrEmpty(email))
             {
                 ShowMsg(T("Email cannot be empty.", "E-mel tidak boleh kosong."), false);
+                return;
+            }
+            if (!email.Contains("@") || !email.Contains("."))
+            {
+                ShowMsg(T("Please enter a valid email address.", "Sila masukkan alamat e-mel yang sah."), false);
                 return;
             }
 
