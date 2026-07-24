@@ -44,6 +44,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BouncyCastle.Cryptography, Version=2.0.0.0, Culture=neutral, PublicKeyToken=072edcf4a5328938, processorArchitecture=MSIL">
+      <HintPath>packages\BouncyCastle.Cryptography.2.6.2\lib\net461\BouncyCastle.Cryptography.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=2.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
     </Reference>
@@ -89,9 +92,6 @@
     </Reference>
     <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
       <HintPath>packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
-    </Reference>
-    <Reference Include="BouncyCastle.Cryptography">
-      <HintPath>packages\BouncyCastle.Cryptography.2.4.0\lib\net461\BouncyCastle.Cryptography.dll</HintPath>
     </Reference>
     <Reference Include="WebGrease">
       <Private>True</Private>
@@ -209,16 +209,20 @@
     <Content Include="Parent\ParentTeacherCommunication.aspx" />
     <Content Include="Register.aspx" />
     <Content Include="ResetPassword.aspx" />
-    <Content Include="StudentRegistration.aspx" />
-    <Content Include="ParentRegistration.aspx" />
-    <Content Include="TeacherRegistration.aspx" />
-    <Content Include="TeacherRegistrationStatus.aspx" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
     <Content Include="Scripts\bootstrap.esm.js" />
     <Content Include="Scripts\bootstrap.esm.min.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
+    <Content Include="StudentRegistration.aspx" />
+    <Content Include="ParentRegistration.aspx" />
+    <Content Include="TeacherRegistration.aspx" />
+    <Content Include="TeacherRegistrationStatus.aspx" />
+    <Content Include="ProjectRules.md" />
+    <Content Include="connectionStrings.config" />
+    <Content Include="Database\DatabaseSchema.md" />
+    <Content Include="AppSettingsSecrets.config" />
     <Content Include="Scripts\bootstrap.min.js.map" />
     <Content Include="Scripts\bootstrap.js.map" />
     <Content Include="Scripts\bootstrap.esm.min.js.map" />
@@ -241,10 +245,6 @@
     <Content Include="Content\bootstrap-grid.rtl.css.map" />
     <Content Include="Content\bootstrap-grid.min.css.map" />
     <Content Include="Content\bootstrap-grid.css.map" />
-    <Content Include="ProjectRules.md" />
-    <Content Include="connectionStrings.config" />
-    <Content Include="Database\DatabaseSchema.md" />
-    <Content Include="AppSettingsSecrets.config" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\About.js" />
