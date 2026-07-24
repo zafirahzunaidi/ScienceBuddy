@@ -530,8 +530,7 @@ namespace ScienceBuddy.Student
 
         // UI setters
 
-        private void SetHero(string name, string nickname, string levelEN,
-                              string personalityEN, string avatar, string colour,
+        private void SetHero(string name, string nickname, string levelEN, string personalityEN, string avatar, string colour,
                               string personalityId, string lang)
         {
             // Set personality colour for hero gradient
@@ -558,20 +557,9 @@ namespace ScienceBuddy.Student
 
             if (!string.IsNullOrWhiteSpace(avatar))
             {
-                // Avatar path from DB may already include "Images/Personality/" or just the filename
+
                 string avatarPath;
-                if (avatar.StartsWith("~/"))
-                {
-                    avatarPath = avatar;
-                }
-                else if (avatar.StartsWith("Images/"))
-                {
-                    avatarPath = "~/" + avatar;
-                }
-                else
-                {
-                    avatarPath = "~/Images/Personality/" + avatar;
-                }
+                avatarPath = "~/" + avatar;
 
                 imgPersonalityAvatar.ImageUrl = ResolveUrl(avatarPath);
                 imgPersonalityAvatar.Visible = true;
