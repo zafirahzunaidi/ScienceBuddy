@@ -604,12 +604,24 @@ namespace ScienceBuddy.Student
             string bannerBg = "#DBEAFE"; // default soft blue
             switch (personalityId)
             {
-                case "P001": bannerBg = "#FEF3C7"; break; // Achiever - soft gold
-                case "P002": bannerBg = "#FCE7F3"; break; // Creative - soft pink
-                case "P003": bannerBg = "#EDE9FE"; break; // Thinker - soft purple
-                case "P004": bannerBg = "#FFF7ED"; break; // Go-Getter - soft orange
-                case "P005": bannerBg = "#D1FAE5"; break; // Chill - soft mint
-                case "P006": bannerBg = "#CFFAFE"; break; // Socializer - soft cyan
+                case "P001": 
+                    bannerBg = "#FEF3C7"; 
+                    break; // Achiever - soft gold
+                case "P002": 
+                    bannerBg = "#FCE7F3"; 
+                    break; // Creative - soft pink
+                case "P003": 
+                    bannerBg = "#EDE9FE"; 
+                    break; // Thinker - soft purple
+                case "P004": 
+                    bannerBg = "#FFF7ED"; 
+                    break; // Go-Getter - soft orange
+                case "P005": 
+                    bannerBg = "#D1FAE5"; 
+                    break; // Chill - soft mint
+                case "P006": 
+                    bannerBg = "#CFFAFE"; 
+                    break; // Socializer - soft cyan
             }
             divRecBanner.Style["background"] = bannerBg;
 
