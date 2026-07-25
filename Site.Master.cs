@@ -8,21 +8,21 @@ namespace ScienceBuddy
 {
     public partial class SiteMaster : MasterPage
     {
-        // ── Layout mode ─────────────────────────────────────────────
+        //  Layout mode 
         public string LayoutMode
         {
             get { return ViewState["LayoutMode"] as string ?? "TopNav"; }
             set { ViewState["LayoutMode"] = value; }
         }
 
-        // ── CSS classes on <body> ────────────────────────────────────
+        //  CSS classes on <body> 
         public string BodyCssClass
         {
             get { return ViewState["BodyCssClass"] as string ?? string.Empty; }
             set { ViewState["BodyCssClass"] = value; }
         }
 
-        // ── Page lifecycle ───────────────────────────────────────────
+        //  Page lifecycle 
         protected void Page_Init(object sender, EventArgs e)
         {
         }
@@ -44,7 +44,7 @@ namespace ScienceBuddy
             AutoPopulateUserProfile();
         }
 
-        // ── Layout switching ─────────────────────────────────────────
+        //  Layout switching 
         private void ApplyLayout()
         {
             bool useSidebar = string.Equals(LayoutMode, "Sidebar", StringComparison.OrdinalIgnoreCase);
@@ -52,9 +52,9 @@ namespace ScienceBuddy
             pnlSidebarLayout.Visible = useSidebar;
         }
 
-        // ══════════════════════════════════════════════════════════════
+
         //  LANGUAGE SWITCHER
-        // ══════════════════════════════════════════════════════════════
+
 
         /// <summary>
         /// Returns the current preferred language from Session (EN or BM).
@@ -183,9 +183,9 @@ namespace ScienceBuddy
             Response.Redirect(Request.RawUrl, false);
         }
 
-        // ══════════════════════════════════════════════════════════════
+
         //  AUTO-POPULATE USER PROFILE IN HEADER
-        // ══════════════════════════════════════════════════════════════
+
 
         /// <summary>
         /// Automatically loads the logged-in user's display name and role
@@ -284,9 +284,9 @@ namespace ScienceBuddy
             SetUserInfo(displayName, role, initials);
         }
 
-        // ══════════════════════════════════════════════════════════════
+
         //  PUBLIC HELPERS FOR CHILD PAGES
-        // ══════════════════════════════════════════════════════════════
+
 
         public void SetUserInfo(string fullName, string role, string initials)
         {
@@ -305,7 +305,7 @@ namespace ScienceBuddy
 
         public void ShowNotificationDot()
         {
-            if (pnlNotifDot != null) pnlNotifDot.Visible = true;
+            // Notification bell removed from header; method kept for compatibility
         }
 
         public void ShowBreadcrumb()
@@ -313,7 +313,7 @@ namespace ScienceBuddy
             if (pnlBreadcrumb != null) pnlBreadcrumb.Visible = true;
         }
 
-        // ── Utility ─────────────────────────────────────────────────
+        // Utility 
         private static string HtmlEncode(string value)
         {
             return HttpUtility.HtmlEncode(value ?? string.Empty);

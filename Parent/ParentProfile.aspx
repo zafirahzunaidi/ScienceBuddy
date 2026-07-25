@@ -71,23 +71,28 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
         </div>
     </div>
 
+    <%-- Wrap profile fields so pressing Enter triggers Save, not Change Password --%>
+    <asp:Panel runat="server" DefaultButton="btnSave">
+
     <%-- ══ PERSONAL INFORMATION ══ --%>
     <div class="pt-profile-section">
         <div class="pt-profile-section-title"><i class="bi bi-person-lines-fill"></i> <%: T("Personal Information","Maklumat Peribadi") %></div>
+        <p class="pt-profile-edit-hint"><%: T("You can update your details below. Changes are saved when you click Save Profile Changes.","Anda boleh mengemas kini maklumat di bawah. Perubahan disimpan apabila anda klik Simpan Perubahan Profil.") %></p>
         <div class="pt-profile-form-grid">
             <div class="pt-field">
                 <label class="pt-label"><%: T("Username","Nama Pengguna") %></label>
-                <asp:TextBox ID="txtUsername" runat="server" CssClass="pt-input pt-input-readonly" ReadOnly="true" />
+                <asp:TextBox ID="txtUsername" runat="server" CssClass="pt-input pt-input-locked" ReadOnly="true" />
+                <span class="pt-field-note"><%: T("Cannot be changed","Tidak boleh ditukar") %></span>
             </div>
-            <div class="pt-field">
+            <div class="pt-field pt-field-editable">
                 <label class="pt-label"><%: T("Full Name","Nama Penuh") %></label>
                 <asp:TextBox ID="txtName" runat="server" CssClass="pt-input" MaxLength="100" />
             </div>
-            <div class="pt-field">
+            <div class="pt-field pt-field-editable">
                 <label class="pt-label"><%: T("Email","E-mel") %></label>
                 <asp:TextBox ID="txtEmail" runat="server" CssClass="pt-input" MaxLength="100" TextMode="Email" />
             </div>
-            <div class="pt-field">
+            <div class="pt-field pt-field-editable">
                 <label class="pt-label"><%: T("Phone Number","Nombor Telefon") %></label>
                 <asp:TextBox ID="txtPhone" runat="server" CssClass="pt-input" MaxLength="20" />
             </div>
@@ -109,23 +114,61 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
     <%-- ══ CHANGE PASSWORD ══ --%>
     <div class="pt-profile-section">
         <div class="pt-profile-section-title"><i class="bi bi-shield-lock-fill"></i> <%: T("Change Password","Tukar Kata Laluan") %></div>
-        <p class="pt-profile-section-hint"><%: T("Leave blank if you don't want to change your password.","Biarkan kosong jika anda tidak mahu menukar kata laluan.") %></p>
-        <div class="pt-profile-form-grid">
-            <div class="pt-field">
-                <label class="pt-label"><%: T("Current Password","Kata Laluan Semasa") %></label>
-                <asp:TextBox ID="txtCurrentPwd" runat="server" CssClass="pt-input" TextMode="Password" MaxLength="50" />
-            </div>
-            <div class="pt-field">
-                <label class="pt-label"><%: T("New Password","Kata Laluan Baharu") %></label>
-                <asp:TextBox ID="txtNewPwd" runat="server" CssClass="pt-input" TextMode="Password" MaxLength="50" />
-            </div>
-            <div class="pt-field">
-                <label class="pt-label"><%: T("Confirm New Password","Sahkan Kata Laluan Baharu") %></label>
-                <asp:TextBox ID="txtConfirmPwd" runat="server" CssClass="pt-input" TextMode="Password" MaxLength="50" />
+
+        <%-- Step 1: Current password + trigger button --%>
+        <div class="pt-field" id="pwdStep1">
+            <label class="pt-label"><%: T("Current Password","Kata Laluan Semasa") %></label>
+            <div class="pt-pwd-row">
+                <div class="pt-pwd-wrap" style="flex:1;">
+                    <asp:TextBox ID="txtCurrentPwd" runat="server" CssClass="pt-input" TextMode="Password" MaxLength="50" />
+                    <button type="button" class="pt-pwd-eye" onclick="togglePwd(this)"><i class="bi bi-eye"></i></button>
+                </div>
+                <button type="button" class="pt-btn soft" onclick="showPwdFields()"><%: T("Change Password","Tukar Kata Laluan") %></button>
             </div>
         </div>
-        <asp:Button ID="btnChangePwd" runat="server" CssClass="pt-btn soft" style="margin-top:10px;"
-            OnClick="BtnChangePwd_Click" CausesValidation="false" />
+
+        <%-- Step 2: New + Confirm (hidden by default) --%>
+        <div id="pwdStep2" style="display:none;">
+            <div class="pt-field" style="margin-top:14px;">
+                <label class="pt-label"><%: T("New Password","Kata Laluan Baharu") %></label>
+                <div class="pt-pwd-wrap">
+                    <asp:TextBox ID="txtNewPwd" runat="server" CssClass="pt-input" TextMode="Password" MaxLength="50" />
+                    <button type="button" class="pt-pwd-eye" onclick="togglePwd(this)"><i class="bi bi-eye"></i></button>
+                </div>
+            </div>
+
+            <div class="pt-pwd-requirements">
+                <strong><%: T("Your password must contain:","Kata laluan anda mesti mengandungi:") %></strong>
+                <ul>
+                    <li><%: T("At least 6 characters","Sekurang-kurangnya 6 aksara") %></li>
+                </ul>
+            </div>
+
+            <div class="pt-field">
+                <label class="pt-label"><%: T("Confirm Password","Sahkan Kata Laluan") %></label>
+                <div class="pt-pwd-wrap">
+                    <asp:TextBox ID="txtConfirmPwd" runat="server" CssClass="pt-input" TextMode="Password" MaxLength="50" />
+                    <button type="button" class="pt-pwd-eye" onclick="togglePwd(this)"><i class="bi bi-eye"></i></button>
+                </div>
+            </div>
+
+            <asp:Button ID="btnChangePwd" runat="server" CssClass="pt-btn primary" style="margin-top:12px;width:100%;"
+                OnClick="BtnChangePwd_Click" CausesValidation="false"
+                OnClientClick="return confirmPwdChange();" />
+        </div>
+    </div>
+
+    <%-- Password change confirmation modal --%>
+    <div class="pt-delete-modal-overlay" id="pwdModal" style="display:none;">
+        <div class="pt-delete-modal-card">
+            <div class="pt-delete-modal-icon" style="color:#2563EB;"><i class="bi bi-shield-lock-fill"></i></div>
+            <div class="pt-delete-modal-title"><%: T("Change Password?","Tukar Kata Laluan?") %></div>
+            <div class="pt-delete-modal-msg"><%: T("Are you sure you want to update your password? You will need to use the new password next time you log in.","Adakah anda pasti mahu menukar kata laluan? Anda perlu menggunakan kata laluan baharu untuk log masuk seterusnya.") %></div>
+            <div class="pt-delete-modal-actions">
+                <button type="button" class="pt-btn soft" onclick="closePwdModal()"><%: T("Cancel","Batal") %></button>
+                <button type="button" class="pt-btn primary" onclick="doPwdChange()"><%: T("Yes, Update Password","Ya, Tukar Kata Laluan") %></button>
+            </div>
+        </div>
     </div>
 
     <%-- ══ ACCOUNT STATUS ══ --%>
@@ -142,8 +185,9 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
     <%-- ══ SAVE BUTTON ══ --%>
     <div class="pt-profile-save-area">
         <asp:Button ID="btnSave" runat="server" CssClass="pt-btn primary" OnClick="BtnSave_Click" CausesValidation="false" />
-        <p class="pt-profile-save-hint"><%: T("This saves all changes made on this page.","Ini menyimpan semua perubahan yang dibuat di halaman ini.") %></p>
     </div>
+
+    </asp:Panel>
 
     <%-- ══ ACCORDION — HELP & SUPPORT + ACCOUNT ACCESS ══ --%>
     <div class="pt-profile-accordion">
@@ -223,7 +267,7 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
                         </div>
                         <asp:Button ID="btnDeleteAccount" runat="server" CssClass="pt-delete-button"
                             OnClick="BtnDeleteAccount_Click" CausesValidation="false"
-                            OnClientClick="return confirmCloseAccount();" />
+                            OnClientClick="return showDeleteModal();" />
                     </div>
                 </div>
             </div>
@@ -231,9 +275,65 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
 
     </div>
 
+    <%-- Delete confirmation popup --%>
+    <div class="pt-delete-modal-overlay" id="deleteModal" style="display:none;">
+        <div class="pt-delete-modal-card">
+            <div class="pt-delete-modal-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+            <div class="pt-delete-modal-title"><%: T("Close Your Account?","Tutup Akaun Anda?") %></div>
+            <div class="pt-delete-modal-msg"><%: T("Your account will be marked as deleted and you will no longer be able to log in. To recover your account, contact the admin.","Akaun anda akan ditandakan sebagai dipadam dan anda tidak akan dapat log masuk. Untuk memulihkan akaun, hubungi pentadbir.") %></div>
+            <div class="pt-delete-modal-actions">
+                <button type="button" class="pt-btn soft" onclick="closeDeleteModal()"><%: T("Cancel","Batal") %></button>
+                <button type="button" class="pt-delete-button" onclick="confirmDelete()"><%: T("Yes, Close My Account","Ya, Tutup Akaun Saya") %></button>
+            </div>
+        </div>
+    </div>
+
     <script type="text/javascript">
-    function toggleAccordion(id){var el=document.getElementById(id);if(!el)return;el.classList.toggle('pt-profile-accordion-open');}
-    function confirmCloseAccount(){var cb=document.getElementById('<%= chkDeleteConfirm.ClientID %>');if(!cb||!cb.checked){return true;}return confirm('<%= T("Are you sure you want to close your account? Your account will be marked as deleted and you will no longer be able to log in. To recover your account, contact the admin.","Adakah anda pasti mahu menutup akaun anda? Akaun anda akan ditandakan sebagai dipadam dan anda tidak akan dapat log masuk. Untuk memulihkan akaun, hubungi pentadbir.") %>');}
+    function toggleAccordion(id) {
+        var el = document.getElementById(id);
+        if (el) el.classList.toggle('pt-profile-accordion-open');
+    }
+
+    function togglePwd(btn) {
+        var input = btn.parentElement.querySelector('input');
+        if (!input) return;
+        input.type = input.type === 'password' ? 'text' : 'password';
+        btn.innerHTML = input.type === 'password'
+            ? '<i class="bi bi-eye"></i>'
+            : '<i class="bi bi-eye-slash"></i>';
+    }
+
+    function showPwdFields() {
+        document.getElementById('pwdStep2').style.display = 'block';
+    }
+
+    var pwdOk = false;
+    function confirmPwdChange() {
+        if (pwdOk) return true;
+        document.getElementById('pwdModal').style.display = 'flex';
+        return false;
+    }
+    function closePwdModal() { document.getElementById('pwdModal').style.display = 'none'; }
+    function doPwdChange() {
+        pwdOk = true;
+        closePwdModal();
+        document.getElementById('<%= btnChangePwd.ClientID %>').click();
+    }
+
+    var deleteOk = false;
+    function showDeleteModal() {
+        var cb = document.getElementById('<%= chkDeleteConfirm.ClientID %>');
+        if (!cb || !cb.checked) return true;
+        if (deleteOk) return true;
+        document.getElementById('deleteModal').style.display = 'flex';
+        return false;
+    }
+    function closeDeleteModal() { document.getElementById('deleteModal').style.display = 'none'; }
+    function confirmDelete() {
+        deleteOk = true;
+        closeDeleteModal();
+        document.getElementById('<%= btnDeleteAccount.ClientID %>').click();
+    }
     </script>
 
 </div>

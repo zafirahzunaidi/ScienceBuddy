@@ -80,9 +80,6 @@
 <asp:Content ID="DashboardPageTitle" ContentPlaceHolderID="PageTitle" runat="server">
 </asp:Content>
 
-<asp:Content ID="StudentUserDropdownMenu" ContentPlaceHolderID="UserDropdownMenu" runat="server">
-</asp:Content>
-
 <asp:Content ID="NotificationsBreadcrumb" ContentPlaceHolderID="BreadcrumbContent" runat="server">
 </asp:Content>
 

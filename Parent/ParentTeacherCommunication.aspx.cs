@@ -85,8 +85,8 @@ namespace ScienceBuddy.Parent
                         (SELECT TOP 1 sentAt FROM dbo.privateMessage WHERE chatId=uc.chatId ORDER BY sentAt DESC) AS lastMsgTime,
                         (SELECT COUNT(*) FROM dbo.privateMessage WHERE chatId=uc.chatId AND senderUserId<>@uid AND isRead=0) AS unreadCount
                         FROM dbo.userChat uc
-                        INNER JOIN dbo.Teacher t ON t.userId = CASE WHEN uc.userId=@uid THEN uc.user2Id ELSE uc.userId END
-                        WHERE uc.userId=@uid OR uc.user2Id=@uid
+                        INNER JOIN dbo.Teacher t ON t.userId = CASE WHEN uc.userId=@uid THEN uc.user2Id ELSE uc.userId END AND t.status='Certified'
+                        WHERE (uc.userId=@uid OR uc.user2Id=@uid)
                         ORDER BY lastMsgTime DESC";
                     using (var cmd = new SqlCommand(sql, c))
                     {

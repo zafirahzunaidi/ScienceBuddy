@@ -6,46 +6,46 @@
     <link href="<%: ResolveUrl("~/Content/Admin.css") %>" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="<%: ResolveUrl("~/Scripts/admin-signout.js") %>"></script>
+    <script src="<%: ResolveUrl("~/Scripts/signout.js") %>"></script>
 </asp:Content>
 
 <asp:Content ID="cSidebar" ContentPlaceHolderID="SidebarMenu" runat="server">
-    <div class="sb-nav-section"><div class="sb-nav-section-label">Main</div>
-        <a href="<%: ResolveUrl("~/Admin/Dashboard.aspx") %>" class="sb-sidebar-item"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label">Dashboard</span></a>
+    <div class="sb-nav-section"><div class="sb-nav-section-label"><%= T("Main", "Utama") %></div>
+        <a href="<%: ResolveUrl("~/Admin/Dashboard.aspx") %>" class="sb-sidebar-item"><i class="bi bi-speedometer2 item-icon"></i><span class="item-label"><%= T("Dashboard", "Papan Pemuka") %></span></a>
     </div>
-    <div class="sb-nav-section"><div class="sb-nav-section-label">User Management</div>
-        <a href="<%: ResolveUrl("~/Admin/StudentManagement.aspx") %>" class="sb-sidebar-item active"><i class="bi bi-people item-icon"></i><span class="item-label">Students</span></a>
-        <a href="<%: ResolveUrl("~/Admin/ParentManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person-heart item-icon"></i><span class="item-label">Parents</span></a>
-        <a href="<%: ResolveUrl("~/Admin/TeacherManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person-badge item-icon"></i><span class="item-label">Teachers</span></a>
-        <a href="<%: ResolveUrl("~/Admin/TeacherCertificateApproval.aspx") %>" class="sb-sidebar-item"><i class="bi bi-patch-check item-icon"></i><span class="item-label">Teacher Certificate Approval</span></a>
+    <div class="sb-nav-section"><div class="sb-nav-section-label"><%= T("User Management", "Pengurusan Pengguna") %></div>
+        <a href="<%: ResolveUrl("~/Admin/StudentManagement.aspx") %>" class="sb-sidebar-item active"><i class="bi bi-people item-icon"></i><span class="item-label"><%= T("Students", "Pelajar") %></span></a>
+        <a href="<%: ResolveUrl("~/Admin/ParentManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person-heart item-icon"></i><span class="item-label"><%= T("Parents", "Ibu Bapa") %></span></a>
+        <a href="<%: ResolveUrl("~/Admin/TeacherManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person-badge item-icon"></i><span class="item-label"><%= T("Teachers", "Guru") %></span></a>
+        <a href="<%: ResolveUrl("~/Admin/TeacherCertificateApproval.aspx") %>" class="sb-sidebar-item"><i class="bi bi-patch-check item-icon"></i><span class="item-label"><%= T("Teacher Certificate Approval", "Kelulusan Sijil Guru") %></span></a>
     </div>
-    <div class="sb-nav-section"><div class="sb-nav-section-label">Learning Content</div>
-        <a href="<%: ResolveUrl("~/Admin/LessonManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-book item-icon"></i><span class="item-label">Lessons</span></a>
-        <a href="<%: ResolveUrl("~/Admin/QuizManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-patch-question item-icon"></i><span class="item-label">Quizzes</span></a>
-        <a href="<%: ResolveUrl("~/Admin/QuestionBank.aspx") %>" class="sb-sidebar-item"><i class="bi bi-question-circle item-icon"></i><span class="item-label">Question Bank</span></a>
-        <a href="<%: ResolveUrl("~/Admin/TeacherMaterials.aspx") %>" class="sb-sidebar-item"><i class="bi bi-file-earmark-text item-icon"></i><span class="item-label">Material Requests</span></a>
-        <a href="<%: ResolveUrl("~/Admin/LiveSessions.aspx") %>" class="sb-sidebar-item"><i class="bi bi-camera-video item-icon"></i><span class="item-label">Live Sessions</span></a>
-        <a href="<%: ResolveUrl("~/Admin/QuestionRequests.aspx") %>" class="sb-sidebar-item"><i class="bi bi-clipboard-check item-icon"></i><span class="item-label">Question Requests</span></a>
-        <a href="<%: ResolveUrl("~/Admin/CertificateManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-award item-icon"></i><span class="item-label">Certificates</span></a>
+    <div class="sb-nav-section"><div class="sb-nav-section-label"><%= T("Learning Content", "Kandungan Pembelajaran") %></div>
+        <a href="<%: ResolveUrl("~/Admin/LessonManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-book item-icon"></i><span class="item-label"><%= T("Lessons", "Pelajaran") %></span></a>
+        <a href="<%: ResolveUrl("~/Admin/QuizManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-patch-question item-icon"></i><span class="item-label"><%= T("Quizzes", "Kuiz") %></span></a>
+        <a href="<%: ResolveUrl("~/Admin/QuestionBank.aspx") %>" class="sb-sidebar-item"><i class="bi bi-question-circle item-icon"></i><span class="item-label"><%= T("Question Bank", "Bank Soalan") %></span></a>
+        <a href="<%: ResolveUrl("~/Admin/TeacherMaterials.aspx") %>" class="sb-sidebar-item"><i class="bi bi-file-earmark-text item-icon"></i><span class="item-label"><%= T("Material Requests", "Permintaan Bahan") %></span></a>
+        <a href="<%: ResolveUrl("~/Admin/LiveSessions.aspx") %>" class="sb-sidebar-item"><i class="bi bi-camera-video item-icon"></i><span class="item-label"><%= T("Live Sessions", "Sesi Langsung") %></span></a>
+        <a href="<%: ResolveUrl("~/Admin/QuestionRequests.aspx") %>" class="sb-sidebar-item"><i class="bi bi-clipboard-check item-icon"></i><span class="item-label"><%= T("Question Requests", "Permintaan Soalan") %></span></a>
+        <a href="<%: ResolveUrl("~/Admin/CertificateManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-award item-icon"></i><span class="item-label"><%= T("Certificates", "Sijil") %></span></a>
     </div>
-    <div class="sb-nav-section"><div class="sb-nav-section-label">Community</div>
-        <a href="<%: ResolveUrl("~/Admin/ForumDiscussions.aspx") %>" class="sb-sidebar-item"><i class="bi bi-chat-dots item-icon"></i><span class="item-label">Forum Discussions</span></a>
+    <div class="sb-nav-section"><div class="sb-nav-section-label"><%= T("Community", "Komuniti") %></div>
+        <a href="<%: ResolveUrl("~/Admin/ForumDiscussions.aspx") %>" class="sb-sidebar-item"><i class="bi bi-chat-dots item-icon"></i><span class="item-label"><%= T("Forum Discussions", "Perbincangan Forum") %></span></a>
     </div>
-    <div class="sb-nav-section"><div class="sb-nav-section-label">Gamification</div>
-        <a href="<%: ResolveUrl("~/Admin/GamificationManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-trophy item-icon"></i><span class="item-label">Student Performance</span></a>
+    <div class="sb-nav-section"><div class="sb-nav-section-label"><%= T("Gamification", "Gamifikasi") %></div>
+        <a href="<%: ResolveUrl("~/Admin/GamificationManagement.aspx") %>" class="sb-sidebar-item"><i class="bi bi-trophy item-icon"></i><span class="item-label"><%= T("Student Performance", "Prestasi Pelajar") %></span></a>
     </div>
-    <div class="sb-nav-section"><div class="sb-nav-section-label">Configuration</div>
-        <a href="<%: ResolveUrl("~/Admin/SystemSettings.aspx") %>" class="sb-sidebar-item"><i class="bi bi-gear item-icon"></i><span class="item-label">System Settings</span></a>
+    <div class="sb-nav-section"><div class="sb-nav-section-label"><%= T("Configuration", "Konfigurasi") %></div>
+        <a href="<%: ResolveUrl("~/Admin/SystemSettings.aspx") %>" class="sb-sidebar-item"><i class="bi bi-gear item-icon"></i><span class="item-label"><%= T("System Settings", "Tetapan Sistem") %></span></a>
     </div>
-    <div class="sb-nav-section"><div class="sb-nav-section-label">Logs</div>
-        <a href="<%: ResolveUrl("~/Admin/SystemActivityLogs.aspx") %>" class="sb-sidebar-item"><i class="bi bi-clock-history item-icon"></i><span class="item-label">Activity Logs</span></a>
-        <a href="<%: ResolveUrl("~/Admin/LoginLogs.aspx") %>" class="sb-sidebar-item"><i class="bi bi-box-arrow-in-right item-icon"></i><span class="item-label">Login Logs</span></a>
-        <a href="<%: ResolveUrl("~/Admin/SuspiciousLogins.aspx") %>" class="sb-sidebar-item"><i class="bi bi-exclamation-triangle item-icon"></i><span class="item-label">Suspicious Logins</span></a>
+    <div class="sb-nav-section"><div class="sb-nav-section-label"><%= T("Logs", "Log") %></div>
+        <a href="<%: ResolveUrl("~/Admin/SystemActivityLogs.aspx") %>" class="sb-sidebar-item"><i class="bi bi-clock-history item-icon"></i><span class="item-label"><%= T("Activity Logs", "Log Aktiviti") %></span></a>
+        <a href="<%: ResolveUrl("~/Admin/LoginLogs.aspx") %>" class="sb-sidebar-item"><i class="bi bi-box-arrow-in-right item-icon"></i><span class="item-label"><%= T("Login Logs", "Log Log Masuk") %></span></a>
+        <a href="<%: ResolveUrl("~/Admin/SuspiciousLogins.aspx") %>" class="sb-sidebar-item"><i class="bi bi-exclamation-triangle item-icon"></i><span class="item-label"><%= T("Suspicious Logins", "Log Masuk Mencurigakan") %></span></a>
     </div>
-    <div class="sb-nav-section"><div class="sb-nav-section-label">Account</div>
-        <a href="<%: ResolveUrl("~/Admin/Notifications.aspx") %>" class="sb-sidebar-item"><i class="bi bi-bell item-icon"></i><span class="item-label">Notifications</span></a>
-        <a href="<%: ResolveUrl("~/Admin/Profile.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person item-icon"></i><span class="item-label">My Profile</span></a>
-        <a href="javascript:;" class="sb-sidebar-item" onclick="showSignOutModal()"><i class="bi bi-box-arrow-right item-icon"></i><span class="item-label">Sign Out</span></a>
+    <div class="sb-nav-section"><div class="sb-nav-section-label"><%= T("Account", "Akaun") %></div>
+        <a href="<%: ResolveUrl("~/Admin/Notifications.aspx") %>" class="sb-sidebar-item"><i class="bi bi-bell item-icon"></i><span class="item-label"><%= T("Notifications", "Notifikasi") %></span></a>
+        <a href="<%: ResolveUrl("~/Admin/Profile.aspx") %>" class="sb-sidebar-item"><i class="bi bi-person item-icon"></i><span class="item-label"><%= T("My Profile", "Profil Saya") %></span></a>
+        <a href="javascript:;" class="sb-sidebar-item" onclick="showSignOutModal()"><i class="bi bi-box-arrow-right item-icon"></i><span class="item-label"><%= T("Sign Out", "Log Keluar") %></span></a>
     </div>
 </asp:Content>
 
@@ -115,6 +115,7 @@ var studentId = document.getElementById('<%= hfStudentId.ClientID %>').value;
 var userId = document.getElementById('<%= hfUserId.ClientID %>').value;
 var basePath = window.location.pathname;
 var currentStatus = document.getElementById('<%= hfStatus.ClientID %>').value;
+var studentEmail = '<%= litEmail.Text %>';
 
 function switchTab(tab){
     document.querySelectorAll('.ad-student-details-tab').forEach(function(t,i){t.classList.remove('active');});
@@ -139,9 +140,43 @@ if(currentStatus==='Blocked'){document.getElementById('btnBlock').classList.add(
 function changeStatus(newStatus){
     if(newStatus==='Active'&&currentStatus==='Active')return;
     if(newStatus==='Blocked'&&currentStatus==='Blocked')return;
-    Swal.fire({title:'<%= T("Change Status?","Tukar Status?") %>',input:'textarea',inputPlaceholder:'<%= T("Reason...","Alasan...") %>',showCancelButton:true,confirmButtonText:newStatus,confirmButtonColor:newStatus==='Active'?'#059669':'#D97706'}).then(function(r){
+
+    var isBlock = newStatus === 'Blocked';
+    var emailAddr = studentEmail || '';
+
+    var titleText = isBlock ? '<%= T("Block Account & Send Email","Sekat Akaun & Hantar E-mel") %>' : '<%= T("Activate Account & Send Email","Aktifkan Akaun & Hantar E-mel") %>';
+    var subjectText = isBlock ? '<%= T("Your ScienceBuddy Account Has Been Blocked","Akaun ScienceBuddy Anda Telah Disekat") %>' : '<%= T("Your ScienceBuddy Account Has Been Reactivated","Akaun ScienceBuddy Anda Telah Diaktifkan Semula") %>';
+    var iconColor = isBlock ? '#DC2626' : '#059669';
+    var iconClass = isBlock ? '&#9993; &#128683;' : '&#9993; &#9989;';
+
+    var htmlContent = '<div style="text-align:left;font-size:.875rem;">' +
+        '<div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:16px 20px;margin-bottom:16px;">' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;color:#64748B;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;"><i class="bi bi-envelope-fill" style="color:'+iconColor+';"></i> <%= T("Email Notification","Notifikasi E-mel") %></div>' +
+        '<div style="margin-bottom:10px;"><span style="font-size:.7rem;font-weight:600;color:#94A3B8;"><%= T("TO","KEPADA") %></span><div style="font-size:.85rem;font-weight:600;color:#334155;padding:6px 12px;background:#fff;border:1px solid #E2E8F0;border-radius:8px;margin-top:2px;">' + (emailAddr || '<%= T("User email","E-mel pengguna") %>') + '</div></div>' +
+        '<div style="margin-bottom:10px;"><span style="font-size:.7rem;font-weight:600;color:#94A3B8;"><%= T("SUBJECT","SUBJEK") %></span><div style="font-size:.85rem;font-weight:600;color:#334155;padding:6px 12px;background:#fff;border:1px solid #E2E8F0;border-radius:8px;margin-top:2px;">' + subjectText + '</div></div>' +
+        '<div><span style="font-size:.7rem;font-weight:600;color:#94A3B8;"><%= T("REASON / MESSAGE","ALASAN / MESEJ") %></span></div>' +
+        '</div>' +
+        '<textarea id="swalReasonInput" placeholder="<%= T("Type the reason here... This will be included in the email sent to the user.","Taip alasan di sini... Ini akan disertakan dalam e-mel yang dihantar kepada pengguna.") %>" style="width:100%;min-height:100px;padding:12px 16px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:.875rem;font-family:inherit;resize:vertical;transition:border-color .2s;outline:none;" onfocus="this.style.borderColor=\''+iconColor+'\'" onblur="this.style.borderColor=\'#E2E8F0\'"></textarea>' +
+        '<div style="margin-top:12px;padding:10px 14px;background:'+(isBlock?'#FEF2F2':'#ECFDF5')+';border-radius:8px;display:flex;align-items:center;gap:8px;font-size:.75rem;color:'+(isBlock?'#991B1B':'#065F46')+';"><i class="bi bi-info-circle-fill"></i> <%= T("A styled email will be sent to the user immediately after confirmation.","E-mel yang bergaya akan dihantar kepada pengguna sejurus selepas pengesahan.") %></div>' +
+        '</div>';
+
+    Swal.fire({
+        title: titleText,
+        html: htmlContent,
+        icon: null,
+        showCancelButton: true,
+        confirmButtonText: isBlock ? '<i class="bi bi-send-fill"></i> <%= T("Block & Send Email","Sekat & Hantar E-mel") %>' : '<i class="bi bi-send-fill"></i> <%= T("Activate & Send Email","Aktifkan & Hantar E-mel") %>',
+        cancelButtonText: '<%= T("Cancel","Batal") %>',
+        confirmButtonColor: iconColor,
+        width: 520,
+        customClass: { popup: 'swal-email-compose' },
+        preConfirm: function() {
+            return document.getElementById('swalReasonInput').value;
+        }
+    }).then(function(r){
         if(!r.isConfirmed)return;
-        fetch(basePath+'?handler=StudentCRUD&action=changeStatus&studentId='+studentId+'&newStatus='+newStatus+'&reason='+encodeURIComponent(r.value||''),{method:'POST'}).then(function(r){return r.json();}).then(function(d){if(d.success){Swal.fire({icon:'success',title:'<%= T("Status Changed!","Status Ditukar!") %>',html:'<div style="text-align:left;font-size:.85rem;margin-top:12px;"><p style="margin-bottom:8px;"><strong><%= T("Email sent to:","E-mel dihantar ke:") %></strong></p><p style="color:#2563EB;font-weight:600;">'+d.emailSent+'</p><p style="margin-top:8px;color:#64748B;"><%= T("Subject:","Subjek:") %> '+(d.emailStatus==='Blocked'?'ScienceBuddy Account Blocked':'ScienceBuddy Account Reactivated')+'</p></div>',confirmButtonColor:'#2563EB'}).then(function(){location.reload();});}else{Swal.fire({icon:'error',title:'Error',text:d.msg});}});
+        var reason = r.value || '';
+        fetch(basePath+'?handler=StudentCRUD&action=changeStatus&studentId='+studentId+'&newStatus='+newStatus+'&reason='+encodeURIComponent(reason),{method:'POST'}).then(function(r){return r.json();}).then(function(d){if(d.success){Swal.fire({icon:'success',title:'<%= T("Status Changed!","Status Ditukar!") %>',html:'<div style="text-align:left;font-size:.85rem;margin-top:12px;"><div style="background:#ECFDF5;border:1px solid #A7F3D0;border-radius:10px;padding:14px 18px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><i class="bi bi-envelope-check-fill" style="color:#059669;font-size:1.1rem;"></i><strong style="color:#065F46;"><%= T("Email Sent Successfully","E-mel Berjaya Dihantar") %></strong></div><div style="font-size:.8rem;color:#334155;"><strong><%= T("To:","Kepada:") %></strong> '+d.emailSent+'</div><div style="font-size:.8rem;color:#64748B;margin-top:4px;"><strong><%= T("Subject:","Subjek:") %></strong> '+(d.emailStatus==='Blocked'?'<%= T("Your ScienceBuddy Account Has Been Blocked","Akaun ScienceBuddy Anda Telah Disekat") %>':'<%= T("Your ScienceBuddy Account Has Been Reactivated","Akaun ScienceBuddy Anda Telah Diaktifkan Semula") %>')+'</div></div></div>',confirmButtonColor:'#2563EB'}).then(function(){location.reload();});}else{Swal.fire({icon:'error',title:'Error',text:d.msg});}});
     });
 }
 

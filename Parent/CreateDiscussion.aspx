@@ -45,7 +45,7 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
         <a href="<%: ResolveUrl("~/Parent/Forum.aspx") %>" class="pt-btn soft"><i class="bi bi-arrow-left"></i> <%: T("Back","Kembali") %></a></div>
     <div class="pt-profile-section">
         <div class="pt-field"><label class="pt-label"><%: T("Discussion Type","Jenis Perbincangan") %></label>
-            <asp:DropDownList ID="ddlType" runat="server" CssClass="pt-select"><asp:ListItem Value="Public" Text="Public" /><asp:ListItem Value="Private" Text="Family" /></asp:DropDownList></div>
+            <asp:DropDownList ID="ddlType" runat="server" CssClass="pt-select"></asp:DropDownList></div>
         <div class="pt-field"><label class="pt-label"><%: T("Title","Tajuk") %></label><asp:TextBox ID="txtTitle" runat="server" CssClass="pt-input" MaxLength="200" /></div>
         <div class="pt-field"><label class="pt-label"><%: T("Message","Mesej") %></label><asp:TextBox ID="txtMessage" runat="server" CssClass="pt-input" TextMode="MultiLine" Rows="5" /></div>
         <div class="pt-field"><label class="pt-label"><%: T("Tags (optional)","Tag (pilihan)") %></label>

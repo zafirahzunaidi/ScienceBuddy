@@ -159,9 +159,25 @@ namespace ScienceBuddy.Admin
             string msgEN   = txtMsgEN.Text.Trim();
             string msgBM   = txtMsgBM.Text.Trim();
 
-            if (string.IsNullOrEmpty(titleEN) && string.IsNullOrEmpty(titleBM))
+            // Server-side validation: all fields required
+            if (string.IsNullOrEmpty(titleEN))
             {
-                ShowSendError(T("Please enter at least one title.", "Sila masukkan sekurang-kurangnya satu tajuk."));
+                ShowSendError(T("English title is required.", "Tajuk Bahasa Inggeris diperlukan."));
+                return;
+            }
+            if (string.IsNullOrEmpty(titleBM))
+            {
+                ShowSendError(T("BM title is required.", "Tajuk Bahasa Melayu diperlukan."));
+                return;
+            }
+            if (string.IsNullOrEmpty(msgEN))
+            {
+                ShowSendError(T("English message is required.", "Mesej Bahasa Inggeris diperlukan."));
+                return;
+            }
+            if (string.IsNullOrEmpty(msgBM))
+            {
+                ShowSendError(T("BM message is required.", "Mesej Bahasa Melayu diperlukan."));
                 return;
             }
 

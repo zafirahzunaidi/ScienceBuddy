@@ -123,9 +123,6 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
         <div class="lc-field">
             <label class="lc-label"><asp:Literal ID="litLblRelationship" runat="server" /></label>
             <asp:DropDownList ID="ddlRelationship" runat="server" CssClass="lc-select">
-                <asp:ListItem Value="Mother" />
-                <asp:ListItem Value="Father" />
-                <asp:ListItem Value="Guardian" />
             </asp:DropDownList>
         </div>
 

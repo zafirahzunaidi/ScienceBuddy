@@ -82,9 +82,6 @@
     <asp:Literal ID="litPageTitle" runat="server" Text="AI Study Companion" />
 </asp:Content>
 
-<asp:Content ID="StudentUserDropdownMenu" ContentPlaceHolderID="UserDropdownMenu" runat="server">
-</asp:Content>
-
 <asp:Content ID="AIStudyCompanionBreadcrumb" ContentPlaceHolderID="BreadcrumbContent" runat="server">
 </asp:Content>
 
