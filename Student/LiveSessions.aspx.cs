@@ -382,6 +382,10 @@ namespace ScienceBuddy.Student
 
                         string sessionId = row["sessionId"].ToString();
 
+                        // Check if reminder already sent
+                        var sentReminders = Session["SentReminders"] as List<string>;
+                        bool reminderSent = sentReminders != null && sentReminders.Contains(sessionId);
+
                         sessionList.Add(new
                         {
                             Title = title,
@@ -395,6 +399,8 @@ namespace ScienceBuddy.Student
                             StatusBadgeClass = statusBadgeClass,
                             HasJoined = hasJoined,
                             HasLink = hasLink,
+                            IsOngoing = (startDT <= now && endDT >= now),
+                            ReminderSent = reminderSent,
                             SessionId = sessionId,
                             JoinBtnText = joinBtnText,
                             ViewDetailsText = viewDetailsText,
@@ -480,6 +486,42 @@ namespace ScienceBuddy.Student
             {
                 connection.Open();
 
+                // Validate session timing before allowing join
+                DateTime sessionStart = DateTime.MinValue;
+                DateTime sessionEnd = DateTime.MinValue;
+                using (SqlCommand timeCmd = new SqlCommand("SELECT startDateTime, endDateTime FROM LiveConsultationSession WHERE sessionId=@sid", connection))
+                {
+                    timeCmd.Parameters.AddWithValue("@sid", sessionId);
+                    using (SqlDataReader rd = timeCmd.ExecuteReader())
+                    {
+                        if (rd.Read())
+                        {
+                            sessionStart = Convert.ToDateTime(rd["startDateTime"]);
+                            sessionEnd = Convert.ToDateTime(rd["endDateTime"]);
+                        }
+                    }
+                }
+
+                DateTime now = DateTime.Now;
+
+                // Block join if session hasn't started yet
+                if (now < sessionStart)
+                {
+                    InitLang();
+                    SetLabels();
+                    LoadSessions();
+                    return;
+                }
+
+                // Block join if session has already ended
+                if (now > sessionEnd)
+                {
+                    InitLang();
+                    SetLabels();
+                    LoadSessions();
+                    return;
+                }
+
                 string studentId = GetStudentId(connection);
                 if (string.IsNullOrEmpty(studentId))
                 {
@@ -498,8 +540,6 @@ namespace ScienceBuddy.Student
                     command.Parameters.AddWithValue("@studentId", studentId);
                     exists = (int)command.ExecuteScalar() > 0;
                 }
-
-                DateTime now = DateTime.Now;
 
                 if (!exists)
                 {
@@ -601,35 +641,6 @@ namespace ScienceBuddy.Student
                 string studentId = GetStudentId(connection);
                 if (string.IsNullOrEmpty(studentId)) return;
 
-                // Register as participant if not already
-                bool exists = false;
-                if (TableExists(connection, "LiveSessionParticipant"))
-                {
-                    using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM LiveSessionParticipant WHERE sessionId=@sid AND studentId=@stid", connection))
-                    {
-                        cmd.Parameters.AddWithValue("@sid", sessionId);
-                        cmd.Parameters.AddWithValue("@stid", studentId);
-                        exists = (int)cmd.ExecuteScalar() > 0;
-                    }
-
-                    if (!exists)
-                    {
-                        string participantId = "LIVEP001";
-                        using (SqlCommand seqCmd = new SqlCommand("SELECT ISNULL(MAX(CAST(SUBSTRING(participantId,6,LEN(participantId)-5) AS INT)),0) FROM LiveSessionParticipant WHERE participantId LIKE 'LIVEP[0-9]%'", connection))
-                        {
-                            participantId = "LIVEP" + (Convert.ToInt32(seqCmd.ExecuteScalar()) + 1).ToString("D3");
-                        }
-                        using (SqlCommand cmd = new SqlCommand("INSERT INTO LiveSessionParticipant(participantId,sessionId,studentId,joinedAt) VALUES(@pid,@sid,@stid,@now)", connection))
-                        {
-                            cmd.Parameters.AddWithValue("@pid", participantId);
-                            cmd.Parameters.AddWithValue("@sid", sessionId);
-                            cmd.Parameters.AddWithValue("@stid", studentId);
-                            cmd.Parameters.AddWithValue("@now", DateTime.Now);
-                            cmd.ExecuteNonQuery();
-                        }
-                    }
-                }
-
                 // Get session details for email
                 string title = "", teacherName = "", meetingLink = "";
                 DateTime startDT = DateTime.Now, endDT = DateTime.Now;
@@ -669,6 +680,12 @@ namespace ScienceBuddy.Student
                 {
                     SendReminderEmail(studentEmail, title, teacherName, startDT, endDT, meetingLink);
                 }
+
+                // Track that reminder was sent for this session
+                var sentReminders = Session["SentReminders"] as List<string>;
+                if (sentReminders == null) sentReminders = new List<string>();
+                if (!sentReminders.Contains(sessionId)) sentReminders.Add(sessionId);
+                Session["SentReminders"] = sentReminders;
             }
 
             // Reload page

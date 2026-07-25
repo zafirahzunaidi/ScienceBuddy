@@ -153,6 +153,42 @@ namespace ScienceBuddy.Student
                     currentLevelId = "LV001";
                 }
 
+                // Auto-fix: if student passed a Level quiz but currentLevelId wasn't updated, promote now
+                using (SqlCommand fixCmd = new SqlCommand(@"
+                    SELECT q.levelId FROM QuizResult qr 
+                    JOIN Quiz q ON q.quizId = qr.quizId 
+                    JOIN Student s ON s.studentId = qr.studentId
+                    WHERE s.userId = @uid AND q.quizType = 'Level' AND qr.resultStatus = 'Passed'
+                    ORDER BY q.levelId DESC", connection))
+                {
+                    fixCmd.Parameters.AddWithValue("@uid", Session["userId"].ToString());
+                    using (var rd = fixCmd.ExecuteReader())
+                    {
+                        while (rd.Read())
+                        {
+                            string passedLevel = rd["levelId"].ToString();
+                            string nextLevel = null;
+                            switch (passedLevel)
+                            {
+                                case "LV001": nextLevel = "LV002"; break;
+                                case "LV002": nextLevel = "LV003"; break;
+                            }
+                            if (!string.IsNullOrEmpty(nextLevel) && GetLevelOrder(nextLevel) > GetLevelOrder(currentLevelId))
+                            {
+                                currentLevelId = nextLevel;
+                            }
+                        }
+                    }
+                }
+
+                // Update DB if currentLevelId was corrected
+                using (SqlCommand updCmd = new SqlCommand("UPDATE Student SET currentLevelId = @lv WHERE studentId = @s AND (currentLevelId IS NULL OR currentLevelId <> @lv)", connection))
+                {
+                    updCmd.Parameters.AddWithValue("@lv", currentLevelId);
+                    updCmd.Parameters.AddWithValue("@s", studentId);
+                    updCmd.ExecuteNonQuery();
+                }
+
                 // Use selected level if set, otherwise default to current level
                 string displayLevelId = SelectedLevelId;
                 if (string.IsNullOrEmpty(displayLevelId))
@@ -170,7 +206,7 @@ namespace ScienceBuddy.Student
 
                 LoadLevels(connection, currentLevelId, displayLevelId);
                 LoadUnits(connection, displayLevelId, studentId);
-                LoadLevelQuiz(connection, displayLevelId);
+                LoadLevelQuiz(connection, displayLevelId, studentId);
             }
         }
 
@@ -455,7 +491,7 @@ namespace ScienceBuddy.Student
             rptUnits.DataBind();
         }
 
-        private void LoadLevelQuiz(SqlConnection connection, string levelId)
+        private void LoadLevelQuiz(SqlConnection connection, string levelId, string studentId)
         {
             if (!TableExists("Quiz"))
             {
@@ -477,6 +513,7 @@ namespace ScienceBuddy.Student
                 {
                     if (reader.Read())
                     {
+                        string quizId = reader["quizId"].ToString();
                         string title;
                         if (isBM)
                         {
@@ -494,8 +531,54 @@ namespace ScienceBuddy.Student
                         pnlQuiz.Visible = true;
                         pnlQuizEmpty.Visible = false;
                         litQuizTitle.Text = HttpUtility.HtmlEncode(title);
-                        litQuizSub.Text = T("Test your knowledge for this level","Uji pengetahuan anda untuk tahap ini");
-                        litQuizBtn.Text = T("Start Quiz", "Mula Kuiz");
+
+                        // Check if all lessons in this level are completed
+                        reader.Close();
+                        int totalLessons = 0;
+                        int completedLessons = 0;
+
+                        using (SqlCommand countCmd = new SqlCommand(@"SELECT COUNT(*) FROM Lesson ls 
+                            JOIN Subtopic st ON st.subtopicId = ls.subtopicId 
+                            JOIN Unit u ON u.unitId = st.unitId 
+                            WHERE u.levelId = @lvl", connection))
+                        {
+                            countCmd.Parameters.AddWithValue("@lvl", levelId);
+                            totalLessons = Convert.ToInt32(countCmd.ExecuteScalar());
+                        }
+
+                        using (SqlCommand doneCmd = new SqlCommand(@"SELECT COUNT(*) FROM LessonProgress lp
+                            JOIN Lesson ls ON ls.lessonId = lp.lessonId
+                            JOIN Subtopic st ON st.subtopicId = ls.subtopicId
+                            JOIN Unit u ON u.unitId = st.unitId
+                            WHERE u.levelId = @lvl AND lp.studentId = @sid AND lp.isCompleted = 1", connection))
+                        {
+                            doneCmd.Parameters.AddWithValue("@lvl", levelId);
+                            doneCmd.Parameters.AddWithValue("@sid", studentId);
+                            completedLessons = Convert.ToInt32(doneCmd.ExecuteScalar());
+                        }
+
+                        bool unlocked = (totalLessons > 0 && completedLessons >= totalLessons);
+
+                        if (unlocked)
+                        {
+                            litQuizSub.Text = T("Test your knowledge for this level", "Uji pengetahuan anda untuk tahap ini");
+                            litQuizBtn.Text = T("Start Quiz", "Mula Kuiz");
+                            lnkStartQuiz.NavigateUrl = ResolveUrl("~/Student/Quiz.aspx?quizId=" + quizId);
+                            lnkStartQuiz.Enabled = true;
+                            lnkStartQuiz.CssClass = "sb-btn sb-btn-white sb-btn-sm";
+                            lnkStartQuiz.Attributes.Remove("style");
+                        }
+                        else
+                        {
+                            litQuizSub.Text = T(
+                                "Complete all lessons in this level to unlock the Level Quiz. (" + completedLessons + "/" + totalLessons + " lessons)",
+                                "Selesaikan semua pelajaran dalam tahap ini untuk membuka Kuiz Tahap. (" + completedLessons + "/" + totalLessons + " pelajaran)");
+                            litQuizBtn.Text = T("Locked", "Dikunci");
+                            lnkStartQuiz.NavigateUrl = "";
+                            lnkStartQuiz.Enabled = false;
+                            lnkStartQuiz.CssClass = "sb-btn sb-btn-white sb-btn-sm disabled";
+                            lnkStartQuiz.Attributes["style"] = "opacity:0.5;pointer-events:none;cursor:not-allowed;";
+                        }
                     }
                     else
                     {

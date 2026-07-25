@@ -409,7 +409,7 @@ namespace ScienceBuddy.Student
                        q.correctAnswer, q.correctExplanationEN, q.correctExplanationBM,
                        q.wrongExplanationEN, q.wrongExplanationBM
                 FROM QuizAnswer qa
-                JOIN Question q ON q.questionId = qa.questionId
+                LEFT JOIN Question q ON q.questionId = qa.questionId
                 WHERE qa.resultId = @rid";
 
             DataTable reviewTable = new DataTable();
@@ -429,6 +429,14 @@ namespace ScienceBuddy.Student
                 if (string.IsNullOrWhiteSpace(qText))
                 {
                     qText = S(row, "questionTextEN");
+                }
+                if (string.IsNullOrWhiteSpace(qText))
+                {
+                    qText = S(row, "questionTextBM");
+                }
+                if (string.IsNullOrWhiteSpace(qText))
+                {
+                    qText = T("Question", "Soalan") + " " + questionNumber;
                 }
 
                 string selectedRaw = S(row, "selectedAnswer");
@@ -493,36 +501,28 @@ namespace ScienceBuddy.Student
                 {
                     optText = isBM ? GetCol(r, "optionA_BM") : GetCol(r, "optionA_EN");
                     if (string.IsNullOrWhiteSpace(optText))
-                    {
-                        optText = GetCol(r, "optionA_EN");
-                    }
+                        optText = isBM ? GetCol(r, "optionA_EN") : GetCol(r, "optionA_BM");
                     resolved.Add(!string.IsNullOrWhiteSpace(optText) ? "A. " + optText : "A");
                 }
                 else if (letter == "B")
                 {
                     optText = isBM ? GetCol(r, "optionB_BM") : GetCol(r, "optionB_EN");
                     if (string.IsNullOrWhiteSpace(optText))
-                    {
-                        optText = GetCol(r, "optionB_EN");
-                    }
+                        optText = isBM ? GetCol(r, "optionB_EN") : GetCol(r, "optionB_BM");
                     resolved.Add(!string.IsNullOrWhiteSpace(optText) ? "B. " + optText : "B");
                 }
                 else if (letter == "C")
                 {
                     optText = isBM ? GetCol(r, "optionC_BM") : GetCol(r, "optionC_EN");
                     if (string.IsNullOrWhiteSpace(optText))
-                    {
-                        optText = GetCol(r, "optionC_EN");
-                    }
+                        optText = isBM ? GetCol(r, "optionC_EN") : GetCol(r, "optionC_BM");
                     resolved.Add(!string.IsNullOrWhiteSpace(optText) ? "C. " + optText : "C");
                 }
                 else if (letter == "D")
                 {
                     optText = isBM ? GetCol(r, "optionD_BM") : GetCol(r, "optionD_EN");
                     if (string.IsNullOrWhiteSpace(optText))
-                    {
-                        optText = GetCol(r, "optionD_EN");
-                    }
+                        optText = isBM ? GetCol(r, "optionD_EN") : GetCol(r, "optionD_BM");
                     resolved.Add(!string.IsNullOrWhiteSpace(optText) ? "D. " + optText : "D");
                 }
                 else

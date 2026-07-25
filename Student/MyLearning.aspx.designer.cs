@@ -114,6 +114,15 @@ namespace ScienceBuddy.Student
         protected global::System.Web.UI.WebControls.Literal litQuizBtn;
 
         /// <summary>
+        /// lnkStartQuiz control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkStartQuiz;
+
+        /// <summary>
         /// pnlQuizEmpty control.
         /// </summary>
         /// <remarks>

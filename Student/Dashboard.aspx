@@ -1,4 +1,4 @@
-<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Dashboard.aspx.cs" Inherits="ScienceBuddy.Student.Dashboard" %>
+<%@ Page Title="Dashboard" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Dashboard.aspx.cs" Inherits="ScienceBuddy.Student.Dashboard" %>
 
 <asp:Content ID="HeadStyle" ContentPlaceHolderID="HeadContent" runat="server">
     <link href="<%: ResolveUrl("~/Content/Student.css") %>" rel="stylesheet" />
@@ -79,8 +79,7 @@
 <asp:Content ID="StudentSidebarFooter" ContentPlaceHolderID="SidebarFooter" runat="server">
 </asp:Content>
 
-<asp:Content ID="DashboardPageTitle" ContentPlaceHolderID="PageTitle" runat="server">
-</asp:Content>
+<asp:Content ID="DashboardPageTitle" ContentPlaceHolderID="PageTitle" runat="server"><%= T("Dashboard", "Papan Pemuka") %></asp:Content>
 
 <asp:Content ID="DashboardBreadcrumb" ContentPlaceHolderID="BreadcrumbContent" runat="server">
 </asp:Content>

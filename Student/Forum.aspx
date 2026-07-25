@@ -156,7 +156,7 @@
                         <asp:LinkButton runat="server" CommandName="Delete" CommandArgument='<%# Eval("ForumId") %>'
                             CssClass="st-forum-action-btn st-forum-action-delete"
                             Visible='<%# Convert.ToBoolean(Eval("IsOwner")) %>'
-                            OnClientClick="return confirm('Are you sure you want to delete this forum post?');">
+                            OnClientClick="return confirmDeletePost(this);">
                             <i class="bi bi-trash"></i>
                         </asp:LinkButton>
                         <a href='<%# ResolveUrl("~/Student/ForumThread.aspx?forumId=" + Eval("ForumId")) %>' class="st-forum-open-btn">
@@ -177,5 +177,29 @@
         <div class="st-forum-empty-desc"><asp:Literal ID="litEmptyDesc" runat="server" Text="Be the first to ask a Science question!" /></div>
     </div>
 </asp:Panel>
+
+<script>
+function confirmDeletePost(btn) {
+    Swal.fire({
+        html: '<div style="text-align:center;padding:8px 0;">' +
+              '<div style="width:56px;height:56px;border-radius:50%;background:#FEE2E2;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;"><i class="bi bi-trash" style="font-size:1.4rem;color:#DC2626;"></i></div>' +
+              '<h3 style="font-size:1.1rem;font-weight:700;color:#1E293B;margin-bottom:6px;">Delete Forum Post</h3>' +
+              '<p style="font-size:.875rem;color:#64748B;margin-bottom:4px;">Are you sure you want to delete this forum post?</p>' +
+              '<p style="font-size:.8rem;color:#94A3B8;">This action cannot be undone.</p></div>',
+        showCancelButton: true,
+        confirmButtonText: '<i class="bi bi-trash"></i> Delete',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#DC2626',
+        cancelButtonColor: '#E2E8F0',
+        reverseButtons: true,
+        allowOutsideClick: true
+    }).then(function(result) {
+        if (result.isConfirmed) {
+            __doPostBack(btn.name, '');
+        }
+    });
+    return false;
+}
+</script>
 
 </asp:Content>

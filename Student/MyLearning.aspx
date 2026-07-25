@@ -157,9 +157,9 @@
                 <div class="st-mylearning-quiz-title"><asp:Literal ID="litQuizTitle" runat="server" /></div>
                 <div class="st-mylearning-quiz-sub"><asp:Literal ID="litQuizSub" runat="server" /></div>
             </div>
-            <a href="#" class="sb-btn sb-btn-white sb-btn-sm">
+            <asp:HyperLink ID="lnkStartQuiz" runat="server" CssClass="sb-btn sb-btn-white sb-btn-sm" NavigateUrl="#">
                 <i class="bi bi-play-fill"></i> <asp:Literal ID="litQuizBtn" runat="server" Text="Start" />
-            </a>
+            </asp:HyperLink>
         </div>
     </asp:Panel>
 

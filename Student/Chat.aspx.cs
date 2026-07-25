@@ -496,7 +496,7 @@ namespace ScienceBuddy.Student
                     command.Parameters.AddWithValue("@msgId", msgId);
                     command.Parameters.AddWithValue("@chatId", ChatId);
                     command.Parameters.AddWithValue("@uid", uid);
-                    command.Parameters.AddWithValue("@msgText", string.IsNullOrEmpty(msgText) ? (object)DBNull.Value : msgText);
+                    command.Parameters.AddWithValue("@msgText", string.IsNullOrEmpty(msgText) ? "" : msgText);
                     command.Parameters.AddWithValue("@attachmentFile", string.IsNullOrEmpty(attachmentFile) ? (object)DBNull.Value : attachmentFile);
                     command.Parameters.AddWithValue("@sentAt", DateTime.Now);
                     command.ExecuteNonQuery();

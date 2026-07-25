@@ -386,7 +386,7 @@ namespace ScienceBuddy.Student
                 if (!string.IsNullOrWhiteSpace(persAvatar))
                 {
                     litPersAvatarFallback.Text = "<img src=\"" +
-                        System.Web.HttpUtility.HtmlAttributeEncode(ResolveUrl("~/Images/Personality/" + persAvatar)) +
+                        System.Web.HttpUtility.HtmlAttributeEncode(ResolveUrl("~/" + persAvatar)) +
                         "\" alt=\"Personality\" style=\"width:100%;height:100%;object-fit:cover;\" />";
                 }
 
