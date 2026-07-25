@@ -313,6 +313,7 @@
     <Content Include="Teacher\privateMessages.aspx" />
     <Content Include="Teacher\Notifications.aspx" />
     <Content Include="Teacher\liveSession.aspx" />
+    <Content Include="Teacher\liveClass.aspx" />
     <Content Include="Teacher\Forum.aspx" />
     <Content Include="Teacher\studentDetails.aspx" />
     <Content Include="Teacher\studentProgress.aspx" />
@@ -999,6 +1000,13 @@
     </Compile>
     <Compile Include="Teacher\liveSession.aspx.designer.cs">
       <DependentUpon>liveSession.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Teacher\liveClass.aspx.cs">
+      <DependentUpon>liveClass.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Teacher\liveClass.aspx.designer.cs">
+      <DependentUpon>liveClass.aspx</DependentUpon>
     </Compile>
     <Compile Include="Teacher\Forum.aspx.cs">
       <DependentUpon>Forum.aspx</DependentUpon>
