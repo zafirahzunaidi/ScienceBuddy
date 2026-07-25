@@ -785,36 +785,26 @@ namespace ScienceBuddy.Services
         private AIText GenerateAIText(
             LearningSnapshot snapshot)
         {
-            string apiKey =
-                ConfigurationManager.AppSettings[
-                    "NvidiaApiKey"];
+            string apiKey = ConfigurationManager.AppSettings["NvidiaApiKey"];
 
-            string model =
-                ConfigurationManager.AppSettings[
-                    "NvidiaModel"];
+            string model = ConfigurationManager.AppSettings["NvidiaModel"];
 
-            string endpoint =
-                ConfigurationManager.AppSettings[
-                    "NvidiaApiEndpoint"];
+            string endpoint = ConfigurationManager.AppSettings["NvidiaApiEndpoint"];
 
             if (string.IsNullOrWhiteSpace(model))
             {
-                model =
-                    "meta/llama-3.1-8b-instruct";
+                model = "meta/llama-3.1-8b-instruct";
             }
 
             if (string.IsNullOrWhiteSpace(endpoint))
             {
-                endpoint =
-                    "https://integrate.api.nvidia.com/" +
-                    "v1/chat/completions";
+                endpoint = "https://integrate.api.nvidia.com/" + "v1/chat/completions";
             }
 
             if (string.IsNullOrWhiteSpace(apiKey) ||
                 apiKey == "YOUR_NVIDIA_API_KEY_HERE")
             {
-                throw new Exception(
-                    "The NVIDIA API key is missing.");
+                throw new Exception("The NVIDIA API key is missing.");
             }
 
             JavaScriptSerializer serializer =

@@ -403,7 +403,7 @@
     margin-top: 2px;
 }
 
-/* Personality Section Order (flex column, JS-free) */
+/* Personality Section Order (flex column) */
 .st-dash-sections {
     display: flex;
     flex-direction: column;

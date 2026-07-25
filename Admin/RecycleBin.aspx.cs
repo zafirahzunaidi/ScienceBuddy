@@ -324,7 +324,8 @@ namespace ScienceBuddy.Admin
                     {
                         Response.Write(
                             "{\"success\":false," +
-                            "\"msg\":\"This account cannot be permanently deleted because it has academic records. Keep it in the Recycle Bin instead.\"}");
+                            "\"msg\":\"" + EJ(T("This account cannot be permanently deleted because it has academic records. Keep it in the Recycle Bin instead.",
+                            "Akaun ini tidak boleh dipadam secara kekal kerana mempunyai rekod akademik. Simpan dalam Tong Kitar Semula sahaja.")) + "\"}");
                         return;
                     }
 
@@ -341,6 +342,13 @@ namespace ScienceBuddy.Admin
                     // Delete from role table first
                     if (role == "Student")
                     {
+                        // Remove StudentParent references first
+                        using (var cmd = new SqlCommand(
+                            "DELETE FROM dbo.[StudentParent] WHERE [studentId] IN (SELECT [studentId] FROM dbo.[Student] WHERE [userId]=@uid)", conn))
+                        {
+                            cmd.Parameters.AddWithValue("@uid", uid);
+                            cmd.ExecuteNonQuery();
+                        }
                         using (var cmd = new SqlCommand(
                             "DELETE FROM dbo.[Student] WHERE [userId]=@uid", conn))
                         {
@@ -387,10 +395,11 @@ namespace ScienceBuddy.Admin
                 Response.Write("{\"success\":true,\"msg\":\"" +
                     EJ("Account permanently deleted.") + "\"}");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Response.Write("{\"success\":false,\"msg\":\"" +
-                    EJ(ex.Message) + "\"}");
+                    EJ(T("Unable to delete this account. It may still have linked records in the system.",
+                    "Tidak dapat memadam akaun ini. Ia mungkin masih mempunyai rekod yang berkaitan dalam sistem.")) + "\"}");
             }
         }
 

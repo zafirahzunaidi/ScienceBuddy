@@ -281,18 +281,14 @@ namespace ScienceBuddy.Student
         private DataRow GetStudentData(SqlConnection connection, string userId)
         {
             const string sql = @"
-                SELECT  s.studentId, s.name, s.nickname, s.XP,
-                        s.currentlevelId, s.personalityId,
-                        lv.levelNameEN, lv.levelNameBM,
-                        p.personalityNameEN, p.personalityNameBM,
-                        p.avatar, p.colour,
-                        p.learningStyleEN, p.learningStyleBM,
+                SELECT s.studentId, s.name, s.nickname, s.XP, s.currentlevelId, s.personalityId, lv.levelNameEN, lv.levelNameBM,
+                        p.personalityNameEN, p.personalityNameBM, p.avatar, p.colour, p.learningStyleEN, p.learningStyleBM,
                         u.preferredLanguage
-                FROM    Student  s
-                JOIN    [User]   u  ON u.userId        = s.userId
-                LEFT JOIN Level  lv ON lv.levelId      = s.currentlevelId
+                FROM Student s
+                JOIN [User] u ON u.userId = s.userId
+                LEFT JOIN Level  lv ON lv.levelId = s.currentlevelId
                 LEFT JOIN Personality p ON p.personalityId = s.personalityId
-                WHERE   s.userId = @userId";
+                WHERE s.userId = @userId";
 
             using (SqlCommand command = new SqlCommand(sql, connection))
             {
@@ -330,8 +326,8 @@ namespace ScienceBuddy.Student
             }
             const string sql = @"
                 SELECT COUNT(*) FROM LessonProgress
-                WHERE  studentId   = @studentId
-                AND    isCompleted = 1";
+                WHERE studentId = @studentId
+                AND isCompleted = 1";
             using (SqlCommand command = new SqlCommand(sql, connection))
             {
                 command.Parameters.AddWithValue("@studentId", studentId);
@@ -347,7 +343,7 @@ namespace ScienceBuddy.Student
             }
             const string sql = @"
                 SELECT COUNT(*) FROM Notification
-                WHERE  toUserId = @userId AND isRead = 0";
+                WHERE toUserId = @userId AND isRead = 0";
             using (SqlCommand command = new SqlCommand(sql, connection))
             {
                 command.Parameters.AddWithValue("@userId", userId);
@@ -369,22 +365,21 @@ namespace ScienceBuddy.Student
             // Find the first lesson not yet completed by this student.
             string sql = @"
                 SELECT TOP 1
-                    l.lessonId,
-                    l.lessonTitleEN, l.lessonTitleBM,
+                    l.lessonId, l.lessonTitleEN, l.lessonTitleBM,
                     st.subtopicTitleEN, st.subtopicTitleBM,
                     un.unitNameEN, un.unitNameBM
-                FROM   Lesson   l
-                JOIN   Subtopic st ON st.subtopicId = l.subtopicId
-                JOIN   Unit     un ON un.unitId      = st.unitId";
+                FROM Lesson l
+                JOIN Subtopic st ON st.subtopicId = l.subtopicId
+                JOIN Unit un ON un.unitId = st.unitId";
 
             // Only subtract completed lessons if LessonProgress exists.
             if (TableExists(connection, "LessonProgress"))
             {
                 sql += @"
-                WHERE  l.lessonId NOT IN (
+                WHERE l.lessonId NOT IN (
                     SELECT lessonId FROM LessonProgress
-                    WHERE  studentId   = @studentId
-                    AND    isCompleted = 1
+                    WHERE studentId   = @studentId
+                    AND isCompleted = 1
                 )";
             }
 
@@ -473,9 +468,9 @@ namespace ScienceBuddy.Student
                 SELECT TOP 3
                     notificationId, titleEN, titleBM,
                     messageEN, messageBM, isRead, createdAt
-                FROM   Notification
-                WHERE  toUserId = @userId
-                ORDER  BY createdAt DESC";
+                FROM Notification
+                WHERE toUserId = @userId
+                ORDER BY createdAt DESC";
 
             using (SqlCommand command = new SqlCommand(sql, connection))
             {
@@ -535,8 +530,7 @@ namespace ScienceBuddy.Student
 
         // UI setters
 
-        private void SetHero(string name, string nickname, string levelEN,
-                              string personalityEN, string avatar, string colour,
+        private void SetHero(string name, string nickname, string levelEN, string personalityEN, string avatar, string colour,
                               string personalityId, string lang)
         {
             // Set personality colour for hero gradient
@@ -563,20 +557,9 @@ namespace ScienceBuddy.Student
 
             if (!string.IsNullOrWhiteSpace(avatar))
             {
-                // Avatar path from DB may already include "Images/Personality/" or just the filename
+
                 string avatarPath;
-                if (avatar.StartsWith("~/"))
-                {
-                    avatarPath = avatar;
-                }
-                else if (avatar.StartsWith("Images/"))
-                {
-                    avatarPath = "~/" + avatar;
-                }
-                else
-                {
-                    avatarPath = "~/Images/Personality/" + avatar;
-                }
+                avatarPath = "~/" + avatar;
 
                 imgPersonalityAvatar.ImageUrl = ResolveUrl(avatarPath);
                 imgPersonalityAvatar.Visible = true;
@@ -621,12 +604,24 @@ namespace ScienceBuddy.Student
             string bannerBg = "#DBEAFE"; // default soft blue
             switch (personalityId)
             {
-                case "P001": bannerBg = "#FEF3C7"; break; // Achiever - soft gold
-                case "P002": bannerBg = "#FCE7F3"; break; // Creative - soft pink
-                case "P003": bannerBg = "#EDE9FE"; break; // Thinker - soft purple
-                case "P004": bannerBg = "#FFF7ED"; break; // Go-Getter - soft orange
-                case "P005": bannerBg = "#D1FAE5"; break; // Chill - soft mint
-                case "P006": bannerBg = "#CFFAFE"; break; // Socializer - soft cyan
+                case "P001": 
+                    bannerBg = "#FEF3C7"; 
+                    break; // Achiever - soft gold
+                case "P002": 
+                    bannerBg = "#FCE7F3"; 
+                    break; // Creative - soft pink
+                case "P003": 
+                    bannerBg = "#EDE9FE"; 
+                    break; // Thinker - soft purple
+                case "P004": 
+                    bannerBg = "#FFF7ED"; 
+                    break; // Go-Getter - soft orange
+                case "P005": 
+                    bannerBg = "#D1FAE5"; 
+                    break; // Chill - soft mint
+                case "P006": 
+                    bannerBg = "#CFFAFE"; 
+                    break; // Socializer - soft cyan
             }
             divRecBanner.Style["background"] = bannerBg;
 
@@ -781,13 +776,20 @@ namespace ScienceBuddy.Student
         {
             switch (personalityId)
             {
-                case "P001": return T("Ready to earn your next badge?", "Bersedia untuk memperoleh lencana seterusnya?");
-                case "P002": return T("Explore science in your own colourful way!", "Terokai Sains dengan cara kreatif anda sendiri!");
-                case "P003": return T("Let's understand the why behind science.", "Jom fahami sebab di sebalik konsep Sains.");
-                case "P004": return T("Challenge yourself today!", "Cabar diri anda hari ini!");
-                case "P005": return T("Take it step by step. You're doing great!", "Belajar langkah demi langkah. Anda sedang melakukan yang terbaik!");
-                case "P006": return T("Learn together with friends and teachers!", "Belajar bersama rakan dan guru!");
-                default: return T("Ready to explore science today?", "Bersedia untuk meneroka Sains hari ini?");
+                case "P001": 
+                    return T("Ready to earn your next badge?", "Bersedia untuk memperoleh lencana seterusnya?");
+                case "P002": 
+                    return T("Explore science in your own colourful way!", "Terokai Sains dengan cara kreatif anda sendiri!");
+                case "P003": 
+                    return T("Let's understand the why behind science.", "Jom fahami sebab di sebalik konsep Sains.");
+                case "P004": 
+                    return T("Challenge yourself today!", "Cabar diri anda hari ini!");
+                case "P005": 
+                    return T("Take it step by step. You're doing great!", "Belajar langkah demi langkah. Anda sedang melakukan yang terbaik!");
+                case "P006": 
+                    return T("Learn together with friends and teachers!", "Belajar bersama rakan dan guru!");
+                default: 
+                    return T("Ready to explore science today?", "Bersedia untuk meneroka Sains hari ini?");
             }
         }
 
@@ -839,8 +841,8 @@ namespace ScienceBuddy.Student
         {
             const string sql = @"
                 SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
-                WHERE  TABLE_NAME = @tableName
-                AND    TABLE_TYPE = 'BASE TABLE'";
+                WHERE TABLE_NAME = @tableName
+                AND TABLE_TYPE = 'BASE TABLE'";
             using (SqlCommand command = new SqlCommand(sql, connection))
             {
                 command.Parameters.AddWithValue("@tableName", tableName);

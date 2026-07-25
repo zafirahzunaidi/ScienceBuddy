@@ -7,10 +7,6 @@ namespace ScienceBuddy
 {
     public partial class Login : Page
     {
-        // Brute-force protection: lock the user out after 5 failed attempts for 5 minutes
-        private const int MaxLoginAttempts = 5;
-        private const int LockoutDurationMinutes = 5;
-
         protected void Page_Load(object sender, EventArgs e)
         {
             // Use top-nav layout for guest pages (no sidebar)
@@ -46,34 +42,40 @@ namespace ScienceBuddy
         {
             if (!Page.IsValid) return;
 
-            if (IsLockedOut())
-            {
-                ShowError("Too many unsuccessful sign-in attempts. Please wait before trying again.");
-                return;
-            }
-
             string enteredUsername = txtUsername.Text.Trim();
-            string enteredPassword = txtPassword.Text; // passwords must never be trimmed or modified
+            string enteredPassword = txtPassword.Text;
 
             // Look up user by exact username (case-sensitive binary collation)
             var userRecord = FetchUserByUsername(enteredUsername);
 
             if (userRecord == null)
             {
-                RecordFailedAttempt();
                 ShowError("Incorrect username or password.");
+                return;
+            }
+
+            // Check if account is locked due to too many failed attempts
+            int maxAttempts = GetConfigInt("Suspicious Login Attempt", 5);
+            int lockMinutes = GetConfigInt("Account Lock Duration (Minutes)", 30);
+
+            if (IsAccountLocked(userRecord.UserId, maxAttempts, lockMinutes))
+            {
+                ShowError("Your account has been temporarily locked due to too many failed login attempts. Please try again after " + lockMinutes + " minutes.");
                 return;
             }
 
             // Verify the password using BCrypt (falls back to plain-text for unmigrated accounts)
             if (!PasswordHelper.VerifyPassword(enteredPassword, userRecord.StoredPasswordHash))
             {
-                RecordFailedAttempt();
                 AddLog(userRecord.UserId, "Failed Login", "Incorrect password entered.", "Failed");
-                if ((Session["LoginFailedAttempts"] as int?) >= MaxLoginAttempts)
+
+                // Check if this attempt triggers the lock
+                int recentFails = CountRecentFailedAttempts(userRecord.UserId, lockMinutes) + 1;
+                if (recentFails >= maxAttempts)
                 {
-                    AddLog(userRecord.UserId, "Account Locked", "Account temporarily locked due to too many failed attempts.", "Failed");
+                    AddLog(userRecord.UserId, "Account Locked", "Account temporarily locked due to " + recentFails + " failed attempts.", "Failed");
                 }
+
                 ShowError("Incorrect username or password.");
                 return;
             }
@@ -94,10 +96,76 @@ namespace ScienceBuddy
             }
 
             // Authentication passed — create session and redirect
-            ResetFailedAttempts();
             AddLog(userRecord.UserId, "Login", "User logged into the system successfully.", "Success");
             CreateUserSession(userRecord.UserId, enteredUsername, userRecord.Role);
             RedirectToDashboard(userRecord.Role);
+        }
+
+        // ────────────────────────────────────────────────────────
+        //  BRUTE-FORCE PROTECTION (account-based via Log table)
+        // ────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Checks if the account has reached the maximum failed login attempts within the lock duration.
+        /// </summary>
+        private bool IsAccountLocked(string userId, int maxAttempts, int lockMinutes)
+        {
+            int recentFails = CountRecentFailedAttempts(userId, lockMinutes);
+            return recentFails >= maxAttempts;
+        }
+
+        /// <summary>
+        /// Counts recent "Failed Login" log entries for the user within the given time window.
+        /// </summary>
+        private int CountRecentFailedAttempts(string userId, int withinMinutes)
+        {
+            string connStr = ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+            try
+            {
+                using (var conn = new SqlConnection(connStr))
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand(@"
+                        SELECT COUNT(*) FROM dbo.[Log] 
+                        WHERE [userId]=@uid 
+                        AND [action]='Failed Login' 
+                        AND [logDateTime] >= DATEADD(MINUTE, -@mins, GETDATE())", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@uid", userId);
+                        cmd.Parameters.AddWithValue("@mins", withinMinutes);
+                        return Convert.ToInt32(cmd.ExecuteScalar());
+                    }
+                }
+            }
+            catch { return 0; }
+        }
+
+        /// <summary>
+        /// Reads a configuration integer value from the ConfigurationSetting table.
+        /// </summary>
+        private int GetConfigInt(string configKey, int defaultValue)
+        {
+            string connStr = ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+            try
+            {
+                using (var conn = new SqlConnection(connStr))
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand("SELECT [configValue] FROM dbo.[ConfigurationSetting] WHERE [configKey]=@key", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@key", configKey);
+                        var val = cmd.ExecuteScalar();
+                        if (val != null && val != DBNull.Value)
+                        {
+                            int result;
+                            if (int.TryParse(val.ToString(), out result))
+                                return result;
+                        }
+                    }
+                }
+            }
+            catch { }
+            return defaultValue;
         }
 
         // ────────────────────────────────────────────────────────
@@ -245,44 +313,6 @@ namespace ScienceBuddy
 
             Response.Redirect(dashboardUrl, false);
             Context.ApplicationInstance.CompleteRequest();
-        }
-
-        // ────────────────────────────────────────────────────────
-        //  BRUTE-FORCE THROTTLING (session-based)
-        // ────────────────────────────────────────────────────────
-
-        private bool IsLockedOut()
-        {
-            DateTime? lockoutExpiry = Session["LoginLockoutUntil"] as DateTime?;
-
-            if (!lockoutExpiry.HasValue)
-                return false;
-
-            // Lockout has expired — clear it and allow the attempt
-            if (DateTime.Now >= lockoutExpiry.Value)
-            {
-                Session.Remove("LoginLockoutUntil");
-                Session.Remove("LoginFailedAttempts");
-                return false;
-            }
-
-            return true;
-        }
-
-        private void RecordFailedAttempt()
-        {
-            int failedCount = (Session["LoginFailedAttempts"] as int?) ?? 0;
-            failedCount++;
-            Session["LoginFailedAttempts"] = failedCount;
-
-            if (failedCount >= MaxLoginAttempts)
-                Session["LoginLockoutUntil"] = DateTime.Now.AddMinutes(LockoutDurationMinutes);
-        }
-
-        private void ResetFailedAttempts()
-        {
-            Session.Remove("LoginFailedAttempts");
-            Session.Remove("LoginLockoutUntil");
         }
 
         // ────────────────────────────────────────────────────────

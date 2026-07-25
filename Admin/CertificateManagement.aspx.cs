@@ -226,7 +226,7 @@ namespace ScienceBuddy.Admin
 
                 string filePath = System.IO.Path.Combine(dirPath, fileName);
                 string adminName = GetAdminSignatureName();
-                BuildCertificatePdf(filePath, studentName, levelName, description, code, issueDate, certTitle, adminName);
+                BuildCertificatePdf(filePath, studentName, levelName, description, code, issueDate, certTitle, adminName, CurrentLanguage);
             }
             catch { }
         }
@@ -252,7 +252,7 @@ namespace ScienceBuddy.Admin
             catch { return "Administrator"; }
         }
 
-        private void BuildCertificatePdf(string filePath, string studentName, string levelName, string description, string code, DateTime issueDate, string certTitle, string adminName)
+        private void BuildCertificatePdf(string filePath, string studentName, string levelName, string description, string code, DateTime issueDate, string certTitle, string adminName, string lang)
         {
             var pageSize = new Rectangle(PageSize.A4.Height, PageSize.A4.Width);
             using (var fs = new System.IO.FileStream(filePath, System.IO.FileMode.Create))
@@ -340,7 +340,7 @@ namespace ScienceBuddy.Admin
                 cb.BeginText();
                 cb.SetFontAndSize(bfItalic, 12);
                 cb.SetColorFill(new BaseColor(107, 114, 128));
-                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, "This certificate is proudly presented to", w / 2, h - 210, 0);
+                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, lang == "BM" ? "Sijil ini dengan bangganya dianugerahkan kepada" : "This certificate is proudly presented to", w / 2, h - 210, 0);
                 cb.EndText();
 
                 // ── Student Name ──
@@ -359,7 +359,7 @@ namespace ScienceBuddy.Admin
                 cb.BeginText();
                 cb.SetFontAndSize(bfItalic, 11);
                 cb.SetColorFill(new BaseColor(107, 114, 128));
-                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, "For successfully completing", w / 2, h - 290, 0);
+                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, lang == "BM" ? "Kerana berjaya menamatkan" : "For successfully completing", w / 2, h - 290, 0);
                 cb.EndText();
 
                 // ── Level Ribbon ──
@@ -390,13 +390,13 @@ namespace ScienceBuddy.Admin
                 cb.BeginText(); cb.SetFontAndSize(bfBold, 7.5f); cb.SetColorFill(new BaseColor(31, 41, 55));
                 cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, code, 155, footY, 0); cb.EndText();
                 cb.BeginText(); cb.SetFontAndSize(bfHelv, 5.5f); cb.SetColorFill(new BaseColor(156, 163, 175));
-                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, "CERTIFICATE NO.", 155, footY - 10, 0); cb.EndText();
+                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, lang == "BM" ? "NO. SIJIL" : "CERTIFICATE NO.", 155, footY - 10, 0); cb.EndText();
 
                 // Col 2: Issue Date
                 cb.BeginText(); cb.SetFontAndSize(bfBold, 7.5f); cb.SetColorFill(new BaseColor(31, 41, 55));
                 cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, issueDate.ToString("d MMMM yyyy"), 330, footY, 0); cb.EndText();
                 cb.BeginText(); cb.SetFontAndSize(bfHelv, 5.5f); cb.SetColorFill(new BaseColor(156, 163, 175));
-                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, "ISSUE DATE", 330, footY - 10, 0); cb.EndText();
+                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, lang == "BM" ? "TARIKH DIKELUARKAN" : "ISSUE DATE", 330, footY - 10, 0); cb.EndText();
 
                 // Col 3: Seal
                 float sX = 520, sY = footY + 2, sR = 18;
@@ -406,7 +406,7 @@ namespace ScienceBuddy.Admin
                 cb.BeginText(); cb.SetFontAndSize(bfBold, 12); cb.SetColorFill(BaseColor.WHITE);
                 cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, "SB", sX, sY - 4, 0); cb.EndText();
                 cb.BeginText(); cb.SetFontAndSize(bfHelv, 5.5f); cb.SetColorFill(new BaseColor(156, 163, 175));
-                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, "VERIFIED", sX, footY - 22, 0); cb.EndText();
+                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, lang == "BM" ? "DISAHKAN" : "VERIFIED", sX, footY - 22, 0); cb.EndText();
 
                 // Col 4: Signature (clean script name)
                 float sigCX = 690;
@@ -419,11 +419,13 @@ namespace ScienceBuddy.Admin
                 cb.EndText();
                 // Label
                 cb.BeginText(); cb.SetFontAndSize(bfHelv, 5.5f); cb.SetColorFill(new BaseColor(156, 163, 175));
-                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, "ADMINISTRATOR", sigCX, footY - 12, 0); cb.EndText();
+                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, lang == "BM" ? "PENTADBIR" : "ADMINISTRATOR", sigCX, footY - 12, 0); cb.EndText();
 
                 // ── Page footer text (well inside border) ──
                 cb.BeginText(); cb.SetFontAndSize(bfHelv, 5f); cb.SetColorFill(new BaseColor(210, 215, 220));
-                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, "ScienceBuddy \u00a9 2026  \u2022  www.sciencebuddy.com  \u2022  Electronically Generated & Verified Certificate", w / 2, 38, 0);
+                cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, lang == "BM"
+                    ? "ScienceBuddy \u00a9 2026  \u2022  www.sciencebuddy.com  \u2022  Sijil Dijana & Disahkan Secara Elektronik"
+                    : "ScienceBuddy \u00a9 2026  \u2022  www.sciencebuddy.com  \u2022  Electronically Generated & Verified Certificate", w / 2, 38, 0);
                 cb.EndText();
 
                 doc.Close();

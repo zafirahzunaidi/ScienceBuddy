@@ -82,9 +82,6 @@
 <asp:Content ID="DashboardPageTitle" ContentPlaceHolderID="PageTitle" runat="server">
 </asp:Content>
 
-<asp:Content ID="StudentUserDropdownMenu" ContentPlaceHolderID="UserDropdownMenu" runat="server">
-</asp:Content>
-
 <asp:Content ID="DashboardBreadcrumb" ContentPlaceHolderID="BreadcrumbContent" runat="server">
 </asp:Content>
 
@@ -219,7 +216,9 @@
                     CssClass="st-dash-hero-btn st-dash-hero-btn-primary" style="display:inline-flex;">
                     <asp:Literal ID="litPersonalityAction" runat="server" Text="Get Started" />
                     <i class="bi bi-arrow-right"></i>
-                </asp:HyperLink></div></div></asp:Panel><%-- Section: Continue Learning --%><asp:Panel ID="pnlSectionContinue" runat="server">
+                </asp:HyperLink></div></div></asp:Panel>
+    <%-- Section: Continue Learning --%>
+    <asp:Panel ID="pnlSectionContinue" runat="server">
         <div class="st-dash-section-hd">
             <div class="st-dash-section-title"><span class="ico"><i class="bi bi-play-circle-fill"></i></span> <asp:Literal ID="litSecContinue" runat="server" Text="Continue Learning" /></div>
             <a href="<%: ResolveUrl("~/Student/MyLearning.aspx") %>" class="st-dash-view-all"><asp:Literal ID="litViewAll" runat="server" Text="View All" /> <i class="bi bi-arrow-right"></i></a>

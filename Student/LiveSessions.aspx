@@ -54,9 +54,6 @@
     <asp:Literal ID="litPageTitle" runat="server" Text="Live Sessions" />
 </asp:Content>
 
-<asp:Content ID="StudentUserDropdownMenu" ContentPlaceHolderID="UserDropdownMenu" runat="server">
-</asp:Content>
-
 <asp:Content ID="LiveSessionsBreadcrumb" ContentPlaceHolderID="BreadcrumbContent" runat="server">
 </asp:Content>
 
