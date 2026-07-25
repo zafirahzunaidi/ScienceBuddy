@@ -27,9 +27,7 @@
         <a href="<%: ResolveUrl("~/Student/QuizHistory.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-clock-history item-icon"></i><span class="item-label"><%= T("Quiz History", "Sejarah Kuiz") %></span>
         </a>
-        <a href="<%: ResolveUrl("~/Student/VirtualLabs.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-eyedropper item-icon"></i><span class="item-label"><%= T("Virtual Labs", "Makmal Maya") %></span>
-        </a>
+
         <a href="<%: ResolveUrl("~/Student/LiveSessions.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-camera-video item-icon"></i><span class="item-label"><%= T("Live Sessions", "Sesi Langsung") %></span>
         </a>

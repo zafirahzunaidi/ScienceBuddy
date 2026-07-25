@@ -546,24 +546,6 @@ namespace ScienceBuddy.Student
         protected global::System.Web.UI.WebControls.Literal litQAPracticeDesc;
 
         /// <summary>
-        /// litQALab control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litQALab;
-
-        /// <summary>
-        /// litQALabDesc control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litQALabDesc;
-
-        /// <summary>
         /// litQALive control.
         /// </summary>
         /// <remarks>

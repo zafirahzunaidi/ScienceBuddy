@@ -36,9 +36,7 @@
         <a href="<%: ResolveUrl("~/Student/QuizHistory.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-clock-history item-icon"></i><span class="item-label"><%= T("Quiz History", "Sejarah Kuiz") %></span>
         </a>
-        <a href="<%: ResolveUrl("~/Student/VirtualLabs.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-eyedropper item-icon"></i><span class="item-label"><%= T("Virtual Labs", "Makmal Maya") %></span>
-        </a>
+
         <a href="<%: ResolveUrl("~/Student/LiveSessions.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-camera-video item-icon"></i><span class="item-label"><%= T("Live Sessions", "Sesi Langsung") %></span>
         </a>
@@ -270,11 +268,6 @@
                 <div class="st-dash-quick-icon" style="background:#FFFBEB;color:#B45309;"><i class="bi bi-patch-question-fill"></i></div>
                 <div class="st-dash-quick-label"><asp:Literal ID="litQAPractice" runat="server" Text="Practice Library" /></div>
                 <div class="st-dash-quick-desc"><asp:Literal ID="litQAPracticeDesc" runat="server" Text="Quizzes &amp; self-assessment" /></div>
-            </a>
-            <a href="<%: ResolveUrl("~/Student/VirtualLabs.aspx") %>" class="st-dash-quick-card qc-lab">
-                <div class="st-dash-quick-icon" style="background:#DCFCE7;color:#15803D;"><i class="bi bi-eyedropper"></i></div>
-                <div class="st-dash-quick-label"><asp:Literal ID="litQALab" runat="server" Text="Virtual Labs" /></div>
-                <div class="st-dash-quick-desc"><asp:Literal ID="litQALabDesc" runat="server" Text="Interactive science experiments" /></div>
             </a>
             <a href="#" class="st-dash-quick-card qc-live">
                 <div class="st-dash-quick-icon" style="background:#E0F2FE;color:#0369A1;"><i class="bi bi-camera-video-fill"></i></div>

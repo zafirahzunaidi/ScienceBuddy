@@ -35,9 +35,7 @@
         <a href="<%: ResolveUrl("~/Student/QuizHistory.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-clock-history item-icon"></i><span class="item-label"><%= T("Quiz History", "Sejarah Kuiz") %></span>
         </a>
-        <a href="<%: ResolveUrl("~/Student/VirtualLabs.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-eyedropper item-icon"></i><span class="item-label"><%= T("Virtual Labs", "Makmal Maya") %></span>
-        </a>
+
         <a href="<%: ResolveUrl("~/Student/LiveSessions.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-camera-video item-icon"></i><span class="item-label"><%= T("Live Sessions", "Sesi Langsung") %></span>
         </a>
@@ -174,16 +172,6 @@
             <iframe id="materialPreviewFrame" class="st-unitdetails-mat-modal-frame" src="about:blank"></iframe>
         </div>
     </div>
-
-    <%-- Virtual Lab --%>
-    <asp:Panel ID="pnlLab" runat="server" Visible="false">
-        <div class="st-unitdetails-sec-hd"><i class="bi bi-eyedropper" style="color:#15803D;font-size:1.1rem;"></i><div class="st-unitdetails-sec-title"><asp:Literal ID="litLabHd" runat="server" /></div></div>
-        <div class="st-unitdetails-lab">
-            <div class="st-unitdetails-lab-icon"><i class="bi bi-eyedropper"></i></div>
-            <div class="st-unitdetails-lab-body"><div class="st-unitdetails-lab-title"><asp:Literal ID="litLabTitle" runat="server" /></div><div class="st-unitdetails-lab-sub"><asp:Literal ID="litLabSub" runat="server" /></div></div>
-            <a href="#" class="sb-btn sb-btn-white sb-btn-sm"><i class="bi bi-play-fill"></i> <asp:Literal ID="litLabBtn" runat="server" /></a>
-        </div>
-    </asp:Panel>
 
     <%-- Unit Quiz --%>
     <asp:Panel ID="pnlQuiz" runat="server" Visible="false">

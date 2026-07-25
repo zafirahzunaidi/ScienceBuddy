@@ -162,7 +162,6 @@ namespace ScienceBuddy.Student
                 BuildPath(connection, unitId);
                 BuildLessons(connection, unitId, studentId);
                 BuildMaterials(connection, unitId);
-                BuildLab(connection, unitId, studentId);
                 BuildQuiz(connection, unitId, studentId);
             }
         }
@@ -255,7 +254,6 @@ namespace ScienceBuddy.Student
 
             int lessonCount = 0;
             int materialCount = 0;
-            int virtualLabCount = 0;
             int quizCount = 0;
 
             if (TableExists("Lesson") && TableExists("Subtopic"))
@@ -274,14 +272,6 @@ namespace ScienceBuddy.Student
                     materialCount = (int)command.ExecuteScalar();
                 }
             }
-            if (TableExists("VirtualLab"))
-            {
-                using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM VirtualLab WHERE unitId=@unitId", connection))
-                {
-                    command.Parameters.AddWithValue("@unitId", unitId);
-                    virtualLabCount = (int)command.ExecuteScalar();
-                }
-            }
             if (TableExists("Quiz"))
             {
                 using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM Quiz WHERE unitId=@unitId AND quizType='Unit'", connection))
@@ -291,12 +281,6 @@ namespace ScienceBuddy.Student
                 }
             }
 
-            if (virtualLabCount > 0)
-            {
-            }
-            else
-            {
-            }
             if (quizCount > 0)
             {
             }
@@ -506,68 +490,6 @@ namespace ScienceBuddy.Student
             pnlMats.Visible = true;
             rptMats.DataSource = list;
             rptMats.DataBind();
-        }
-
-        private void BuildLab(SqlConnection connection, string unitId, string studentId)
-        {
-            litLabHd.Text = T("Virtual Lab", "Makmal Maya");
-
-            if (!TableExists("VirtualLab"))
-            {
-                pnlLab.Visible = false;
-                return;
-            }
-
-            bool bm = CurrentLanguage == "BM";
-            using (SqlCommand command = new SqlCommand("SELECT TOP 1 labId,labTitleEN,labTitleBM,labDescriptionEN,labDescriptionBM,difficulty " +
-                "FROM VirtualLab " +
-                "WHERE unitId=@unitId", 
-                connection))
-            {
-                command.Parameters.AddWithValue("@unitId", unitId);
-                using (SqlDataReader reader = command.ExecuteReader())
-                {
-                    if (reader.Read())
-                    {
-                        string labTitle;
-                        if (bm)
-                        {
-                            labTitle = reader["labTitleBM"].ToString();
-                        }
-                        else
-                        {
-                            labTitle = reader["labTitleEN"].ToString();
-                        }
-                        if (string.IsNullOrWhiteSpace(labTitle))
-                        {
-                            labTitle = reader["labTitleEN"].ToString();
-                        }
-
-                        string labDescription;
-                        if (bm)
-                        {
-                            labDescription = reader["labDescriptionBM"].ToString();
-                        }
-                        else
-                        {
-                            labDescription = reader["labDescriptionEN"].ToString();
-                        }
-                        if (string.IsNullOrWhiteSpace(labDescription))
-                        {
-                            labDescription = reader["labDescriptionEN"].ToString();
-                        }
-
-                        pnlLab.Visible = true;
-                        litLabTitle.Text = HttpUtility.HtmlEncode(labTitle);
-                        litLabSub.Text = HttpUtility.HtmlEncode(labDescription) + " &bull; " + reader["difficulty"].ToString();
-                        litLabBtn.Text = T("Start Lab", "Mula Makmal");
-                    }
-                    else
-                    {
-                        pnlLab.Visible = false;
-                    }
-                }
-            }
         }
 
         private void BuildQuiz(SqlConnection connection, string unitId, string studentId)

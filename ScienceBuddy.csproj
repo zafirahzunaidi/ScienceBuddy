@@ -283,14 +283,6 @@
     <Content Include="Student\Dashboard.aspx" />
     <Content Include="Student\Forum.aspx" />
     <Content Include="Student\ForumThread.aspx" />
-    <Content Include="Student\Labs\BloodFlowSimulator.aspx" />
-    <Content Include="Student\Labs\CircuitLab.aspx" />
-    <Content Include="Student\Labs\GreatSoakChallenge.aspx" />
-    <Content Include="Student\Labs\JourneyOfSandwich.aspx" />
-    <Content Include="Student\Labs\LitmusTest.aspx" />
-    <Content Include="Student\Labs\MagneticForcesExplorer.aspx" />
-    <Content Include="Student\Labs\MatterStateChanger.aspx" />
-    <Content Include="Student\Labs\SinkOrFloatMaster.aspx" />
     <Content Include="Student\Lesson.aspx" />
     <Content Include="Student\LiveSessions.aspx" />
     <Content Include="Student\Messages.aspx" />
@@ -306,8 +298,6 @@
     <Content Include="Student\QuizResult.aspx" />
     <Content Include="Student\RevisionPlan.aspx" />
     <Content Include="Student\UnitDetails.aspx" />
-    <Content Include="Student\VirtualLab.aspx" />
-    <Content Include="Student\VirtualLabs.aspx" />
     <Content Include="Teacher\createPracticeQuiz.aspx" />
     <Content Include="Teacher\Dashboard.aspx" />
     <Content Include="Teacher\ForumReply.aspx" />
@@ -772,62 +762,6 @@
     <Compile Include="Student\ForumThread.aspx.designer.cs">
       <DependentUpon>ForumThread.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Student\Labs\BloodFlowSimulator.aspx.cs">
-      <DependentUpon>BloodFlowSimulator.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\Labs\BloodFlowSimulator.aspx.designer.cs">
-      <DependentUpon>BloodFlowSimulator.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Student\Labs\CircuitLab.aspx.cs">
-      <DependentUpon>CircuitLab.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\Labs\CircuitLab.aspx.designer.cs">
-      <DependentUpon>CircuitLab.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Student\Labs\GreatSoakChallenge.aspx.cs">
-      <DependentUpon>GreatSoakChallenge.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\Labs\GreatSoakChallenge.aspx.designer.cs">
-      <DependentUpon>GreatSoakChallenge.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Student\Labs\JourneyOfSandwich.aspx.cs">
-      <DependentUpon>JourneyOfSandwich.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\Labs\JourneyOfSandwich.aspx.designer.cs">
-      <DependentUpon>JourneyOfSandwich.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Student\Labs\LitmusTest.aspx.cs">
-      <DependentUpon>LitmusTest.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\Labs\LitmusTest.aspx.designer.cs">
-      <DependentUpon>LitmusTest.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Student\Labs\MagneticForcesExplorer.aspx.cs">
-      <DependentUpon>MagneticForcesExplorer.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\Labs\MagneticForcesExplorer.aspx.designer.cs">
-      <DependentUpon>MagneticForcesExplorer.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Student\Labs\MatterStateChanger.aspx.cs">
-      <DependentUpon>MatterStateChanger.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\Labs\MatterStateChanger.aspx.designer.cs">
-      <DependentUpon>MatterStateChanger.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Student\Labs\SinkOrFloatMaster.aspx.cs">
-      <DependentUpon>SinkOrFloatMaster.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\Labs\SinkOrFloatMaster.aspx.designer.cs">
-      <DependentUpon>SinkOrFloatMaster.aspx</DependentUpon>
-    </Compile>
     <Compile Include="Student\Lesson.aspx.cs">
       <DependentUpon>Lesson.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -932,20 +866,6 @@
     </Compile>
     <Compile Include="Student\UnitDetails.aspx.designer.cs">
       <DependentUpon>UnitDetails.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Student\VirtualLab.aspx.cs">
-      <DependentUpon>VirtualLab.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\VirtualLab.aspx.designer.cs">
-      <DependentUpon>VirtualLab.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Student\VirtualLabs.aspx.cs">
-      <DependentUpon>VirtualLabs.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Student\VirtualLabs.aspx.designer.cs">
-      <DependentUpon>VirtualLabs.aspx</DependentUpon>
     </Compile>
     <Compile Include="Teacher\createPracticeQuiz.aspx.cs">
       <DependentUpon>createPracticeQuiz.aspx</DependentUpon>

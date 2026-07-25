@@ -303,51 +303,6 @@ namespace ScienceBuddy.Student
         protected global::System.Web.UI.WebControls.Literal litMatsEmpty;
 
         /// <summary>
-        /// pnlLab control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlLab;
-
-        /// <summary>
-        /// litLabHd control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litLabHd;
-
-        /// <summary>
-        /// litLabTitle control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litLabTitle;
-
-        /// <summary>
-        /// litLabSub control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litLabSub;
-
-        /// <summary>
-        /// litLabBtn control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litLabBtn;
-
-        /// <summary>
         /// pnlQuiz control.
         /// </summary>
         /// <remarks>

@@ -254,8 +254,6 @@ namespace ScienceBuddy.Student
             litQALearnDesc.Text = T("Lessons, subtopics &amp; units", "Pelajaran, subtopik &amp; unit");
             litQAPractice.Text = T("Practice Library", "Perpustakaan Latihan");
             litQAPracticeDesc.Text = T("Quizzes &amp; self-assessment", "Kuiz &amp; penilaian kendiri");
-            litQALab.Text = T("Virtual Labs", "Makmal Maya");
-            litQALabDesc.Text = T("Interactive science experiments", "Eksperimen Sains interaktif");
             litQALive.Text = T("Live Sessions", "Sesi Langsung");
             litQALiveDesc.Text = T("Join teacher-led classes", "Sertai kelas yang dipimpin guru");
             litQAAI.Text = T("AI Study Companion", "Rakan Belajar AI");
@@ -699,9 +697,9 @@ namespace ScienceBuddy.Student
                     lnkPersonalityAction.NavigateUrl = ResolveUrl("~/Student/Quiz.aspx");
                     break;
                 case "P002":
-                    litPersonalityRec.Text = T("Explore science your colourful way! Try a virtual lab.", "Terokai Sains dengan cara kreatif! Cuba makmal maya.");
-                    litPersonalityAction.Text = T("Open Virtual Lab", "Buka Makmal Maya");
-                    lnkPersonalityAction.NavigateUrl = "#";
+                    litPersonalityRec.Text = T("Explore science your colourful way! Try a practice quiz.", "Terokai Sains dengan cara kreatif! Cuba kuiz latihan.");
+                    litPersonalityAction.Text = T("Open Practice Library", "Buka Perpustakaan Latihan");
+                    lnkPersonalityAction.NavigateUrl = ResolveUrl("~/Student/PracticeLibrary.aspx");
                     break;
                 case "P003":
                     litPersonalityRec.Text = T("Let's understand the why. Review a lesson or quiz explanation.", "Jom fahami sebab. Semak semula pelajaran atau penjelasan kuiz.");
@@ -762,7 +760,7 @@ namespace ScienceBuddy.Student
                 case "P001": // Achiever: rec(badges/quiz) → stats already at top → continue → quick → notif
                     oRec = 1; oContinue = 3; oQuick = 2; oNotif = 4; oSocial = 5;
                     break;
-                case "P002": // Creative: rec(lab) → continue → quick → notif
+                case "P002": // Creative: rec(practice) → continue → quick → notif
                     oRec = 1; oContinue = 2; oQuick = 3; oNotif = 4; oSocial = 5;
                     break;
                 case "P003": // Thinker: rec(AI/review) → continue → quick → notif
