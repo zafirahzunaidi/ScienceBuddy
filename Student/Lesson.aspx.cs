@@ -552,6 +552,12 @@ namespace ScienceBuddy.Student
                 btnNext.Visible = true;
                 btnNext.CommandArgument = allLessons[idx + 1];
             }
+            else
+            {
+                // Final lesson — show Finish button
+                btnFinish.Visible = true;
+                litFinishBtn.Text = T("Finish Lesson", "Selesai Pelajaran");
+            }
         }
 
         protected void btnNext_Click(object sender, EventArgs e)
@@ -564,6 +570,45 @@ namespace ScienceBuddy.Student
             if (string.IsNullOrEmpty(currentLessonId) || string.IsNullOrEmpty(nextLessonId)) return;
 
             // Mark current lesson as complete
+            MarkLessonComplete(currentLessonId, userId);
+
+            // Navigate to next lesson
+            Response.Redirect("~/Student/Lesson.aspx?lessonId=" + nextLessonId, false);
+        }
+
+        protected void btnFinish_Click(object sender, EventArgs e)
+        {
+            InitLang();
+            string currentLessonId = Request.QueryString["lessonId"];
+            string userId = Session["userId"].ToString();
+
+            if (string.IsNullOrEmpty(currentLessonId)) return;
+
+            // Mark final lesson as complete (same logic as Next)
+            MarkLessonComplete(currentLessonId, userId);
+
+            // Get the unitId to redirect back
+            string unitId = "";
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            {
+                connection.Open();
+                using (SqlCommand command = new SqlCommand("SELECT st.unitId FROM Lesson ls JOIN Subtopic st ON st.subtopicId=ls.subtopicId WHERE ls.lessonId=@l", connection))
+                {
+                    command.Parameters.AddWithValue("@l", currentLessonId);
+                    object result = command.ExecuteScalar();
+                    if (result != null && result != DBNull.Value) unitId = result.ToString();
+                }
+            }
+
+            // Redirect back to Unit Details
+            if (!string.IsNullOrEmpty(unitId))
+                Response.Redirect("~/Student/UnitDetails.aspx?unitId=" + unitId, false);
+            else
+                Response.Redirect("~/Student/MyLearning.aspx", false);
+        }
+
+        private void MarkLessonComplete(string lessonId, string userId)
+        {
             using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
@@ -581,7 +626,7 @@ namespace ScienceBuddy.Student
                     using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM LessonProgress WHERE studentId=@s AND lessonId=@l AND isCompleted=1", connection))
                     {
                         command.Parameters.AddWithValue("@s", studentId);
-                        command.Parameters.AddWithValue("@l", currentLessonId);
+                        command.Parameters.AddWithValue("@l", lessonId);
                         already = (int)command.ExecuteScalar() > 0;
                     }
 
@@ -598,18 +643,15 @@ namespace ScienceBuddy.Student
                         {
                             command.Parameters.AddWithValue("@pid", progId);
                             command.Parameters.AddWithValue("@s", studentId);
-                            command.Parameters.AddWithValue("@l", currentLessonId);
+                            command.Parameters.AddWithValue("@l", lessonId);
                             command.Parameters.AddWithValue("@d", DateTime.Now);
                             command.ExecuteNonQuery();
                         }
 
-                        AwardXP(connection, studentId, currentLessonId);
+                        AwardXP(connection, studentId, lessonId);
                     }
                 }
             }
-
-            // Navigate to next lesson
-            Response.Redirect("~/Student/Lesson.aspx?lessonId=" + nextLessonId, false);
         }
 
         private void ShowLocked(string t, string d)

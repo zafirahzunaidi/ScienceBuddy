@@ -303,6 +303,24 @@ namespace ScienceBuddy.Student
         protected global::System.Web.UI.WebControls.Literal litNextBtn;
 
         /// <summary>
+        /// btnFinish control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnFinish;
+
+        /// <summary>
+        /// litFinishBtn control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litFinishBtn;
+
+        /// <summary>
         /// litCompleteTitle control.
         /// </summary>
         /// <remarks>

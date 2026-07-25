@@ -17,7 +17,7 @@ namespace ScienceBuddy.Student
 
         private string CurrentLanguage = "EN";
 
-        private string T(string en, string bm)
+        protected string T(string en, string bm)
         {
             if (CurrentLanguage == "BM")
             {

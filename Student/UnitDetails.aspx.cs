@@ -30,7 +30,7 @@ namespace ScienceBuddy.Student
         protected string FlashcardNextText { get { return T("Next", "Seterusnya"); } }
         protected string FlashcardFinishedText { get { return T("Finished!", "Selesai!"); } }
 
-        private string T(string en, string bm)
+        protected string T(string en, string bm)
         {
             if (CurrentLanguage == "BM")
             {

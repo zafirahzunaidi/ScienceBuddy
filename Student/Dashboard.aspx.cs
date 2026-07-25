@@ -20,7 +20,7 @@ namespace ScienceBuddy.Student
         // Personality colour for ASPX hero styling
         public string PersonalityColour = "#2563EB";
 
-        private string T(string en, string bm)
+        protected string T(string en, string bm)
         {
             if (CurrentLanguage == "BM")
             {
@@ -130,6 +130,7 @@ namespace ScienceBuddy.Student
                 }
 
                 string levelEN = "";
+                string levelBM = "";
                 if (studentData["levelNameEN"] != null && studentData["levelNameEN"] != DBNull.Value)
                 {
                     levelEN = studentData["levelNameEN"].ToString();
@@ -138,6 +139,15 @@ namespace ScienceBuddy.Student
                 {
                     levelEN = "Beginner";
                 }
+                if (studentData["levelNameBM"] != null && studentData["levelNameBM"] != DBNull.Value)
+                {
+                    levelBM = studentData["levelNameBM"].ToString();
+                }
+                else
+                {
+                    levelBM = "Pemula";
+                }
+                string levelDisplay = CurrentLanguage == "BM" ? levelBM : levelEN;
 
                 string personalityId = "";
                 if (studentData["personalityId"] != null)
@@ -146,6 +156,7 @@ namespace ScienceBuddy.Student
                 }
 
                 string personalityEN = "";
+                string personalityBM = "";
                 if (studentData["personalityNameEN"] != null && studentData["personalityNameEN"] != DBNull.Value)
                 {
                     personalityEN = studentData["personalityNameEN"].ToString();
@@ -154,6 +165,15 @@ namespace ScienceBuddy.Student
                 {
                     personalityEN = "Learner";
                 }
+                if (studentData["personalityNameBM"] != null && studentData["personalityNameBM"] != DBNull.Value)
+                {
+                    personalityBM = studentData["personalityNameBM"].ToString();
+                }
+                else
+                {
+                    personalityBM = "Pelajar";
+                }
+                string personalityDisplay = CurrentLanguage == "BM" ? personalityBM : personalityEN;
 
                 string avatar = "";
                 if (studentData["avatar"] != null && studentData["avatar"] != DBNull.Value)
@@ -186,8 +206,8 @@ namespace ScienceBuddy.Student
                 int lessonCount = GetLessonCount(connection, studentId);
 
                 // Hero + master user widget
-                SetHero(name, nickname, levelEN, personalityEN, avatar, colour, personalityId, lang);
-                SetStats(levelEN, xp, badgeCount, lessonCount);
+                SetHero(name, nickname, levelDisplay, personalityDisplay, avatar, colour, personalityId, lang);
+                SetStats(levelDisplay, xp, badgeCount, lessonCount);
 
                 ScienceBuddy.SiteMaster master = (ScienceBuddy.SiteMaster)Master;
                 string initials = GetInitials(string.IsNullOrWhiteSpace(nickname) ? name : nickname);
@@ -201,7 +221,7 @@ namespace ScienceBuddy.Student
                 LoadNotifications(connection, userId, lang, unread);
 
                 // Personality recommendation banner + section ordering
-                SetPersonalityCard(personalityId, personalityEN, avatar, colour, lang);
+                SetPersonalityCard(personalityId, personalityDisplay, avatar, colour, lang);
                 ApplyPersonalityOrder(personalityId);
 
                 // Sidebar unread badge
