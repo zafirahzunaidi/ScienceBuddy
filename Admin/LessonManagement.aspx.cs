@@ -215,17 +215,21 @@ namespace ScienceBuddy.Admin
                         {
                             string resolvedUrl = GetLessonAttachmentPath(att);
                             if (att.EndsWith(".mp4"))
-                                litMMedia.Text = string.Format("<video controls style=\"width:100%;max-height:360px;border-radius:12px;background:#000;\"><source src=\"{0}\" type=\"video/mp4\"/>Your browser does not support video.</video>", resolvedUrl);
+                                litMMedia.Text = string.Format("<video controls style=\"width:100%;max-height:360px;border-radius:12px;background:#000;" +
+                                    "\"><source src=\"{0}\" type=\"video/mp4\"/>Your browser does not support video.</video>", resolvedUrl);
                             else if (att.EndsWith(".png") || att.EndsWith(".jpg") || att.EndsWith(".jpeg"))
-                                litMMedia.Text = string.Format("<img src=\"{0}\" alt=\"Lesson\" style=\"width:100%;max-height:360px;object-fit:contain;border-radius:12px;background:#F1F5F9;\"/>", resolvedUrl);
+                                litMMedia.Text = string.Format("<img src=\"{0}\" alt=\"Lesson\" style=\"width:100%;max-height:360px;object-fit:contain;" +
+                                    "border-radius:12px;background:#F1F5F9;\"/>", resolvedUrl);
                             else
-                                litMMedia.Text = "<p style='color:var(--color-text-muted);font-size:.875rem;text-align:center;padding:var(--space-lg);'>" + HttpUtility.HtmlEncode(att) + "</p>";
+                                litMMedia.Text = "<p style='color:var(--color-text-muted);font-size:.875rem;text-align:center;padding:var(--space-lg);'>" + 
+                                    HttpUtility.HtmlEncode(att) + "</p>";
 
                             litMAttachType.Text = att.EndsWith(".mp4") ? T("Video", "Video") : T("Image", "Imej");
                         }
                         else
                         {
-                            litMMedia.Text = "<p style='color:var(--color-text-muted);font-size:.875rem;text-align:center;padding:var(--space-xl);'>" + T("No attachment", "Tiada lampiran") + "</p>";
+                            litMMedia.Text = "<p style='color:var(--color-text-muted);font-size:.875rem;text-align:center;padding:var(--space-xl);'>" +
+                                T("No attachment", "Tiada lampiran") + "</p>";
                             litMAttachType.Text = T("None", "Tiada");
                         }
                     }
