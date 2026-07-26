@@ -37,8 +37,8 @@ namespace ScienceBuddy
                         if (!reader.Read())
                         { Response.Redirect("~/Login", false); Context.ApplicationInstance.CompleteRequest(); return; }
 
-                        string userStatus = reader.GetString(0);
-                        string teacherStatus = reader.GetString(1);
+                        string userStatus = reader.IsDBNull(0) ? "" : reader.GetString(0);
+                        string teacherStatus = reader.IsDBNull(1) ? "" : reader.GetString(1);
                         string teacherName = reader.IsDBNull(2) ? "" : reader.GetString(2);
                         string qualification = reader.IsDBNull(3) ? "" : reader.GetString(3);
                         string certFile = reader.IsDBNull(4) ? "" : reader.GetString(4);
@@ -151,8 +151,8 @@ namespace ScienceBuddy
                             }
 
                             // Insert Log entry
-                            string logId = GenId(conn, txn, "Log", "logId", "LG");
-                            using (var cmd = new SqlCommand("INSERT INTO dbo.[Log](logId,userId,action,description,createdAt) VALUES(@id,@uid,@act,@desc,@now)", conn, txn))
+                            string logId = GenId(conn, txn, "Log", "logId", "LOG");
+                            using (var cmd = new SqlCommand("INSERT INTO dbo.[Log](logId,userId,action,description,logDateTime,status) VALUES(@id,@uid,@act,@desc,@now,'Success')", conn, txn))
                             {
                                 cmd.Parameters.AddWithValue("@id", logId);
                                 cmd.Parameters.AddWithValue("@uid", userId);
