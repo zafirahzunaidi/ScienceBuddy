@@ -29,7 +29,7 @@ namespace ScienceBuddy
             using (var conn = new SqlConnection(ConnStr))
             {
                 conn.Open();
-                using (var cmd = new SqlCommand("SELECT u.status, t.status, t.name, t.qualification, t.licenseCert FROM dbo.[User] u INNER JOIN dbo.[Teacher] t ON u.userId=t.userId WHERE u.userId=@uid", conn))
+                using (var cmd = new SqlCommand("SELECT u.status, t.status, t.name, t.academicQualification, t.licenseCert FROM dbo.[User] u INNER JOIN dbo.[Teacher] t ON u.userId=t.userId WHERE u.userId=@uid", conn))
                 {
                     cmd.Parameters.AddWithValue("@uid", userId);
                     using (var reader = cmd.ExecuteReader())

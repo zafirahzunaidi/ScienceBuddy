@@ -57,7 +57,8 @@ namespace ScienceBuddy
 
             if (IsAccountLocked(userRecord.UserId, maxAttempts, lockMinutes))
             {
-                ShowError("Your account has been temporarily locked due to too many failed login attempts. Please try again after " + lockMinutes + " minutes.");
+                ShowError("Your account has been temporarily locked due to too many failed login attempts." +
+                    "Please try again after " + lockMinutes + " minutes.");
                 return;
             }
 

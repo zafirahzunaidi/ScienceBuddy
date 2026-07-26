@@ -193,7 +193,7 @@ namespace ScienceBuddy
             string qualification, string bio, string certPath)
         {
             string sql = @"INSERT INTO dbo.[Teacher]
-                (teacherId, userId, name, phoneNumber, qualification, bio, status, approvedDate, licenseCert)
+                (teacherId, userId, name, phoneNumber, academicQualification, bio, status, approvedDate, licenseCert)
                 VALUES (@teacherId, @userId, @name, @phone, @qualification, @bio, 'Pending', NULL, @certPath)";
 
             using (SqlCommand cmd = new SqlCommand(sql, conn, txn))
