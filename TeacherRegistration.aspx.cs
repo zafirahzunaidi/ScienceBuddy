@@ -93,9 +93,8 @@ namespace ScienceBuddy
 
                             txn.Commit();
 
-                            // Redirect to status page so the teacher knows to wait for admin approval
-                            Session["TeacherStatusUserId"] = newUserId;
-                            Response.Redirect("~/TeacherRegistrationStatus.aspx", false);
+                            // Redirect to login — teacher can sign in; Dashboard shows pending status
+                            Response.Redirect("~/Login.aspx?msg=registered", false);
                             Context.ApplicationInstance.CompleteRequest();
                         }
                         catch

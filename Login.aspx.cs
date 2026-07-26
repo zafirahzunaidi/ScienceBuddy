@@ -82,10 +82,6 @@ namespace ScienceBuddy
             if (!ValidateAccountStatus(userRecord))
                 return;
 
-            // Teachers need additional certification approval before they can log in
-            if (userRecord.Role == "Teacher" && !ValidateTeacherApproval(userRecord))
-                return;
-
             // Only recognised roles may proceed
             if (!IsValidRole(userRecord.Role))
             {
@@ -209,18 +205,6 @@ namespace ScienceBuddy
                     return true;
 
                 case "Blocked":
-                    // A blocked Teacher who was never certified should see their status page
-                    if (user.Role == "Teacher")
-                    {
-                        string certStatus = GetTeacherCertificationStatus(user.UserId);
-                        if (certStatus == "Not Certified")
-                        {
-                            Session["TeacherStatusUserId"] = user.UserId;
-                            Response.Redirect("~/TeacherRegistrationStatus.aspx", false);
-                            Context.ApplicationInstance.CompleteRequest();
-                            return false;
-                        }
-                    }
                     ShowError("Your account has been blocked. Please contact the administrator for assistance.");
                     return false;
 
@@ -232,27 +216,6 @@ namespace ScienceBuddy
                     ShowError("Your account status is not valid. Please contact the administrator.");
                     return false;
             }
-        }
-
-        private bool ValidateTeacherApproval(UserRecord user)
-        {
-            string certificationStatus = GetTeacherCertificationStatus(user.UserId);
-
-            if (certificationStatus == "Pending")
-            {
-                Session["TeacherStatusUserId"] = user.UserId;
-                Response.Redirect("~/TeacherRegistrationStatus.aspx", false);
-                Context.ApplicationInstance.CompleteRequest();
-                return false;
-            }
-
-            if (certificationStatus != "Certified")
-            {
-                ShowError("Your teacher account is not yet approved. Please contact support.");
-                return false;
-            }
-
-            return true;
         }
 
         private bool IsValidRole(string role)
@@ -284,21 +247,6 @@ namespace ScienceBuddy
 
             Response.Redirect(dashboardUrl, false);
             Context.ApplicationInstance.CompleteRequest();
-        }
-
-        //  HELPER METHODS
-        private string GetTeacherCertificationStatus(string userId)
-        {
-            string connectionString = ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
-
-            using (SqlConnection conn = new SqlConnection(connectionString))
-            using (SqlCommand cmd = new SqlCommand("SELECT status FROM dbo.[Teacher] WHERE userId = @userId", conn))
-            {
-                cmd.Parameters.AddWithValue("@userId", userId);
-                conn.Open();
-                object result = cmd.ExecuteScalar();
-                return (result != null && result != DBNull.Value) ? result.ToString() : "";
-            }
         }
 
         private void ShowError(string message)
