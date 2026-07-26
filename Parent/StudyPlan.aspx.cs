@@ -25,9 +25,6 @@ namespace ScienceBuddy.Parent
             else { _selectedChildId = ddlSidebarChild.SelectedValue; _selectedChildName = ddlSidebarChild.SelectedItem != null ? ddlSidebarChild.SelectedItem.Text : ""; LoadSPId(); }
         }
 
-        /// <summary>
-        /// Ensures the current user is a logged-in Parent. Redirects to login if not.
-        /// </summary>
         private bool EnsureAuth()
         {
             if (Session["userId"] == null || Session["role"] == null || Session["role"].ToString() != "Parent")
@@ -39,9 +36,6 @@ namespace ScienceBuddy.Parent
             return true;
         }
 
-        /// <summary>
-        /// Loads the user's preferred language from session or database.
-        /// </summary>
         private void LoadLang()
         {
             string savedLang = Session["preferredLanguage"] as string;
@@ -69,9 +63,6 @@ namespace ScienceBuddy.Parent
             catch { }
         }
 
-        /// <summary>
-        /// Loads the parentId for the current user from the Parent table.
-        /// </summary>
         private void LoadParent()
         {
             try
@@ -89,10 +80,6 @@ namespace ScienceBuddy.Parent
             catch { }
         }
 
-        /// <summary>
-        /// Populates the sidebar child dropdown with linked children.
-        /// Restores the previously selected child from session if available.
-        /// </summary>
         private void LoadChildren()
         {
             ddlSidebarChild.Items.Clear();
@@ -134,9 +121,6 @@ namespace ScienceBuddy.Parent
             }
         }
 
-        /// <summary>
-        /// Loads the StudentParent link ID for the currently selected child.
-        /// </summary>
         private void LoadSPId()
         {
             try

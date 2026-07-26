@@ -85,9 +85,6 @@ namespace ScienceBuddy.Parent
             catch { }
         }
 
-        /// <summary>
-        /// Populates the sidebar child dropdown and restores the previously selected child.
-        /// </summary>
         private void LoadChildren()
         {
             ddlSidebarChild.Items.Clear();
@@ -499,9 +496,6 @@ namespace ScienceBuddy.Parent
             return null;
         }
 
-        /// <summary>
-        /// Generates the next sequential ID for a given table (e.g. SPT001, SPR001).
-        /// </summary>
         private string GenId(SqlConnection conn, SqlTransaction txn, string table, string column, string prefix)
         {
             int nextNumber = 1;

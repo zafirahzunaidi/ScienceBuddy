@@ -233,10 +233,6 @@ namespace ScienceBuddy.Parent
             LoadLinkedChildren();
         }
 
-        /// <summary>
-        /// Searches the Student table for a matching parentCode.
-        /// Returns false if not found or if a database error occurs.
-        /// </summary>
         private bool TryFindStudentByCode(string code, out string studentId, out string name, out string nickname)
         {
             studentId = "";
@@ -268,9 +264,6 @@ namespace ScienceBuddy.Parent
             }
         }
 
-        /// <summary>
-        /// Checks whether this parent already has a link to the given student.
-        /// </summary>
         private bool IsChildAlreadyLinked(string studentId)
         {
             try
@@ -291,9 +284,6 @@ namespace ScienceBuddy.Parent
             }
         }
 
-        /// <summary>
-        /// Inserts a new row in StudentParent with a generated ID. Returns true on success.
-        /// </summary>
         private bool CreateStudentParentLink(string studentId, string relationship)
         {
             try

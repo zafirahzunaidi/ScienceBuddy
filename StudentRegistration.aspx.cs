@@ -164,9 +164,6 @@ namespace ScienceBuddy
         //  VALIDATION HELPERS
         // ────────────────────────────────────────────────────────
 
-        /// <summary>
-        /// Checks if a username or email is already registered.
-        /// </summary>
         private bool IsValueTaken(SqlConnection conn, string columnName, string value)
         {
             // columnName is always a trusted string from our own code, not from user input
@@ -179,10 +176,6 @@ namespace ScienceBuddy
             }
         }
 
-        /// <summary>
-        /// Reads the minimum password length from the ConfigurationSetting table.
-        /// Falls back to 8 if the setting is missing or unreadable.
-        /// </summary>
         private int GetMinimumPasswordLength()
         {
             try
@@ -209,10 +202,6 @@ namespace ScienceBuddy
         //  ID GENERATION
         // ────────────────────────────────────────────────────────
 
-        /// <summary>
-        /// Generates the next sequential ID for a table (e.g. U001, U002, S001, S002).
-        /// Reads the highest existing ID and increments the numeric portion by 1.
-        /// </summary>
         private string GenerateNextId(SqlConnection conn, SqlTransaction txn, string tableName, string idColumn, string prefix)
         {
             int nextNumber = 1;
@@ -236,11 +225,6 @@ namespace ScienceBuddy
             return prefix + nextNumber.ToString("D3");
         }
 
-        /// <summary>
-        /// Creates a random 6-character alphanumeric code for linking parent accounts.
-        /// Avoids ambiguous characters (0, O, 1, I, L) so parents can read it easily.
-        /// Retries up to 20 times to ensure uniqueness.
-        /// </summary>
         private string GenerateUniqueParentCode(SqlConnection conn, SqlTransaction txn)
         {
             const string allowedCharacters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";

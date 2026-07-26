@@ -186,11 +186,6 @@ If you did not request this, you can safely ignore this email. Do not share this
             return "PRT" + nextNumber.ToString("D3");
         }
 
-        /// <summary>
-        /// Hashes the reset token before storing it in the database.
-        /// Only the hash is stored; the raw token is sent to the user via email.
-        /// This way, even if the database is compromised, tokens cannot be reused.
-        /// </summary>
         private static string ComputeSHA256(string input)
         {
             using (var sha = SHA256.Create())

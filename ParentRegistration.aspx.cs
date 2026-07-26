@@ -166,10 +166,6 @@ namespace ScienceBuddy
             }
         }
 
-        /// <summary>
-        /// Links the child (student) to the new parent account via the StudentParent table.
-        /// Skips if the link already exists (e.g. same child linked twice).
-        /// </summary>
         private void LinkChildToParent(SqlConnection conn, SqlTransaction txn,
             string studentId, string parentId, string relationship)
         {
@@ -242,9 +238,6 @@ namespace ScienceBuddy
             }
         }
 
-        /// <summary>
-        /// Looks up a student by their parent code. Returns the studentId or null if not found.
-        /// </summary>
         private string FindStudentByParentCode(SqlConnection conn, string code)
         {
             using (SqlCommand cmd = new SqlCommand("SELECT studentId FROM dbo.[Student] WHERE parentCode = @code", conn))

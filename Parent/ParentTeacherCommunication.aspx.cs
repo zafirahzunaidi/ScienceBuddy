@@ -205,10 +205,6 @@ namespace ScienceBuddy.Parent
                 return string.Format("<div class='pt-attachment-card'><i class='bi bi-file-earmark-text'></i> <a href='{0}' target='_blank'>{1}</a><a href='{0}' download class='pt-attachment-dl'><i class='bi bi-download'></i> {2}</a></div>", url, Server.HtmlEncode(Path.GetFileName(filename)), T("Download","Muat Turun"));
         }
 
-        /// <summary>
-        /// Resolves the URL for an attachment file by checking the new folder first,
-        /// then falling back to the old folder for files uploaded before the migration.
-        /// </summary>
         private string ResolveAttachmentUrl(string filename)
         {
             if (string.IsNullOrEmpty(filename)) return null;

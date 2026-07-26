@@ -563,9 +563,6 @@ namespace ScienceBuddy.Parent
             }
         }
 
-        /// <summary>
-        /// Finds the StudentParent link ID for the current parent + selected child.
-        /// </summary>
         private string GetStudentParentId(string studentId)
         {
             const string sql = @"
@@ -585,9 +582,6 @@ namespace ScienceBuddy.Parent
             return "";
         }
 
-        /// <summary>
-        /// Loads the most recent study plan. Returns false if none exists.
-        /// </summary>
         private bool TryLoadLatestStudyPlan(string studentParentId, out string planId, out string title, out DateTime endDate)
         {
             planId = "";
@@ -618,9 +612,6 @@ namespace ScienceBuddy.Parent
             return !string.IsNullOrEmpty(planId);
         }
 
-        /// <summary>
-        /// Loads all tasks for a study plan and builds the HTML for each.
-        /// </summary>
         private System.Collections.Generic.List<string> LoadStudyPlanTasks(string studyPlanId, DateTime planEnd, out int totalTasks, out int completedCount)
         {
             totalTasks = 0;
@@ -697,9 +688,6 @@ namespace ScienceBuddy.Parent
                 + "</div>";
         }
 
-        /// <summary>
-        /// Builds the due-date status banner shown above the task list.
-        /// </summary>
         private string BuildDueDateStatusHtml(int completedCount, int totalTasks, DateTime planEnd)
         {
             if (completedCount == totalTasks)

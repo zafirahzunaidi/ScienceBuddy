@@ -118,9 +118,6 @@ namespace ScienceBuddy
         //  CERTIFICATE UPLOAD
         // ────────────────────────────────────────────────────────
 
-        /// <summary>
-        /// Validates the uploaded certificate file. Only PDF, max 5MB.
-        /// </summary>
         private bool ValidateCertificateUpload()
         {
             if (!fuCertificate.HasFile)
@@ -146,9 +143,6 @@ namespace ScienceBuddy
             return true;
         }
 
-        /// <summary>
-        /// Saves the uploaded PDF to ~/Uploads/TeacherCertificates/ with a unique filename.
-        /// </summary>
         private string SaveCertificateFile(string teacherId)
         {
             string timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
@@ -163,9 +157,6 @@ namespace ScienceBuddy
             return fullPath;
         }
 
-        /// <summary>
-        /// Removes the uploaded file if the database transaction fails.
-        /// </summary>
         private void CleanUpFailedUpload(string filePath)
         {
             if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath))
@@ -242,11 +233,6 @@ namespace ScienceBuddy
         //  DUPLICATE EMAIL CHECK (Teacher-specific)
         // ────────────────────────────────────────────────────────
 
-        /// <summary>
-        /// Checks if an email is already used by a Teacher account.
-        /// Returns the status string or null if the email is available.
-        /// Teachers get specific messages based on their certification state.
-        /// </summary>
         private string CheckExistingTeacherEmail(SqlConnection conn, string email)
         {
             string sql = @"SELECT u.status, t.status
@@ -276,9 +262,6 @@ namespace ScienceBuddy
             }
         }
 
-        /// <summary>
-        /// Shows the appropriate error message based on the existing account's status.
-        /// </summary>
         private void ShowExistingAccountError(string status)
         {
             switch (status)
