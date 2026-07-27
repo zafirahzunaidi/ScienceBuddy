@@ -37,7 +37,8 @@ namespace ScienceBuddy.Parent
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
 
             _userId = Session["userId"].ToString();
-            LoadCurrentLanguage(); LoadUnreadBadge();
+            LoadCurrentLanguage();
+            LoadUnreadBadge();
             LoadParentId();
             SetLabels();
 
@@ -147,12 +148,14 @@ namespace ScienceBuddy.Parent
         {
             ddlSidebarChild.Items.Clear();
             if (string.IsNullOrEmpty(_parentId)) return;
+
             try
             {
                 using (var conn = new SqlConnection(ConnStr))
                 using (var cmd = new SqlCommand("SELECT sp.studentId, s.name, s.nickname FROM dbo.[StudentParent] sp INNER JOIN dbo.[Student] s ON s.studentId=sp.studentId WHERE sp.parentId=@p", conn))
                 {
-                    cmd.Parameters.AddWithValue("@p", _parentId); conn.Open();
+                    cmd.Parameters.AddWithValue("@p", _parentId);
+                    conn.Open();
                     using (var r = cmd.ExecuteReader())
                     {
                         while (r.Read())
@@ -164,6 +167,7 @@ namespace ScienceBuddy.Parent
                         }
                     }
                 }
+
                 string sel = Session["selectedChildId"] as string;
                 if (!string.IsNullOrEmpty(sel) && ddlSidebarChild.Items.FindByValue(sel) != null)
                     ddlSidebarChild.SelectedValue = sel;
@@ -570,7 +574,10 @@ namespace ScienceBuddy.Parent
                                             }
                                             txn.Commit();
                                         }
-                                        catch { txn.Rollback(); }
+                                        catch
+                                        {
+                                            txn.Rollback();
+                                        }
                                     }
                                 }
                             }

@@ -79,7 +79,10 @@ namespace ScienceBuddy
 
                     // Generate secure token
                     byte[] tokenBytes = new byte[32];
-                    using (var rng = RandomNumberGenerator.Create()) { rng.GetBytes(tokenBytes); }
+                    using (var rng = RandomNumberGenerator.Create())
+                    {
+                        rng.GetBytes(tokenBytes);
+                    }
                     string rawToken = Convert.ToBase64String(tokenBytes).Replace("+", "-").Replace("/", "_").TrimEnd('=');
                     string tokenHash = ComputeSHA256(rawToken);
 
@@ -89,7 +92,11 @@ namespace ScienceBuddy
                         {
                             // Invalidate previous unused tokens
                             using (var cmd = new SqlCommand("UPDATE dbo.[PasswordResetToken] SET usedAt=@now WHERE userId=@uid AND usedAt IS NULL", conn, txn))
-                            { cmd.Parameters.AddWithValue("@now", DateTime.Now); cmd.Parameters.AddWithValue("@uid", userId); cmd.ExecuteNonQuery(); }
+                            {
+                                cmd.Parameters.AddWithValue("@now", DateTime.Now);
+                                cmd.Parameters.AddWithValue("@uid", userId);
+                                cmd.ExecuteNonQuery();
+                            }
 
                             // Insert new token
                             string tokenId = GenId(conn, txn);
@@ -104,7 +111,11 @@ namespace ScienceBuddy
                             }
                             txn.Commit();
                         }
-                        catch { txn.Rollback(); throw; }
+                        catch
+                        {
+                            txn.Rollback();
+                            throw;
+                        }
                     }
 
                     // Build reset URL

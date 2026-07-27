@@ -251,10 +251,7 @@ namespace ScienceBuddy
             return Guid.NewGuid().ToString("N").Substring(0, 6).ToUpper();
         }
 
-        // ────────────────────────────────────────────────────────
         //  UI FEEDBACK
-        // ────────────────────────────────────────────────────────
-
         private void ShowError(string message)
         {
             pnlError.Visible = true;

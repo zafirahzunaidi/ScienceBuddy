@@ -45,7 +45,8 @@ namespace ScienceBuddy.Parent
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
 
             // Language
-            LoadCurrentLanguage(); LoadUnreadBadge();
+            LoadCurrentLanguage();
+            LoadUnreadBadge();
 
             // Parent info
             _parentUserId = Session["userId"].ToString();

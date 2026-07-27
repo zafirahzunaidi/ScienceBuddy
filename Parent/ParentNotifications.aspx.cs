@@ -23,10 +23,32 @@ namespace ScienceBuddy.Parent
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!EnsureAuth()) return;
+
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
-            LoadLang(); LoadUnreadBadge(); _parentUserId = Session["userId"].ToString(); LoadParent();
-            if (!IsPostBack) { LoadChildren(); if (_linkedChildIds.Count > 0) { pnlContent.Visible = true; LoadPage(); } else ShowNoChild(); }
-            else { _selectedChildId = ddlSidebarChild.SelectedValue; _selectedChildName = ddlSidebarChild.SelectedItem != null ? ddlSidebarChild.SelectedItem.Text : ""; LoadLinkedChildIds(); }
+            LoadLang();
+            LoadUnreadBadge();
+            _parentUserId = Session["userId"].ToString();
+            LoadParent();
+
+            if (!IsPostBack)
+            {
+                LoadChildren();
+                if (_linkedChildIds.Count > 0)
+                {
+                    pnlContent.Visible = true;
+                    LoadPage();
+                }
+                else
+                {
+                    ShowNoChild();
+                }
+            }
+            else
+            {
+                _selectedChildId = ddlSidebarChild.SelectedValue;
+                _selectedChildName = ddlSidebarChild.SelectedItem != null ? ddlSidebarChild.SelectedItem.Text : "";
+                LoadLinkedChildIds();
+            }
         }
 
         private bool EnsureAuth()
@@ -85,18 +107,73 @@ namespace ScienceBuddy.Parent
         private void LoadChildren()
         {
             ddlSidebarChild.Items.Clear();
-            try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT s.studentId, ISNULL(s.nickname,s.name) AS n FROM dbo.StudentParent sp INNER JOIN dbo.Student s ON sp.studentId=s.studentId WHERE sp.parentId=@p ORDER BY s.name", c)) { cmd.Parameters.AddWithValue("@p", _parentId); c.Open(); using (var r = cmd.ExecuteReader()) { while (r.Read()) { ddlSidebarChild.Items.Add(new ListItem(r["n"].ToString(), r["studentId"].ToString())); _linkedChildIds.Add(r["studentId"].ToString()); } } } } catch { }
-            if (ddlSidebarChild.Items.Count > 0) { string saved = Session["selectedChildId"] as string; if (!string.IsNullOrEmpty(saved) && ddlSidebarChild.Items.FindByValue(saved) != null) ddlSidebarChild.SelectedValue = saved; else Session["selectedChildId"] = ddlSidebarChild.Items[0].Value; _selectedChildId = ddlSidebarChild.SelectedValue; _selectedChildName = ddlSidebarChild.SelectedItem.Text; }
+            try
+            {
+                using (var c = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand("SELECT s.studentId, ISNULL(s.nickname,s.name) AS n FROM dbo.StudentParent sp INNER JOIN dbo.Student s ON sp.studentId=s.studentId WHERE sp.parentId=@p ORDER BY s.name", c))
+                {
+                    cmd.Parameters.AddWithValue("@p", _parentId);
+                    c.Open();
+                    using (var r = cmd.ExecuteReader())
+                    {
+                        while (r.Read())
+                        {
+                            ddlSidebarChild.Items.Add(new ListItem(r["n"].ToString(), r["studentId"].ToString()));
+                            _linkedChildIds.Add(r["studentId"].ToString());
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            if (ddlSidebarChild.Items.Count > 0)
+            {
+                string saved = Session["selectedChildId"] as string;
+                if (!string.IsNullOrEmpty(saved) && ddlSidebarChild.Items.FindByValue(saved) != null)
+                    ddlSidebarChild.SelectedValue = saved;
+                else
+                    Session["selectedChildId"] = ddlSidebarChild.Items[0].Value;
+                _selectedChildId = ddlSidebarChild.SelectedValue;
+                _selectedChildName = ddlSidebarChild.SelectedItem.Text;
+            }
         }
 
         private void LoadLinkedChildIds()
         {
             _linkedChildIds.Clear();
-            try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT studentId FROM dbo.StudentParent WHERE parentId=@p", c)) { cmd.Parameters.AddWithValue("@p", _parentId); c.Open(); using (var r = cmd.ExecuteReader()) { while (r.Read()) _linkedChildIds.Add(r["studentId"].ToString()); } } } catch { }
+            try
+            {
+                using (var c = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand("SELECT studentId FROM dbo.StudentParent WHERE parentId=@p", c))
+                {
+                    cmd.Parameters.AddWithValue("@p", _parentId);
+                    c.Open();
+                    using (var r = cmd.ExecuteReader())
+                    {
+                        while (r.Read())
+                            _linkedChildIds.Add(r["studentId"].ToString());
+                    }
+                }
+            }
+            catch { }
         }
 
-        protected void SidebarChildChanged(object sender, EventArgs e) { Session["selectedChildId"] = ddlSidebarChild.SelectedValue; _selectedChildId = ddlSidebarChild.SelectedValue; _selectedChildName = ddlSidebarChild.SelectedItem.Text; LoadLinkedChildIds(); pnlContent.Visible = true; LoadPage(); }
-        private void ShowNoChild() { pnlNoChild.Visible = true; pnlContent.Visible = false; litNoChildMsg.Text = T("No linked child found.", "Tiada anak dipautkan."); }
+        protected void SidebarChildChanged(object sender, EventArgs e)
+        {
+            Session["selectedChildId"] = ddlSidebarChild.SelectedValue;
+            _selectedChildId = ddlSidebarChild.SelectedValue;
+            _selectedChildName = ddlSidebarChild.SelectedItem.Text;
+            LoadLinkedChildIds();
+            pnlContent.Visible = true;
+            LoadPage();
+        }
+
+        private void ShowNoChild()
+        {
+            pnlNoChild.Visible = true;
+            pnlContent.Visible = false;
+            litNoChildMsg.Text = T("No linked child found.", "Tiada anak dipautkan.");
+        }
 
         // ══════════════════════════════════════════════════════════════
         //  MAIN LOAD
@@ -222,7 +299,12 @@ namespace ScienceBuddy.Parent
             foreach (var n in items)
             {
                 string group = GetDateGroup(n.CreatedAt);
-                if (group != lastGroup) { if (lastGroup != "") sb.Append("</div>"); sb.AppendFormat("<div class=\"pt-notif-group\"><div class=\"pt-notif-group-title\">{0}</div>", group); lastGroup = group; }
+                if (group != lastGroup)
+                {
+                    if (lastGroup != "") sb.Append("</div>");
+                    sb.AppendFormat("<div class=\"pt-notif-group\"><div class=\"pt-notif-group-title\">{0}</div>", group);
+                    lastGroup = group;
+                }
 
                 string unreadDot = !n.IsRead ? "<span class=\"pt-notif-unread-dot\"></span>" : "";
                 string markBtn = !n.IsRead && !string.IsNullOrEmpty(n.Id)
@@ -281,19 +363,39 @@ namespace ScienceBuddy.Parent
         private void HighlightActiveFilter()
         {
             var chips = new[] { lnkAll, lnkRead, lnkUnread };
-            foreach (var chip in chips) chip.CssClass = chip.CommandArgument == ActiveFilter ? "pt-notif-chip active" : "pt-notif-chip";
+            foreach (var chip in chips)
+                chip.CssClass = chip.CommandArgument == ActiveFilter ? "pt-notif-chip active" : "pt-notif-chip";
             lnkSortLatest.CssClass = SortOrder == "Latest" ? "pt-sort-btn active" : "pt-sort-btn";
             lnkSortOldest.CssClass = SortOrder == "Oldest" ? "pt-sort-btn active" : "pt-sort-btn";
         }
 
         protected void LnkMarkAllRead_Click(object sender, EventArgs e)
         {
-            try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("UPDATE dbo.Notification SET isRead=1 WHERE toUserId=@uid AND isRead=0", c)) { cmd.Parameters.AddWithValue("@uid", _parentUserId); c.Open(); cmd.ExecuteNonQuery(); } } catch { }
+            try
+            {
+                using (var c = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand("UPDATE dbo.Notification SET isRead=1 WHERE toUserId=@uid AND isRead=0", c))
+                {
+                    cmd.Parameters.AddWithValue("@uid", _parentUserId);
+                    c.Open();
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch { }
             LoadPage();
         }
 
-        protected void LnkSortLatest_Click(object sender, EventArgs e) { SortOrder = "Latest"; LoadPage(); }
-        protected void LnkSortOldest_Click(object sender, EventArgs e) { SortOrder = "Oldest"; LoadPage(); }
+        protected void LnkSortLatest_Click(object sender, EventArgs e)
+        {
+            SortOrder = "Latest";
+            LoadPage();
+        }
+
+        protected void LnkSortOldest_Click(object sender, EventArgs e)
+        {
+            SortOrder = "Oldest";
+            LoadPage();
+        }
 
         protected void BtnMarkRead_Click(object sender, EventArgs e)
         {

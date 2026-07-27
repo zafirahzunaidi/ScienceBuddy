@@ -109,9 +109,11 @@ namespace ScienceBuddy
                             pnlSuccess.Visible = true;
 
                             if (!string.IsNullOrEmpty(linkedStudentId))
-                                litSuccessMsg.Text = "Your account has been created and your child has been linked successfully. Sign in to begin supporting their learning journey.";
+                                litSuccessMsg.Text = "Your account has been created and your child has been linked successfully." +
+                                    "Sign in to begin supporting their learning journey.";
                             else
-                                litSuccessMsg.Text = "Your account has been created successfully. Sign in to link your child and begin supporting their learning journey.";
+                                litSuccessMsg.Text = "Your account has been created successfully. Sign in to link your child and" +
+                                    "begin supporting their learning journey.";
                         }
                         catch
                         {

@@ -44,61 +44,134 @@ namespace ScienceBuddy.Parent
                     // Load current tags for display
                     pnlCurrentTags.Controls.Clear();
                     using (var cmd = new SqlCommand("SELECT t.tagId, t.tagName FROM dbo.ForumTag ft INNER JOIN dbo.Tag t ON ft.tagId=t.tagId WHERE ft.forumId=@id", c))
-                    { cmd.Parameters.AddWithValue("@id", _forumId); using (var r = cmd.ExecuteReader()) { var sb = new System.Text.StringBuilder(); while (r.Read()) sb.Append("<span class='pt-forum-tag'>" + Server.HtmlEncode(r["tagName"].ToString()) + "</span> "); if (sb.Length > 0) pnlCurrentTags.Controls.Add(new LiteralControl(sb.ToString())); else pnlCurrentTags.Controls.Add(new LiteralControl("<span style='color:#94A3B8;font-size:0.82rem;'>" + T("No tags","Tiada tag") + "</span>")); } }
+                    {
+                        cmd.Parameters.AddWithValue("@id", _forumId);
+                        using (var r = cmd.ExecuteReader())
+                        {
+                            var sb = new System.Text.StringBuilder();
+                            while (r.Read())
+                                sb.Append("<span class='pt-forum-tag'>" + Server.HtmlEncode(r["tagName"].ToString()) + "</span> ");
+                            if (sb.Length > 0)
+                                pnlCurrentTags.Controls.Add(new LiteralControl(sb.ToString()));
+                            else
+                                pnlCurrentTags.Controls.Add(new LiteralControl("<span style='color:#94A3B8;font-size:0.82rem;'>" + T("No tags","Tiada tag") + "</span>"));
+                        }
+                    }
                     pnlForm.Visible = true;
                     lnkBack.HRef = "ForumThread.aspx?forumId=" + _forumId;
                 }
             }
-            catch { pnlDenied.Visible = true; }
+            catch
+            {
+                pnlDenied.Visible = true;
+            }
         }
 
         protected void BtnSave_Click(object sender, EventArgs e)
         {
-            string title = txtTitle.Text.Trim(); string message = txtMessage.Text.Trim(); string type = ddlType.SelectedValue;
-            if (string.IsNullOrEmpty(title)) { ShowMsg(T("Title cannot be empty.", "Tajuk tidak boleh kosong."), false); return; }
-            if (string.IsNullOrEmpty(message)) { ShowMsg(T("Message cannot be empty.", "Mesej tidak boleh kosong."), false); return; }
+            string title = txtTitle.Text.Trim();
+            string message = txtMessage.Text.Trim();
+            string type = ddlType.SelectedValue;
+            if (string.IsNullOrEmpty(title))
+            {
+                ShowMsg(T("Title cannot be empty.", "Tajuk tidak boleh kosong."), false);
+                return;
+            }
+            if (string.IsNullOrEmpty(message))
+            {
+                ShowMsg(T("Message cannot be empty.", "Mesej tidak boleh kosong."), false);
+                return;
+            }
             try
             {
-                using (var c = new SqlConnection(ConnStr)) { c.Open(); using (var txn = c.BeginTransaction()) { try {
-                    // Verify ownership
-                    string owner = ""; using (var cmd = new SqlCommand("SELECT createdBy FROM dbo.Forum WHERE forumId=@id", c, txn)) { cmd.Parameters.AddWithValue("@id", _forumId); owner = cmd.ExecuteScalar()?.ToString() ?? ""; }
-                    if (owner != _userId) { txn.Rollback(); ShowMsg(T("Not authorized.", "Tidak dibenarkan."), false); return; }
-                    using (var cmd = new SqlCommand("UPDATE dbo.Forum SET title=@t, message=@m, discussionType=@type WHERE forumId=@id", c, txn))
-                    { cmd.Parameters.AddWithValue("@t", title); cmd.Parameters.AddWithValue("@m", message); cmd.Parameters.AddWithValue("@type", type); cmd.Parameters.AddWithValue("@id", _forumId); cmd.ExecuteNonQuery(); }
-                    // Update tags: keep existing, add new from textbox
-                    string rawNewTags = txtNewTags.Text.Trim();
-                    if (!string.IsNullOrEmpty(rawNewTags))
+                using (var c = new SqlConnection(ConnStr))
+                {
+                    c.Open();
+                    using (var txn = c.BeginTransaction())
                     {
-                        var tagNames = rawNewTags.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                        var processed = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                        foreach (string rawTag in tagNames)
+                        try
                         {
-                            string tagName = rawTag.Trim();
-                            if (string.IsNullOrEmpty(tagName) || processed.Contains(tagName)) continue;
-                            processed.Add(tagName);
-                            // Find or create tag
-                            string tagId = null;
-                            using (var cmd2 = new SqlCommand("SELECT tagId FROM dbo.Tag WHERE LOWER(tagName)=LOWER(@n)", c, txn))
-                            { cmd2.Parameters.AddWithValue("@n", tagName); var tr = cmd2.ExecuteScalar(); if (tr != null && tr != DBNull.Value) tagId = tr.ToString(); }
-                            if (string.IsNullOrEmpty(tagId))
+                            string owner = "";
+                            using (var cmd = new SqlCommand("SELECT createdBy FROM dbo.Forum WHERE forumId=@id", c, txn))
                             {
-                                tagId = GenId(c, txn, "Tag", "tagId", "TAG");
-                                using (var cmd2 = new SqlCommand("INSERT INTO dbo.Tag(tagId,tagName,createdAt) VALUES(@id,@n,@now)", c, txn))
-                                { cmd2.Parameters.AddWithValue("@id", tagId); cmd2.Parameters.AddWithValue("@n", tagName); cmd2.Parameters.AddWithValue("@now", DateTime.Now); cmd2.ExecuteNonQuery(); }
+                                cmd.Parameters.AddWithValue("@id", _forumId);
+                                owner = cmd.ExecuteScalar()?.ToString() ?? "";
                             }
-                            // Check if link already exists
-                            using (var cmd2 = new SqlCommand("SELECT COUNT(*) FROM dbo.ForumTag WHERE forumId=@fid AND tagId=@tid", c, txn))
-                            { cmd2.Parameters.AddWithValue("@fid", _forumId); cmd2.Parameters.AddWithValue("@tid", tagId); if ((int)cmd2.ExecuteScalar() > 0) continue; }
-                            string ftId = GenId(c, txn, "ForumTag", "forumTagId", "FTAG");
-                            using (var cmd2 = new SqlCommand("INSERT INTO dbo.ForumTag(forumTagId,forumId,tagId) VALUES(@id,@fid,@tid)", c, txn))
-                            { cmd2.Parameters.AddWithValue("@id", ftId); cmd2.Parameters.AddWithValue("@fid", _forumId); cmd2.Parameters.AddWithValue("@tid", tagId); cmd2.ExecuteNonQuery(); }
+                            if (owner != _userId)
+                            {
+                                txn.Rollback();
+                                ShowMsg(T("Not authorized.", "Tidak dibenarkan."), false);
+                                return;
+                            }
+                            using (var cmd = new SqlCommand("UPDATE dbo.Forum SET title=@t, message=@m, discussionType=@type WHERE forumId=@id", c, txn))
+                            {
+                                cmd.Parameters.AddWithValue("@t", title);
+                                cmd.Parameters.AddWithValue("@m", message);
+                                cmd.Parameters.AddWithValue("@type", type);
+                                cmd.Parameters.AddWithValue("@id", _forumId);
+                                cmd.ExecuteNonQuery();
+                            }
+                            // Update tags: keep existing, add new from textbox
+                            string rawNewTags = txtNewTags.Text.Trim();
+                            if (!string.IsNullOrEmpty(rawNewTags))
+                            {
+                                var tagNames = rawNewTags.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                                var processed = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                                foreach (string rawTag in tagNames)
+                                {
+                                    string tagName = rawTag.Trim();
+                                    if (string.IsNullOrEmpty(tagName) || processed.Contains(tagName)) continue;
+                                    processed.Add(tagName);
+                                    string tagId = null;
+                                    using (var cmd2 = new SqlCommand("SELECT tagId FROM dbo.Tag WHERE LOWER(tagName)=LOWER(@n)", c, txn))
+                                    {
+                                        cmd2.Parameters.AddWithValue("@n", tagName);
+                                        var tr = cmd2.ExecuteScalar();
+                                        if (tr != null && tr != DBNull.Value) tagId = tr.ToString();
+                                    }
+                                    if (string.IsNullOrEmpty(tagId))
+                                    {
+                                        tagId = GenId(c, txn, "Tag", "tagId", "TAG");
+                                        using (var cmd2 = new SqlCommand("INSERT INTO dbo.Tag(tagId,tagName,createdAt) VALUES(@id,@n,@now)", c, txn))
+                                        {
+                                            cmd2.Parameters.AddWithValue("@id", tagId);
+                                            cmd2.Parameters.AddWithValue("@n", tagName);
+                                            cmd2.Parameters.AddWithValue("@now", DateTime.Now);
+                                            cmd2.ExecuteNonQuery();
+                                        }
+                                    }
+                                    using (var cmd2 = new SqlCommand("SELECT COUNT(*) FROM dbo.ForumTag WHERE forumId=@fid AND tagId=@tid", c, txn))
+                                    {
+                                        cmd2.Parameters.AddWithValue("@fid", _forumId);
+                                        cmd2.Parameters.AddWithValue("@tid", tagId);
+                                        if ((int)cmd2.ExecuteScalar() > 0) continue;
+                                    }
+                                    string ftId = GenId(c, txn, "ForumTag", "forumTagId", "FTAG");
+                                    using (var cmd2 = new SqlCommand("INSERT INTO dbo.ForumTag(forumTagId,forumId,tagId) VALUES(@id,@fid,@tid)", c, txn))
+                                    {
+                                        cmd2.Parameters.AddWithValue("@id", ftId);
+                                        cmd2.Parameters.AddWithValue("@fid", _forumId);
+                                        cmd2.Parameters.AddWithValue("@tid", tagId);
+                                        cmd2.ExecuteNonQuery();
+                                    }
+                                }
+                            }
+                            txn.Commit();
+                            Response.Redirect("ForumThread.aspx?forumId=" + _forumId, false);
+                            Context.ApplicationInstance.CompleteRequest();
+                        }
+                        catch
+                        {
+                            txn.Rollback();
+                            throw;
                         }
                     }
-                    txn.Commit();
-                    Response.Redirect("ForumThread.aspx?forumId=" + _forumId, false); Context.ApplicationInstance.CompleteRequest();
-                } catch { txn.Rollback(); throw; } } }
+                }
             }
-            catch { ShowMsg(T("Error saving.", "Ralat menyimpan."), false); }
+            catch
+            {
+                ShowMsg(T("Error saving.", "Ralat menyimpan."), false);
+            }
         }
 
         private string GenId(SqlConnection conn, SqlTransaction txn, string table, string column, string prefix)
