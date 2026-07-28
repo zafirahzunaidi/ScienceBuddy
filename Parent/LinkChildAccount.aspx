@@ -86,14 +86,8 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
             <i class="bi bi-person item-icon"></i>
             <span class="item-label"><%: T("Edit Profile","Edit Profil") %></span>
         </a>
-        <a href="<%: ResolveUrl("~/Logout.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-box-arrow-right item-icon"></i>
-            <span class="item-label"><%: T("Logout","Log Keluar") %></span>
-        </a>
     </div>
 </asp:Content>
-
-<asp:Content ID="cPageTitle" ContentPlaceHolderID="PageTitle" runat="server"><%: T("Link Child Account","Paut Akaun Anak") %></asp:Content>
 
 <asp:Content ID="cBody" ContentPlaceHolderID="MainContentSidebar" runat="server">
 <div class="lc-page">

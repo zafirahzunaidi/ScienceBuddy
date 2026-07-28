@@ -19,15 +19,29 @@ namespace ScienceBuddy.Parent
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!EnsureAuth()) return;
+
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
-            LoadLang(); LoadUnreadBadge(); _parentUserId = Session["userId"].ToString(); LoadParent();
-            if (!IsPostBack) { LoadChildren(); if (!string.IsNullOrEmpty(_selectedChildId)) LoadPage(); else ShowNoChild(); }
-            else { _selectedChildId = ddlSidebarChild.SelectedValue; _selectedChildName = ddlSidebarChild.SelectedItem != null ? ddlSidebarChild.SelectedItem.Text : ""; LoadSPId(); }
+            LoadLang();
+            LoadUnreadBadge();
+            _parentUserId = Session["userId"].ToString();
+            LoadParent();
+
+            if (!IsPostBack)
+            {
+                LoadChildren();
+                if (!string.IsNullOrEmpty(_selectedChildId))
+                    LoadPage();
+                else
+                    ShowNoChild();
+            }
+            else
+            {
+                _selectedChildId = ddlSidebarChild.SelectedValue;
+                _selectedChildName = ddlSidebarChild.SelectedItem != null ? ddlSidebarChild.SelectedItem.Text : "";
+                LoadSPId();
+            }
         }
 
-        /// <summary>
-        /// Ensures the current user is a logged-in Parent. Redirects to login if not.
-        /// </summary>
         private bool EnsureAuth()
         {
             if (Session["userId"] == null || Session["role"] == null || Session["role"].ToString() != "Parent")
@@ -39,9 +53,6 @@ namespace ScienceBuddy.Parent
             return true;
         }
 
-        /// <summary>
-        /// Loads the user's preferred language from session or database.
-        /// </summary>
         private void LoadLang()
         {
             string savedLang = Session["preferredLanguage"] as string;
@@ -69,9 +80,6 @@ namespace ScienceBuddy.Parent
             catch { }
         }
 
-        /// <summary>
-        /// Loads the parentId for the current user from the Parent table.
-        /// </summary>
         private void LoadParent()
         {
             try
@@ -89,10 +97,6 @@ namespace ScienceBuddy.Parent
             catch { }
         }
 
-        /// <summary>
-        /// Populates the sidebar child dropdown with linked children.
-        /// Restores the previously selected child from session if available.
-        /// </summary>
         private void LoadChildren()
         {
             ddlSidebarChild.Items.Clear();
@@ -134,9 +138,6 @@ namespace ScienceBuddy.Parent
             }
         }
 
-        /// <summary>
-        /// Loads the StudentParent link ID for the currently selected child.
-        /// </summary>
         private void LoadSPId()
         {
             try
@@ -179,24 +180,69 @@ namespace ScienceBuddy.Parent
             string planId = GetActivePlanId();
             if (string.IsNullOrEmpty(planId))
             {
-                pnlNoPlan.Visible = true; pnlContent.Visible = false;
+                    pnlNoPlan.Visible = true;
+                pnlContent.Visible = false;
                 litNoPlanMsg.Text = string.Format(T("No active study plan yet. Create a new study plan to start building tasks and rewards for {0}.",
                     "Tiada pelan belajar aktif lagi. Buat pelan belajar baharu untuk mula membina tugasan dan ganjaran untuk {0}."), _selectedChildName);
                 btnCreatePlan.Text = T("Create New Study Plan", "Buat Pelan Belajar");
                 return;
             }
-            pnlNoPlan.Visible = false; pnlContent.Visible = true;
+            pnlNoPlan.Visible = false;
+            pnlContent.Visible = true;
 
             // Load plan info
-            string planTitle = ""; DateTime? endDate = null;
-            try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT planTitle, endDate FROM dbo.StudyPlan WHERE studyPlanId=@id", c)) { cmd.Parameters.AddWithValue("@id", planId); c.Open(); using (var r = cmd.ExecuteReader()) { if (r.Read()) { planTitle = r["planTitle"] != DBNull.Value ? r["planTitle"].ToString() : ""; if (r["endDate"] != DBNull.Value) endDate = Convert.ToDateTime(r["endDate"]); } } } } catch { }
+            string planTitle = "";
+            DateTime? endDate = null;
+            try
+            {
+                using (var c = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand("SELECT planTitle, endDate FROM dbo.StudyPlan WHERE studyPlanId=@id", c))
+                {
+                    cmd.Parameters.AddWithValue("@id", planId);
+                    c.Open();
+                    using (var r = cmd.ExecuteReader())
+                    {
+                        if (r.Read())
+                        {
+                            planTitle = r["planTitle"] != DBNull.Value ? r["planTitle"].ToString() : "";
+                            if (r["endDate"] != DBNull.Value)
+                                endDate = Convert.ToDateTime(r["endDate"]);
+                        }
+                    }
+                }
+            }
+            catch { }
             litPlanTitle.Text = Server.HtmlEncode(planTitle);
             litPlanSub.Text = string.Format(T("{0}'s learning mission", "Misi pembelajaran {0}"), _selectedChildName);
 
             // Tasks
             int totalTasks = 0, completedTasks = 0;
             var tasks = new List<TaskInfo>();
-            try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT spTaskId, taskTitle, suggestedAction, orderNo, isCompleted FROM dbo.SPTask WHERE studyPlanId=@id ORDER BY orderNo", c)) { cmd.Parameters.AddWithValue("@id", planId); c.Open(); using (var r = cmd.ExecuteReader()) { while (r.Read()) { var t = new TaskInfo { Title = r["taskTitle"].ToString(), Action = r["suggestedAction"] != DBNull.Value ? r["suggestedAction"].ToString() : "", IsCompleted = r["isCompleted"] != DBNull.Value && Convert.ToBoolean(r["isCompleted"]) }; tasks.Add(t); totalTasks++; if (t.IsCompleted) completedTasks++; } } } } catch { }
+            try
+            {
+                using (var c = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand("SELECT spTaskId, taskTitle, suggestedAction, orderNo, isCompleted FROM dbo.SPTask WHERE studyPlanId=@id ORDER BY orderNo", c))
+                {
+                    cmd.Parameters.AddWithValue("@id", planId);
+                    c.Open();
+                    using (var r = cmd.ExecuteReader())
+                    {
+                        while (r.Read())
+                        {
+                            var t = new TaskInfo
+                            {
+                                Title = r["taskTitle"].ToString(),
+                                Action = r["suggestedAction"] != DBNull.Value ? r["suggestedAction"].ToString() : "",
+                                IsCompleted = r["isCompleted"] != DBNull.Value && Convert.ToBoolean(r["isCompleted"])
+                            };
+                            tasks.Add(t);
+                            totalTasks++;
+                            if (t.IsCompleted) completedTasks++;
+                        }
+                    }
+                }
+            }
+            catch { }
 
             int progressPct = totalTasks > 0 ? (int)Math.Round((double)completedTasks / totalTasks * 100) : 0;
             litProgressPct.Text = progressPct + "%";
@@ -205,15 +251,45 @@ namespace ScienceBuddy.Parent
 
             // Rewards
             var rewards = new List<RewardInfo>();
-            try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT rewardId, rewardName, requiredProgress, isUnlocked, rewardImage FROM dbo.SPReward WHERE studyPlanId=@id ORDER BY requiredProgress", c)) { cmd.Parameters.AddWithValue("@id", planId); c.Open(); using (var r = cmd.ExecuteReader()) { while (r.Read()) { var rw = new RewardInfo { Id = r["rewardId"].ToString(), RequiredProgress = r["requiredProgress"] != DBNull.Value ? Convert.ToInt32(r["requiredProgress"]) : 100, IsUnlocked = r["isUnlocked"] != DBNull.Value && Convert.ToBoolean(r["isUnlocked"]), Name = r["rewardName"] != DBNull.Value ? r["rewardName"].ToString() : "", ImageFile = r["rewardImage"] != DBNull.Value ? r["rewardImage"].ToString() : "" }; rewards.Add(rw); } } } } catch { }
+            try
+            {
+                using (var c = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand("SELECT rewardId, rewardName, requiredProgress, isUnlocked, rewardImage FROM dbo.SPReward WHERE studyPlanId=@id ORDER BY requiredProgress", c))
+                {
+                    cmd.Parameters.AddWithValue("@id", planId);
+                    c.Open();
+                    using (var r = cmd.ExecuteReader())
+                    {
+                        while (r.Read())
+                        {
+                            var rw = new RewardInfo
+                            {
+                                Id = r["rewardId"].ToString(),
+                                RequiredProgress = r["requiredProgress"] != DBNull.Value ? Convert.ToInt32(r["requiredProgress"]) : 100,
+                                IsUnlocked = r["isUnlocked"] != DBNull.Value && Convert.ToBoolean(r["isUnlocked"]),
+                                Name = r["rewardName"] != DBNull.Value ? r["rewardName"].ToString() : "",
+                                ImageFile = r["rewardImage"] != DBNull.Value ? r["rewardImage"].ToString() : ""
+                            };
+                            rewards.Add(rw);
+                        }
+                    }
+                }
+            }
+            catch { }
 
             // Sync unlock status based on current progress
             foreach (var rw in rewards)
             {
                 if (progressPct >= rw.RequiredProgress && !rw.IsUnlocked)
-                { rw.IsUnlocked = true; SyncRewardUnlock(rw.Id, true); }
+                {
+                    rw.IsUnlocked = true;
+                    SyncRewardUnlock(rw.Id, true);
+                }
                 else if (progressPct < rw.RequiredProgress && rw.IsUnlocked)
-                { rw.IsUnlocked = false; SyncRewardUnlock(rw.Id, false); }
+                {
+                    rw.IsUnlocked = false;
+                    SyncRewardUnlock(rw.Id, false);
+                }
             }
 
             BuildRewardMarkers(rewards, progressPct);
@@ -223,7 +299,19 @@ namespace ScienceBuddy.Parent
 
         private string GetActivePlanId()
         {
-            try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT TOP 1 studyPlanId FROM dbo.StudyPlan WHERE studentParentId=@sp AND status='Ongoing' ORDER BY createdAt DESC", c)) { cmd.Parameters.AddWithValue("@sp", _studentParentId); c.Open(); var r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) return r.ToString(); } } catch { }
+            try
+            {
+                using (var c = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand("SELECT TOP 1 studyPlanId FROM dbo.StudyPlan WHERE studentParentId=@sp AND status='Ongoing' ORDER BY createdAt DESC", c))
+                {
+                    cmd.Parameters.AddWithValue("@sp", _studentParentId);
+                    c.Open();
+                    var r = cmd.ExecuteScalar();
+                    if (r != null && r != DBNull.Value)
+                        return r.ToString();
+                }
+            }
+            catch { }
             return null;
         }
 
@@ -234,11 +322,13 @@ namespace ScienceBuddy.Parent
                 string sql = unlock
                     ? "UPDATE dbo.SPReward SET isUnlocked=1, unlockedAt=@now WHERE rewardId=@id"
                     : "UPDATE dbo.SPReward SET isUnlocked=0, unlockedAt=NULL WHERE rewardId=@id";
-                using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand(sql, c))
+                using (var c = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand(sql, c))
                 {
                     if (unlock) cmd.Parameters.AddWithValue("@now", DateTime.Now);
                     cmd.Parameters.AddWithValue("@id", rewardId);
-                    c.Open(); cmd.ExecuteNonQuery();
+                    c.Open();
+                    cmd.ExecuteNonQuery();
                 }
             }
             catch { }
@@ -295,7 +385,8 @@ namespace ScienceBuddy.Parent
                 using (var c = new SqlConnection(ConnStr))
                 using (var cmd = new SqlCommand("SELECT rewardName, requiredProgress, isUnlocked, rewardImage FROM dbo.SPReward WHERE rewardId=@id", c))
                 {
-                    cmd.Parameters.AddWithValue("@id", rewardId); c.Open();
+                    cmd.Parameters.AddWithValue("@id", rewardId);
+                    c.Open();
                     using (var r = cmd.ExecuteReader())
                     {
                         if (r.Read())
@@ -319,11 +410,20 @@ namespace ScienceBuddy.Parent
             LoadPage();
         }
 
-        protected void BtnClosePopover_Click(object sender, EventArgs e) { pnlRewardPopover.Visible = false; LoadPage(); }
+        protected void BtnClosePopover_Click(object sender, EventArgs e)
+        {
+            pnlRewardPopover.Visible = false;
+            LoadPage();
+        }
 
         protected void BtnCreatePlan_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(_studentParentId)) { LoadChildren(); if (string.IsNullOrEmpty(_studentParentId)) return; }
+            if (string.IsNullOrEmpty(_studentParentId))
+            {
+                LoadChildren();
+                if (string.IsNullOrEmpty(_studentParentId)) return;
+            }
+
             try
             {
                 using (var c = new SqlConnection(ConnStr))
@@ -333,10 +433,21 @@ namespace ScienceBuddy.Parent
                     {
                         try
                         {
-                            // Generate ID
                             int n = 1;
                             using (var cmd = new SqlCommand("SELECT MAX(studyPlanId) FROM dbo.StudyPlan", c, txn))
-                            { var r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) { string last = r.ToString(); if (last.Length > 3) { int num; if (int.TryParse(last.Substring(3), out num)) n = num + 1; } } }
+                            {
+                                var r = cmd.ExecuteScalar();
+                                if (r != null && r != DBNull.Value)
+                                {
+                                    string last = r.ToString();
+                                    if (last.Length > 3)
+                                    {
+                                        int num;
+                                        if (int.TryParse(last.Substring(3), out num))
+                                            n = num + 1;
+                                    }
+                                }
+                            }
                             string planId = "STP" + n.ToString("D3");
 
                             string title = T("New Study Plan", "Pelan Belajar Baharu");
@@ -354,7 +465,11 @@ namespace ScienceBuddy.Parent
                             }
                             txn.Commit();
                         }
-                        catch { txn.Rollback(); throw; }
+                        catch
+                        {
+                            txn.Rollback();
+                            throw;
+                        }
                     }
                 }
             }
@@ -365,7 +480,11 @@ namespace ScienceBuddy.Parent
         protected void BtnResetPlan_Click(object sender, EventArgs e)
         {
             string planId = GetActivePlanId();
-            if (string.IsNullOrEmpty(planId)) { LoadPage(); return; }
+            if (string.IsNullOrEmpty(planId))
+            {
+                LoadPage();
+                return;
+            }
 
             try
             {
@@ -376,18 +495,32 @@ namespace ScienceBuddy.Parent
                     {
                         try
                         {
-                            // Delete SPReward first
                             using (var cmd = new SqlCommand("DELETE FROM dbo.SPReward WHERE studyPlanId=@id", c, txn))
-                            { cmd.Parameters.AddWithValue("@id", planId); cmd.ExecuteNonQuery(); }
-                            // Delete SPTask
+                            {
+                                cmd.Parameters.AddWithValue("@id", planId);
+                                cmd.ExecuteNonQuery();
+                            }
+
                             using (var cmd = new SqlCommand("DELETE FROM dbo.SPTask WHERE studyPlanId=@id", c, txn))
-                            { cmd.Parameters.AddWithValue("@id", planId); cmd.ExecuteNonQuery(); }
-                            // Delete StudyPlan
+                            {
+                                cmd.Parameters.AddWithValue("@id", planId);
+                                cmd.ExecuteNonQuery();
+                            }
+
                             using (var cmd = new SqlCommand("DELETE FROM dbo.StudyPlan WHERE studyPlanId=@id AND studentParentId=@sp", c, txn))
-                            { cmd.Parameters.AddWithValue("@id", planId); cmd.Parameters.AddWithValue("@sp", _studentParentId); cmd.ExecuteNonQuery(); }
+                            {
+                                cmd.Parameters.AddWithValue("@id", planId);
+                                cmd.Parameters.AddWithValue("@sp", _studentParentId);
+                                cmd.ExecuteNonQuery();
+                            }
+
                             txn.Commit();
                         }
-                        catch { txn.Rollback(); throw; }
+                        catch
+                        {
+                            txn.Rollback();
+                            throw;
+                        }
                     }
                 }
             }
@@ -398,7 +531,11 @@ namespace ScienceBuddy.Parent
         private void BuildTaskList(List<TaskInfo> tasks)
         {
             pnlTasks.Controls.Clear();
-            if (tasks.Count == 0) { pnlNoTasks.Visible = true; return; }
+            if (tasks.Count == 0)
+            {
+                pnlNoTasks.Visible = true;
+                return;
+            }
             pnlNoTasks.Visible = false;
             StringBuilder sb = new StringBuilder();
             int num = 1;
@@ -426,28 +563,73 @@ namespace ScienceBuddy.Parent
 
             // Next reward
             string nextReward = T("All rewards unlocked!", "Semua ganjaran terbuka!");
-            foreach (var rw in rewards) { if (!rw.IsUnlocked && progressPct < rw.RequiredProgress) { nextReward = rw.Name + " (" + rw.RequiredProgress + "%)"; break; } }
+            foreach (var rw in rewards)
+            {
+                if (!rw.IsUnlocked && progressPct < rw.RequiredProgress)
+                {
+                    nextReward = rw.Name + " (" + rw.RequiredProgress + "%)";
+                    break;
+                }
+            }
             litNextReward.Text = Server.HtmlEncode(nextReward);
 
             // Final reward
-            if (rewards.Count > 0) litFinalReward.Text = Server.HtmlEncode(rewards[rewards.Count - 1].Name);
-            else litFinalReward.Text = "-";
+            if (rewards.Count > 0)
+                litFinalReward.Text = Server.HtmlEncode(rewards[rewards.Count - 1].Name);
+            else
+                litFinalReward.Text = "-";
 
             // Remaining days
             if (endDate.HasValue)
             {
                 if (endDate.Value.Date == DateTime.Today)
-                { litRemainingDays.Text = T("Due today", "Tamat hari ini"); pnlRemainingDays.Visible = true; pnlDaysLeftBanner.Visible = true; litDaysLeftBanner.Text = T("This mission is due today! Encourage your child to finish up.", "Misi ini tamat hari ini! Galakkan anak anda untuk menyiapkannya."); }
+                {
+                    litRemainingDays.Text = T("Due today", "Tamat hari ini");
+                    pnlRemainingDays.Visible = true;
+                    pnlDaysLeftBanner.Visible = true;
+                    litDaysLeftBanner.Text = T("This mission is due today! Encourage your child to finish up.", "Misi ini tamat hari ini! Galakkan anak anda untuk menyiapkannya.");
+                }
                 else if (endDate.Value > DateTime.Today)
-                { int days = (endDate.Value - DateTime.Today).Days; litRemainingDays.Text = days + " " + T("days", "hari"); pnlRemainingDays.Visible = true; pnlDaysLeftBanner.Visible = days <= 3; if (days <= 3) litDaysLeftBanner.Text = string.Format(T("Your child has {0} days left to complete this mission!", "Anak anda mempunyai {0} hari lagi untuk menyelesaikan misi ini!"), days); }
+                {
+                    int days = (endDate.Value - DateTime.Today).Days;
+                    litRemainingDays.Text = days + " " + T("days", "hari");
+                    pnlRemainingDays.Visible = true;
+                    pnlDaysLeftBanner.Visible = days <= 3;
+                    if (days <= 3)
+                        litDaysLeftBanner.Text = string.Format(T("Your child has {0} days left to complete this mission!", "Anak anda mempunyai {0} hari lagi untuk menyelesaikan misi ini!"), days);
+                }
                 else
-                { int overdue = (DateTime.Today - endDate.Value).Days; litRemainingDays.Text = T("Overdue", "Tertunggak"); pnlRemainingDays.Visible = true; pnlDaysLeftBanner.Visible = true; litDaysLeftBanner.Text = string.Format(T("This mission was due {0} days ago. Keep going!", "Misi ini telah tamat {0} hari yang lalu. Teruskan!"), overdue); }
+                {
+                    int overdue = (DateTime.Today - endDate.Value).Days;
+                    litRemainingDays.Text = T("Overdue", "Tertunggak");
+                    pnlRemainingDays.Visible = true;
+                    pnlDaysLeftBanner.Visible = true;
+                    litDaysLeftBanner.Text = string.Format(T("This mission was due {0} days ago. Keep going!", "Misi ini telah tamat {0} hari yang lalu. Teruskan!"), overdue);
+                }
             }
-            else { pnlRemainingDays.Visible = false; pnlDaysLeftBanner.Visible = false; }
+            else
+            {
+                pnlRemainingDays.Visible = false;
+                pnlDaysLeftBanner.Visible = false;
+            }
         }
 
-        private class TaskInfo { public string Title; public string Action; public bool IsCompleted; }
-        private class RewardInfo { public string Id; public string Name; public string ImageFile; public int RequiredProgress; public bool IsUnlocked; }
+        private class TaskInfo
+        {
+            public string Title;
+            public string Action;
+            public bool IsCompleted;
+        }
+
+        private class RewardInfo
+        {
+            public string Id;
+            public string Name;
+            public string ImageFile;
+            public int RequiredProgress;
+            public bool IsUnlocked;
+        }
+
         private void LoadUnreadBadge()
         {
             try

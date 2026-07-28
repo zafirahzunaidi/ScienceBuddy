@@ -56,9 +56,6 @@ namespace ScienceBuddy
         //  LANGUAGE SWITCHER
 
 
-        /// <summary>
-        /// Returns the current preferred language from Session (EN or BM).
-        /// </summary>
         public string CurrentLanguage
         {
             get
@@ -68,10 +65,6 @@ namespace ScienceBuddy
             }
         }
 
-        /// <summary>
-        /// On first load, if logged in and Session["preferredLanguage"] is empty,
-        /// fetch from User table so the toggle reflects their saved preference.
-        /// </summary>
         private void InitLanguageFromDB()
         {
             if (Session["preferredLanguage"] != null) return; // already set
@@ -106,9 +99,6 @@ namespace ScienceBuddy
             }
         }
 
-        /// <summary>
-        /// Applies active/inactive CSS class to all language toggle buttons.
-        /// </summary>
         private void ApplyLanguageToggleState()
         {
             string lang = CurrentLanguage;
@@ -128,24 +118,16 @@ namespace ScienceBuddy
                 btnLangBM_Header.CssClass = lang == "BM" ? activeClass : defaultClass;
         }
 
-        /// <summary>Click handler — switch to English.</summary>
         protected void btnLangEN_Click(object sender, EventArgs e)
         {
             SetLanguage("EN");
         }
 
-        /// <summary>Click handler — switch to Bahasa Melayu.</summary>
         protected void btnLangBM_Click(object sender, EventArgs e)
         {
             SetLanguage("BM");
         }
 
-        /// <summary>
-        /// Core language switch logic:
-        /// 1) Update Session
-        /// 2) If logged in, update User.preferredLanguage in DB
-        /// 3) Redirect to same page (refresh)
-        /// </summary>
         private void SetLanguage(string lang)
         {
             Session["preferredLanguage"] = lang;
@@ -187,12 +169,6 @@ namespace ScienceBuddy
         //  AUTO-POPULATE USER PROFILE IN HEADER
 
 
-        /// <summary>
-        /// Automatically loads the logged-in user's display name and role
-        /// into the top header widget. Uses Session cache to avoid repeated DB hits.
-        /// Only runs when user is logged in and the header still shows defaults.
-        /// Child pages that call SetUserInfo() manually will override this.
-        /// </summary>
         private void AutoPopulateUserProfile()
         {
             // Only for sidebar layout (logged-in pages)

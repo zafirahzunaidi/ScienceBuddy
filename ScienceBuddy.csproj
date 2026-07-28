@@ -220,7 +220,6 @@
     <Content Include="StudentRegistration.aspx" />
     <Content Include="ParentRegistration.aspx" />
     <Content Include="TeacherRegistration.aspx" />
-    <Content Include="TeacherRegistrationStatus.aspx" />
     <Content Include="ProjectRules.md" />
     <Content Include="connectionStrings.config" />
     <Content Include="Database\DatabaseSchema.md" />
@@ -697,13 +696,6 @@
     </Compile>
     <Compile Include="TeacherRegistration.aspx.designer.cs">
       <DependentUpon>TeacherRegistration.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="TeacherRegistrationStatus.aspx.cs">
-      <DependentUpon>TeacherRegistrationStatus.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="TeacherRegistrationStatus.aspx.designer.cs">
-      <DependentUpon>TeacherRegistrationStatus.aspx</DependentUpon>
     </Compile>
     <Compile Include="Services\StudentLearningAnalysisService.cs" />
     <Compile Include="Site.Master.cs">
