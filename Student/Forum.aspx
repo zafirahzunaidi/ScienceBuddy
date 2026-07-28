@@ -178,6 +178,7 @@
 
 <script>
 function confirmDeletePost(btn) {
+    var postbackRef = btn.getAttribute('href');
     Swal.fire({
         html: '<div style="text-align:center;padding:8px 0;">' +
               '<div style="width:56px;height:56px;border-radius:50%;background:#FEE2E2;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;"><i class="bi bi-trash" style="font-size:1.4rem;color:#DC2626;"></i></div>' +
@@ -193,7 +194,11 @@ function confirmDeletePost(btn) {
         allowOutsideClick: true
     }).then(function(result) {
         if (result.isConfirmed) {
-            __doPostBack(btn.name, '');
+            if (postbackRef && postbackRef.indexOf('__doPostBack') > -1) {
+                eval(postbackRef.replace('javascript:', ''));
+            } else {
+                __doPostBack(btn.name, '');
+            }
         }
     });
     return false;

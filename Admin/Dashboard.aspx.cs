@@ -11,11 +11,11 @@ namespace ScienceBuddy.Admin
 {
     public partial class Dashboard : Page
     {
-        // ── Connection string ────────────────────────────────────────
+        // Connection string 
         private string ConnStr =>
             ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
-        // ── Language helper ──────────────────────────────────────────
+        //  Language helper 
         protected string CurrentLanguage =>
             ((ScienceBuddy.SiteMaster)Master).CurrentLanguage;
 
@@ -24,7 +24,7 @@ namespace ScienceBuddy.Admin
             return CurrentLanguage == "BM" ? bm : en;
         }
 
-        // ── Page Load ────────────────────────────────────────────────
+        //  Page Load 
         protected void Page_Load(object sender, EventArgs e)
         {
             // 1. Authorization
@@ -47,7 +47,7 @@ namespace ScienceBuddy.Admin
             }
         }
 
-        // ── Main load ────────────────────────────────────────────────
+        //  Main load 
         private void LoadDashboard(string userId)
         {
             // Hero date
@@ -104,7 +104,7 @@ namespace ScienceBuddy.Admin
             }
         }
 
-        // ── Admin display name ───────────────────────────────────────
+        // Admin display name 
         private void SetAdminName(SqlConnection conn, string userId)
         {
             const string sql = "SELECT [username] FROM dbo.[User] WHERE [userId] = @uid";
@@ -117,7 +117,7 @@ namespace ScienceBuddy.Admin
             }
         }
 
-        // ── Master user widget ───────────────────────────────────────
+        //  Master user widget 
         private void master_SetUserInfo(SqlConnection conn, string userId)
         {
             const string sql = "SELECT [username] FROM dbo.[User] WHERE [userId] = @uid";
@@ -132,7 +132,7 @@ namespace ScienceBuddy.Admin
             }
         }
 
-        // ── Pending content requests (latest 5) ──────────────────────
+        //  Pending content requests (latest 5) 
         private void LoadPendingRequests(SqlConnection conn)
         {
             const string sql = @"
@@ -198,7 +198,7 @@ namespace ScienceBuddy.Admin
             }
         }
 
-        // ── Recent activity logs ─────────────────────────────────────
+        // Recent activity logs 
         private void LoadRecentLogs(SqlConnection conn)
         {
             const string sql = @"
@@ -254,7 +254,7 @@ namespace ScienceBuddy.Admin
             }
         }
 
-        // ── Recent notifications (latest 5) ────────────────────────────
+        //  Recent notifications (latest 5)
         private void LoadNotifications(SqlConnection conn, string userId)
         {
             const string sql = @"
@@ -320,7 +320,7 @@ namespace ScienceBuddy.Admin
             return (val == null || val == DBNull.Value) ? "" : val.ToString();
         }
 
-        // ── Utility: safe scalar count ───────────────────────────────
+        // Utility: safe scalar count 
         private int SafeCount(SqlConnection conn, string sql)
         {
             try
@@ -334,7 +334,7 @@ namespace ScienceBuddy.Admin
             catch { return 0; }
         }
 
-        // ── Utility: timeline dot colour based on action ─────────────
+        // Utility: timeline dot colour based on action
         private static string GetDotColor(string action, string status)
         {
             if (string.IsNullOrEmpty(action)) return "blue";
@@ -351,7 +351,7 @@ namespace ScienceBuddy.Admin
             return "purple";
         }
 
-        // ── Utility: status badge HTML ───────────────────────────────
+        // Utility: status badge HTML
         protected string BuildStatusBadge(string status)
         {
             if (string.IsNullOrWhiteSpace(status)) return "";
@@ -380,7 +380,7 @@ namespace ScienceBuddy.Admin
                 HttpUtility.HtmlEncode(label));
         }
 
-        // ── Utility: relative time ───────────────────────────────────
+        // Utility: relative time 
         private static string FormatTimeAgo(DateTime dt)
         {
             var span = DateTime.Now - dt;
@@ -391,7 +391,7 @@ namespace ScienceBuddy.Admin
             return dt.ToString("d MMM yyyy");
         }
 
-        // ── Utility: HtmlEncode for inline use in repeater ───────────
+        //Utility: HtmlEncode for inline use in repeater 
         protected string HtmlEncode(object value)
         {
             return HttpUtility.HtmlEncode(value?.ToString() ?? "");

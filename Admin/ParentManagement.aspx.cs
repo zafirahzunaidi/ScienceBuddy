@@ -337,6 +337,24 @@ namespace ScienceBuddy.Admin
             return (val == null || val == DBNull.Value) ? "" : val.ToString();
         }
 
+        private int GetPasswordMinLength()
+        {
+            try
+            {
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand("SELECT [configValue] FROM dbo.[ConfigurationSetting] WHERE [configKey]='Password Minimum Length'", conn))
+                    {
+                        var val = cmd.ExecuteScalar();
+                        if (val != null && val != DBNull.Value) { int r; if (int.TryParse(val.ToString(), out r)) return r; }
+                    }
+                }
+            }
+            catch { }
+            return 8;
+        }
+
         private static string GetInitials(string name)
         {
             if (string.IsNullOrWhiteSpace(name)) return "P";
@@ -385,8 +403,8 @@ namespace ScienceBuddy.Admin
 
             if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(email))
             { Response.Write("{\"success\":false,\"msg\":\"Name, username and email are required.\"}"); return; }
-            if (string.IsNullOrWhiteSpace(password) || password.Length < 8)
-            { Response.Write("{\"success\":false,\"msg\":\"Password must be at least 8 characters.\"}"); return; }
+            if (string.IsNullOrWhiteSpace(password) || password.Length < GetPasswordMinLength())
+            { Response.Write("{\"success\":false,\"msg\":\"Password must be at least " + GetPasswordMinLength() + " characters.\"}"); return; }
 
             using (var conn = new SqlConnection(ConnStr))
             {

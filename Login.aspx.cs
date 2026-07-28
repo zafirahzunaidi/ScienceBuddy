@@ -98,6 +98,15 @@ namespace ScienceBuddy
             // Authentication passed — create session and redirect
             AddLog(userRecord.UserId, "Login", "User logged into the system successfully.", "Success");
             CreateUserSession(userRecord.UserId, enteredUsername, userRecord.Role);
+
+            // For students: check if personality test has been completed
+            if (userRecord.Role == "Student" && !HasCompletedPersonalityTest(userRecord.UserId))
+            {
+                Response.Redirect("~/Student/PersonalityTest.aspx", false);
+                Context.ApplicationInstance.CompleteRequest();
+                return;
+            }
+
             RedirectToDashboard(userRecord.Role);
         }
 
@@ -313,6 +322,25 @@ namespace ScienceBuddy
 
             Response.Redirect(dashboardUrl, false);
             Context.ApplicationInstance.CompleteRequest();
+        }
+
+        private bool HasCompletedPersonalityTest(string userId)
+        {
+            string connStr = ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+            try
+            {
+                using (var conn = new SqlConnection(connStr))
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand("SELECT [personalityId] FROM dbo.[Student] WHERE [userId]=@uid", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@uid", userId);
+                        var result = cmd.ExecuteScalar();
+                        return result != null && result != DBNull.Value && !string.IsNullOrEmpty(result.ToString());
+                    }
+                }
+            }
+            catch { return true; } // On error, allow login to proceed normally
         }
 
         // ────────────────────────────────────────────────────────

@@ -364,6 +364,24 @@ namespace ScienceBuddy.Admin
             return (val == null || val == DBNull.Value) ? "" : val.ToString();
         }
 
+        private int GetPasswordMinLength()
+        {
+            try
+            {
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand("SELECT [configValue] FROM dbo.[ConfigurationSetting] WHERE [configKey]='Password Minimum Length'", conn))
+                    {
+                        var val = cmd.ExecuteScalar();
+                        if (val != null && val != DBNull.Value) { int r; if (int.TryParse(val.ToString(), out r)) return r; }
+                    }
+                }
+            }
+            catch { }
+            return 8;
+        }
+
         private static string GetInitials(string name)
         {
             if (string.IsNullOrWhiteSpace(name)) return "S";
@@ -447,8 +465,8 @@ namespace ScienceBuddy.Admin
             { Response.Write("{\"success\":false,\"msg\":\"Name, username and email are required.\"}"); return; }
             if (string.IsNullOrWhiteSpace(phone))
             { Response.Write("{\"success\":false,\"msg\":\"Phone number is required.\"}"); return; }
-            if (string.IsNullOrWhiteSpace(password) || password.Length < 8)
-            { Response.Write("{\"success\":false,\"msg\":\"Password must be at least 8 characters.\"}"); return; }
+            if (string.IsNullOrWhiteSpace(password) || password.Length < GetPasswordMinLength())
+            { Response.Write("{\"success\":false,\"msg\":\"Password must be at least " + GetPasswordMinLength() + " characters.\"}"); return; }
 
             // Auto-generate nickname from name if not provided
             if (string.IsNullOrWhiteSpace(nickname))
@@ -491,8 +509,8 @@ namespace ScienceBuddy.Admin
                         using (var cmd = new SqlCommand("INSERT INTO dbo.[User]([userId],[username],[password],[email],[role],[preferredLanguage],[status]) VALUES(@uid,@un,@pw,@em,'Student',@lg,'Active')", conn, txn))
                         { cmd.Parameters.AddWithValue("@uid", userId); cmd.Parameters.AddWithValue("@un", username); cmd.Parameters.AddWithValue("@pw", password); cmd.Parameters.AddWithValue("@em", email); cmd.Parameters.AddWithValue("@lg", lang); cmd.ExecuteNonQuery(); }
 
-                        // 2. Insert Student (currentLevelId=LV001, XP=0, personalityId=P001)
-                        using (var cmd = new SqlCommand("INSERT INTO dbo.[Student]([studentId],[userId],[name],[phoneNumber],[nickname],[currentLevelId],[XP],[personalityId],[parentCode]) VALUES(@sid,@uid,@name,@ph,@nick,'LV001',0,'P001',@pc)", conn, txn))
+                        // 2. Insert Student (currentLevelId=LV001, XP=0, personalityId=NULL until personality test)
+                        using (var cmd = new SqlCommand("INSERT INTO dbo.[Student]([studentId],[userId],[name],[phoneNumber],[nickname],[currentLevelId],[XP],[personalityId],[parentCode]) VALUES(@sid,@uid,@name,@ph,@nick,'LV001',0,NULL,@pc)", conn, txn))
                         { cmd.Parameters.AddWithValue("@sid", studentId); cmd.Parameters.AddWithValue("@uid", userId); cmd.Parameters.AddWithValue("@name", name);
                           cmd.Parameters.AddWithValue("@ph", phone);
                           cmd.Parameters.AddWithValue("@nick", nickname);

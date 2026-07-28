@@ -251,8 +251,7 @@ namespace ScienceBuddy.Student
                         command.Parameters.AddWithValue("@qid", quizId);
                         totalAny = (int)command.ExecuteScalar();
                     }
-                    string debugInfo = "<!-- DEBUG: quizId=" + quizId + ", questionsWithStatusFilter=0, totalQuestionsForQuiz=" + totalAny + " -->";
-                    ShowError(T("No Questions", "Tiada Soalan"), T("No questions available for this quiz.", "Tiada soalan untuk kuiz ini.") + debugInfo);
+                    ShowError(T("No Questions", "Tiada Soalan"), T("No questions available for this quiz.", "Tiada soalan untuk kuiz ini."));
                     return;
                 }
 
