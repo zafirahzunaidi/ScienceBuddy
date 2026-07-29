@@ -87,10 +87,6 @@
 
     <%-- Search Bar + Filter Chips --%>
     <div class="st-notifications-bar">
-        <div class="st-notifications-search">
-            <i class="bi bi-search"></i>
-            <asp:TextBox ID="txtSearch" runat="server" placeholder="Search..." />
-        </div>
         <div class="st-notifications-chips">
             <asp:LinkButton ID="btnFilterAll" runat="server" CssClass="st-notifications-chip active" OnClick="btnFilter_Click" CommandArgument="all" CausesValidation="false"><asp:Literal ID="litFilterAll" runat="server" Text="All" /></asp:LinkButton>
             <asp:LinkButton ID="btnFilterUnread" runat="server" CssClass="st-notifications-chip" OnClick="btnFilter_Click" CommandArgument="unread" CausesValidation="false"><asp:Literal ID="litFilterUnread" runat="server" Text="Unread" /></asp:LinkButton>

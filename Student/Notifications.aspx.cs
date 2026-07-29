@@ -103,7 +103,6 @@ namespace ScienceBuddy.Student
             litEmptyTitle.Text = T("All caught up!", "Semuanya dikemas kini!");
             litEmptyDesc.Text = T("No notifications here. Keep learning and updates will appear!", "Tiada pemberitahuan di sini. Teruskan belajar dan kemas kini akan muncul!");
             litEmptyBtn.Text = T("Continue Learning", "Teruskan Belajar");
-            txtSearch.Attributes["placeholder"] = T("Search notifications...", "Cari pemberitahuan...");
 
             // Update filter chip active state
             string filter;
@@ -164,8 +163,6 @@ namespace ScienceBuddy.Student
                 filter = "all";
             }
 
-            string search = txtSearch.Text.Trim();
-
             string sql = @"
                 SELECT notificationId, titleEN, titleBM, messageEN, messageBM,
                        isRead, createdAt
@@ -181,10 +178,6 @@ namespace ScienceBuddy.Student
                 sql += " AND isRead = 1";
             }
 
-            if (!string.IsNullOrEmpty(search))
-            {
-                sql += " AND (titleEN LIKE @search OR titleBM LIKE @search OR messageEN LIKE @search OR messageBM LIKE @search)";
-            }
 
             sql += " ORDER BY createdAt DESC";
 
@@ -193,10 +186,6 @@ namespace ScienceBuddy.Student
             using (SqlCommand command = new SqlCommand(sql, connection))
             {
                 command.Parameters.AddWithValue("@userId", userId);
-                if (!string.IsNullOrEmpty(search))
-                {
-                    command.Parameters.AddWithValue("@search", "%" + search + "%");
-                }
                 SqlDataAdapter adapter = new SqlDataAdapter(command);
                 dataTable = new DataTable();
                 connection.Open();

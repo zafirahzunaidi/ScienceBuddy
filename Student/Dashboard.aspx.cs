@@ -320,10 +320,6 @@ namespace ScienceBuddy.Student
 
         private int GetBadgeCount(SqlConnection connection, string studentId)
         {
-            if (!TableExists(connection, "StudentBadge"))
-            {
-                return 0;
-            }
             const string sql = "SELECT COUNT(*) FROM StudentBadge WHERE studentId = @studentId";
             using (SqlCommand command = new SqlCommand(sql, connection))
             {
@@ -334,10 +330,6 @@ namespace ScienceBuddy.Student
 
         private int GetLessonCount(SqlConnection connection, string studentId)
         {
-            if (!TableExists(connection, "LessonProgress"))
-            {
-                return 0;
-            }
             const string sql = @"
                 SELECT COUNT(*) FROM LessonProgress
                 WHERE studentId = @studentId
@@ -351,10 +343,6 @@ namespace ScienceBuddy.Student
 
         private int GetUnreadNotifCount(SqlConnection connection, string userId)
         {
-            if (!TableExists(connection, "Notification"))
-            {
-                return 0;
-            }
             const string sql = @"SELECT COUNT(*) FROM Notification
                 WHERE toUserId = @userId AND isRead = 0";
             using (SqlCommand command = new SqlCommand(sql, connection))
@@ -366,14 +354,6 @@ namespace ScienceBuddy.Student
 
         private void LoadContinueLearning(SqlConnection connection, string studentId, string lang)
         {
-            // If Lesson/Subtopic/Unit tables x exist yet, show empty state
-            if (!TableExists(connection, "Lesson") ||
-                !TableExists(connection, "Subtopic") ||
-                !TableExists(connection, "Unit"))
-            {
-                ShowContinueEmpty();
-                return;
-            }
 
             // Find the 1st lesson not yet completed by this student
             string sql = @"
@@ -465,11 +445,6 @@ namespace ScienceBuddy.Student
 
         private void LoadNotifications(SqlConnection connection, string userId, string lang, int unread = 0)
         {
-            if (!TableExists(connection, "Notification"))
-            {
-                ShowNotificationsEmpty();
-                return;
-            }
 
             if (unread > 0)
             {

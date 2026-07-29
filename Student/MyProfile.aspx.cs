@@ -418,22 +418,47 @@ namespace ScienceBuddy.Student
             pnlSuccess.Visible = false;
             pnlSaveError.Visible = false;
 
-            // Validate required fields
+            string studentId = ViewState["studentId"] as string;
+            string userId = ViewState["userId"] as string;
+            string phone = txtPhone.Text.Trim();
+            string lang = ddlLanguage.SelectedValue;
             string name = txtName.Text.Trim();
             string nickname = txtNickname.Text.Trim();
             string email = txtEmail.Text.Trim();
+
+            // Validate required fields
 
             if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(nickname) || string.IsNullOrEmpty(email))
             {
                 litSaveError.Text = T("Please fill in all required fields.", "Sila isi semua maklumat yang diperlukan.");
                 pnlSaveError.Visible = true;
+                LoadProfile();
                 return;
             }
 
-            string studentId = ViewState["studentId"] as string;
-            string userId = ViewState["userId"] as string;
-            string phone = txtPhone.Text.Trim();
-            string lang = ddlLanguage.SelectedValue;
+            // Validate phone number format (Malaysian — starts with 01, 10-11 digits)
+            if (!string.IsNullOrEmpty(phone))
+            {
+                if (!System.Text.RegularExpressions.Regex.IsMatch(phone, @"^01[0-9]{8,9}$"))
+                {
+                    litSaveError.Text = T("Please enter a valid Malaysian phone number (e.g. 0123456789).",
+                                          "Sila masukkan nombor telefon Malaysia yang sah (cth. 0123456789).");
+                    pnlSaveError.Visible = true;
+                    LoadProfile();
+                    return;
+                }
+            }
+
+            // Validate email format
+            if (!System.Text.RegularExpressions.Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+            {
+                litSaveError.Text = T("Please enter a valid email address.",
+                                      "Sila masukkan alamat emel yang sah.");
+                pnlSaveError.Visible = true;
+                LoadProfile();
+                return;
+            }
+
 
             using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
