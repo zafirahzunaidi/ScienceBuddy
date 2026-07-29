@@ -247,7 +247,7 @@
                                             </div>
                                             <a href='<%# ResolveUrl("~/Teacher/ForumReply.aspx") + "?forumId=" + Eval("forumId") %>'
                                                class="tc-forum-reply-more-link">
-                                                <%: T("View Discussion ?","Lihat Perbincangan ?") %>
+                                                <%: T("View Discussion","Lihat Perbincangan") %> <i class="bi bi-arrow-right"></i>
                                             </a>
                                         </div>
                                     </div>

@@ -398,7 +398,7 @@
                         <%: T("Upload Image","Muat Naik Imej") %>
                     </span>
                     <span class="tc-question-builder-img-upload-sub">
-                        <%: T("Optional ? PNG, JPG, GIF up to 5 MB","Pilihan ? PNG, JPG, GIF sehingga 5 MB") %>
+                        <%: T("Optional \u00B7 PNG, JPG, GIF up to 5 MB","Pilihan \u00B7 PNG, JPG, GIF sehingga 5 MB") %>
                     </span>
                 </div>
                 <input type="file" id="pqImgInput" accept="image/*" onchange="pqHandleImg(this)" style="display:none;" />

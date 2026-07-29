@@ -213,11 +213,11 @@
 </div>
 <div style="padding:24px 28px;">
 <div class="ad-parent-management-add-grid">
-<div class="ad-parent-management-add-field"><label class="ad-parent-management-add-label"><%= T("Full Name *","Nama Penuh *") %></label><input id="p_name" class="ad-parent-management-add-input" type="text" /><div class="ad-parent-management-add-err" id="pe_name"><%= T("Required","Diperlukan") %></div></div>
-<div class="ad-parent-management-add-field"><label class="ad-parent-management-add-label"><%= T("Username *","Nama Pengguna *") %></label><input id="p_username" class="ad-parent-management-add-input" type="text" /><div class="ad-parent-management-add-err" id="pe_username"><%= T("Required","Diperlukan") %></div></div>
-<div class="ad-parent-management-add-field"><label class="ad-parent-management-add-label"><%= T("Email *","E-mel *") %></label><input id="p_email" class="ad-parent-management-add-input" type="email" /><div class="ad-parent-management-add-err" id="pe_email"><%= T("Required","Diperlukan") %></div></div>
-<div class="ad-parent-management-add-field"><label class="ad-parent-management-add-label"><%= T("Phone Number","Nombor Telefon") %></label><input id="p_phone" class="ad-parent-management-add-input" type="text" /></div>
-<div class="ad-parent-management-add-field"><label class="ad-parent-management-add-label"><%= T("Password *","Kata Laluan *") %></label><input id="p_pw" class="ad-parent-management-add-input" type="password" /><div class="ad-parent-management-add-err" id="pe_pw"><%= T("Min 8 characters","Min 8 aksara") %></div></div>
+<div class="ad-parent-management-add-field"><label class="ad-parent-management-add-label"><%= T("Full Name *","Nama Penuh *") %></label><input id="p_name" class="ad-parent-management-add-input" type="text" /><div class="ad-parent-management-add-err" id="pe_name"><%= T("Full name is required.","Nama penuh diperlukan.") %></div></div>
+<div class="ad-parent-management-add-field"><label class="ad-parent-management-add-label"><%= T("Username *","Nama Pengguna *") %></label><input id="p_username" class="ad-parent-management-add-input" type="text" /><div class="ad-parent-management-add-err" id="pe_username"><%= T("Username is required.","Nama pengguna diperlukan.") %></div></div>
+<div class="ad-parent-management-add-field"><label class="ad-parent-management-add-label"><%= T("Email *","E-mel *") %></label><input id="p_email" class="ad-parent-management-add-input" type="email" placeholder="example@email.com" /><div class="ad-parent-management-add-err" id="pe_email"><%= T("Enter a valid email address (e.g. example@email.com)","Masukkan alamat e-mel yang sah (cth: example@email.com)") %></div></div>
+<div class="ad-parent-management-add-field"><label class="ad-parent-management-add-label"><%= T("Phone Number","Nombor Telefon") %></label><input id="p_phone" class="ad-parent-management-add-input" type="tel" placeholder="01X-XXXXXXX" maxlength="12" /><div class="ad-parent-management-add-err" id="pe_phone"><%= T("Enter a valid Malaysian phone number (e.g. 012-3456789)","Masukkan nombor telefon Malaysia yang sah (cth: 012-3456789)") %></div></div>
+<div class="ad-parent-management-add-field"><label class="ad-parent-management-add-label"><%= T("Password *","Kata Laluan *") %></label><input id="p_pw" class="ad-parent-management-add-input" type="password" /><div class="ad-parent-management-add-err" id="pe_pw"><%= T("Password must be at least 8 characters.","Kata laluan mestilah sekurang-kurangnya 8 aksara.") %></div></div>
 <div class="ad-parent-management-add-field"><label class="ad-parent-management-add-label"><%= T("Confirm Password *","Sahkan Kata Laluan *") %></label><input id="p_pw2" class="ad-parent-management-add-input" type="password" /><div class="ad-parent-management-add-err" id="pe_pw2"><%= T("Passwords do not match","Kata laluan tidak sama") %></div></div>
 <div class="ad-parent-management-add-field"><label class="ad-parent-management-add-label"><%= T("Preferred Language","Bahasa Pilihan") %></label><select id="p_lang" class="ad-parent-management-add-input"><option value="EN">English</option><option value="BM">Bahasa Melayu</option></select></div>
 </div>
@@ -237,11 +237,12 @@ function submitAddParent(){
     document.querySelectorAll('#addParentOverlay .ad-parent-management-add-input').forEach(function(el){el.classList.remove('error');});
     if(!n){document.getElementById('pe_name').style.display='block';document.getElementById('p_name').classList.add('error');ok=false;}
     if(!u){document.getElementById('pe_username').style.display='block';document.getElementById('p_username').classList.add('error');ok=false;}
-    if(!e||e.indexOf('@')<0){document.getElementById('pe_email').style.display='block';document.getElementById('p_email').classList.add('error');ok=false;}
+    if(!e||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){document.getElementById('pe_email').style.display='block';document.getElementById('p_email').classList.add('error');ok=false;}
     if(pw.length<8){document.getElementById('pe_pw').style.display='block';document.getElementById('p_pw').classList.add('error');ok=false;}
     if(pw!==pw2){document.getElementById('pe_pw2').style.display='block';document.getElementById('p_pw2').classList.add('error');ok=false;}
     if(!ok)return;
     var ph=document.getElementById('p_phone').value.trim(),lang=document.getElementById('p_lang').value;
+    if(ph){var phoneRegex=/^01[0-9]-?\d{7,8}$/;if(!phoneRegex.test(ph.replace(/\s/g,''))){document.getElementById('pe_phone').style.display='block';document.getElementById('p_phone').classList.add('error');return;}}
     closeAddParent();
     Swal.fire({
         title:'<%= T("Create Parent Account?","Cipta Akaun Ibu Bapa?") %>',
