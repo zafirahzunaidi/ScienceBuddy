@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ScienceBuddy.Parent;
+using System;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
@@ -613,6 +614,24 @@ namespace ScienceBuddy.Student
                     }
                 }
                 catch (Exception ex) { System.Diagnostics.Debug.WriteLine("Get parent userId error: " + ex.Message); }
+
+                using (SqlCommand cmd = new SqlCommand("DELETE FROM SPTask WHERE studyPlanId IN (SELECT studyPlanId FROM StudyPlan WHERE studentParentId=@spid)", connection))
+                {
+                    cmd.Parameters.AddWithValue("@spid", studentParentId);
+                    cmd.ExecuteNonQuery();
+                }
+
+                using (SqlCommand cmd = new SqlCommand("DELETE FROM SPReward WHERE studyPlanId IN(SELECT studyPlanId FROM StudyPlan WHERE studentParentId = @spid)", connection))
+                {
+                    cmd.Parameters.AddWithValue("@spid", studentParentId);
+                    cmd.ExecuteNonQuery();
+                }
+
+                using (SqlCommand cmd = new SqlCommand("DELETE FROM StudyPlan WHERE studentParentId=@spid", connection))
+                {
+                    cmd.Parameters.AddWithValue("@spid", studentParentId);
+                    cmd.ExecuteNonQuery();
+                }
 
                 using (SqlCommand cmd = new SqlCommand("DELETE FROM StudentParent WHERE studentParentId=@spid", connection))
                 {

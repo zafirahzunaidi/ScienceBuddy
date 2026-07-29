@@ -459,6 +459,25 @@ namespace ScienceBuddy.Student
                     fuAttachment.SaveAs(savePath);
                     attachmentFile = "Images/PrivateMessage/" + uniqueName;
                 }
+
+                else
+                {
+                    // File was invalid — show error to student
+                    if (!isAllowed)
+                    {
+                        // Invalid file type
+                        litError.Text = T("File type not allowed. Accepted: images, PDF, Word, PowerPoint, Excel, TXT.",
+                                          "Jenis fail tidak dibenarkan. Diterima: imej, PDF, Word, PowerPoint, Excel, TXT.");
+                    }
+                    else
+                    {
+                        // File too large
+                        litError.Text = T("File is too large. Maximum size is 10 MB.",
+                                          "Fail terlalu besar. Saiz maksimum ialah 10 MB.");
+                    }
+                    pnlError.Visible = true;
+                    return;
+                }
             }
 
             // If no text and no valid file, return

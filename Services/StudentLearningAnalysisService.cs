@@ -102,8 +102,7 @@ namespace ScienceBuddy.Services
                 aiText = CreateFallbackText(snapshot);
             }
 
-            LearningAnalysisData finalAnalysis =
-                BuildFinalAnalysis(snapshot, aiText);
+            LearningAnalysisData finalAnalysis = BuildFinalAnalysis(snapshot, aiText);
 
             SaveAnalysis(studentId, finalAnalysis);
         }
@@ -993,8 +992,7 @@ namespace ScienceBuddy.Services
                     "The AI report JSON was incomplete.");
             }
 
-            AIText fallbackText =
-                CreateFallbackText(snapshot);
+            AIText fallbackText = CreateFallbackText(snapshot);
 
             if (string.IsNullOrWhiteSpace(
                 aiText.StudentAdvice))
@@ -1080,44 +1078,27 @@ namespace ScienceBuddy.Services
 
         
 
-        private string SendAIRequest(
-            string endpoint,
-            string apiKey,
-            string jsonPayload)
+        private string SendAIRequest(string endpoint, string apiKey, string jsonPayload)
         {
-            byte[] requestBytes =
-                Encoding.UTF8.GetBytes(jsonPayload);
+            byte[] requestBytes = Encoding.UTF8.GetBytes(jsonPayload);
 
-            HttpWebRequest request =
-                (HttpWebRequest)WebRequest.Create(endpoint);
-
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(endpoint);
             request.Method = "POST";
             request.ContentType = "application/json";
             request.Accept = "application/json";
-            request.Headers["Authorization"] =
-                "Bearer " + apiKey;
+            request.Headers["Authorization"] = "Bearer " + apiKey;
             request.Timeout = 20000;
-            request.ContentLength =
-                requestBytes.Length;
+            request.ContentLength = requestBytes.Length;
 
-            using (Stream requestStream =
-                request.GetRequestStream())
+            using (Stream requestStream = request.GetRequestStream())
             {
-                requestStream.Write(
-                    requestBytes,
-                    0,
-                    requestBytes.Length);
+                requestStream.Write(requestBytes, 0, requestBytes.Length);
             }
 
             try
             {
-                using (HttpWebResponse response =
-                    (HttpWebResponse)
-                    request.GetResponse())
-                using (StreamReader reader =
-                    new StreamReader(
-                        response.GetResponseStream(),
-                        Encoding.UTF8))
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                using (StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8))
                 {
                     return reader.ReadToEnd();
                 }
@@ -1126,16 +1107,10 @@ namespace ScienceBuddy.Services
             {
                 if (ex.Response != null)
                 {
-                    using (Stream errorStream =
-                        ex.Response.GetResponseStream())
-                    using (StreamReader reader =
-                        new StreamReader(
-                            errorStream,
-                            Encoding.UTF8))
+                    using (Stream errorStream = ex.Response.GetResponseStream())
+                    using (StreamReader reader = new StreamReader(errorStream, Encoding.UTF8))
                     {
-                        throw new Exception(
-                            "NVIDIA API error: " +
-                            reader.ReadToEnd());
+                        throw new Exception("NVIDIA API error: " + reader.ReadToEnd());
                     }
                 }
 
@@ -1143,86 +1118,46 @@ namespace ScienceBuddy.Services
             }
         }
 
-        private string ReadAIContent(
-            string responseBody,
-            JavaScriptSerializer serializer)
+        private string ReadAIContent(string responseBody, JavaScriptSerializer serializer)
         {
-            Dictionary<string, object> response =
-                serializer.DeserializeObject(responseBody)
-                as Dictionary<string, object>;
+            Dictionary<string, object> response = serializer.DeserializeObject(responseBody) as Dictionary<string, object>;
 
-            if (response == null ||
-                !response.ContainsKey("choices"))
+            if (response == null || !response.ContainsKey("choices"))
             {
-                throw new Exception(
-                    "The AI response had no choices.");
+                throw new Exception("The AI response had no choices.");
             }
 
-            object[] choices =
-                response["choices"] as object[];
+            object[] choices = response["choices"] as object[];
 
-            if (choices == null ||
-                choices.Length == 0)
+            if (choices == null || choices.Length == 0)
             {
-                throw new Exception(
-                    "The AI returned no answer.");
+                throw new Exception("The AI returned no answer.");
             }
 
-            Dictionary<string, object> firstChoice =
-                choices[0]
-                as Dictionary<string, object>;
-
-            Dictionary<string, object> message =
-                firstChoice["message"]
-                as Dictionary<string, object>;
-
-            string content =
-                Convert.ToString(message["content"]);
+            Dictionary<string, object> firstChoice = choices[0] as Dictionary<string, object>;
+            Dictionary<string, object> message = firstChoice["message"] as Dictionary<string, object>;
+            string content = Convert.ToString(message["content"]);
 
             if (string.IsNullOrWhiteSpace(content))
             {
-                throw new Exception(
-                    "The AI returned an empty answer.");
+                throw new Exception("The AI returned an empty answer.");
             }
 
             return content.Trim();
         }
 
-        private AIText CreateFallbackText(
-            LearningSnapshot snapshot)
+        private AIText CreateFallbackText(LearningSnapshot snapshot)
         {
             AIText text = new AIText();
 
             if (snapshot.Language == "BM")
             {
-                text.OverallSummary =
-                    "Analisis ini berdasarkan " +
-                    snapshot.TotalQuizAttempts +
-                    " percubaan kuiz dengan purata skor " +
-                    snapshot.AverageQuizScore
-                        .ToString("0.0") +
-                    "%.";
-
-                text.StudentAdvice =
-                    "Ulang kaji topik yang masih lemah " +
-                    "sebelum mencuba kuiz seterusnya.";
-
-                text.ParentGuidance =
-                    "Galakkan sesi ulang kaji yang pendek " +
-                    "dan konsisten.";
-
-                text.LessonReason =
-                    "Pelajaran ini dipilih berdasarkan " +
-                    "topik yang paling memerlukan ulang kaji.";
-
-                text.QuizReason =
-                    "Tahap kesukaran ini sepadan dengan " +
-                    "prestasi kuiz terkini.";
-
-                text.LabReason =
-                    "Makmal ini membantu mengukuhkan konsep " +
-                    "melalui aktiviti interaktif.";
-
+                text.OverallSummary = "Analisis ini berdasarkan " + snapshot.TotalQuizAttempts + " percubaan kuiz dengan purata skor " + snapshot.AverageQuizScore.ToString("0.0") + "%.";
+                text.StudentAdvice = "Ulang kaji topik yang masih lemah sebelum mencuba kuiz seterusnya.";
+                text.ParentGuidance = "Galakkan sesi ulang kaji yang pendek dan konsisten.";
+                text.LessonReason = "Pelajaran ini dipilih berdasarkan topik yang paling memerlukan ulang kaji.";
+                text.QuizReason = "Tahap kesukaran ini sepadan dengan prestasi kuiz terkini.";
+                text.LabReason = "Makmal ini membantu mengukuhkan konsep melalui aktiviti interaktif.";
                 text.StudyTips = new List<string>
                 {
                     "Semak jawapan kuiz yang salah.",
@@ -1232,35 +1167,12 @@ namespace ScienceBuddy.Services
             }
             else
             {
-                text.OverallSummary =
-                    "This analysis is based on " +
-                    snapshot.TotalQuizAttempts +
-                    " quiz attempt(s), with an average " +
-                    "score of " +
-                    snapshot.AverageQuizScore
-                        .ToString("0.0") +
-                    "%.";
-
-                text.StudentAdvice =
-                    "Review weaker topics before attempting " +
-                    "the next quiz.";
-
-                text.ParentGuidance =
-                    "Encourage short and consistent " +
-                    "revision sessions.";
-
-                text.LessonReason =
-                    "This lesson was selected from the topic " +
-                    "that currently needs the most revision.";
-
-                text.QuizReason =
-                    "This difficulty matches the student's " +
-                    "recent quiz performance.";
-
-                text.LabReason =
-                    "This lab reinforces the concept through " +
-                    "an interactive activity.";
-
+                text.OverallSummary = "This analysis is based on " + snapshot.TotalQuizAttempts + " quiz attempt(s), with an average score of " + snapshot.AverageQuizScore.ToString("0.0") + "%.";
+                text.StudentAdvice = "Review weaker topics before attempting the next quiz.";
+                text.ParentGuidance = "Encourage short and consistent revision sessions.";
+                text.LessonReason = "This lesson was selected from the topic that currently needs the most revision.";
+                text.QuizReason = "This difficulty matches the student's recent quiz performance.";
+                text.LabReason = "This lab reinforces the concept through an interactive activity.";
                 text.StudyTips = new List<string>
                 {
                     "Review incorrectly answered questions.",
@@ -1272,108 +1184,57 @@ namespace ScienceBuddy.Services
             return text;
         }
 
-        private LearningAnalysisData BuildFinalAnalysis(
-            LearningSnapshot snapshot,
-            AIText aiText)
+        private LearningAnalysisData BuildFinalAnalysis(LearningSnapshot snapshot, AIText aiText)
         {
-            LearningAnalysisData analysis =
-                new LearningAnalysisData();
+            LearningAnalysisData analysis = new LearningAnalysisData();
 
+            // From snapshot
             analysis.ResultId = snapshot.ResultId;
-            analysis.GeneratedAt =
-                DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            analysis.GeneratedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             analysis.Confidence = snapshot.Confidence;
+            analysis.AverageQuizScore = snapshot.AverageQuizScore;
+            analysis.RecentQuizAverage = snapshot.RecentQuizAverage;
+            analysis.TotalQuizAttempts = snapshot.TotalQuizAttempts;
+            analysis.StrongTopics = snapshot.StrongTopics;
+            analysis.WeakTopics = snapshot.WeakTopics;
+            analysis.RecommendedLessonId = snapshot.RecommendedLessonId;
+            analysis.RecommendedLessonTitle = snapshot.RecommendedLessonTitle;
+            analysis.RecommendedQuizDifficulty = snapshot.RecommendedQuizDifficulty;
+            analysis.RecommendedLabId = snapshot.RecommendedLabId;
+            analysis.RecommendedLabTitle = snapshot.RecommendedLabTitle;
+            analysis.PersonalityName = snapshot.PersonalityName;
+            analysis.CurrentQuizScore = snapshot.CurrentQuizScore;
+            analysis.PreviousRecentAverage = snapshot.PreviousRecentAverage;
+            analysis.ScoreChange = snapshot.ScoreChange;
+            analysis.PerformanceTrend = snapshot.PerformanceTrend;
 
-            analysis.AverageQuizScore =
-                snapshot.AverageQuizScore;
-            analysis.RecentQuizAverage =
-                snapshot.RecentQuizAverage;
-            analysis.TotalQuizAttempts =
-                snapshot.TotalQuizAttempts;
-
-            analysis.StrongTopics =
-                snapshot.StrongTopics;
-            analysis.WeakTopics =
-                snapshot.WeakTopics;
-
-            analysis.RecommendedLessonId =
-                snapshot.RecommendedLessonId;
-            analysis.RecommendedLessonTitle =
-                snapshot.RecommendedLessonTitle;
-            analysis.RecommendedQuizDifficulty =
-                snapshot.RecommendedQuizDifficulty;
-            analysis.RecommendedLabId =
-                snapshot.RecommendedLabId;
-            analysis.RecommendedLabTitle =
-                snapshot.RecommendedLabTitle;
-
-            analysis.PersonalityName =
-                snapshot.PersonalityName;
-
-            analysis.CurrentQuizScore =
-                snapshot.CurrentQuizScore;
-
-            analysis.PreviousRecentAverage =
-                snapshot.PreviousRecentAverage;
-
-            analysis.ScoreChange =
-                snapshot.ScoreChange;
-
-            analysis.PerformanceTrend =
-                snapshot.PerformanceTrend;
-
-            analysis.ProgressHeadline =
-                aiText.ProgressHeadline;
-
-            analysis.CelebrationMessage =
-                aiText.CelebrationMessage;
-
-            analysis.PersonalityInsight =
-                aiText.PersonalityInsight;
-
-            analysis.NextMissionTitle =
-                aiText.NextMissionTitle;
-
-            analysis.NextMissionSteps =
-                aiText.NextMissionSteps;
-
-            analysis.OverallSummary =
-                aiText.OverallSummary;
-            analysis.StudentAdvice =
-                aiText.StudentAdvice;
-            analysis.ParentGuidance =
-                aiText.ParentGuidance;
-            analysis.LessonReason =
-                aiText.LessonReason;
-            analysis.QuizReason =
-                aiText.QuizReason;
-            analysis.LabReason =
-                aiText.LabReason;
-            analysis.StudyTips =
-                aiText.StudyTips;
-
-
+            // From AI response
+            analysis.ProgressHeadline = aiText.ProgressHeadline;
+            analysis.CelebrationMessage = aiText.CelebrationMessage;
+            analysis.PersonalityInsight = aiText.PersonalityInsight;
+            analysis.NextMissionTitle = aiText.NextMissionTitle;
+            analysis.NextMissionSteps = aiText.NextMissionSteps;
+            analysis.OverallSummary = aiText.OverallSummary;
+            analysis.StudentAdvice = aiText.StudentAdvice;
+            analysis.ParentGuidance = aiText.ParentGuidance;
+            analysis.LessonReason = aiText.LessonReason;
+            analysis.QuizReason = aiText.QuizReason;
+            analysis.LabReason = aiText.LabReason;
+            analysis.StudyTips = aiText.StudyTips;
 
             return analysis;
         }
 
-        private void SaveAnalysis(
-            string studentId,
-            LearningAnalysisData analysis)
+        private void SaveAnalysis(string studentId, LearningAnalysisData analysis)
         {
-            JavaScriptSerializer serializer =
-                new JavaScriptSerializer();
+            JavaScriptSerializer serializer = new JavaScriptSerializer();
+            string analysisJson = serializer.Serialize(analysis);
 
-            string analysisJson =
-                serializer.Serialize(analysis);
-
-            using (SqlConnection connection =
-                new SqlConnection(_connectionString))
+            using (SqlConnection connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
 
-                using (SqlTransaction transaction =
-                    connection.BeginTransaction())
+                using (SqlTransaction transaction = connection.BeginTransaction())
                 {
                     try
                     {
@@ -1383,23 +1244,13 @@ namespace ScienceBuddy.Services
                             WHERE studentId = @studentId
                             AND isLatest = 1";
 
-                        using (SqlCommand command =
-                            new SqlCommand(
-                                updateSql,
-                                connection,
-                                transaction))
+                        using (SqlCommand command = new SqlCommand(updateSql, connection, transaction))
                         {
-                            command.Parameters.AddWithValue(
-                                "@studentId",
-                                studentId);
-
+                            command.Parameters.AddWithValue("@studentId", studentId);
                             command.ExecuteNonQuery();
                         }
 
-                        string analysisId =
-                            GetNextAnalysisId(
-                                connection,
-                                transaction);
+                        string analysisId = GetNextAnalysisId(connection, transaction);
 
                         const string insertSql = @"
                             INSERT INTO AILearningAnalysis
@@ -1427,52 +1278,16 @@ namespace ScienceBuddy.Services
                                 1
                             )";
 
-                        using (SqlCommand command =
-                            new SqlCommand(
-                                insertSql,
-                                connection,
-                                transaction))
+                        using (SqlCommand command = new SqlCommand(insertSql, connection, transaction))
                         {
-                            command.Parameters.AddWithValue(
-                                "@analysisId",
-                                analysisId);
-
-                            command.Parameters.AddWithValue(
-                                "@studentId",
-                                studentId);
-
-                            command.Parameters.AddWithValue(
-                                "@analysisJson",
-                                analysisJson);
-
-                            command.Parameters.AddWithValue(
-                                "@overallSummary",
-                                Truncate(
-                                    analysis.OverallSummary,
-                                    500));
-
-                            command.Parameters.AddWithValue(
-                                "@strongTopics",
-                                DbValue(
-                                    Truncate(
-                                        analysis.StrongTopics,
-                                        500)));
-
-                            command.Parameters.AddWithValue(
-                                "@weakTopics",
-                                DbValue(
-                                    Truncate(
-                                        analysis.WeakTopics,
-                                        500)));
-
-                            command.Parameters.AddWithValue(
-                                "@averageScore",
-                                analysis.AverageQuizScore);
-
-                            command.Parameters.AddWithValue(
-                                "@totalAttempts",
-                                analysis.TotalQuizAttempts);
-
+                            command.Parameters.AddWithValue("@analysisId", analysisId);
+                            command.Parameters.AddWithValue("@studentId", studentId);
+                            command.Parameters.AddWithValue("@analysisJson", analysisJson);
+                            command.Parameters.AddWithValue("@overallSummary", Truncate(analysis.OverallSummary, 500));
+                            command.Parameters.AddWithValue("@strongTopics", DbValue(Truncate(analysis.StrongTopics, 500)));
+                            command.Parameters.AddWithValue("@weakTopics", DbValue(Truncate(analysis.WeakTopics, 500)));
+                            command.Parameters.AddWithValue("@averageScore", analysis.AverageQuizScore);
+                            command.Parameters.AddWithValue("@totalAttempts", analysis.TotalQuizAttempts);
                             command.ExecuteNonQuery();
                         }
 
@@ -1487,48 +1302,23 @@ namespace ScienceBuddy.Services
             }
         }
 
-        private string GetNextAnalysisId(
-            SqlConnection connection,
-            SqlTransaction transaction)
+        private string GetNextAnalysisId(SqlConnection connection, SqlTransaction transaction)
         {
             const string sql = @"
-                SELECT ISNULL(
-                    MAX(
-                        CAST(
-                            SUBSTRING(
-                                analysisId,
-                                2,
-                                LEN(analysisId) - 1
-                            ) AS INT
-                        )
-                    ),
-                    0
-                )
+                SELECT ISNULL(MAX(CAST(SUBSTRING(analysisId, 2, LEN(analysisId) - 1) AS INT)), 0)
                 FROM AILearningAnalysis
                 WHERE analysisId LIKE 'A[0-9]%'";
 
-            using (SqlCommand command =
-                new SqlCommand(
-                    sql,
-                    connection,
-                    transaction))
+            using (SqlCommand command = new SqlCommand(sql, connection, transaction))
             {
-                int lastNumber =
-                    Convert.ToInt32(
-                        command.ExecuteScalar());
-
-                return "A" +
-                    (lastNumber + 1).ToString("D3");
+                int lastNumber = Convert.ToInt32(command.ExecuteScalar());
+                return "A" + (lastNumber + 1).ToString("D3");
             }
         }
 
-        private static string ChooseLanguage(
-            string english,
-            string malay,
-            string language)
+        private static string ChooseLanguage(string english, string malay, string language)
         {
-            string selected =
-                language == "BM" ? malay : english;
+            string selected = language == "BM" ? malay : english;
 
             if (!string.IsNullOrWhiteSpace(selected))
             {
@@ -1543,14 +1333,11 @@ namespace ScienceBuddy.Services
             return malay;
         }
 
-        private static string ReadString(
-            IDataRecord reader,
-            string columnName)
+        private static string ReadString(IDataRecord reader, string columnName)
         {
             object value = reader[columnName];
 
-            if (value == null ||
-                value == DBNull.Value)
+            if (value == null || value == DBNull.Value)
             {
                 return "";
             }
@@ -1558,32 +1345,24 @@ namespace ScienceBuddy.Services
             return value.ToString();
         }
 
-        private static string RemoveCodeFences(
-            string text)
+        private static string RemoveCodeFences(string text)
         {
             string cleaned = text.Trim();
 
             if (cleaned.StartsWith("```"))
             {
-                int firstNewLine =
-                    cleaned.IndexOf('\n');
+                int firstNewLine = cleaned.IndexOf('\n');
 
                 if (firstNewLine >= 0)
                 {
-                    cleaned =
-                        cleaned.Substring(
-                            firstNewLine + 1);
+                    cleaned = cleaned.Substring(firstNewLine + 1);
                 }
 
-                int finalFence =
-                    cleaned.LastIndexOf("```");
+                int finalFence = cleaned.LastIndexOf("```");
 
                 if (finalFence >= 0)
                 {
-                    cleaned =
-                        cleaned.Substring(
-                            0,
-                            finalFence);
+                    cleaned = cleaned.Substring(0, finalFence);
                 }
             }
 
@@ -1600,12 +1379,9 @@ namespace ScienceBuddy.Services
             return text;
         }
 
-        private static string Truncate(
-            string text,
-            int maximumLength)
+        private static string Truncate(string text, int maximumLength)
         {
-            if (string.IsNullOrEmpty(text) ||
-                text.Length <= maximumLength)
+            if (string.IsNullOrEmpty(text) || text.Length <= maximumLength)
             {
                 return text;
             }

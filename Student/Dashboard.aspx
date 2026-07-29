@@ -123,7 +123,7 @@
             <a href="<%: ResolveUrl("~/Student/MyLearning.aspx") %>" class="st-dash-hero-btn st-dash-hero-btn-primary">
                 <i class="bi bi-play-circle-fill"></i> <asp:Literal ID="litHeroCTA1" runat="server" Text="Continue Learning" />
             </a>
-            <a href="<%: ResolveUrl("~/Student/Progress.aspx") %>" class="st-dash-hero-btn st-dash-hero-btn-secondary">
+            <a href="<%: ResolveUrl("~/Student/ProgressRewards.aspx") %>" class="st-dash-hero-btn st-dash-hero-btn-secondary">
                 <i class="bi bi-trophy-fill"></i> <asp:Literal ID="litHeroCTA2" runat="server" Text="My Progress" />
             </a>
         </div>
