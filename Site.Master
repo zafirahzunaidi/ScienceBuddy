@@ -153,8 +153,7 @@
             <nav class="sb-sidebar-nav" aria-label="Sidebar navigation">
                 <%-- Pages inject their role-specific menu here --%>
                 <div class="sb-nav-menu-placeholder">
-                    <asp:ContentPlaceHolder ID="SidebarMenu" runat="server">
-                        <%-- Placeholder: role-specific pages will override this --%>
+                    <asp:ContentPlaceHolder ID="SidebarMenu" runat="server"> <%-- Placeholder: role-specific pages will override this --%>
                         <div class="sb-nav-section">
                             <div class="sb-nav-section-label">Navigation</div>
                             <a href="#" class="sb-sidebar-item">

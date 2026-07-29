@@ -233,10 +233,10 @@
                             <div class="st-dash-continue-bar-fill" id="continueFill" style="width:30%"></div>
                         </div>
                     </div>
-                    <a href="<%: ResolveUrl("~/Student/MyLearning.aspx") %>"
-                       class="sb-btn sb-btn-orange">
+                    <asp:HyperLink ID="lnkContinueLesson" runat="server" NavigateUrl="~/Student/MyLearning.aspx"
+                       CssClass="sb-btn sb-btn-orange">
                         <i class="bi bi-play-fill"></i> <asp:Literal ID="litContinueBtn" runat="server" Text="Continue Learning" />
-                    </a>
+                    </asp:HyperLink>
                 </asp:Panel>
                 <asp:Panel ID="pnlContinueEmpty" runat="server" Visible="false">
                     <div class="sb-empty-state" style="padding:var(--space-xl) 0;">

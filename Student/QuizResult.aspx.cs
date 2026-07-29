@@ -307,7 +307,7 @@ namespace ScienceBuddy.Student
                 litStatAttemptLbl.Text = T("Attempt", "Percubaan");
 
                 // Quiz type message
-                pnlMessage.Visible = true;
+                pnlMessage.Visible = false;
                 switch (quizType)
                 {
                     case "Practice":

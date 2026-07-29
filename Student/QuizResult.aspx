@@ -124,7 +124,10 @@
     <%-- Hidden controls for compatibility --%>
     <asp:Literal ID="litStatTotal" runat="server" Visible="false" />
     <asp:Literal ID="litStatTotalLbl" runat="server" Visible="false" />
-    <asp:Panel ID="pnlMessage" runat="server" Visible="false"><asp:Literal ID="litMsgTitle" runat="server" /><asp:Literal ID="litMessage" runat="server" /></asp:Panel>
+    <asp:Panel ID="pnlMessage" runat="server" Visible="false">
+        <div style="font-weight:700; margin-bottom:4px;"><asp:Literal ID="litMsgTitle" runat="server" /></div>
+        <div><asp:Literal ID="litMessage" runat="server" /></div>
+    </asp:Panel>
     <div id="divMsgIcon" runat="server" style="display:none;"></div>
     <asp:Literal ID="litReviewBtn" runat="server" Visible="false" />
     <asp:Literal ID="litRetryBtn" runat="server" Visible="false" />

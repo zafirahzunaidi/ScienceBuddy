@@ -354,7 +354,6 @@ namespace ScienceBuddy.Student
 
         private void LoadContinueLearning(SqlConnection connection, string studentId, string lang)
         {
-
             // Find the 1st lesson not yet completed by this student
             string sql = @"
                 SELECT TOP 1
@@ -440,6 +439,7 @@ namespace ScienceBuddy.Student
                 pnlContinueEmpty.Visible = false;
                 litContinueTitle.Text = System.Web.HttpUtility.HtmlEncode(title);
                 litContinueSub.Text = System.Web.HttpUtility.HtmlEncode(unit + (string.IsNullOrWhiteSpace(sub) ? "" : " › " + sub));
+                lnkContinueLesson.NavigateUrl = ResolveUrl("~/Student/Lesson.aspx?lessonId=" + row["lessonId"].ToString());
             }
         }
 
