@@ -244,7 +244,6 @@ namespace ScienceBuddy.Student
                 }
                 if (questions.Rows.Count == 0)
                 {
-                    // Debug: try without status filter to see if questions exist at all
                     int totalAny = 0;
                     using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM Question WHERE quizId=@qid", connection))
                     {
@@ -325,7 +324,7 @@ namespace ScienceBuddy.Student
             litProgressCount.Text = (idx + 1) + " / " + total;
             litQNum.Text = T("Question ", "Soalan ") + (idx + 1) + " / " + total;
 
-            // Text â€” for Practice quizzes, content may only exist in one language
+            // for Practice quizzes, content may only exist in one language
             string qText;
             if (isBM)
             {
@@ -383,7 +382,7 @@ namespace ScienceBuddy.Student
                 pnlQDiff.Visible = false;
             }
 
-            // Options â€” for Practice quizzes, options may only exist in one language
+            // Options - for Practice quizzes, options may only exist in one language
             string optA;
             if (isBM)
             {
@@ -393,6 +392,7 @@ namespace ScienceBuddy.Student
             {
                 optA = S(row, "optionA_EN");
             }
+
             if (string.IsNullOrWhiteSpace(optA))
             {
                 optA = S(row, "optionA_EN");
@@ -655,7 +655,7 @@ namespace ScienceBuddy.Student
             ViewState["DDBlanks"] = blanks;
         }
 
-        // â”€â”€ Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Navigation 
         protected void btnPrev_Click(object sender, EventArgs e)
         {
             SaveCurrentAnswer();
@@ -718,7 +718,7 @@ namespace ScienceBuddy.Student
             Answers = answers;
         }
 
-        // â”€â”€ Submit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Submit 
         protected void btnSubmit_Click(object sender, EventArgs e)
         {
             SaveCurrentAnswer();
@@ -970,7 +970,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // â”€â”€ Marking â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Marking 
         private bool CheckAnswer(string qType, string selected, string correct, DataRow row)
         {
             if (string.IsNullOrWhiteSpace(selected) || string.IsNullOrWhiteSpace(correct))
@@ -1028,8 +1028,8 @@ namespace ScienceBuddy.Student
         {
             try
             {
-                // Determine which XP actions to award based on quiz type and result
-                // XP003 = Attempt Practice Quiz (always, per attempt)
+                // Det which XP actions to award based on quiz type and result
+                // XP003 = Attempt Practice Quiz (always - per attempt)
                 // XP004 = Pass Unit Quiz (first attempt only, if passed)
                 // XP005 = Score 80% or Above (any quiz, if >= 80%)
                 // XP006 = Complete Level Assessment (if passed)
@@ -1153,7 +1153,7 @@ namespace ScienceBuddy.Student
                 {
                     conn.Open();
 
-                    // B003 Quiz Starter â€” first quiz attempt ever
+                    // B003 Quiz Starter - first quiz attempt ever
                     int quizCount = 0;
                     using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM QuizResult WHERE studentId=@s", conn))
                     {
@@ -1165,25 +1165,25 @@ namespace ScienceBuddy.Student
                         AwardBadgeIfNotEarned(conn, studentId, "B003");
                     }
 
-                    // B004 High Scorer â€” score >= 80%
+                    // B004 High Scorer - score >= 80%
                     if (percentage >= 80)
                     {
                         AwardBadgeIfNotEarned(conn, studentId, "B004");
                     }
 
-                    // B005 Unit Master â€” after passing a Unit quiz, check if all lessons + lab done for that unit
+                    // B005 Unit Master - after passing a Unit quiz, check if all lessons + lab done for that unit
                     if (quizType == "Unit" && percentage >= 50)
                     {
                         CheckUnitMasterBadge(conn, studentId, quizId);
                     }
 
-                    // B006/B007/B008 Level Champions â€” after passing Level assessment
+                    // B006/B007/B008 Level Champions - after passing Level assessment
                     if (quizType == "Level" && percentage >= 70)
                     {
                         CheckLevelChampionBadge(conn, studentId, quizId);
                     }
 
-                    // B010 Consistent Learner â€” 3+ distinct days
+                    // B010 Consistent Learner - 3+ distinct days
                     int distinctDays = 0;
                     using (SqlCommand command = new SqlCommand("SELECT COUNT(DISTINCT CAST(dateEarned AS DATE)) FROM XPTransaction WHERE studentId=@s", conn))
                     {
@@ -1212,7 +1212,8 @@ namespace ScienceBuddy.Student
                 object r = command.ExecuteScalar();
                 if (r != null && r != DBNull.Value) unitId = r.ToString();
             }
-            if (string.IsNullOrEmpty(unitId)) return;
+            if (string.IsNullOrEmpty(unitId)) 
+                return;
 
             // Count total lessons in this unit
             int totalLessons = 0;
@@ -1234,7 +1235,8 @@ namespace ScienceBuddy.Student
                 completedLessons = (int)command.ExecuteScalar();
             }
 
-            if (completedLessons < totalLessons) return;
+            if (completedLessons < totalLessons) 
+                return;
 
             // Check lab completion (if unit has a lab)
             int labCount = 0;
@@ -1254,7 +1256,8 @@ namespace ScienceBuddy.Student
                     command.Parameters.AddWithValue("@s", studentId);
                     labDone = (int)command.ExecuteScalar();
                 }
-                if (labDone < labCount) return;
+                if (labDone < labCount) 
+                    return;
             }
 
             // All conditions met
@@ -1305,9 +1308,15 @@ namespace ScienceBuddy.Student
             // Award the correct champion badge based on level
             switch (levelId)
             {
-                case "LV001": AwardBadgeIfNotEarned(conn, studentId, "B006"); break;
-                case "LV002": AwardBadgeIfNotEarned(conn, studentId, "B007"); break;
-                case "LV003": AwardBadgeIfNotEarned(conn, studentId, "B008"); break;
+                case "LV001": 
+                    AwardBadgeIfNotEarned(conn, studentId, "B006"); 
+                    break;
+                case "LV002": 
+                    AwardBadgeIfNotEarned(conn, studentId, "B007"); 
+                    break;
+                case "LV003": 
+                    AwardBadgeIfNotEarned(conn, studentId, "B008"); 
+                    break;
             }
         }
 
@@ -1336,7 +1345,7 @@ namespace ScienceBuddy.Student
             }
         }
 
-        // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Helpers
         private string NormalizeQuestionType(string qt)
         {
             if (string.IsNullOrWhiteSpace(qt))
@@ -1423,7 +1432,7 @@ namespace ScienceBuddy.Student
         {
             try
             {
-                // B003: Quiz Starter â€” first quiz attempt
+                // B003: Quiz Starter - first quiz attempt
                 int quizCount = 0;
                 using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM QuizResult WHERE studentId=@s", conn, trans))
                 {
@@ -1435,19 +1444,19 @@ namespace ScienceBuddy.Student
                     AwardBadgeIfNotEarned(conn, trans, studentId, "B003");
                 }
 
-                // B004: High Scorer â€” score 80% or above
+                // B004: High Scorer - score 80% or above
                 if (pct >= 80)
                 {
                     AwardBadgeIfNotEarned(conn, trans, studentId, "B004");
                 }
 
-                // B005: Unit Master â€” passed unit quiz + all lessons in that unit completed
+                // B005: Unit Master - passed unit quiz + all lessons in that unit completed
                 if (quizType == "Unit" && pct >= GetConfigInt(conn, trans, "Passing Mark Percentage for Unit", 50))
                 {
                     CheckUnitMasterBadge(conn, trans, studentId, quizId);
                 }
 
-                // B006/B007/B008: Level Champions â€” passed level assessment
+                // B006/B007/B008: Level Champions - passed level assessment
                 if (quizType == "Level" && pct >= GetConfigInt(conn, trans, "Passing Mark for Level", 70))
                 {
                     CheckLevelChampionBadge(conn, trans, studentId, quizId);
