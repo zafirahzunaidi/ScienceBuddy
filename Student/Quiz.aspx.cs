@@ -251,8 +251,7 @@ namespace ScienceBuddy.Student
                         command.Parameters.AddWithValue("@qid", quizId);
                         totalAny = (int)command.ExecuteScalar();
                     }
-                    string debugInfo = "<!-- DEBUG: quizId=" + quizId + ", questionsWithStatusFilter=0, totalQuestionsForQuiz=" + totalAny + " -->";
-                    ShowError(T("No Questions", "Tiada Soalan"), T("No questions available for this quiz.", "Tiada soalan untuk kuiz ini.") + debugInfo);
+                    ShowError(T("No Questions", "Tiada Soalan"), T("No questions available for this quiz.", "Tiada soalan untuk kuiz ini."));
                     return;
                 }
 
@@ -744,6 +743,7 @@ namespace ScienceBuddy.Student
             string quizId = ViewState["QuizId"] as string;
             string studentId = ViewState["StudentId"] as string;
             string quizType = ViewState["QuizType"] as string;
+            string levelId = ViewState["LevelId"] as string;
 
             using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
@@ -885,6 +885,31 @@ namespace ScienceBuddy.Student
                         CheckQuizBadges(connection, trans, studentId, quizType, percentage, quizId);
 
                         trans.Commit();
+
+                        // Level progression: promote student to next level after passing Level quiz
+                        if (quizType == "Level" && status == "Passed" && !string.IsNullOrEmpty(levelId))
+                        {
+                            try
+                            {
+                                string nextLevelId = null;
+                                switch (levelId)
+                                {
+                                    case "LV001": nextLevelId = "LV002"; break;
+                                    case "LV002": nextLevelId = "LV003"; break;
+                                }
+                                if (!string.IsNullOrEmpty(nextLevelId))
+                                {
+                                    using (SqlCommand promCmd = new SqlCommand("UPDATE Student SET currentLevelId=@nlv WHERE studentId=@s AND (currentLevelId=@clv OR currentLevelId IS NULL)", connection))
+                                    {
+                                        promCmd.Parameters.AddWithValue("@nlv", nextLevelId);
+                                        promCmd.Parameters.AddWithValue("@s", studentId);
+                                        promCmd.Parameters.AddWithValue("@clv", levelId);
+                                        promCmd.ExecuteNonQuery();
+                                    }
+                                }
+                            }
+                            catch { /* Level promotion failure should not break quiz result */ }
+                        }
 
                         // Send quiz completed notification
                         try

@@ -8,60 +8,58 @@
 <%-- ════ SIDEBAR ════ --%>
 <asp:Content ID="cSidebarMenu" ContentPlaceHolderID="SidebarMenu" runat="server">
     <div class="sb-nav-section">
-        <div class="sb-nav-section-label">Main</div>
+        <div class="sb-nav-section-label"><%= T("Main", "Utama") %></div>
         <a href="<%: ResolveUrl("~/Student/Dashboard.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-speedometer2 item-icon"></i><span class="item-label">Dashboard</span>
+            <i class="bi bi-speedometer2 item-icon"></i><span class="item-label"><%= T("Dashboard", "Papan Pemuka") %></span>
         </a>
         <a href="<%: ResolveUrl("~/Student/Notifications.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-bell item-icon"></i><span class="item-label">Notifications</span>
+            <i class="bi bi-bell item-icon"></i><span class="item-label"><%= T("Notifications", "Notifikasi") %></span>
         </a>
     </div>
     <div class="sb-nav-section">
-        <div class="sb-nav-section-label">Learn</div>
+        <div class="sb-nav-section-label"><%= T("Learn", "Belajar") %></div>
         <a href="<%: ResolveUrl("~/Student/MyLearning.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-book item-icon"></i><span class="item-label">My Learning</span>
+            <i class="bi bi-book item-icon"></i><span class="item-label"><%= T("My Learning", "Pembelajaran Saya") %></span>
         </a>
         <a href="<%: ResolveUrl("~/Student/PracticeLibrary.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-patch-question item-icon"></i><span class="item-label">Practice Library</span>
+            <i class="bi bi-patch-question item-icon"></i><span class="item-label"><%= T("Practice Library", "Perpustakaan Latihan") %></span>
         </a>
         <a href="<%: ResolveUrl("~/Student/QuizHistory.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-clock-history item-icon"></i><span class="item-label">Quiz History</span>
+            <i class="bi bi-clock-history item-icon"></i><span class="item-label"><%= T("Quiz History", "Sejarah Kuiz") %></span>
         </a>
-        <a href="<%: ResolveUrl("~/Student/VirtualLabs.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-eyedropper item-icon"></i><span class="item-label">Virtual Labs</span>
-        </a>
+
         <a href="<%: ResolveUrl("~/Student/LiveSessions.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-camera-video item-icon"></i><span class="item-label">Live Sessions</span>
+            <i class="bi bi-camera-video item-icon"></i><span class="item-label"><%= T("Live Sessions", "Sesi Langsung") %></span>
         </a>
         <a href="<%: ResolveUrl("~/Student/AIStudyCompanion.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-robot item-icon"></i><span class="item-label">AI Study Companion</span>
+            <i class="bi bi-robot item-icon"></i><span class="item-label"><%= T("AI Study Companion", "Teman Belajar AI") %></span>
         </a>
     </div>
     <div class="sb-nav-section">
-        <div class="sb-nav-section-label">Communication</div>
+        <div class="sb-nav-section-label"><%= T("Communication", "Komunikasi") %></div>
         <a href="<%: ResolveUrl("~/Student/Messages.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-chat-dots item-icon"></i><span class="item-label">Messages</span>
+            <i class="bi bi-chat-dots item-icon"></i><span class="item-label"><%= T("Messages", "Mesej") %></span>
         </a>
         <a href="<%: ResolveUrl("~/Student/Forum.aspx") %>" class="sb-sidebar-item active">
-            <i class="bi bi-people item-icon"></i><span class="item-label">Forum</span>
+            <i class="bi bi-people item-icon"></i><span class="item-label"><%= T("Forum", "Forum") %></span>
         </a>
     </div>
     <div class="sb-nav-section">
-        <div class="sb-nav-section-label">Progress</div>
+        <div class="sb-nav-section-label"><%= T("Progress", "Kemajuan") %></div>
         <a href="<%: ResolveUrl("~/Student/ProgressRewards.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-bar-chart-line item-icon"></i><span class="item-label">Progress &amp; Rewards</span>
+            <i class="bi bi-bar-chart-line item-icon"></i><span class="item-label"><%= T("Progress &amp; Rewards", "Kemajuan &amp; Ganjaran") %></span>
         </a>
         <a href="<%: ResolveUrl("~/Student/MyRanking.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-trophy item-icon"></i><span class="item-label">My Ranking</span>
+            <i class="bi bi-trophy item-icon"></i><span class="item-label"><%= T("My Ranking", "Kedudukan Saya") %></span>
         </a>
         <a href="<%: ResolveUrl("~/Student/RevisionPlan.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-calendar-check item-icon"></i><span class="item-label">Revision Plan</span>
+            <i class="bi bi-calendar-check item-icon"></i><span class="item-label"><%= T("Revision Plan", "Pelan Ulangkaji") %></span>
         </a>
     </div>
     <div class="sb-nav-section">
-        <div class="sb-nav-section-label">Account</div>
+        <div class="sb-nav-section-label"><%= T("Account", "Akaun") %></div>
         <a href="<%: ResolveUrl("~/Student/MyProfile.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-person item-icon"></i><span class="item-label">My Profile</span>
+            <i class="bi bi-person item-icon"></i><span class="item-label"><%= T("My Profile", "Profil Saya") %></span>
         </a>
     </div>
 </asp:Content>
@@ -156,7 +154,7 @@
                         <asp:LinkButton runat="server" CommandName="Delete" CommandArgument='<%# Eval("ForumId") %>'
                             CssClass="st-forum-action-btn st-forum-action-delete"
                             Visible='<%# Convert.ToBoolean(Eval("IsOwner")) %>'
-                            OnClientClick="return confirm('Are you sure you want to delete this forum post?');">
+                            OnClientClick="return confirmDeletePost(this);">
                             <i class="bi bi-trash"></i>
                         </asp:LinkButton>
                         <a href='<%# ResolveUrl("~/Student/ForumThread.aspx?forumId=" + Eval("ForumId")) %>' class="st-forum-open-btn">
@@ -177,5 +175,34 @@
         <div class="st-forum-empty-desc"><asp:Literal ID="litEmptyDesc" runat="server" Text="Be the first to ask a Science question!" /></div>
     </div>
 </asp:Panel>
+
+<script>
+function confirmDeletePost(btn) {
+    var postbackRef = btn.getAttribute('href');
+    Swal.fire({
+        html: '<div style="text-align:center;padding:8px 0;">' +
+              '<div style="width:56px;height:56px;border-radius:50%;background:#FEE2E2;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;"><i class="bi bi-trash" style="font-size:1.4rem;color:#DC2626;"></i></div>' +
+              '<h3 style="font-size:1.1rem;font-weight:700;color:#1E293B;margin-bottom:6px;">Delete Forum Post</h3>' +
+              '<p style="font-size:.875rem;color:#64748B;margin-bottom:4px;">Are you sure you want to delete this forum post?</p>' +
+              '<p style="font-size:.8rem;color:#94A3B8;">This action cannot be undone.</p></div>',
+        showCancelButton: true,
+        confirmButtonText: '<i class="bi bi-trash"></i> Delete',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#DC2626',
+        cancelButtonColor: '#E2E8F0',
+        reverseButtons: true,
+        allowOutsideClick: true
+    }).then(function(result) {
+        if (result.isConfirmed) {
+            if (postbackRef && postbackRef.indexOf('__doPostBack') > -1) {
+                eval(postbackRef.replace('javascript:', ''));
+            } else {
+                __doPostBack(btn.name, '');
+            }
+        }
+    });
+    return false;
+}
+</script>
 
 </asp:Content>

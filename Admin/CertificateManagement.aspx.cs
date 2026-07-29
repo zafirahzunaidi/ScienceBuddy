@@ -135,7 +135,7 @@ namespace ScienceBuddy.Admin
             }
         }
 
-        // ── Generate Certificate ─────────────────────────────────────
+        // Generate Certificate 
         protected void rptEligible_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
             if (e.CommandName != "Generate") return;
@@ -273,17 +273,17 @@ namespace ScienceBuddy.Admin
                 float w = pageSize.Width, h = pageSize.Height;
                 var cb = writer.DirectContent;
 
-                // ── Clean white background ──
+                //  Clean white background 
                 cb.SetColorFill(BaseColor.WHITE);
                 cb.Rectangle(0, 0, w, h); cb.Fill();
 
-                // ── Elegant double border ──
+                //  Elegant double border 
                 cb.SetColorStroke(borderColor); cb.SetLineWidth(2.5f);
                 cb.Rectangle(22, 22, w - 44, h - 44); cb.Stroke();
                 cb.SetLineWidth(0.7f);
                 cb.Rectangle(28, 28, w - 56, h - 56); cb.Stroke();
 
-                // ── Subtle watermark ──
+                //  Subtle watermark 
                 cb.SaveState();
                 cb.SetGState(new PdfGState { FillOpacity = 0.02f });
                 cb.SetColorFill(BaseColor.BLACK);
@@ -293,7 +293,7 @@ namespace ScienceBuddy.Admin
                 cb.EndText();
                 cb.RestoreState();
 
-                // ── Logo ──
+                //  Logo 
                 try
                 {
                     string logoPath = Server.MapPath("~/Images/Logo/sciencebuddy-logo.png");
@@ -307,7 +307,7 @@ namespace ScienceBuddy.Admin
                 }
                 catch { }
 
-                // ── Brand ──
+                //  Brand 
                 var bfBold = BaseFont.CreateFont(BaseFont.HELVETICA_BOLD, BaseFont.CP1252, false);
                 var bfItalic = BaseFont.CreateFont(BaseFont.TIMES_ITALIC, BaseFont.CP1252, false);
                 var bfTimesBold = BaseFont.CreateFont(BaseFont.TIMES_BOLD, BaseFont.CP1252, false);
@@ -321,14 +321,14 @@ namespace ScienceBuddy.Admin
                 cb.ShowTextAligned(PdfContentByte.ALIGN_LEFT, "Buddy", w / 2 + 3, h - 125, 0);
                 cb.EndText();
 
-                // ── Certificate Title (elegant, not all caps) ──
+                // Certificate Title (elegant, not all caps) 
                 cb.BeginText();
                 cb.SetFontAndSize(bfTimesBold, 24);
                 cb.SetColorFill(accentColor);
                 cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, certTitle, w / 2, h - 160, 0);
                 cb.EndText();
 
-                // ── Ornamental line with dot ──
+                //  Ornamental line with dot
                 float ornY = h - 175;
                 cb.SetColorStroke(new BaseColor(201, 168, 76)); cb.SetLineWidth(0.8f);
                 cb.MoveTo(w / 2 - 80, ornY); cb.LineTo(w / 2 - 4, ornY); cb.Stroke();
@@ -336,14 +336,14 @@ namespace ScienceBuddy.Admin
                 cb.SetColorFill(new BaseColor(201, 168, 76));
                 cb.Circle(w / 2, ornY, 2); cb.Fill();
 
-                // ── "This certificate is proudly presented to" ──
+                //  "This certificate is proudly presented to" 
                 cb.BeginText();
                 cb.SetFontAndSize(bfItalic, 12);
                 cb.SetColorFill(new BaseColor(107, 114, 128));
                 cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, lang == "BM" ? "Sijil ini dengan bangganya dianugerahkan kepada" : "This certificate is proudly presented to", w / 2, h - 210, 0);
                 cb.EndText();
 
-                // ── Student Name ──
+                //  Student Name 
                 float nameSize = studentName.Length > 22 ? 28 : 34;
                 cb.BeginText();
                 cb.SetFontAndSize(bfTimesBold, nameSize);
@@ -351,18 +351,18 @@ namespace ScienceBuddy.Admin
                 cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, studentName, w / 2, h - 250, 0);
                 cb.EndText();
 
-                // ── Line under name ──
+                //  Line under name
                 cb.SetColorStroke(borderColor); cb.SetLineWidth(1.2f);
                 cb.MoveTo(w / 2 - 70, h - 262); cb.LineTo(w / 2 + 70, h - 262); cb.Stroke();
 
-                // ── "For successfully completing" ──
+                //  "For successfully completing" 
                 cb.BeginText();
                 cb.SetFontAndSize(bfItalic, 11);
                 cb.SetColorFill(new BaseColor(107, 114, 128));
                 cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, lang == "BM" ? "Kerana berjaya menamatkan" : "For successfully completing", w / 2, h - 290, 0);
                 cb.EndText();
 
-                // ── Level Ribbon ──
+                // Level Ribbon 
                 float rW = 140, rH = 24, rX = w / 2 - rW / 2, rY = h - 325;
                 cb.SetColorFill(ribbonColor);
                 cb.RoundRectangle(rX, rY, rW, rH, 4); cb.Fill();
@@ -372,7 +372,7 @@ namespace ScienceBuddy.Admin
                 cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, levelName.ToUpper(), w / 2, rY + 7, 0);
                 cb.EndText();
 
-                // ── Description ──
+                //  Description 
                 string desc = description;
                 cb.BeginText();
                 cb.SetFontAndSize(bfItalic, 9);
@@ -380,7 +380,7 @@ namespace ScienceBuddy.Admin
                 cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, desc, w / 2, h - 358, 0);
                 cb.EndText();
 
-                // ══ FOOTER SECTION ══
+                // FOOTER SECTION 
                 float footY = 140;
                 // Separator line
                 cb.SetColorStroke(new BaseColor(229, 221, 208)); cb.SetLineWidth(0.8f);
@@ -432,7 +432,7 @@ namespace ScienceBuddy.Admin
             }
         }
 
-        // ── Send Certificate ─────────────────────────────────────────
+        // Send Certificate
         protected void rptCerts_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
             if (e.CommandName == "ViewCert") { ShowViewModal(e.CommandArgument.ToString()); return; }
@@ -548,7 +548,7 @@ namespace ScienceBuddy.Admin
 
         protected void btnCloseModal_Click(object sender, EventArgs e) { pnlModal.Visible = false; }
 
-        // ── Helpers ──────────────────────────────────────────────────
+        // Helpers
         private string GenId(SqlConnection conn, string table, string prefix)
         {
             string sql = string.Format("SELECT MAX(CAST(SUBSTRING([{0}Id],{1},LEN([{0}Id])-{2}) AS INT)) FROM dbo.[{3}]",

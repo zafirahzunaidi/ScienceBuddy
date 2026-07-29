@@ -109,9 +109,11 @@ namespace ScienceBuddy
                             pnlSuccess.Visible = true;
 
                             if (!string.IsNullOrEmpty(linkedStudentId))
-                                litSuccessMsg.Text = "Your account has been created and your child has been linked successfully. Sign in to begin supporting their learning journey.";
+                                litSuccessMsg.Text = "Your account has been created and your child has been linked successfully." +
+                                    "Sign in to begin supporting their learning journey.";
                             else
-                                litSuccessMsg.Text = "Your account has been created successfully. Sign in to link your child and begin supporting their learning journey.";
+                                litSuccessMsg.Text = "Your account has been created successfully. Sign in to link your child and" +
+                                    "begin supporting their learning journey.";
                         }
                         catch
                         {
@@ -166,10 +168,6 @@ namespace ScienceBuddy
             }
         }
 
-        /// <summary>
-        /// Links the child (student) to the new parent account via the StudentParent table.
-        /// Skips if the link already exists (e.g. same child linked twice).
-        /// </summary>
         private void LinkChildToParent(SqlConnection conn, SqlTransaction txn,
             string studentId, string parentId, string relationship)
         {
@@ -242,9 +240,6 @@ namespace ScienceBuddy
             }
         }
 
-        /// <summary>
-        /// Looks up a student by their parent code. Returns the studentId or null if not found.
-        /// </summary>
         private string FindStudentByParentCode(SqlConnection conn, string code)
         {
             using (SqlCommand cmd = new SqlCommand("SELECT studentId FROM dbo.[Student] WHERE parentCode = @code", conn))

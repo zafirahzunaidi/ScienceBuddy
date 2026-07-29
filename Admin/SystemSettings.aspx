@@ -56,7 +56,7 @@
         </a>
         <a href="<%: ResolveUrl("~/Admin/QuestionRequests.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-clipboard-check item-icon"></i>
-            <span class="item-label"><%= T("Question Requests", "Permintaan Soalan") %></span>
+            <span class="item-label"><%= T("Quiz Requests", "Permintaan Kuiz") %></span>
         </a>
         <a href="<%: ResolveUrl("~/Admin/CertificateManagement.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-award item-icon"></i>

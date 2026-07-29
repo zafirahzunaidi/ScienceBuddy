@@ -171,7 +171,11 @@ namespace ScienceBuddy.Parent
                     }
                 }
             }
-            catch { pnlEmpty.Visible = true; litEmpty.Text = T("Error loading forum.", "Ralat memuatkan forum."); }
+            catch
+            {
+                pnlEmpty.Visible = true;
+                litEmpty.Text = T("Error loading forum.", "Ralat memuatkan forum.");
+            }
         }
 
         private void LoadChildActivity()

@@ -79,7 +79,10 @@ namespace ScienceBuddy
 
                     // Generate secure token
                     byte[] tokenBytes = new byte[32];
-                    using (var rng = RandomNumberGenerator.Create()) { rng.GetBytes(tokenBytes); }
+                    using (var rng = RandomNumberGenerator.Create())
+                    {
+                        rng.GetBytes(tokenBytes);
+                    }
                     string rawToken = Convert.ToBase64String(tokenBytes).Replace("+", "-").Replace("/", "_").TrimEnd('=');
                     string tokenHash = ComputeSHA256(rawToken);
 
@@ -89,7 +92,11 @@ namespace ScienceBuddy
                         {
                             // Invalidate previous unused tokens
                             using (var cmd = new SqlCommand("UPDATE dbo.[PasswordResetToken] SET usedAt=@now WHERE userId=@uid AND usedAt IS NULL", conn, txn))
-                            { cmd.Parameters.AddWithValue("@now", DateTime.Now); cmd.Parameters.AddWithValue("@uid", userId); cmd.ExecuteNonQuery(); }
+                            {
+                                cmd.Parameters.AddWithValue("@now", DateTime.Now);
+                                cmd.Parameters.AddWithValue("@uid", userId);
+                                cmd.ExecuteNonQuery();
+                            }
 
                             // Insert new token
                             string tokenId = GenId(conn, txn);
@@ -104,7 +111,11 @@ namespace ScienceBuddy
                             }
                             txn.Commit();
                         }
-                        catch { txn.Rollback(); throw; }
+                        catch
+                        {
+                            txn.Rollback();
+                            throw;
+                        }
                     }
 
                     // Build reset URL
@@ -186,11 +197,6 @@ If you did not request this, you can safely ignore this email. Do not share this
             return "PRT" + nextNumber.ToString("D3");
         }
 
-        /// <summary>
-        /// Hashes the reset token before storing it in the database.
-        /// Only the hash is stored; the raw token is sent to the user via email.
-        /// This way, even if the database is compromised, tokens cannot be reused.
-        /// </summary>
         private static string ComputeSHA256(string input)
         {
             using (var sha = SHA256.Create())

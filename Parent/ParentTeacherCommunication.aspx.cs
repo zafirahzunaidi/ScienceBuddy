@@ -29,31 +29,109 @@ namespace ScienceBuddy.Parent
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["userId"] == null || Session["role"] == null || Session["role"].ToString() != "Parent") { Response.Redirect("~/Login.aspx", false); Context.ApplicationInstance.CompleteRequest(); return; }
+            if (Session["userId"] == null || Session["role"] == null || Session["role"].ToString() != "Parent")
+            {
+                Response.Redirect("~/Login.aspx", false);
+                Context.ApplicationInstance.CompleteRequest();
+                return;
+            }
+
             ((ScienceBuddy.SiteMaster)Master).LayoutMode = "Sidebar";
-            string l = Session["preferredLanguage"] as string; if (!string.IsNullOrEmpty(l)) CurrentLanguage = l;
+            string l = Session["preferredLanguage"] as string;
+            if (!string.IsNullOrEmpty(l)) CurrentLanguage = l;
             _userId = Session["userId"].ToString();
-            LoadUnreadBadge(); LoadSidebarChildren();
+            LoadUnreadBadge();
+            LoadSidebarChildren();
+
             if (!IsPostBack)
             {
                 btnSend.Text = T("Send", "Hantar");
                 txtChatSearch.Attributes["placeholder"] = T("Search conversations...", "Cari perbualan...");
                 txtMessage.Attributes["placeholder"] = T("Type your message...", "Taip mesej anda...");
-                // Check query string for chat selection
                 string qsChatId = Request.QueryString["chatId"];
-                if (!string.IsNullOrEmpty(qsChatId)) { SelectedChatId = qsChatId; }
+                if (!string.IsNullOrEmpty(qsChatId))
+                {
+                    SelectedChatId = qsChatId;
+                }
                 LoadPage();
             }
-            else { LoadPage(); }
+            else
+            {
+                LoadPage();
+            }
         }
 
-        private void LoadSidebarChildren() { ddlSidebarChild.Items.Clear(); try { string pid = ""; using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT parentId FROM dbo.[Parent] WHERE userId=@u", c)) { cmd.Parameters.AddWithValue("@u", _userId); c.Open(); var r = cmd.ExecuteScalar(); if (r != null) pid = r.ToString(); } using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT s.studentId, ISNULL(s.nickname,s.name) AS n FROM dbo.StudentParent sp INNER JOIN dbo.Student s ON sp.studentId=s.studentId WHERE sp.parentId=@p ORDER BY s.name", c)) { cmd.Parameters.AddWithValue("@p", pid); c.Open(); using (var r = cmd.ExecuteReader()) { while (r.Read()) ddlSidebarChild.Items.Add(new ListItem(r["n"].ToString(), r["studentId"].ToString())); } } } catch { } if (ddlSidebarChild.Items.Count > 0) { string saved = Session["selectedChildId"] as string; if (!string.IsNullOrEmpty(saved) && ddlSidebarChild.Items.FindByValue(saved) != null) ddlSidebarChild.SelectedValue = saved; } }
-        private void LoadUnreadBadge() { try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.Notification WHERE toUserId=@uid AND isRead=0", c)) { cmd.Parameters.AddWithValue("@uid", _userId); c.Open(); int count = (int)cmd.ExecuteScalar(); litUnreadBadge.Text = count > 0 ? "<span class='pt-sidebar-badge'>" + count + "</span>" : ""; } } catch { } }
+        private void LoadSidebarChildren()
+        {
+            ddlSidebarChild.Items.Clear();
+            try
+            {
+                string pid = "";
+                using (var c = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand("SELECT parentId FROM dbo.[Parent] WHERE userId=@u", c))
+                {
+                    cmd.Parameters.AddWithValue("@u", _userId);
+                    c.Open();
+                    var r = cmd.ExecuteScalar();
+                    if (r != null) pid = r.ToString();
+                }
 
-        protected void TabMyChats_Click(object sender, EventArgs e) { ActiveTab = "Chats"; LoadPage(); }
-        protected void TabTeachers_Click(object sender, EventArgs e) { ActiveTab = "Teachers"; LoadPage(); }
+                using (var c = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand("SELECT s.studentId, ISNULL(s.nickname,s.name) AS n FROM dbo.StudentParent sp INNER JOIN dbo.Student s ON sp.studentId=s.studentId WHERE sp.parentId=@p ORDER BY s.name", c))
+                {
+                    cmd.Parameters.AddWithValue("@p", pid);
+                    c.Open();
+                    using (var r = cmd.ExecuteReader())
+                    {
+                        while (r.Read())
+                            ddlSidebarChild.Items.Add(new ListItem(r["n"].ToString(), r["studentId"].ToString()));
+                    }
+                }
+            }
+            catch { }
+
+            if (ddlSidebarChild.Items.Count > 0)
+            {
+                string saved = Session["selectedChildId"] as string;
+                if (!string.IsNullOrEmpty(saved) && ddlSidebarChild.Items.FindByValue(saved) != null)
+                    ddlSidebarChild.SelectedValue = saved;
+            }
+        }
+
+        private void LoadUnreadBadge()
+        {
+            try
+            {
+                using (var c = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.Notification WHERE toUserId=@uid AND isRead=0", c))
+                {
+                    cmd.Parameters.AddWithValue("@uid", _userId);
+                    c.Open();
+                    int count = (int)cmd.ExecuteScalar();
+                    litUnreadBadge.Text = count > 0 ? "<span class='pt-sidebar-badge'>" + count + "</span>" : "";
+                }
+            }
+            catch { }
+        }
+
+        protected void TabMyChats_Click(object sender, EventArgs e)
+        {
+            ActiveTab = "Chats";
+            LoadPage();
+        }
+
+        protected void TabTeachers_Click(object sender, EventArgs e)
+        {
+            ActiveTab = "Teachers";
+            LoadPage();
+        }
+
         protected void ChatSearch_Changed(object sender, EventArgs e) { }
-        protected void BtnCloseMsg_Click(object sender, EventArgs e) { pnlMsg.Visible = false; }
+
+        protected void BtnCloseMsg_Click(object sender, EventArgs e)
+        {
+            pnlMsg.Visible = false;
+        }
 
         private void LoadPage()
         {
@@ -61,8 +139,15 @@ namespace ScienceBuddy.Parent
             lnkTeachers.CssClass = ActiveTab == "Teachers" ? "pt-message-tab pt-message-tab-active" : "pt-message-tab";
             pnlMyChats.Visible = ActiveTab == "Chats";
             pnlTeachers.Visible = ActiveTab == "Teachers";
-            if (ActiveTab == "Chats") { LoadChatList(); LoadSelectedChat(); }
-            else { LoadTeacherGrid(); }
+            if (ActiveTab == "Chats")
+            {
+                LoadChatList();
+                LoadSelectedChat();
+            }
+            else
+            {
+                LoadTeacherGrid();
+            }
         }
 
         // ══════════════════════════════════════════════════════════════
@@ -93,7 +178,8 @@ namespace ScienceBuddy.Parent
                         cmd.Parameters.AddWithValue("@uid", _userId);
                         using (var r = cmd.ExecuteReader())
                         {
-                            StringBuilder sb = new StringBuilder(); bool has = false;
+                            StringBuilder sb = new StringBuilder();
+                            bool has = false;
                             while (r.Read())
                             {
                                 string tName = r["teacherName"] != DBNull.Value ? r["teacherName"].ToString() : "";
@@ -117,39 +203,105 @@ namespace ScienceBuddy.Parent
                                     initial, Server.HtmlEncode(tName), unreadBadge,
                                     Server.HtmlEncode(qual), Server.HtmlEncode(lastMsg), timeStr);
                             }
-                            if (has) { pnlChatList.Controls.Add(new LiteralControl(sb.ToString())); pnlNoChatList.Visible = false; }
-                            else { pnlNoChatList.Visible = true; }
+                            if (has)
+                            {
+                                pnlChatList.Controls.Add(new LiteralControl(sb.ToString()));
+                                pnlNoChatList.Visible = false;
+                            }
+                            else
+                            {
+                                pnlNoChatList.Visible = true;
+                            }
                         }
                     }
                 }
             }
-            catch { pnlNoChatList.Visible = true; }
+            catch
+            {
+                pnlNoChatList.Visible = true;
+            }
         }
 
-        protected void BtnSelectChat_Click(object sender, EventArgs e) { LoadPage(); }
+        protected void BtnSelectChat_Click(object sender, EventArgs e)
+        {
+            LoadPage();
+        }
 
         private void LoadSelectedChat()
         {
             string chatId = SelectedChatId;
-            if (string.IsNullOrEmpty(chatId)) { pnlNoChat.Visible = true; pnlChatHeader.Visible = false; pnlComposer.Visible = false; return; }
+            if (string.IsNullOrEmpty(chatId))
+            {
+                pnlNoChat.Visible = true;
+                pnlChatHeader.Visible = false;
+                pnlComposer.Visible = false;
+                return;
+            }
 
-            // Validate chat belongs to parent
             bool valid = false;
-            try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.userChat WHERE chatId=@id AND (userId=@uid OR user2Id=@uid)", c)) { cmd.Parameters.AddWithValue("@id", chatId); cmd.Parameters.AddWithValue("@uid", _userId); c.Open(); valid = (int)cmd.ExecuteScalar() > 0; } } catch { }
-            if (!valid) { pnlNoChat.Visible = true; pnlChatHeader.Visible = false; pnlComposer.Visible = false; return; }
+            try
+            {
+                using (var c = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.userChat WHERE chatId=@id AND (userId=@uid OR user2Id=@uid)", c))
+                {
+                    cmd.Parameters.AddWithValue("@id", chatId);
+                    cmd.Parameters.AddWithValue("@uid", _userId);
+                    c.Open();
+                    valid = (int)cmd.ExecuteScalar() > 0;
+                }
+            }
+            catch { }
 
-            pnlNoChat.Visible = false; pnlChatHeader.Visible = true; pnlComposer.Visible = true;
+            if (!valid)
+            {
+                pnlNoChat.Visible = true;
+                pnlChatHeader.Visible = false;
+                pnlComposer.Visible = false;
+                return;
+            }
+
+            pnlNoChat.Visible = false;
+            pnlChatHeader.Visible = true;
+            pnlComposer.Visible = true;
 
             // Mark messages as read
-            try { using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("UPDATE dbo.privateMessage SET isRead=1, readAt=GETDATE() WHERE chatId=@id AND senderUserId<>@uid AND isRead=0", c)) { cmd.Parameters.AddWithValue("@id", chatId); cmd.Parameters.AddWithValue("@uid", _userId); c.Open(); cmd.ExecuteNonQuery(); } } catch { }
+            try
+            {
+                using (var c = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand("UPDATE dbo.privateMessage SET isRead=1, readAt=GETDATE() WHERE chatId=@id AND senderUserId<>@uid AND isRead=0", c))
+                {
+                    cmd.Parameters.AddWithValue("@id", chatId);
+                    cmd.Parameters.AddWithValue("@uid", _userId);
+                    c.Open();
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch { }
 
             // Load header
             try
             {
-                using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand(@"SELECT t.name, t.academicQualification, t.status FROM dbo.userChat uc
+                using (var c = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand(@"SELECT t.name, t.academicQualification, t.status FROM dbo.userChat uc
                     INNER JOIN dbo.Teacher t ON t.userId = CASE WHEN uc.userId=@uid THEN uc.user2Id ELSE uc.userId END
                     WHERE uc.chatId=@id", c))
-                { cmd.Parameters.AddWithValue("@id", chatId); cmd.Parameters.AddWithValue("@uid", _userId); c.Open(); using (var r = cmd.ExecuteReader()) { if (r.Read()) { string tName = r["name"].ToString(); litChatInitial.Text = tName[0].ToString().ToUpper(); litChatTeacherName.Text = Server.HtmlEncode(tName); string qual = r["academicQualification"] != DBNull.Value ? r["academicQualification"].ToString() : ""; string certBadge = r["status"] != DBNull.Value && r["status"].ToString() == "Certified" ? " <span class='pt-certified-badge'>" + T("Certified","Disahkan") + "</span>" : ""; litChatQualification.Text = Server.HtmlEncode(qual) + certBadge; } } }
+                {
+                    cmd.Parameters.AddWithValue("@id", chatId);
+                    cmd.Parameters.AddWithValue("@uid", _userId);
+                    c.Open();
+                    using (var r = cmd.ExecuteReader())
+                    {
+                        if (r.Read())
+                        {
+                            string tName = r["name"].ToString();
+                            litChatInitial.Text = tName[0].ToString().ToUpper();
+                            litChatTeacherName.Text = Server.HtmlEncode(tName);
+                            string qual = r["academicQualification"] != DBNull.Value ? r["academicQualification"].ToString() : "";
+                            string certBadge = r["status"] != DBNull.Value && r["status"].ToString() == "Certified" ? " <span class='pt-certified-badge'>" + T("Certified", "Disahkan") + "</span>" : "";
+                            litChatQualification.Text = Server.HtmlEncode(qual) + certBadge;
+                        }
+                    }
+                }
             }
             catch { }
 
@@ -157,17 +309,25 @@ namespace ScienceBuddy.Parent
             pnlChatBody.Controls.Clear();
             try
             {
-                using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand("SELECT privateMsgId, senderUserId, msgText, attachmentFile, sentAt FROM dbo.privateMessage WHERE chatId=@id ORDER BY sentAt ASC", c))
+                using (var c = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand("SELECT privateMsgId, senderUserId, msgText, attachmentFile, sentAt FROM dbo.privateMessage WHERE chatId=@id ORDER BY sentAt ASC", c))
                 {
-                    cmd.Parameters.AddWithValue("@id", chatId); c.Open();
+                    cmd.Parameters.AddWithValue("@id", chatId);
+                    c.Open();
                     using (var r = cmd.ExecuteReader())
                     {
-                        StringBuilder sb = new StringBuilder(); string lastDate = "";
+                        StringBuilder sb = new StringBuilder();
+                        string lastDate = "";
                         while (r.Read())
                         {
                             DateTime sentAt = Convert.ToDateTime(r["sentAt"]);
                             string dateKey = sentAt.ToString("yyyy-MM-dd");
-                            if (dateKey != lastDate) { lastDate = dateKey; string dateLabel = sentAt.Date == DateTime.Today ? T("Today","Hari Ini") : sentAt.Date == DateTime.Today.AddDays(-1) ? T("Yesterday","Semalam") : sentAt.ToString("dd MMM yyyy"); sb.AppendFormat("<div class='pt-chat-date-separator'><span>{0}</span></div>", dateLabel); }
+                            if (dateKey != lastDate)
+                            {
+                                lastDate = dateKey;
+                                string dateLabel = sentAt.Date == DateTime.Today ? T("Today","Hari Ini") : sentAt.Date == DateTime.Today.AddDays(-1) ? T("Yesterday","Semalam") : sentAt.ToString("dd MMM yyyy");
+                                sb.AppendFormat("<div class='pt-chat-date-separator'><span>{0}</span></div>", dateLabel);
+                            }
 
                             bool isParent = r["senderUserId"].ToString() == _userId;
                             string bubbleClass = isParent ? "pt-message-bubble pt-message-bubble-parent" : "pt-message-bubble pt-message-bubble-teacher";
@@ -205,10 +365,6 @@ namespace ScienceBuddy.Parent
                 return string.Format("<div class='pt-attachment-card'><i class='bi bi-file-earmark-text'></i> <a href='{0}' target='_blank'>{1}</a><a href='{0}' download class='pt-attachment-dl'><i class='bi bi-download'></i> {2}</a></div>", url, Server.HtmlEncode(Path.GetFileName(filename)), T("Download","Muat Turun"));
         }
 
-        /// <summary>
-        /// Resolves the URL for an attachment file by checking the new folder first,
-        /// then falling back to the old folder for files uploaded before the migration.
-        /// </summary>
         private string ResolveAttachmentUrl(string filename)
         {
             if (string.IsNullOrEmpty(filename)) return null;
@@ -235,23 +391,41 @@ namespace ScienceBuddy.Parent
             if (string.IsNullOrEmpty(chatId)) return;
             string msgText = txtMessage.Text.Trim();
             bool hasFile = fuAttachment.HasFile;
-            if (string.IsNullOrEmpty(msgText) && !hasFile) { ShowMsg(T("Please enter a message or attach a file.","Sila masukkan mesej atau lampirkan fail."), false); return; }
+            if (string.IsNullOrEmpty(msgText) && !hasFile)
+            {
+                ShowMsg(T("Please enter a message or attach a file.","Sila masukkan mesej atau lampirkan fail."), false);
+                return;
+            }
 
             // Validate file
             string savedFilename = null;
             if (hasFile)
             {
                 string ext = Path.GetExtension(fuAttachment.FileName).ToLower();
-                if (!AllowedImageExt.Contains(ext) && !AllowedDocExt.Contains(ext)) { ShowMsg(T("This file type is not allowed.","Jenis fail ini tidak dibenarkan."), false); return; }
-                if (fuAttachment.PostedFile.ContentLength > MaxFileSize) { ShowMsg(T("File size must not exceed 5 MB.","Saiz fail tidak boleh melebihi 5 MB."), false); return; }
+                if (!AllowedImageExt.Contains(ext) && !AllowedDocExt.Contains(ext))
+                {
+                    ShowMsg(T("This file type is not allowed.","Jenis fail ini tidak dibenarkan."), false);
+                    return;
+                }
+                if (fuAttachment.PostedFile.ContentLength > MaxFileSize)
+                {
+                    ShowMsg(T("File size must not exceed 5 MB.","Saiz fail tidak boleh melebihi 5 MB."), false);
+                    return;
+                }
             }
 
             if (string.IsNullOrEmpty(msgText)) msgText = "[Attachment]";
 
             try
             {
-                using (var c = new SqlConnection(ConnStr)) { c.Open(); using (var txn = c.BeginTransaction()) { try {
-                    string pmId = GenId(c, txn, "privateMessage", "privateMsgId", "PM");
+                using (var c = new SqlConnection(ConnStr))
+                {
+                    c.Open();
+                    using (var txn = c.BeginTransaction())
+                    {
+                        try
+                        {
+                            string pmId = GenId(c, txn, "privateMessage", "privateMsgId", "PM");
 
                     // Save file if attached
                     if (hasFile)
@@ -277,13 +451,22 @@ namespace ScienceBuddy.Parent
                     // Notify teacher about new message
                     string teacherUserId = "";
                     using (var cmd = new SqlCommand("SELECT CASE WHEN userId=@me THEN user2Id ELSE userId END FROM dbo.userChat WHERE chatId=@cid", c, txn))
-                    { cmd.Parameters.AddWithValue("@me", _userId); cmd.Parameters.AddWithValue("@cid", chatId); var r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) teacherUserId = r.ToString(); }
+                    {
+                        cmd.Parameters.AddWithValue("@me", _userId);
+                        cmd.Parameters.AddWithValue("@cid", chatId);
+                        var r = cmd.ExecuteScalar();
+                        if (r != null && r != DBNull.Value) teacherUserId = r.ToString();
+                    }
 
                     if (!string.IsNullOrEmpty(teacherUserId))
                     {
                         string parentUsername = "";
                         using (var cmd = new SqlCommand("SELECT username FROM dbo.[User] WHERE userId=@u", c, txn))
-                        { cmd.Parameters.AddWithValue("@u", _userId); var r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) parentUsername = r.ToString(); }
+                        {
+                            cmd.Parameters.AddWithValue("@u", _userId);
+                            var r = cmd.ExecuteScalar();
+                            if (r != null && r != DBNull.Value) parentUsername = r.ToString();
+                        }
 
                         string nid = GenId(c, txn, "Notification", "notificationId", "N");
                         using (var cmd = new SqlCommand("INSERT INTO dbo.Notification(notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt) VALUES(@id,@to,@te,@tb,@me,@mb,0,@now)", c, txn))
@@ -299,10 +482,21 @@ namespace ScienceBuddy.Parent
                         }
                     }
 
-                    txn.Commit(); txtMessage.Text = "";
-                } catch { txn.Rollback(); throw; } } }
+                    txn.Commit();
+                    txtMessage.Text = "";
+                        }
+                        catch
+                        {
+                            txn.Rollback();
+                            throw;
+                        }
+                    }
+                }
             }
-            catch { ShowMsg(T("Unable to send message. Please try again.","Tidak dapat menghantar mesej. Sila cuba lagi."), false); }
+            catch
+            {
+                ShowMsg(T("Unable to send message. Please try again.","Tidak dapat menghantar mesej. Sila cuba lagi."), false);
+            }
             LoadPage();
         }
 
@@ -323,12 +517,15 @@ namespace ScienceBuddy.Parent
             pnlTeacherGrid.Controls.Clear();
             try
             {
-                using (var c = new SqlConnection(ConnStr)) using (var cmd = new SqlCommand(@"SELECT t.teacherId, t.userId, t.name, t.academicQualification, LEFT(t.bio,100) AS bioPreview, t.status
+                using (var c = new SqlConnection(ConnStr))
+                using (var cmd = new SqlCommand(@"SELECT t.teacherId, t.userId, t.name, t.academicQualification, LEFT(t.bio,100) AS bioPreview, t.status
                     FROM dbo.Teacher t INNER JOIN dbo.[User] u ON t.userId=u.userId WHERE t.status='Certified' ORDER BY t.name", c))
                 {
-                    c.Open(); using (var r = cmd.ExecuteReader())
+                    c.Open();
+                    using (var r = cmd.ExecuteReader())
                     {
-                        StringBuilder sb = new StringBuilder(); bool has = false;
+                        StringBuilder sb = new StringBuilder();
+                        bool has = false;
                         while (r.Read())
                         {
                             has = true;
@@ -349,12 +546,22 @@ namespace ScienceBuddy.Parent
                                 Server.HtmlEncode(bio.Length > 80 ? bio.Substring(0, 80) + "..." : bio),
                                 T("Certified","Disahkan"), hidStartChatTeacher.ClientID, tUserId, btnStartChat.ClientID, T("Start Chat","Mula Sembang"));
                         }
-                        if (has) { pnlTeacherGrid.Controls.Add(new LiteralControl(sb.ToString())); pnlNoTeachers.Visible = false; }
-                        else { pnlNoTeachers.Visible = true; }
+                        if (has)
+                        {
+                            pnlTeacherGrid.Controls.Add(new LiteralControl(sb.ToString()));
+                            pnlNoTeachers.Visible = false;
+                        }
+                        else
+                        {
+                            pnlNoTeachers.Visible = true;
+                        }
                     }
                 }
             }
-            catch { pnlNoTeachers.Visible = true; }
+            catch
+            {
+                pnlNoTeachers.Visible = true;
+            }
         }
 
         protected void BtnStartChat_Click(object sender, EventArgs e)
@@ -367,21 +574,45 @@ namespace ScienceBuddy.Parent
                 using (var c = new SqlConnection(ConnStr))
                 {
                     c.Open();
-                    // Check if chat exists
                     string existingChatId = null;
                     using (var cmd = new SqlCommand("SELECT chatId FROM dbo.userChat WHERE (userId=@uid AND user2Id=@tid) OR (userId=@tid AND user2Id=@uid)", c))
-                    { cmd.Parameters.AddWithValue("@uid", _userId); cmd.Parameters.AddWithValue("@tid", teacherUserId); var r = cmd.ExecuteScalar(); if (r != null && r != DBNull.Value) existingChatId = r.ToString(); }
+                    {
+                        cmd.Parameters.AddWithValue("@uid", _userId);
+                        cmd.Parameters.AddWithValue("@tid", teacherUserId);
+                        var r = cmd.ExecuteScalar();
+                        if (r != null && r != DBNull.Value) existingChatId = r.ToString();
+                    }
 
-                    if (!string.IsNullOrEmpty(existingChatId)) { SelectedChatId = existingChatId; ActiveTab = "Chats"; LoadPage(); return; }
+                    if (!string.IsNullOrEmpty(existingChatId))
+                    {
+                        SelectedChatId = existingChatId;
+                        ActiveTab = "Chats";
+                        LoadPage();
+                        return;
+                    }
 
-                    // Create new chat
-                    using (var txn = c.BeginTransaction()) { try {
-                        string chatId = GenId(c, txn, "userChat", "chatId", "C");
-                        using (var cmd = new SqlCommand("INSERT INTO dbo.userChat(chatId,userId,user2Id,createdAt) VALUES(@id,@uid,@tid,@now)", c, txn))
-                        { cmd.Parameters.AddWithValue("@id", chatId); cmd.Parameters.AddWithValue("@uid", _userId); cmd.Parameters.AddWithValue("@tid", teacherUserId); cmd.Parameters.AddWithValue("@now", DateTime.Now); cmd.ExecuteNonQuery(); }
-                        txn.Commit();
-                        SelectedChatId = chatId; ActiveTab = "Chats";
-                    } catch { txn.Rollback(); } }
+                    using (var txn = c.BeginTransaction())
+                    {
+                        try
+                        {
+                            string chatId = GenId(c, txn, "userChat", "chatId", "C");
+                            using (var cmd = new SqlCommand("INSERT INTO dbo.userChat(chatId,userId,user2Id,createdAt) VALUES(@id,@uid,@tid,@now)", c, txn))
+                            {
+                                cmd.Parameters.AddWithValue("@id", chatId);
+                                cmd.Parameters.AddWithValue("@uid", _userId);
+                                cmd.Parameters.AddWithValue("@tid", teacherUserId);
+                                cmd.Parameters.AddWithValue("@now", DateTime.Now);
+                                cmd.ExecuteNonQuery();
+                            }
+                            txn.Commit();
+                            SelectedChatId = chatId;
+                            ActiveTab = "Chats";
+                        }
+                        catch
+                        {
+                            txn.Rollback();
+                        }
+                    }
                 }
             }
             catch { }
@@ -410,7 +641,22 @@ namespace ScienceBuddy.Parent
             }
             return prefix + nextNumber.ToString("D3");
         }
-        private string GetTimeAgo(DateTime dt) { var d = DateTime.Now - dt; if (d.TotalSeconds < 0) return dt.ToString("dd MMM"); if (d.TotalMinutes < 60) return (int)d.TotalMinutes + " min"; if (d.TotalHours < 24) return (int)d.TotalHours + "h"; if (d.TotalDays < 2) return T("Yesterday","Semalam"); if (d.TotalDays < 7) return (int)d.TotalDays + "d"; return dt.ToString("dd MMM"); }
-        private void ShowMsg(string msg, bool ok) { pnlMsg.Visible = true; divMsg.InnerHtml = msg; iMsgIcon.Attributes["class"] = ok ? "bi bi-check-circle-fill" : "bi bi-exclamation-circle-fill"; }
+        private string GetTimeAgo(DateTime dt)
+        {
+            var d = DateTime.Now - dt;
+            if (d.TotalSeconds < 0) return dt.ToString("dd MMM");
+            if (d.TotalMinutes < 60) return (int)d.TotalMinutes + " min";
+            if (d.TotalHours < 24) return (int)d.TotalHours + "h";
+            if (d.TotalDays < 2) return T("Yesterday", "Semalam");
+            if (d.TotalDays < 7) return (int)d.TotalDays + "d";
+            return dt.ToString("dd MMM");
+        }
+
+        private void ShowMsg(string msg, bool ok)
+        {
+            pnlMsg.Visible = true;
+            divMsg.InnerHtml = msg;
+            iMsgIcon.Attributes["class"] = ok ? "bi bi-check-circle-fill" : "bi bi-exclamation-circle-fill";
+        }
     }
 }

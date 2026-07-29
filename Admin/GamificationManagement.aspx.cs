@@ -22,7 +22,7 @@ namespace ScienceBuddy.Admin
             return CurrentLanguage == "BM" ? bm : en;
         }
 
-        // --- Page Lifecycle ---
+        // Page Lifecycle 
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -40,7 +40,7 @@ namespace ScienceBuddy.Admin
             }
         }
 
-        // --- Tab Handlers ---
+        // Tab Handlers 
 
         protected void tabOverview_Click(object sender, EventArgs e) { ShowTab("overview"); }
         protected void tabXP_Click(object sender, EventArgs e) { ShowTab("xp"); }
@@ -84,7 +84,7 @@ namespace ScienceBuddy.Admin
             }
         }
 
-        // --- Data Loading ---
+        //  Data Loading 
 
         private void SetMasterUser()
         {
@@ -311,7 +311,7 @@ namespace ScienceBuddy.Admin
             }
         }
 
-        // --- Helpers ---
+        // Helpers
 
         private string SafeScalar(SqlConnection conn, string sql)
         {

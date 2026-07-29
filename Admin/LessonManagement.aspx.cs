@@ -16,7 +16,7 @@ namespace ScienceBuddy.Admin
         protected string CurrentLanguage => ((ScienceBuddy.SiteMaster)Master).CurrentLanguage;
         protected string T(string en, string bm) { return CurrentLanguage == "BM" ? bm : en; }
 
-        // --- Page Lifecycle ---
+        // Page Lifecycle 
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -41,7 +41,7 @@ namespace ScienceBuddy.Admin
             btnCloseModal.Text = T("Close", "Tutup");
         }
 
-        // --- Data Loading ---
+        // Data Loading
 
         private void SetMasterUser()
         {
@@ -174,7 +174,7 @@ namespace ScienceBuddy.Admin
             }
         }
 
-        // --- Event Handlers ---
+        // Event Handlers 
 
         protected void rptLessons_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
@@ -253,7 +253,7 @@ namespace ScienceBuddy.Admin
             LoadLessons("", "", "");
         }
 
-        // --- Helper Methods ---
+        //Helper Methods
 
         private string SS(SqlConnection c, string sql)
         {

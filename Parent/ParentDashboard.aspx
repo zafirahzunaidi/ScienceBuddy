@@ -148,10 +148,7 @@
             <i class="bi bi-person item-icon"></i>
             <span class="item-label"><%: T("Edit Profile","Edit Profil") %></span>
         </a>
-        <a href="<%: ResolveUrl("~/Logout.aspx") %>" class="sb-sidebar-item">
-            <i class="bi bi-box-arrow-right item-icon"></i>
-            <span class="item-label"><%: T("Logout","Log Keluar") %></span>
-        </a>
+
     </div>
 
     <script type="text/javascript">

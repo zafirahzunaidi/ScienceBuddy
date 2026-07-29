@@ -175,9 +175,7 @@ namespace ScienceBuddy.Services
         public NvidiaMessage Message { get; set; }
     }
 
-    // ═══════════════════════════════════════════════════════════════════
     // Analysis Result
-    // ═══════════════════════════════════════════════════════════════════
 
     public class AIAnalysisResult
     {

@@ -169,8 +169,9 @@ namespace ScienceBuddy.Admin
                 return new { success = false, message = isBM ? "Sila masukkan kata laluan semasa anda." : "Please enter your current password." };
             if (string.IsNullOrEmpty(newPassword))
                 return new { success = false, message = isBM ? "Sila masukkan kata laluan baharu." : "Please enter a new password." };
-            if (newPassword.Length < 8)
-                return new { success = false, message = isBM ? "Kata laluan baharu mestilah sekurang-kurangnya 8 aksara." : "New password must be at least 8 characters." };
+            int minLen = GetPasswordMinLengthStatic();
+            if (newPassword.Length < minLen)
+                return new { success = false, message = isBM ? "Kata laluan baharu mestilah sekurang-kurangnya " + minLen + " aksara." : "New password must be at least " + minLen + " characters." };
             if (newPassword != confirmPassword)
                 return new { success = false, message = isBM ? "Kata laluan baharu tidak sepadan." : "New passwords do not match." };
 
@@ -218,6 +219,25 @@ namespace ScienceBuddy.Admin
             {
                 return new { success = false, message = (isBM ? "Ralat berlaku semasa menukar kata laluan: " : "An error occurred while changing password: ") + ex.Message };
             }
+        }
+
+        private static int GetPasswordMinLengthStatic()
+        {
+            try
+            {
+                string connStr = ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+                using (var conn = new System.Data.SqlClient.SqlConnection(connStr))
+                {
+                    conn.Open();
+                    using (var cmd = new System.Data.SqlClient.SqlCommand("SELECT [configValue] FROM dbo.[ConfigurationSetting] WHERE [configKey]='Password Minimum Length'", conn))
+                    {
+                        var val = cmd.ExecuteScalar();
+                        if (val != null && val != DBNull.Value) { int r; if (int.TryParse(val.ToString(), out r)) return r; }
+                    }
+                }
+            }
+            catch { }
+            return 8;
         }
     }
 }

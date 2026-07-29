@@ -19,7 +19,7 @@ namespace ScienceBuddy.Admin
 
         protected string T(string en, string bm) => CurrentLanguage == "BM" ? bm : en;
 
-        // --- Page Lifecycle ---
+        //  Page Lifecycle
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -56,7 +56,7 @@ namespace ScienceBuddy.Admin
             }
         }
 
-        // --- Data Loading ---
+        // Data Loading
 
         private void LoadStats()
         {
@@ -142,7 +142,7 @@ namespace ScienceBuddy.Admin
             }
         }
 
-        // --- Event Handlers ---
+        //  Event Handlers 
 
         protected void btnSearch_Click(object sender, EventArgs e)
         {
@@ -159,7 +159,7 @@ namespace ScienceBuddy.Admin
             LoadForums("", "", "newest");
         }
 
-        // --- AJAX Handlers ---
+        //  AJAX Handlers 
 
         private void HandleAction()
         {

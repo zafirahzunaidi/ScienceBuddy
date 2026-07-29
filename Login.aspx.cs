@@ -16,9 +16,6 @@ namespace ScienceBuddy
                 DisplayQueryStringMessage();
         }
 
-        /// <summary>
-        /// Shows a status banner if the user arrived from password reset, registration, or logout.
-        /// </summary>
         private void DisplayQueryStringMessage()
         {
             string msg = Request.QueryString["msg"];
@@ -60,7 +57,8 @@ namespace ScienceBuddy
 
             if (IsAccountLocked(userRecord.UserId, maxAttempts, lockMinutes))
             {
-                ShowError("Your account has been temporarily locked due to too many failed login attempts. Please try again after " + lockMinutes + " minutes.");
+                ShowError("Your account has been temporarily locked due to too many failed login attempts." +
+                    "Please try again after " + lockMinutes + " minutes.");
                 return;
             }
 
@@ -84,10 +82,6 @@ namespace ScienceBuddy
             if (!ValidateAccountStatus(userRecord))
                 return;
 
-            // Teachers need additional certification approval before they can log in
-            if (userRecord.Role == "Teacher" && !ValidateTeacherApproval(userRecord))
-                return;
-
             // Only recognised roles may proceed
             if (!IsValidRole(userRecord.Role))
             {
@@ -98,6 +92,15 @@ namespace ScienceBuddy
             // Authentication passed — create session and redirect
             AddLog(userRecord.UserId, "Login", "User logged into the system successfully.", "Success");
             CreateUserSession(userRecord.UserId, enteredUsername, userRecord.Role);
+
+            // For students: check if personality test has been completed
+            if (userRecord.Role == "Student" && !HasCompletedPersonalityTest(userRecord.UserId))
+            {
+                Response.Redirect("~/Student/PersonalityTest.aspx", false);
+                Context.ApplicationInstance.CompleteRequest();
+                return;
+            }
+
             RedirectToDashboard(userRecord.Role);
         }
 
@@ -105,18 +108,12 @@ namespace ScienceBuddy
         //  BRUTE-FORCE PROTECTION (account-based via Log table)
         // ────────────────────────────────────────────────────────
 
-        /// <summary>
-        /// Checks if the account has reached the maximum failed login attempts within the lock duration.
-        /// </summary>
         private bool IsAccountLocked(string userId, int maxAttempts, int lockMinutes)
         {
             int recentFails = CountRecentFailedAttempts(userId, lockMinutes);
             return recentFails >= maxAttempts;
         }
 
-        /// <summary>
-        /// Counts recent "Failed Login" log entries for the user within the given time window.
-        /// </summary>
         private int CountRecentFailedAttempts(string userId, int withinMinutes)
         {
             string connStr = ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
@@ -140,9 +137,6 @@ namespace ScienceBuddy
             catch { return 0; }
         }
 
-        /// <summary>
-        /// Reads a configuration integer value from the ConfigurationSetting table.
-        /// </summary>
         private int GetConfigInt(string configKey, int defaultValue)
         {
             string connStr = ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
@@ -172,10 +166,6 @@ namespace ScienceBuddy
         //  DATABASE LOOKUP
         // ────────────────────────────────────────────────────────
 
-        /// <summary>
-        /// Queries the User table for the given username using binary collation
-        /// so that "aminah" will NOT match "Aminah" or "AMINAH".
-        /// </summary>
         private UserRecord FetchUserByUsername(string username)
         {
             string connectionString = ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
@@ -215,14 +205,7 @@ namespace ScienceBuddy
             }
         }
 
-        // ────────────────────────────────────────────────────────
         //  ACCOUNT VALIDATION
-        // ────────────────────────────────────────────────────────
-
-        /// <summary>
-        /// Returns true if the account is active and can proceed to login.
-        /// Shows appropriate error messages for blocked or deleted accounts.
-        /// </summary>
         private bool ValidateAccountStatus(UserRecord user)
         {
             switch (user.Status)
@@ -231,18 +214,6 @@ namespace ScienceBuddy
                     return true;
 
                 case "Blocked":
-                    // A blocked Teacher who was never certified should see their status page
-                    if (user.Role == "Teacher")
-                    {
-                        string certStatus = GetTeacherCertificationStatus(user.UserId);
-                        if (certStatus == "Not Certified")
-                        {
-                            Session["TeacherStatusUserId"] = user.UserId;
-                            Response.Redirect("~/TeacherRegistrationStatus.aspx", false);
-                            Context.ApplicationInstance.CompleteRequest();
-                            return false;
-                        }
-                    }
                     ShowError("Your account has been blocked. Please contact the administrator for assistance.");
                     return false;
 
@@ -256,40 +227,12 @@ namespace ScienceBuddy
             }
         }
 
-        /// <summary>
-        /// Teachers must be "Certified" before they can log in.
-        /// Pending teachers are redirected to a waiting page.
-        /// </summary>
-        private bool ValidateTeacherApproval(UserRecord user)
-        {
-            string certificationStatus = GetTeacherCertificationStatus(user.UserId);
-
-            if (certificationStatus == "Pending")
-            {
-                Session["TeacherStatusUserId"] = user.UserId;
-                Response.Redirect("~/TeacherRegistrationStatus.aspx", false);
-                Context.ApplicationInstance.CompleteRequest();
-                return false;
-            }
-
-            if (certificationStatus != "Certified")
-            {
-                ShowError("Your teacher account is not yet approved. Please contact support.");
-                return false;
-            }
-
-            return true;
-        }
-
         private bool IsValidRole(string role)
         {
             return role == "Admin" || role == "Student" || role == "Teacher" || role == "Parent";
         }
 
-        // ────────────────────────────────────────────────────────
         //  SESSION AND REDIRECT
-        // ────────────────────────────────────────────────────────
-
         private void CreateUserSession(string userId, string username, string role)
         {
             Session.Clear(); // remove any leftover session data from a previous user
@@ -350,9 +293,7 @@ namespace ScienceBuddy
             litSuccess.Text = Server.HtmlEncode(message);
         }
 
-        // ────────────────────────────────────────────────────────
         //  LOGGING
-        // ────────────────────────────────────────────────────────
 
         private void AddLog(string userId, string action, string description, string status)
         {
@@ -385,9 +326,7 @@ namespace ScienceBuddy
             }
         }
 
-        // ────────────────────────────────────────────────────────
         //  INNER CLASS: holds one row from the User table
-        // ────────────────────────────────────────────────────────
 
         private class UserRecord
         {
