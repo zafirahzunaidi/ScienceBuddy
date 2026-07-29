@@ -314,7 +314,7 @@
                 <div><div class="st-dash-social-label">Continue Learning</div><div class="st-dash-social-sub">Pick up your next lesson</div></div></a></div></asp:Panel><%-- Section: Notifications --%><asp:Panel ID="pnlSectionNotif" runat="server">
         <div class="st-dash-section-hd">
             <div class="st-dash-section-title"><span class="ico"><i class="bi bi-bell-fill"></i></span> <asp:Literal ID="litSecNotif" runat="server" Text="Recent Notifications" /></div>
-            <a href="#" class="st-dash-view-all"><asp:Literal ID="litSeeAll" runat="server" Text="See All" /> <i class="bi bi-arrow-right"></i></a>
+            <a href="<%: ResolveUrl("~/Student/Notifications.aspx")%>" class="st-dash-view-all"><asp:Literal ID="litSeeAll" runat="server" Text="See All" /> <i class="bi bi-arrow-right"></i></a>
         </div>
         <div class="st-dash-notif-card">
             <div class="st-dash-notif-hdr">

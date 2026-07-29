@@ -31,8 +31,7 @@ namespace ScienceBuddy.Student
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["userId"] == null || Session["role"] == null ||
-                Session["role"].ToString() != "Student")
+            if (Session["userId"] == null || Session["role"] == null || Session["role"].ToString() != "Student")
             {
                 Response.Redirect("~/Login.aspx", false);
                 return;
@@ -91,7 +90,7 @@ namespace ScienceBuddy.Student
         // Load all dashboard data
         private void LoadDashboard(string userId)
         {
-            // All data fetched in a single open connection for efficiency.
+            // All data fetched
             using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
@@ -216,10 +215,8 @@ namespace ScienceBuddy.Student
             }
         }
 
-        /// <summary>
-        /// Sets all remaining bilingual dashboard text that uses T().
-        /// Called once during LoadDashboard after CurrentLanguage is set.
-        /// </summary>
+        // Sets all remaining bilingual dashboard text that uses T()
+        // Called once during LoadDashboard after CurrentLanguage is set
         private void SetBilingualLabels()
         {
             // Section headings
@@ -274,10 +271,9 @@ namespace ScienceBuddy.Student
 
         // Data retrieval helpers
 
-        /// <summary>
-        /// Returns a single row joining Student + Level + Personality + User.
-        /// Uses Student.userId = @userId to ensure no cross-student access.
-        /// </summary>
+
+        // Returns a single row joining Student + Level + Personality + User.
+        // Uses Student.userId = @userId to ensure no cross-student access
         private DataRow GetStudentData(SqlConnection connection, string userId)
         {
             const string sql = @"
@@ -341,8 +337,7 @@ namespace ScienceBuddy.Student
             {
                 return 0;
             }
-            const string sql = @"
-                SELECT COUNT(*) FROM Notification
+            const string sql = @"SELECT COUNT(*) FROM Notification
                 WHERE toUserId = @userId AND isRead = 0";
             using (SqlCommand command = new SqlCommand(sql, connection))
             {
@@ -353,7 +348,7 @@ namespace ScienceBuddy.Student
 
         private void LoadContinueLearning(SqlConnection connection, string studentId, string lang)
         {
-            // If Lesson/Subtopic/Unit tables don't exist yet, show empty state.
+            // If Lesson/Subtopic/Unit tables x exist yet, show empty state
             if (!TableExists(connection, "Lesson") ||
                 !TableExists(connection, "Subtopic") ||
                 !TableExists(connection, "Unit"))
@@ -362,7 +357,7 @@ namespace ScienceBuddy.Student
                 return;
             }
 
-            // Find the first lesson not yet completed by this student.
+            // Find the 1st lesson not yet completed by this student
             string sql = @"
                 SELECT TOP 1
                     l.lessonId, l.lessonTitleEN, l.lessonTitleBM,

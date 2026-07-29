@@ -644,16 +644,13 @@ namespace ScienceBuddy.Student
             pnlFlashcardError.Visible = false;
             litFlashcardError.Text = "";
 
-            string unitId =
-                Request.QueryString["unitId"];
+            string unitId = Request.QueryString["unitId"];
 
             if (string.IsNullOrWhiteSpace(unitId))
             {
                 pnlFlashcardError.Visible = true;
 
-                litFlashcardError.Text = T(
-                    "The unit could not be identified.",
-                    "Unit tidak dapat dikenal pasti.");
+                litFlashcardError.Text = T("The unit could not be identified.","Unit tidak dapat dikenal pasti.");
 
                 OpenFlashcardModal();
                 return;
@@ -661,8 +658,7 @@ namespace ScienceBuddy.Student
 
             try
             {
-                string lessonContent =
-                    GetLessonContentForFlashcards(unitId);
+                string lessonContent = GetLessonContentForFlashcards(unitId);
 
                 if (string.IsNullOrWhiteSpace(lessonContent))
                 {
@@ -854,17 +850,11 @@ namespace ScienceBuddy.Student
         //Generate AI Flashcards
         private List<AIFlashcard> GenerateAIFlashcards(string lessonContent)
         {
-            string apiKey =
-                ConfigurationManager.AppSettings[
-                    "NvidiaApiKey"];
+            string apiKey = ConfigurationManager.AppSettings["NvidiaApiKey"];
 
-            string model =
-                ConfigurationManager.AppSettings[
-                    "NvidiaModel"];
+            string model = ConfigurationManager.AppSettings["NvidiaModel"];
 
-            string endpoint =
-                ConfigurationManager.AppSettings[
-                    "NvidiaApiEndpoint"];
+            string endpoint = ConfigurationManager.AppSettings["NvidiaApiEndpoint"];
 
             if (string.IsNullOrWhiteSpace(model))
             {
@@ -873,16 +863,12 @@ namespace ScienceBuddy.Student
 
             if (string.IsNullOrWhiteSpace(endpoint))
             {
-                endpoint =
-                    "https://integrate.api.nvidia.com/" +
-                    "v1/chat/completions";
+                endpoint = "https://integrate.api.nvidia.com/" + "v1/chat/completions";
             }
 
-            if (string.IsNullOrWhiteSpace(apiKey) ||
-                apiKey == "YOUR_NVIDIA_API_KEY_HERE")
+            if (string.IsNullOrWhiteSpace(apiKey) || apiKey == "YOUR_NVIDIA_API_KEY_HERE")
             {
-                throw new Exception(
-                    "The NVIDIA API key is missing.");
+                throw new Exception("The NVIDIA API key is missing.");
             }
 
             string outputLanguage;
@@ -944,11 +930,8 @@ namespace ScienceBuddy.Student
                     }
                 ]";
 
-            string userPrompt =
-                "OUTPUT LANGUAGE: " +
-                outputLanguage +
-                "\n\nLESSON CONTENT:\n" +
-                lessonContent;
+            string userPrompt = "OUTPUT LANGUAGE: " + outputLanguage +
+                "\n\nLESSON CONTENT:\n" + lessonContent;
 
             List<Dictionary<string, string>> messages =
                 new List<Dictionary<string, string>>();
