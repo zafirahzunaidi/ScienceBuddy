@@ -82,7 +82,7 @@
     <%-- Status panels for non-certified teachers --%>
     <asp:Panel ID="pnlPending" runat="server" Visible="false">
         <div class="tc-dashboard-status-panel">
-            <div class="tc-dashboard-status-ico">?</div>
+            <div class="tc-dashboard-status-ico"><i class="bi bi-hourglass-split"></i></div>
             <div class="tc-dashboard-status-title">Verification Pending</div>
             <div class="tc-dashboard-status-msg">
                 Your teaching certificate is currently under review. You will receive full access to the Teacher Dashboard once your certification has been approved by our admin team. Thank you for your patience!
@@ -92,7 +92,7 @@
 
     <asp:Panel ID="pnlRejected" runat="server" Visible="false">
         <div class="tc-dashboard-status-panel">
-            <div class="tc-dashboard-status-ico">??</div>
+            <div class="tc-dashboard-status-ico"><i class="bi bi-x-circle-fill"></i></div>
             <div class="tc-dashboard-status-title">Certificate Not Approved</div>
             <div class="tc-dashboard-status-msg">
                 Unfortunately, your teaching certificate was not approved. Please contact our support team or resubmit your certification documents for review. We are here to help!
@@ -102,7 +102,7 @@
 
     <asp:Panel ID="pnlDenied" runat="server" Visible="false">
         <div class="tc-dashboard-status-panel">
-            <div class="tc-dashboard-status-ico">??</div>
+            <div class="tc-dashboard-status-ico"><i class="bi bi-shield-exclamation"></i></div>
             <div class="tc-dashboard-status-title">Access Denied</div>
             <div class="tc-dashboard-status-msg">
                 Your account does not currently have access to the Teacher Dashboard. If you believe this is an error, please contact the ScienceBuddy support team.
@@ -116,18 +116,18 @@
         <%-- -- 1. HERO BANNER -- --%>
         <div class="tc-dashboard-hero">
             <div class="tc-dashboard-hero-body">
-                <div class="tc-dashboard-hero-eyebrow">Teacher Portal</div>
+                <div class="tc-dashboard-hero-eyebrow"><%: T("Teacher Portal","Portal Guru") %></div>
                 <div class="tc-dashboard-hero-title">
-                    Welcome back, <asp:Literal ID="litTeacherName" runat="server" Text="Teacher" />!
+                    <%: T("Welcome back,","Selamat kembali,") %> <asp:Literal ID="litTeacherName" runat="server" Text="Teacher" />!
                 </div>
                 <div class="tc-dashboard-hero-sub">
-                    Manage your quizzes, teaching resources and classroom activities from one place.
+                    <%: T("Manage your quizzes, teaching resources and classroom activities from one place.","Urus kuiz, sumber pengajaran dan aktiviti bilik darjah anda dari satu tempat.") %>
                 </div>
                 <div class="tc-dashboard-hero-actions">
                     <button type="button"
                         class="tc-dashboard-hero-btn-topics"
                         onclick="openTopicsModal()">
-                        <i class="bi bi-book"></i> Available Topics
+                        <i class="bi bi-book"></i> <%: T("Available Topics","Topik Tersedia") %>
                     </button>
                 </div>
             </div>
@@ -159,7 +159,7 @@
                         </div>
                         <div class="tc-dashboard-topics-header-text">
                             <div class="tc-dashboard-topics-title" id="tdTopicsTitle">
-                                Available Topics <span class="tc-dashboard-topics-title-sparkle">?</span>
+                                Available Topics <span class="tc-dashboard-topics-title-sparkle">✨</span>
                             </div>
                             <div class="tc-dashboard-topics-subtitle">
                                 Explore available units and subtopics by level.
@@ -203,7 +203,7 @@
                 style="font-size:.85rem;font-weight:600;color:var(--tc-primary);text-decoration:none;transition:color .15s;"
                 onmouseover="this.style.textDecoration='underline'"
                 onmouseout="this.style.textDecoration='none'">
-                <%: T("View all quizzes","Lihat semua kuiz") %> ?
+                <%: T("View all quizzes","Lihat semua kuiz") %> <i class="bi bi-arrow-right"></i>
             </a>
         </div>
         <div class="tc-dashboard-quiz-row">
@@ -221,7 +221,7 @@
                 <div class="tc-dashboard-quiz-desc">
                     <%: T("Create quizzes based on a specific unit or topic.","Cipta kuiz berdasarkan unit atau topik tertentu.") %>
                 </div>
-                <span class="tc-dashboard-quiz-btn"><%: T("Create Quiz","Cipta Kuiz") %> ?</span>
+                <span class="tc-dashboard-quiz-btn"><%: T("Create Quiz","Cipta Kuiz") %> <i class="bi bi-arrow-right"></i></span>
             </a>
             <a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx?tab=unit-level&type=level") %>"
                 class="tc-dashboard-quiz-card tc-dashboard-quiz-orange">
@@ -237,7 +237,7 @@
                 <div class="tc-dashboard-quiz-desc">
                     <%: T("Create quizzes based on difficulty levels.","Cipta kuiz berdasarkan tahap kesukaran.") %>
                 </div>
-                <span class="tc-dashboard-quiz-btn"><%: T("Create Quiz","Cipta Kuiz") %> ?</span>
+                <span class="tc-dashboard-quiz-btn"><%: T("Create Quiz","Cipta Kuiz") %> <i class="bi bi-arrow-right"></i></span>
             </a>
             <a href="<%: ResolveUrl("~/Teacher/manageQuiz.aspx?tab=practice") %>"
                 class="tc-dashboard-quiz-card tc-dashboard-quiz-teal">
@@ -253,7 +253,7 @@
                 <div class="tc-dashboard-quiz-desc">
                     <%: T("Create practice quizzes for revision and exercises.","Cipta kuiz latihan untuk ulangkaji dan latihan.") %>
                 </div>
-                <span class="tc-dashboard-quiz-btn"><%: T("Create Quiz","Cipta Kuiz") %> ?</span>
+                <span class="tc-dashboard-quiz-btn"><%: T("Create Quiz","Cipta Kuiz") %> <i class="bi bi-arrow-right"></i></span>
             </a>
         </div>
 
@@ -388,7 +388,7 @@
                         </div>
                         <a href="<%: ResolveUrl("~/Teacher/liveSession.aspx") %>"
                             style="font-size:.78rem;font-weight:600;color:var(--tc-primary);text-decoration:none;">
-                            <%: T("View All","Lihat Semua") %> ?
+                            <%: T("View All","Lihat Semua") %> <i class="bi bi-arrow-right"></i>
                         </a>
                     </div>
                     <asp:Panel ID="pnlTimelineSessions" runat="server" Visible="false">
@@ -444,7 +444,7 @@
                         </div>
                         <a href="<%: ResolveUrl("~/Teacher/Notifications.aspx") %>"
                             style="font-size:.78rem;font-weight:600;color:var(--tc-primary);text-decoration:none;">
-                            <%: T("View All","Lihat Semua") %> ?
+                            <%: T("View All","Lihat Semua") %> <i class="bi bi-arrow-right"></i>
                         </a>
                     </div>
                     <asp:Panel ID="pnlDashNotifs" runat="server" Visible="false">

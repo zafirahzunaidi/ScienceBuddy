@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
@@ -315,7 +315,7 @@ namespace ScienceBuddy.Teacher
             {
                 conn.Open();
 
-                // Check if already liked — only allow one like per user
+                // Check if already liked - only allow one like per user
                 using (var cmd = new SqlCommand(
                     "SELECT COUNT(*) FROM dbo.[ForumLike] WHERE [forumId]=@forumId AND [senderUserId]=@teacherId", conn))
                 {
@@ -385,7 +385,7 @@ namespace ScienceBuddy.Teacher
 
         /// <summary>
         /// Sends a notification to the original forum creator when a new reply is posted.
-        /// Non-critical — failures are silently ignored.
+        /// Non-critical - failures are silently ignored.
         /// </summary>
         private void NotifyForumCreator(string replierId, string forumId)
         {

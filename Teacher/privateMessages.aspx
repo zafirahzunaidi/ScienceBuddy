@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="privateMessages.aspx.cs"
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="privateMessages.aspx.cs"
     Inherits="ScienceBuddy.Teacher.privateMessages" MasterPageFile="~/Site.Master"
     Title="Private Messages" %>
 
@@ -71,6 +71,30 @@
 
 <%-- Main Content --%>
 <asp:Content ID="cMain" ContentPlaceHolderID="MainContentSidebar" runat="server">
+
+    <%-- Access Denied Panel --%>
+    <asp:Panel ID="pnlDenied" runat="server" Visible="false">
+        <div style="display:flex;flex-direction:column;align-items:center;padding:3rem;text-align:center;">
+            <div style="font-size:3rem;margin-bottom:1rem;color:#ef4444;"><i class="bi bi-shield-exclamation"></i></div>
+            <h2 style="color:var(--tc-text);font-weight:800;">Access Denied</h2>
+            <p style="color:var(--tc-muted);max-width:450px;">Your account cannot access this page. Please contact support.</p>
+        </div>
+    </asp:Panel>
+
+    <%-- Pending Verification Panel --%>
+    <asp:Panel ID="pnlPending" runat="server" Visible="false">
+        <div style="display:flex;flex-direction:column;align-items:center;padding:3.5rem 2rem;text-align:center;">
+            <div style="font-size:3.5rem;margin-bottom:1rem;opacity:.85;color:#f59e0b;"><i class="bi bi-hourglass-split"></i></div>
+            <h2 style="font-size:1.15rem;font-weight:800;color:var(--tc-text);margin:0 0 .6rem;">
+                <%: T("Verification Pending","Pengesahan Sedang Diproses") %>
+            </h2>
+            <p style="font-size:.88rem;color:var(--tc-muted);max-width:480px;line-height:1.65;margin:0;">
+                <%: T("Your teaching certificate is under review. You'll be able to send and receive private messages once your verification is approved.","Sijil pengajaran anda sedang dalam semakan. Anda boleh menghantar dan menerima mesej peribadi setelah pengesahan anda diluluskan.") %>
+            </p>
+        </div>
+    </asp:Panel>
+
+<asp:Panel ID="pnlMain" runat="server" Visible="false">
 <div class="tc-private-messages-wrap">
 
     <%-- Conversation List --%>
@@ -158,7 +182,7 @@
                 <div style="display:flex;align-items:center;gap:8px;flex:1;">
                     <span style="font-size:.82rem;font-weight:700;color:var(--tm);"><%: T("To:","Kepada:") %></span>
                     <select id="ddlRecipientTypeClient" class="tc-private-messages-compose-select" onchange="pmRecipientTypeChanged()">
-                        <option value="">— Type —</option>
+                        <option value="">- Type -</option>
                         <option value="Student">Student</option>
                         <option value="Parent">Parent</option>
                     </select>
@@ -316,6 +340,7 @@
 </div>
 
 <%-- New Conversation Modal removed - using inline compose mode --%>
+</asp:Panel>
 
 <asp:HiddenField ID="hidSelectedChat" runat="server" Value="" />
 <asp:HiddenField ID="hidRecipientsJson" runat="server" Value="" />
@@ -404,7 +429,7 @@
         if (hiddenTypeDdl) hiddenTypeDdl.value = selectedType;
 
         // Clear and repopulate recipient dropdown
-        recipientDdl.innerHTML = '<option value="">— Select Recipient —</option>';
+        recipientDdl.innerHTML = '<option value="">- Select Recipient -</option>';
         if (!selectedType) return;
 
         // Get recipients from hidden JSON field

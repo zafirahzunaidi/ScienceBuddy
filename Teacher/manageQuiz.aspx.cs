@@ -192,9 +192,9 @@ namespace ScienceBuddy.Teacher
             pnlCreateLang.Visible = (quizType == "Practice");
 
             ddlCreateSubtopic.Items.Clear();
-            ddlCreateSubtopic.Items.Add(new ListItem(T("— Select Subtopic —", "— Pilih Subtopik —"), ""));
+            ddlCreateSubtopic.Items.Add(new ListItem(T("-- Select Subtopic --", "-- Pilih Subtopik --"), ""));
             ddlCreateUnit.Items.Clear();
-            ddlCreateUnit.Items.Add(new ListItem(T("— Select Unit —", "— Pilih Unit —"), ""));
+            ddlCreateUnit.Items.Add(new ListItem(T("-- Select Unit --", "-- Pilih Unit --"), ""));
 
             if (quizType == "Unit") LoadCreateUnits();
 
@@ -205,7 +205,7 @@ namespace ScienceBuddy.Teacher
         {
             // For Level quiz: load subtopics for the entire level
             ddlCreateSubtopic.Items.Clear();
-            ddlCreateSubtopic.Items.Add(new ListItem(T("— Select Subtopic —", "— Pilih Subtopik —"), ""));
+            ddlCreateSubtopic.Items.Add(new ListItem(T("-- Select Subtopic --", "-- Pilih Subtopik --"), ""));
 
             string selectedLevelId = ddlCreateLevel.SelectedValue;
             if (!string.IsNullOrEmpty(selectedLevelId))
@@ -237,7 +237,7 @@ namespace ScienceBuddy.Teacher
         protected void ddlCreateUnit_Changed(object sender, EventArgs e)
         {
             ddlCreateSubtopic.Items.Clear();
-            ddlCreateSubtopic.Items.Add(new ListItem(T("— Select Subtopic —", "— Pilih Subtopik —"), ""));
+            ddlCreateSubtopic.Items.Add(new ListItem(T("-- Select Subtopic --", "-- Pilih Subtopik --"), ""));
 
             string selectedUnitId = ddlCreateUnit.SelectedValue;
             if (!string.IsNullOrEmpty(selectedUnitId))
@@ -1009,7 +1009,7 @@ namespace ScienceBuddy.Teacher
         private void LoadCreateUnits()
         {
             ddlCreateUnit.Items.Clear();
-            ddlCreateUnit.Items.Add(new ListItem(T("— Select Unit —", "— Pilih Unit —"), ""));
+            ddlCreateUnit.Items.Add(new ListItem(T("-- Select Unit --", "-- Pilih Unit --"), ""));
 
             using (var conn = new SqlConnection(ConnStr))
             {
@@ -1061,14 +1061,14 @@ namespace ScienceBuddy.Teacher
 
             // Create modal - Quiz Type
             ddlCreateType.Items.Clear();
-            ddlCreateType.Items.Add(new ListItem(T("— Select Quiz Type —", "— Pilih Jenis Kuiz —"), ""));
+            ddlCreateType.Items.Add(new ListItem(T("-- Select Quiz Type --", "-- Pilih Jenis Kuiz --"), ""));
             ddlCreateType.Items.Add(new ListItem(T("Practice Quiz", "Kuiz Latihan"), "Practice"));
             ddlCreateType.Items.Add(new ListItem(T("Unit Quiz", "Kuiz Unit"), "Unit"));
             ddlCreateType.Items.Add(new ListItem(T("Level Quiz", "Kuiz Tahap"), "Level"));
 
             // Create modal - Level
             ddlCreateLevel.Items.Clear();
-            ddlCreateLevel.Items.Add(new ListItem(T("— Select Level —", "— Pilih Tahap —"), ""));
+            ddlCreateLevel.Items.Add(new ListItem(T("-- Select Level --", "-- Pilih Tahap --"), ""));
             using (var conn = new SqlConnection(ConnStr))
             {
                 conn.Open();
@@ -1447,8 +1447,7 @@ namespace ScienceBuddy.Teacher
             int pendingCount = Convert.ToInt32(reader["pendingCount"]);
             int rejectedCount = Convert.ToInt32(reader["rejectedCount"]);
 
-            string overallTip = T("Total approved questions available for this quiz from all teachers.", "Jumlah soalan yang diluluskan tersedia untuk kuiz ini daripada semua guru.");
-            string yourTip = T("Total questions you have submitted for this quiz, including approved, pending and rejected questions.", "Jumlah soalan yang telah anda hantar untuk kuiz ini, termasuk yang diluluskan, menunggu dan ditolak.");
+            string totalTip = T("Total questions you have contributed for this quiz.", "Jumlah soalan yang telah anda sumbangkan untuk kuiz ini.");
 
             html.Append("<div class=\"tc-manage-quiz-ulq-card\">");
 
@@ -1457,8 +1456,7 @@ namespace ScienceBuddy.Teacher
 
             // Stats columns
             html.Append("<div class=\"tc-manage-quiz-ulq-stats\">");
-            html.AppendFormat("<div class=\"tc-manage-quiz-ulq-col tc-manage-quiz-ulq-col--overall\"><div class=\"tc-manage-quiz-ulq-col-label\">{0} <span class=\"tc-manage-quiz-info-icon\" tabindex=\"0\" data-tip=\"{2}\"><i class=\"bi bi-info-circle\"></i></span></div><div class=\"tc-manage-quiz-ulq-col-val tc-manage-quiz-val-overall\">{1}</div></div>", T("Overall Approved", "Diluluskan Semua"), overallApproved, HttpUtility.HtmlEncode(overallTip));
-            html.AppendFormat("<div class=\"tc-manage-quiz-ulq-col tc-manage-quiz-ulq-col--submitted\"><div class=\"tc-manage-quiz-ulq-col-label\">{0} <span class=\"tc-manage-quiz-info-icon\" tabindex=\"0\" data-tip=\"{2}\"><i class=\"bi bi-info-circle\"></i></span></div><div class=\"tc-manage-quiz-ulq-col-val\">{1}</div></div>", T("Your Submitted", "Hantar Anda"), yourCount, HttpUtility.HtmlEncode(yourTip));
+            html.AppendFormat("<div class=\"tc-manage-quiz-ulq-col tc-manage-quiz-ulq-col--submitted\"><div class=\"tc-manage-quiz-ulq-col-label\">{0} <span class=\"tc-manage-quiz-info-icon\" tabindex=\"0\" data-tip=\"{2}\"><i class=\"bi bi-info-circle\"></i></span></div><div class=\"tc-manage-quiz-ulq-col-val\">{1}</div></div>", T("Total", "Jumlah"), yourCount, HttpUtility.HtmlEncode(totalTip));
             html.AppendFormat("<div class=\"tc-manage-quiz-ulq-col tc-manage-quiz-ulq-col--approved\"><div class=\"tc-manage-quiz-ulq-col-label\">{0}</div><div class=\"tc-manage-quiz-ulq-col-val tc-manage-quiz-val-approved\">{1}</div></div>", T("Approved", "Diluluskan"), approvedCount);
             html.AppendFormat("<div class=\"tc-manage-quiz-ulq-col tc-manage-quiz-ulq-col--pending\"><div class=\"tc-manage-quiz-ulq-col-label\">{0}</div><div class=\"tc-manage-quiz-ulq-col-val tc-manage-quiz-val-pending\">{1}</div></div>", T("Pending", "Menunggu"), pendingCount);
             html.AppendFormat("<div class=\"tc-manage-quiz-ulq-col tc-manage-quiz-ulq-col--rejected\"><div class=\"tc-manage-quiz-ulq-col-label\">{0}</div><div class=\"tc-manage-quiz-ulq-col-val tc-manage-quiz-val-rejected\">{1}</div></div>", T("Rejected", "Ditolak"), rejectedCount);

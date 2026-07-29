@@ -339,30 +339,30 @@
                     <span><%: T("Question","Soalan") %> *</span>
                     <span class="tc-question-builder-char-count" id="pqQCharCount">0 / 500</span>
                 </div>
-                <div class="tc-question-builder-tc-rte-wrap">
-                    <div class="tc-question-builder-tc-rte-toolbar">
-                        <button type="button" class="tc-question-builder-tc-rte-btn"
+                <div class="tc-question-builder-rte-wrap">
+                    <div class="tc-question-builder-rte-toolbar">
+                        <button type="button" class="tc-question-builder-rte-btn"
                                 onmousedown="event.preventDefault();pqRteExec('bold')" title="Bold">
                             <i class="bi bi-type-bold"></i>
                         </button>
-                        <button type="button" class="tc-question-builder-tc-rte-btn"
+                        <button type="button" class="tc-question-builder-rte-btn"
                                 onmousedown="event.preventDefault();pqRteExec('italic')" title="Italic">
                             <i class="bi bi-type-italic"></i>
                         </button>
-                        <button type="button" class="tc-question-builder-tc-rte-btn"
+                        <button type="button" class="tc-question-builder-rte-btn"
                                 onmousedown="event.preventDefault();pqRteExec('underline')" title="Underline">
                             <i class="bi bi-type-underline"></i>
                         </button>
-                        <span class="tc-question-builder-tc-rte-sep"></span>
-                        <button type="button" class="tc-question-builder-tc-rte-btn"
+                        <span class="tc-question-builder-rte-sep"></span>
+                        <button type="button" class="tc-question-builder-rte-btn"
                                 onmousedown="event.preventDefault();pqRteExec('insertUnorderedList')" title="Bullet List">
                             <i class="bi bi-list-ul"></i>
                         </button>
-                        <button type="button" class="tc-question-builder-tc-rte-btn"
+                        <button type="button" class="tc-question-builder-rte-btn"
                                 onmousedown="event.preventDefault();pqRteExec('insertOrderedList')" title="Numbered List">
                             <i class="bi bi-list-ol"></i>
                         </button>
-                        <span class="tc-question-builder-tc-rte-sep" id="pqFibSep" style="display:none;"></span>
+                        <span class="tc-question-builder-rte-sep" id="pqFibSep" style="display:none;"></span>
                         <span id="pqBlankCounter"
                               style="display:none;margin-left:auto;font-size:.75rem;font-weight:600;color:#7B7499;">
                             <%: T("Blanks","Kosong") %>: <strong id="pqBlankNum">0</strong> / 4
@@ -376,7 +376,7 @@
                         </button>
                     </div>
                     <div id="pqRteEditor"
-                         class="tc-question-builder-tc-rte-editor"
+                         class="tc-question-builder-rte-editor"
                          contenteditable="true"
                          data-placeholder="<%: T("Type your question here...","Taip soalan anda di sini...") %>">
                     </div>
@@ -561,30 +561,30 @@
                     <%: T("Answer Options","Pilihan Jawapan") %> *
                     <span class="tc-fill-blank-sub-label">(<%: T("Max 4 words","Maks 4 perkataan") %>)</span>
                 </div>
-                <div class="tc-question-builder-tc-fill-blank-words" id="pqFibWords">
-                    <div class="tc-question-builder-tc-fill-blank-word">
-                        <span class="tc-question-builder-tc-fill-blank-num">1</span>
+                <div class="tc-question-builder-fib-words" id="pqFibWords">
+                    <div class="tc-question-builder-fib-word">
+                        <span class="tc-question-builder-fib-num">1</span>
                         <input type="text"
                                class="tc-question-builder-opt-input tc-practice-quiz-tc-fill-blank-word"
                                placeholder="<%: T("Word 1","Perkataan 1") %>"
                                oninput="pqOnFibWordChange()" />
                     </div>
-                    <div class="tc-question-builder-tc-fill-blank-word">
-                        <span class="tc-question-builder-tc-fill-blank-num">2</span>
+                    <div class="tc-question-builder-fib-word">
+                        <span class="tc-question-builder-fib-num">2</span>
                         <input type="text"
                                class="tc-question-builder-opt-input tc-practice-quiz-tc-fill-blank-word"
                                placeholder="<%: T("Word 2","Perkataan 2") %>"
                                oninput="pqOnFibWordChange()" />
                     </div>
-                    <div class="tc-question-builder-tc-fill-blank-word">
-                        <span class="tc-question-builder-tc-fill-blank-num">3</span>
+                    <div class="tc-question-builder-fib-word">
+                        <span class="tc-question-builder-fib-num">3</span>
                         <input type="text"
                                class="tc-question-builder-opt-input tc-practice-quiz-tc-fill-blank-word"
                                placeholder="<%: T("Word 3","Perkataan 3") %>"
                                oninput="pqOnFibWordChange()" />
                     </div>
-                    <div class="tc-question-builder-tc-fill-blank-word">
-                        <span class="tc-question-builder-tc-fill-blank-num">4</span>
+                    <div class="tc-question-builder-fib-word">
+                        <span class="tc-question-builder-fib-num">4</span>
                         <input type="text"
                                class="tc-question-builder-opt-input tc-practice-quiz-tc-fill-blank-word"
                                placeholder="<%: T("Word 4","Perkataan 4") %>"
@@ -605,7 +605,7 @@
                         <i class="bi bi-arrow-left-right"></i>
                         <%: T("Correct Answer Mapping","Pemetaan Jawapan Betul") %> *
                     </div>
-                    <div class="tc-question-builder-tc-fill-blank-mappings" id="pqFibMappings"></div>
+                    <div class="tc-question-builder-fib-mappings" id="pqFibMappings"></div>
                     <div class="tc-fill-blank-warning" id="pqFibMapError" style="display:none;margin-top:6px;">
                         <i class="bi bi-exclamation-circle-fill"></i>
                         <%: T("Each blank must map to a unique word.","Setiap kosong mesti dipetakan kepada perkataan unik.") %>
@@ -617,19 +617,19 @@
                 </div>
 
                 <div id="pqFibPreviewSection" class="tc-fill-blank-preview-wrap" style="display:none;">
-                    <div class="tc-question-builder-tc-fill-blank-preview-card">
-                        <div class="tc-question-builder-tc-fill-blank-preview-title">
+                    <div class="tc-question-builder-fib-preview-card">
+                        <div class="tc-question-builder-fib-preview-title">
                             <i class="bi bi-eye"></i> <%: T("Student Preview","Pratonton Pelajar") %>
                         </div>
-                        <div class="tc-question-builder-tc-fill-blank-preview-sub">
+                        <div class="tc-question-builder-fib-preview-sub">
                             <%: T("Students will drag the correct words into the blanks below.","Pelajar akan menyeret perkataan betul ke dalam kosong di bawah.") %>
                         </div>
-                        <div class="tc-question-builder-tc-fill-blank-preview-text" id="pqFibPreviewText"></div>
+                        <div class="tc-question-builder-fib-preview-text" id="pqFibPreviewText"></div>
                         <div style="margin-top:.75rem;">
                             <div style="font-size:.72rem;font-weight:600;color:#7B7499;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">
                                 <%: T("Available Words","Perkataan Tersedia") %>
                             </div>
-                            <div class="tc-question-builder-tc-fill-blank-preview-words" id="pqFibPreviewWords"></div>
+                            <div class="tc-question-builder-fib-preview-words" id="pqFibPreviewWords"></div>
                         </div>
                     </div>
                 </div>
@@ -832,6 +832,23 @@
 <asp:HiddenField ID="hidLanguage" runat="server" />
 <asp:HiddenField ID="hidQuizTitle" runat="server" />
 <asp:HiddenField ID="hidQuestionsJson" runat="server" />
+<%-- Unsaved Changes Modal --%>
+<div class="tc-question-builder-unsaved-overlay" id="qbUnsavedOverlay">
+    <div class="tc-question-builder-unsaved-modal">
+        <div class="tc-question-builder-unsaved-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+        <h3><%: T("Unsaved Changes","Perubahan Belum Disimpan") %></h3>
+        <p><%: T("Your unsaved quiz data will be discarded. Are you sure you want to leave this page?","Data kuiz anda yang belum disimpan akan dibuang. Adakah anda pasti mahu meninggalkan halaman ini?") %></p>
+        <div class="tc-question-builder-unsaved-actions">
+            <button type="button" class="tc-question-builder-unsaved-cancel" onclick="closeUnsavedModal()">
+                <%: T("Cancel","Batal") %>
+            </button>
+            <button type="button" class="tc-question-builder-unsaved-confirm" id="qbUnsavedConfirm">
+                <%: T("Leave Page","Tinggalkan Halaman") %>
+            </button>
+        </div>
+    </div>
+</div>
+
 <asp:HiddenField ID="hidSubmitSuccess" runat="server" />
 <asp:Button ID="btnSubmitPQ" runat="server" Style="display:none;" OnClick="btnSubmitPQ_Click" CausesValidation="false" />
 
@@ -1361,7 +1378,7 @@
             var selectedVal=storedIdx[b]||'';
             var opts='<option value="">-- '+_pqT('Select word','Pilih perkataan')+' --</option>';
             words.forEach(function(w,wi){opts+='<option value="'+(wi+1)+'"'+(selectedVal===''+(wi+1)?' selected':'')+'>'+w+'</option>';});
-            html+='<div class="tc-question-builder-tc-fill-blank-map-row'+(selectedVal?' valid':'')+'"><span class="tc-question-builder-tc-fill-blank-map-label">'+b+'</span><span class="tc-question-builder-tc-fill-blank-map-arrow"><i class="bi bi-arrow-right"></i></span><select class="tc-question-builder-tc-fill-blank-map-select tc-practice-quiz-tc-fill-blank-map-dd" data-blank="'+b+'" onchange="pqValidateFibMapping()">'+opts+'</select><span class="tc-question-builder-tc-fill-blank-map-check"><i class="bi bi-check-circle-fill"></i></span></div>';
+            html+='<div class="tc-question-builder-fib-map-row'+(selectedVal?' valid':'')+'"><span class="tc-question-builder-fib-map-label">'+b+'</span><span class="tc-question-builder-fib-map-arrow"><i class="bi bi-arrow-right"></i></span><select class="tc-question-builder-fib-map-select tc-practice-quiz-tc-fill-blank-map-dd" data-blank="'+b+'" onchange="pqValidateFibMapping()">'+opts+'</select><span class="tc-question-builder-fib-map-check"><i class="bi bi-check-circle-fill"></i></span></div>';
         });
         container.innerHTML=html;
         pqUpdateFibPreview();
@@ -1372,7 +1389,7 @@
         pqClearFieldErr('pqDndMapErr',document.getElementById('pqFibMappings'));
         var selects=document.querySelectorAll('#pqFibMappings .tc-practice-quiz-tc-fill-blank-map-dd'),vals=[],dup=false;
         selects.forEach(function(s){
-            var row=s.closest('.tc-question-builder-tc-fill-blank-map-row');row.classList.remove('invalid');s.classList.remove('invalid');
+            var row=s.closest('.tc-question-builder-fib-map-row');row.classList.remove('invalid');s.classList.remove('invalid');
             if(s.value){if(vals.indexOf(s.value)>-1){dup=true;row.classList.add('invalid');s.classList.add('invalid');}else row.classList.add('valid');vals.push(s.value);}else row.classList.remove('valid');
         });
         document.getElementById('pqFibMapError').style.display=dup?'flex':'none';
@@ -1401,7 +1418,7 @@
         var html=text.replace(/\[Blank \d\]/g,'<span class="tc-fill-blank-blank">_____</span>');
         previewText.innerHTML=html||'<em style="color:#7B7499;">'+_pqT('Type your question with blanks...','Taip soalan anda dengan tempat kosong...')+'</em>';
         var words=[];document.querySelectorAll('#pqFibWords .tc-practice-quiz-tc-fill-blank-word').forEach(function(i){if(i.value.trim())words.push(i.value.trim());});
-        previewWords.innerHTML=words.length?words.map(function(w){return'<span class="tc-question-builder-tc-fill-blank-chip">'+w+'</span>';}).join(''):'<em style="font-size:.78rem;color:#7B7499;">'+_pqT('Add words to Word Bank above','Tambah perkataan ke Bank Perkataan di atas')+'</em>';
+        previewWords.innerHTML=words.length?words.map(function(w){return'<span class="tc-question-builder-fib-chip">'+w+'</span>';}).join(''):'<em style="font-size:.78rem;color:#7B7499;">'+_pqT('Add words to Word Bank above','Tambah perkataan ke Bank Perkataan di atas')+'</em>';
     }
 
     /* -- Char counts -- */
@@ -1479,7 +1496,7 @@
 
             /* -- Required question text -- */
             var qText=q['q'+qSuf]||'';
-            if(!qText.trim()){pqNavGoTo(i);pqInlineErr('pqQTextErr',_pqT('Please fill in the question text.','Sila isi teks soalan.'),document.querySelector('.tc-question-builder-tc-rte-wrap'));return false;}
+            if(!qText.trim()){pqNavGoTo(i);pqInlineErr('pqQTextErr',_pqT('Please fill in the question text.','Sila isi teks soalan.'),document.querySelector('.tc-question-builder-rte-wrap'));return false;}
 
             /* -- Required explanations -- */
             if(!(q['ce'+qSuf]||'').trim()){pqNavGoTo(i);pqInlineErr('pqCeErr',_pqT('Please fill in the correct explanation.','Sila isi penjelasan betul.'),document.getElementById('pqTxtCE'));return false;}
@@ -1523,7 +1540,7 @@
                 var blankRe=/\[Blank \d\]/g;
                 var blankCount=((q['q'+qSuf]||'').match(blankRe)||[]).length;
                 /* At least 1 blank required */
-                if(blankCount<1){pqNavGoTo(i);pqInlineErr('pqDndBlankErr',_pqT('At least one blank is required.','Sekurang-kurangnya satu kosong diperlukan.'),document.querySelector('.tc-question-builder-tc-rte-wrap'));return false;}
+                if(blankCount<1){pqNavGoTo(i);pqInlineErr('pqDndBlankErr',_pqT('At least one blank is required.','Sekurang-kurangnya satu kosong diperlukan.'),document.querySelector('.tc-question-builder-rte-wrap'));return false;}
                 /* Min 2 answer options */
                 var fibKey=CL==='EN'?'fibEN':'fibBM';
                 var fibArr=q[fibKey]||[];
@@ -1586,7 +1603,7 @@
         document.getElementById('pqTxtWE').addEventListener('input',function(){pqUpdateCharCounts();pqClearFieldErr('pqWeErr',this);});
         /* Wire RTE input + auto-clear */
         var ed=document.getElementById('pqRteEditor');
-        if(ed)ed.addEventListener('input',function(){pqRteSync();pqClearFieldErr('pqQTextErr',document.querySelector('.tc-question-builder-tc-rte-wrap'));pqClearFieldErr('pqDndBlankErr');});
+        if(ed)ed.addEventListener('input',function(){pqRteSync();pqClearFieldErr('pqQTextErr',document.querySelector('.tc-question-builder-rte-wrap'));pqClearFieldErr('pqDndBlankErr');});
         /* Wire multiselect inputs + checkboxes */
         document.querySelectorAll('#pqMsOpts .tc-practice-quiz-ms-text').forEach(function(inp){
             inp.addEventListener('input',function(){pqClearFieldErr('pqMsErr',document.getElementById('pqMsOpts'));});
@@ -1711,5 +1728,74 @@
             if(errDiv)errDiv.style.display='none';
         });
     })();
+
+/* --- UNSAVED CHANGES DETECTION --------------------------- */
+(function(){
+    var dirty=false;
+    var submitting=false;
+    var pendingUrl='';
+
+    // Mark dirty on any input in the main form area
+    var mainArea=document.querySelector('.tc-practice-quiz-main')||document.querySelector('[id$="pnlMain"]');
+    if(mainArea){
+        mainArea.addEventListener('input',function(){dirty=true;});
+        mainArea.addEventListener('change',function(){dirty=true;});
+    }
+
+    // Also mark dirty on contenteditable changes
+    var rteEditor=document.getElementById('qbRteEditor');
+    if(rteEditor)rteEditor.addEventListener('input',function(){dirty=true;});
+
+    // Track quiz submission
+    var submitBtn=document.querySelector('[id$="btnSubmitPQ"]');
+    if(submitBtn)submitBtn.addEventListener('click',function(){submitting=true;dirty=false;});
+
+    // Clear dirty on successful submission
+    var successEl=document.getElementById('pqSuccessOverlay');
+    if(successEl){
+        var obs=new MutationObserver(function(){
+            if(successEl.style.display==='flex'||successEl.classList.contains('open')){dirty=false;submitting=true;}
+        });
+        obs.observe(successEl,{attributes:true,attributeFilter:['style','class']});
+    }
+
+    // Browser native beforeunload
+    window.addEventListener('beforeunload',function(e){
+        if(dirty&&!submitting){e.preventDefault();e.returnValue='';}
+    });
+
+    // Intercept sidebar and other navigation links
+    var links=document.querySelectorAll('.sb-sidebar-item, .tc-practice-quiz-back-link, a[href]');
+    links.forEach(function(link){
+        if(!link.href||link.href==='#'||link.href.indexOf('javascript:')===0)return;
+        if(link.closest('.tc-question-builder-unsaved-modal'))return;
+        link.addEventListener('click',function(e){
+            if(!dirty||submitting)return;
+            e.preventDefault();
+            e.stopPropagation();
+            pendingUrl=link.getAttribute('href')||link.href;
+            document.getElementById('qbUnsavedOverlay').classList.add('open');
+        });
+    });
+
+    // Modal confirm - navigate away
+    var confirmBtn=document.getElementById('qbUnsavedConfirm');
+    if(confirmBtn)confirmBtn.addEventListener('click',function(){
+        dirty=false;
+        document.getElementById('qbUnsavedOverlay').classList.remove('open');
+        if(pendingUrl)window.location.href=pendingUrl;
+    });
+
+    // Expose close function
+    window.closeUnsavedModal=function(){
+        document.getElementById('qbUnsavedOverlay').classList.remove('open');
+        pendingUrl='';
+    };
+
+    // Close on Escape
+    document.addEventListener('keydown',function(e){
+        if(e.key==='Escape'&&document.getElementById('qbUnsavedOverlay').classList.contains('open'))closeUnsavedModal();
+    });
+})();
 </script>
 </asp:Content>

@@ -7,6 +7,9 @@ namespace ScienceBuddy.Teacher
 {
     public partial class privateMessages
     {
+        protected global::System.Web.UI.WebControls.Panel pnlDenied;
+        protected global::System.Web.UI.WebControls.Panel pnlPending;
+        protected global::System.Web.UI.WebControls.Panel pnlMain;
         protected global::System.Web.UI.WebControls.TextBox txtSearchConv;
         protected global::System.Web.UI.WebControls.LinkButton btnCompose;
         protected global::System.Web.UI.WebControls.Panel pnlNoConvs;

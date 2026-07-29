@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -194,14 +194,64 @@ namespace ScienceBuddy.Teacher
             var master = (ScienceBuddy.SiteMaster)Master;
             master.LayoutMode = "Sidebar";
 
+            if (!AuthorizeTeacher()) return;
+
             if (!IsPostBack)
             {
                 ddlRecipient.Items.Clear();
-                ddlRecipient.Items.Add(new ListItem(T("— Select Recipient —", "— Pilih Penerima —"), ""));
+                ddlRecipient.Items.Add(new ListItem(T("- Select Recipient -", "- Pilih Penerima -"), ""));
 
                 LoadRecipientsJson();
                 CheckUnreadAndNotify();
                 LoadConversations();
+            }
+        }
+
+        private bool AuthorizeTeacher()
+        {
+            string teacherId = Session["userId"].ToString();
+
+            try
+            {
+                using (var conn = new SqlConnection(ConnStr))
+                {
+                    conn.Open();
+
+                    using (var cmd = new SqlCommand(
+                        "SELECT [status] FROM dbo.[Teacher] WHERE [userId]=@u", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@u", teacherId);
+                        var result = cmd.ExecuteScalar();
+
+                        if (result == null || result == DBNull.Value)
+                        {
+                            pnlDenied.Visible = true;
+                            return false;
+                        }
+
+                        string certStatus = result.ToString();
+
+                        if (certStatus.Equals("Certified", StringComparison.OrdinalIgnoreCase))
+                        {
+                            pnlMain.Visible = true;
+                            return true;
+                        }
+
+                        if (certStatus.Equals("Pending", StringComparison.OrdinalIgnoreCase))
+                        {
+                            pnlPending.Visible = true;
+                            return false;
+                        }
+
+                        pnlDenied.Visible = true;
+                        return false;
+                    }
+                }
+            }
+            catch
+            {
+                pnlDenied.Visible = true;
+                return false;
             }
         }
 
@@ -275,7 +325,7 @@ namespace ScienceBuddy.Teacher
         protected void ddlRecipientType_Changed(object sender, EventArgs e)
         {
             ddlRecipient.Items.Clear();
-            ddlRecipient.Items.Add(new ListItem(T("— Select Recipient —", "— Pilih Penerima —"), ""));
+            ddlRecipient.Items.Add(new ListItem(T("- Select Recipient -", "- Pilih Penerima -"), ""));
 
             string recipientType = ddlRecipientType.SelectedValue;
 

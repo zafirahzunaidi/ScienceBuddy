@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -70,7 +70,7 @@ namespace ScienceBuddy.Teacher
                 return;
             }
 
-            // AJAX handlers — return JSON and short-circuit the page lifecycle
+            // AJAX handlers - return JSON and short-circuit the page lifecycle
             string handler = Request.QueryString["handler"] ?? "";
             if (handler == "subtopicsByUnit")
             {
@@ -385,7 +385,7 @@ namespace ScienceBuddy.Teacher
             }
             else
             {
-                // No certified teacher record — show empty states
+                // No certified teacher record - show empty states
                 pnlListUpcoming.Visible = false;
                 pnlUpcomingEmpty.Visible = true;
                 pnlListHistory.Visible = false;
@@ -400,9 +400,9 @@ namespace ScienceBuddy.Teacher
                 conn.Open();
 
                 ddlUnit.Items.Clear();
-                ddlUnit.Items.Add(new ListItem(T("— Select Unit —", "— Pilih Unit —"), ""));
+                ddlUnit.Items.Add(new ListItem(T("- Select Unit -", "- Pilih Unit -"), ""));
                 ddlInstantUnit.Items.Clear();
-                ddlInstantUnit.Items.Add(new ListItem(T("— Select Unit —", "— Pilih Unit —"), ""));
+                ddlInstantUnit.Items.Add(new ListItem(T("- Select Unit -", "- Pilih Unit -"), ""));
 
                 using (var cmd = new SqlCommand(
                     @"SELECT u.[unitId], u.[unitNameEN], l.[levelNameEN]
@@ -420,11 +420,11 @@ namespace ScienceBuddy.Teacher
                     }
                 }
 
-                // Subtopic dropdowns start empty — populated via AJAX when a unit is selected
+                // Subtopic dropdowns start empty - populated via AJAX when a unit is selected
                 ddlSubtopic.Items.Clear();
-                ddlSubtopic.Items.Add(new ListItem(T("— Select Unit First —", "— Pilih Unit Dahulu —"), ""));
+                ddlSubtopic.Items.Add(new ListItem(T("- Select Unit First -", "- Pilih Unit Dahulu -"), ""));
                 ddlInstantSubtopic.Items.Clear();
-                ddlInstantSubtopic.Items.Add(new ListItem(T("— Select Unit First —", "— Pilih Unit Dahulu —"), ""));
+                ddlInstantSubtopic.Items.Add(new ListItem(T("- Select Unit First -", "- Pilih Unit Dahulu -"), ""));
             }
         }
 
@@ -504,7 +504,7 @@ namespace ScienceBuddy.Teacher
                             title = reader["sessionTitle"]?.ToString() ?? "",
                             day = startTime.Day.ToString(),
                             month = startTime.ToString("MMM").ToUpper(),
-                            timeRange = startTime.ToString("h:mm tt") + " – " + endTime.ToString("h:mm tt"),
+                            timeRange = startTime.ToString("h:mm tt") + " - " + endTime.ToString("h:mm tt"),
                             topic = reader["topic"]?.ToString() ?? "",
                             students = Convert.ToInt32(reader["students"]),
                             duration = "",
@@ -580,7 +580,7 @@ namespace ScienceBuddy.Teacher
                             title = reader["sessionTitle"]?.ToString() ?? "",
                             day = startTime.Day.ToString(),
                             month = startTime.ToString("MMM").ToUpper(),
-                            timeRange = startTime.ToString("h:mm tt") + " – " + endTime.ToString("h:mm tt"),
+                            timeRange = startTime.ToString("h:mm tt") + " - " + endTime.ToString("h:mm tt"),
                             topic = reader["topic"]?.ToString() ?? "",
                             students = Convert.ToInt32(reader["students"]),
                             duration = durationMinutes + " min",
@@ -787,7 +787,7 @@ namespace ScienceBuddy.Teacher
         }
 
         /// <summary>
-        /// Sends a notification to all active students. Non-critical — failures are swallowed.
+        /// Sends a notification to all active students. Non-critical - failures are swallowed.
         /// </summary>
         private void NotifyStudents(SqlConnection conn, string sessionTitle, string titleEN, string titleBM, string msgEN, string msgBM)
         {
@@ -837,7 +837,7 @@ namespace ScienceBuddy.Teacher
         #region Helper Methods
 
         /// <summary>
-        /// Bilingual text helper — returns English or Bahasa Melayu based on session language.
+        /// Bilingual text helper - returns English or Bahasa Melayu based on session language.
         /// </summary>
         protected string T(string en, string bm)
         {
@@ -937,7 +937,7 @@ namespace ScienceBuddy.Teacher
             DateTime endTime = DateTime.Parse(args[2]);
 
             litRescCurrent.Text = T("Current: ", "Semasa: ") +
-                startTime.ToString("d MMM yyyy, h:mm tt") + " – " + endTime.ToString("h:mm tt");
+                startTime.ToString("d MMM yyyy, h:mm tt") + " - " + endTime.ToString("h:mm tt");
 
             txtRescDate.Text = startTime.ToString("yyyy-MM-dd");
             txtRescStart.Text = startTime.ToString("HH:mm");

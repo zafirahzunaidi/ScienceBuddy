@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -94,7 +94,7 @@ namespace ScienceBuddy.Teacher
                         return;
                     }
 
-                    // Teacher is Certified — show full dashboard
+                    // Teacher is Certified - show full dashboard
                     pnlDashboard.Visible = true;
 
                     string displayName = !string.IsNullOrWhiteSpace(teacherName) ? teacherName : "Teacher";
@@ -666,13 +666,13 @@ namespace ScienceBuddy.Teacher
             DateTime today = DateTime.Today;
 
             if (dateTime.Date == today)
-                return "Today — " + dateTime.ToString("h:mm tt");
+                return "Today - " + dateTime.ToString("h:mm tt");
             if (dateTime.Date == today.AddDays(1))
-                return "Tomorrow — " + dateTime.ToString("h:mm tt");
+                return "Tomorrow - " + dateTime.ToString("h:mm tt");
             if (dateTime.Date < today.AddDays(7))
-                return dateTime.ToString("ddd") + " — " + dateTime.ToString("h:mm tt");
+                return dateTime.ToString("ddd") + " - " + dateTime.ToString("h:mm tt");
 
-            return dateTime.ToString("d MMM") + " — " + dateTime.ToString("h:mm tt");
+            return dateTime.ToString("d MMM") + " - " + dateTime.ToString("h:mm tt");
         }
 
         private static string FormatTimeAgo(DateTime dateTime)

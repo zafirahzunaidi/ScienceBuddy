@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
@@ -52,7 +52,7 @@ namespace ScienceBuddy.Teacher
             var master = (ScienceBuddy.SiteMaster)Master;
             master.LayoutMode = "Sidebar";
 
-            // Route AJAX handlers early — return JSON without full page lifecycle
+            // Route AJAX handlers early - return JSON without full page lifecycle
             string handler = Request.QueryString["handler"] ?? "";
             if (handler == "levels")    { HandleLevels();    return; }
             if (handler == "units")     { HandleUnits();     return; }
@@ -389,7 +389,7 @@ namespace ScienceBuddy.Teacher
                     }
                     catch (InvalidOperationException validationEx)
                     {
-                        // Validation errors (e.g., blank mapping incomplete) — show message directly
+                        // Validation errors (e.g., blank mapping incomplete) - show message directly
                         txn.Rollback();
                         ShowInvalid(validationEx.Message);
                     }
@@ -459,7 +459,7 @@ namespace ScienceBuddy.Teacher
                 default: difficulty = "Medium"; break;
             }
 
-            // Question text — stored in the content language slot
+            // Question text - stored in the content language slot
             string questionText = GetValue("q" + langSuffix);
             string textEN = isEnglish ? questionText : "";
             string textBM = isEnglish ? "" : questionText;
@@ -483,7 +483,7 @@ namespace ScienceBuddy.Teacher
                       "Sila lengkapkan pemetaan jawapan betul bagi setiap ruang kosong."));
             }
 
-            // Question image — decode from data URL and save to disk
+            // Question image - decode from data URL and save to disk
             string imageFileName = null;
             string imageRawName = GetValue("img");
             string imageDataUrl = GetValue("imgDataUrl");

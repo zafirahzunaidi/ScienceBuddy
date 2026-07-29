@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
@@ -61,8 +61,8 @@ namespace ScienceBuddy.Teacher
         {
             string selectedLevelId = ddlLevel.SelectedValue;
 
-            ResetDropdown(ddlUnit, T("— Select Unit —", "— Pilih Unit —"));
-            ResetDropdown(ddlSubtopic, T("— Select Subtopic —", "— Pilih Subtopik —"));
+            ResetDropdown(ddlUnit, T("- Select Unit -", "- Pilih Unit -"));
+            ResetDropdown(ddlSubtopic, T("- Select Subtopic -", "- Pilih Subtopik -"));
 
             if (string.IsNullOrEmpty(selectedLevelId)) return;
 
@@ -92,7 +92,7 @@ namespace ScienceBuddy.Teacher
         {
             string selectedUnitId = ddlUnit.SelectedValue;
 
-            ResetDropdown(ddlSubtopic, T("— Select Subtopic —", "— Pilih Subtopik —"));
+            ResetDropdown(ddlSubtopic, T("- Select Subtopic -", "- Pilih Subtopik -"));
 
             if (string.IsNullOrEmpty(selectedUnitId)) return;
 
@@ -178,7 +178,7 @@ namespace ScienceBuddy.Teacher
                         txn.Commit();
                     }
 
-                    // Notification is non-critical — failure should not block upload success
+                    // Notification is non-critical - failure should not block upload success
                     InsertNotification(conn, teacherId);
                 }
 
@@ -188,8 +188,8 @@ namespace ScienceBuddy.Teacher
                 txtDescription.Text = "";
                 hidLanguage.Value = "EN";
                 ddlLevel.SelectedIndex = 0;
-                ResetDropdown(ddlUnit, T("— Select Unit —", "— Pilih Unit —"));
-                ResetDropdown(ddlSubtopic, T("— Select Subtopic —", "— Pilih Subtopik —"));
+                ResetDropdown(ddlUnit, T("- Select Unit -", "- Pilih Unit -"));
+                ResetDropdown(ddlSubtopic, T("- Select Subtopic -", "- Pilih Subtopik -"));
             }
             catch
             {
@@ -207,7 +207,7 @@ namespace ScienceBuddy.Teacher
             {
                 conn.Open();
 
-                ResetDropdown(ddlLevel, T("— Select Level —", "— Pilih Tahap —"));
+                ResetDropdown(ddlLevel, T("- Select Level -", "- Pilih Tahap -"));
 
                 using (var cmd = new SqlCommand("SELECT [levelId],[levelNameEN] FROM dbo.[Level] ORDER BY [levelId]", conn))
                 using (var reader = cmd.ExecuteReader())
@@ -220,8 +220,8 @@ namespace ScienceBuddy.Teacher
                     }
                 }
 
-                ResetDropdown(ddlUnit, T("— Select Unit —", "— Pilih Unit —"));
-                ResetDropdown(ddlSubtopic, T("— Select Subtopic —", "— Pilih Subtopik —"));
+                ResetDropdown(ddlUnit, T("- Select Unit -", "- Pilih Unit -"));
+                ResetDropdown(ddlSubtopic, T("- Select Subtopic -", "- Pilih Subtopik -"));
             }
         }
 

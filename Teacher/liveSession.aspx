@@ -290,7 +290,7 @@
                                 style='<%# (bool)Eval("isCompleted") ? "" : "display:none;" %>'>
                                 <button type="button" class="tc-live-session-view-summary"
                                     onclick="viewSessionSummary('<%# Eval("sessionId") %>')">
-                                    <i class="bi bi-bar-chart-line"></i> <%: T("View Summary","Lihat Ringkasan") %> ?
+                                    <i class="bi bi-bar-chart-line"></i> <%: T("View Summary","Lihat Ringkasan") %> <i class="bi bi-arrow-right"></i>
                                 </button>
                             </div>
                         </div>

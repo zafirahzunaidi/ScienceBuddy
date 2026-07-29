@@ -1274,7 +1274,6 @@ namespace ScienceBuddy.Student
             if (string.IsNullOrEmpty(levelId)) return;
 
             // Check all unit quizzes in this level are passed
-            int totalUnitQuizzes = 0;
             using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM Quiz WHERE levelId=@l AND quizType='Unit'", conn))
             {
                 command.Parameters.AddWithValue("@l", levelId);

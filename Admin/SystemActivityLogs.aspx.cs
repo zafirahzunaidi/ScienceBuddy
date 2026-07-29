@@ -137,8 +137,8 @@ namespace ScienceBuddy.Admin
                         list.Add(new
                         {
                             logId = row["logId"].ToString(),
-                            action = action,
-                            description = NullSafe(row["description"]),
+                            action = TranslateAction(action),
+                            description = TranslateDescription(NullSafe(row["description"])),
                             timeStr = logDt.ToString("HH:mm"),
                             dateLabel = dateLabel,
                             showDateHeader = showHeader,
@@ -176,8 +176,8 @@ namespace ScienceBuddy.Admin
 
                         litMLogId.Text = HttpUtility.HtmlEncode(NullSafe(reader["logId"]));
                         litMUserId.Text = HttpUtility.HtmlEncode(NullSafe(reader["userId"]));
-                        litMAction.Text = HttpUtility.HtmlEncode(NullSafe(reader["action"]));
-                        litMDesc.Text = HttpUtility.HtmlEncode(NullSafe(reader["description"]));
+                        litMAction.Text = HttpUtility.HtmlEncode(TranslateAction(NullSafe(reader["action"])));
+                        litMDesc.Text = HttpUtility.HtmlEncode(TranslateDescription(NullSafe(reader["description"])));
 
                         string status = NullSafe(reader["status"]);
                         litMStatus.Text = string.Format("<span class=\"sb-badge {0}\">{1}</span>",
@@ -228,6 +228,40 @@ namespace ScienceBuddy.Admin
                 case "Warning": return T("Warning", "Amaran");
                 case "Failed": return T("Failed", "Gagal");
                 default: return status;
+            }
+        }
+
+        private string TranslateAction(string action)
+        {
+            if (CurrentLanguage != "BM") return action;
+            switch (action)
+            {
+                case "Login": return "Log Masuk";
+                case "Logout": return "Log Keluar";
+                case "Failed Login": return "Log Masuk Gagal";
+                case "Suspicious Login Attempt": return "Percubaan Log Masuk Mencurigakan";
+                case "Account Locked": return "Akaun Dikunci";
+                case "Password Change": return "Tukar Kata Laluan";
+                case "Profile Update": return "Kemaskini Profil";
+                case "Registration": return "Pendaftaran";
+                default: return action;
+            }
+        }
+
+        private string TranslateDescription(string desc)
+        {
+            if (CurrentLanguage != "BM") return desc;
+            switch (desc)
+            {
+                case "User logged into the system successfully.": return "Pengguna berjaya log masuk ke dalam sistem.";
+                case "User signed out of the system.": return "Pengguna telah log keluar daripada sistem.";
+                case "Login failed due to incorrect password.": return "Log masuk gagal kerana kata laluan tidak betul.";
+                case "Login failed due to invalid username.": return "Log masuk gagal kerana nama pengguna tidak sah.";
+                case "Account has been locked due to too many failed login attempts.": return "Akaun telah dikunci kerana terlalu banyak percubaan log masuk gagal.";
+                case "Suspicious login attempt detected.": return "Percubaan log masuk mencurigakan dikesan.";
+                case "User password changed successfully.": return "Kata laluan pengguna berjaya ditukar.";
+                case "User profile updated successfully.": return "Profil pengguna berjaya dikemaskini.";
+                default: return desc;
             }
         }
 

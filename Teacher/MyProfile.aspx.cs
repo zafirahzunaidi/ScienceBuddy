@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.IO;
@@ -51,7 +51,7 @@ namespace ScienceBuddy.Teacher
                 return;
             }
 
-            // AJAX handlers — use Response.End() to prevent page rendering
+            // AJAX handlers - use Response.End() to prevent page rendering
             string handler = Request.QueryString["handler"];
             if (!string.IsNullOrEmpty(handler))
             {
@@ -431,7 +431,7 @@ namespace ScienceBuddy.Teacher
         {
             txtName.Text = teacherName;
             litTID.Text = HttpUtility.HtmlEncode(teacherId);
-            litQual.Text = string.IsNullOrEmpty(qualification) ? "—" : HttpUtility.HtmlEncode(qualification);
+            litQual.Text = string.IsNullOrEmpty(qualification) ? "-" : HttpUtility.HtmlEncode(qualification);
             txtPhone.Text = phone;
             txtBio.Text = bio;
             txtBio.Attributes["placeholder"] = T("Tell students about yourself...", "Ceritakan tentang diri anda kepada pelajar...");

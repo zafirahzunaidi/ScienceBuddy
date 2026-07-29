@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="manageQuiz.aspx.cs"
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="manageQuiz.aspx.cs"
     Inherits="ScienceBuddy.Teacher.manageQuiz" MasterPageFile="~/Site.Master"
     Title="Manage Quizzes" %>
 
@@ -317,23 +317,11 @@
                         </div>
                     </div>
                     <div class="tc-manage-quiz-ulq-stats">
-                        <div class="tc-manage-quiz-ulq-col tc-manage-quiz-ulq-col--overall">
-                            <div class="tc-manage-quiz-ulq-col-label">
-                                <%: T("Overall Approved","Diluluskan Semua") %>
-                                <span class="tc-manage-quiz-info-icon" tabindex="0"
-                                    data-tip="<%: T("Total approved questions available for this quiz from all teachers.","Jumlah soalan yang diluluskan tersedia untuk kuiz ini daripada semua guru.") %>">
-                                    <i class="bi bi-info-circle"></i>
-                                </span>
-                            </div>
-                            <div class="tc-manage-quiz-ulq-col-val tc-manage-quiz-val-overall">
-                                <%# Eval("overallApproved") %>
-                            </div>
-                        </div>
                         <div class="tc-manage-quiz-ulq-col tc-manage-quiz-ulq-col--submitted">
                             <div class="tc-manage-quiz-ulq-col-label">
-                                <%: T("Your Submitted","Hantar Anda") %>
+                                <%: T("Total","Jumlah") %>
                                 <span class="tc-manage-quiz-info-icon" tabindex="0"
-                                    data-tip="<%: T("Total questions you have submitted for this quiz, including approved, pending and rejected questions.","Jumlah soalan yang telah anda hantar untuk kuiz ini, termasuk yang diluluskan, menunggu dan ditolak.") %>">
+                                    data-tip="<%: T("Total questions you have contributed for this quiz.","Jumlah soalan yang telah anda sumbangkan untuk kuiz ini.") %>">
                                     <i class="bi bi-info-circle"></i>
                                 </span>
                             </div>
@@ -438,7 +426,7 @@
                 <%: T("Subtopic","Subtopik") %> *
             </label>
             <select id="stDropdown" class="tc-manage-quiz-select" style="width:100%;height:42px;">
-                <option value=""><%: T("― Select Subtopic ―","― Pilih Subtopik ―") %></option>
+                <option value=""><%: T("- Select Subtopic -","- Pilih Subtopik -") %></option>
             </select>
         </div>
         <div class="tc-manage-quiz-modal-footer">
@@ -590,7 +578,7 @@
                 </label>
                 <select id="pqLevel" class="tc-manage-quiz-select" style="width:100%;height:42px;"
                     onchange="pqOnLevelChange(this.value)">
-                    <option value=""><%: T("― Select Level ―","― Pilih Tahap ―") %></option>
+                    <option value=""><%: T("- Select Level -","- Pilih Tahap -") %></option>
                 </select>
             </div>
             <div style="margin-bottom:1rem;">
@@ -599,7 +587,7 @@
                 </label>
                 <select id="pqUnit" class="tc-manage-quiz-select" style="width:100%;height:42px;"
                     onchange="pqOnUnitChange(this.value)" disabled>
-                    <option value=""><%: T("― Select Unit ―","― Pilih Unit ―") %></option>
+                    <option value=""><%: T("- Select Unit -","- Pilih Unit -") %></option>
                 </select>
             </div>
             <div style="margin-bottom:1rem;">
@@ -608,7 +596,7 @@
                 </label>
                 <select id="pqSubtopic" class="tc-manage-quiz-select" style="width:100%;height:42px;"
                     onchange="pqOnSubtopicChange(this.value)" disabled>
-                    <option value=""><%: T("― Select Subtopic ―","― Pilih Subtopik ―") %></option>
+                    <option value=""><%: T("- Select Subtopic -","- Pilih Subtopik -") %></option>
                 </select>
             </div>
             <div style="margin-bottom:.25rem;">
@@ -617,7 +605,7 @@
                 </label>
                 <select id="pqLanguage" class="tc-manage-quiz-select" style="width:100%;height:42px;"
                     onchange="pqUpdateContinue()">
-                    <option value=""><%: T("― Select Language ―","― Pilih Bahasa ―") %></option>
+                    <option value=""><%: T("- Select Language -","- Pilih Bahasa -") %></option>
                     <option value="EN">English</option>
                     <option value="BM">Bahasa Melayu</option>
                 </select>
@@ -700,7 +688,7 @@
                     </label>
                     <asp:DropDownList ID="ddlCreateLang" runat="server"
                         CssClass="tc-manage-quiz-select" style="width:100%;">
-                        <asp:ListItem Value="" Text="― Select ―" />
+                        <asp:ListItem Value="" Text="- Select -" />
                         <asp:ListItem Value="EN" Text="English" />
                         <asp:ListItem Value="BM" Text="Bahasa Melayu" />
                     </asp:DropDownList>
@@ -843,7 +831,7 @@
                 if (xhr.readyState === 4 && xhr.status === 200) {
                     try {
                         var data = JSON.parse(xhr.responseText);
-                        lvDd.innerHTML = '<option value="">― <%: T("Select Level","Pilih Tahap") %> ―</option>';
+                        lvDd.innerHTML = '<option value="">- <%: T("Select Level","Pilih Tahap") %> -</option>';
                         for (var i = 0; i < data.length; i++) {
                             var o = document.createElement('option'); o.value = data[i].id; o.textContent = data[i].name; lvDd.appendChild(o);
                         }
@@ -855,9 +843,9 @@
         // Reset Unit, Subtopic, and Language
         var unDd = document.getElementById('pqUnit');
         var stDd = document.getElementById('pqSubtopic');
-        unDd.innerHTML = '<option value="">― <%: T("Select Unit","Pilih Unit") %> ―</option>';
+        unDd.innerHTML = '<option value="">- <%: T("Select Unit","Pilih Unit") %> -</option>';
         unDd.disabled = true;
-        stDd.innerHTML = '<option value="">― <%: T("Select Subtopic","Pilih Subtopik") %> ―</option>';
+        stDd.innerHTML = '<option value="">- <%: T("Select Subtopic","Pilih Subtopik") %> -</option>';
         stDd.disabled = true;
         document.getElementById('pqLanguage').value = '';
         pqUpdateContinue();
@@ -866,9 +854,9 @@
     function closePracticeModal() {
         document.getElementById('practiceModal').style.display = 'none';
         document.getElementById('pqLevel').value = '';
-        document.getElementById('pqUnit').innerHTML = '<option value="">― <%: T("Select Unit","Pilih Unit") %> ―</option>';
+        document.getElementById('pqUnit').innerHTML = '<option value="">- <%: T("Select Unit","Pilih Unit") %> -</option>';
         document.getElementById('pqUnit').disabled = true;
-        document.getElementById('pqSubtopic').innerHTML = '<option value="">― <%: T("Select Subtopic","Pilih Subtopik") %> ―</option>';
+        document.getElementById('pqSubtopic').innerHTML = '<option value="">- <%: T("Select Subtopic","Pilih Subtopik") %> -</option>';
         document.getElementById('pqSubtopic').disabled = true;
         document.getElementById('pqLanguage').value = '';
         pqUpdateContinue();
@@ -876,9 +864,9 @@
     function pqOnLevelChange(levelId) {
         var unDd = document.getElementById('pqUnit');
         var stDd = document.getElementById('pqSubtopic');
-        stDd.innerHTML = '<option value="">― <%: T("Select Subtopic","Pilih Subtopik") %> ―</option>';
+        stDd.innerHTML = '<option value="">- <%: T("Select Subtopic","Pilih Subtopik") %> -</option>';
         stDd.disabled = true;
-        unDd.innerHTML = '<option value="">― <%: T("Select Unit","Pilih Unit") %> ―</option>';
+        unDd.innerHTML = '<option value="">- <%: T("Select Unit","Pilih Unit") %> -</option>';
         pqUpdateContinue();
         if (!levelId) { unDd.disabled = true; return; }
         unDd.innerHTML = '<option value="">Loading...</option>';
@@ -889,7 +877,7 @@
             if (xhr.readyState === 4 && xhr.status === 200) {
                 try {
                     var data = JSON.parse(xhr.responseText);
-                    unDd.innerHTML = '<option value="">― <%: T("Select Unit","Pilih Unit") %> ―</option>';
+                    unDd.innerHTML = '<option value="">- <%: T("Select Unit","Pilih Unit") %> -</option>';
                     for (var i = 0; i < data.length; i++) {
                         var o = document.createElement('option'); o.value = data[i].id; o.textContent = data[i].name; unDd.appendChild(o);
                     }
@@ -901,7 +889,7 @@
     }
     function pqOnUnitChange(unitId) {
         var stDd = document.getElementById('pqSubtopic');
-        stDd.innerHTML = '<option value="">― <%: T("Select Subtopic","Pilih Subtopik") %> ―</option>';
+        stDd.innerHTML = '<option value="">- <%: T("Select Subtopic","Pilih Subtopik") %> -</option>';
         stDd.disabled = true;
         pqUpdateContinue();
         if (!unitId) return;
@@ -912,7 +900,7 @@
             if (xhr.readyState === 4 && xhr.status === 200) {
                 try {
                     var data = JSON.parse(xhr.responseText);
-                    stDd.innerHTML = '<option value="">― <%: T("Select Subtopic","Pilih Subtopik") %> ―</option>';
+                    stDd.innerHTML = '<option value="">- <%: T("Select Subtopic","Pilih Subtopik") %> -</option>';
                     for (var i = 0; i < data.length; i++) {
                         var o = document.createElement('option'); o.value = data[i].id; o.textContent = data[i].name; stDd.appendChild(o);
                     }
@@ -971,7 +959,7 @@
                 try {
                     var data = JSON.parse(xhr.responseText);
                     info.textContent = data.quizType + ' \u2014 ' + data.scopeName;
-                    dd.innerHTML = '<option value="">― <%: T("Select Subtopic","Pilih Subtopik") %> ―</option>';
+                    dd.innerHTML = '<option value="">- <%: T("Select Subtopic","Pilih Subtopik") %> -</option>';
                     for (var i = 0; i < data.subtopics.length; i++) {
                         var o = document.createElement('option'); o.value = data.subtopics[i].id; o.textContent = data.subtopics[i].name; dd.appendChild(o);
                     }
@@ -1235,7 +1223,7 @@
             // Disable Create Quiz button at top
             var createBtns = document.querySelectorAll('#<%=pnlCreateBtn.ClientID%> .tc-manage-quiz-btn-create');
             for (var j = 0; j < createBtns.length; j++) { createBtns[j].classList.add('tc-manage-quiz-btn-disabled'); createBtns[j].removeAttribute('onclick'); createBtns[j].setAttribute('title', tipText); }
-            // 3. Discover tab: no restrictions — fully accessible
+            // 3. Discover tab: no restrictions - fully accessible
         }
     });
 </script>

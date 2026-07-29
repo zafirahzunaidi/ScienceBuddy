@@ -326,6 +326,24 @@ namespace ScienceBuddy
             }
         }
 
+        //  PERSONALITY TEST CHECK
+
+        private bool HasCompletedPersonalityTest(string userId)
+        {
+            string connStr = ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand(
+                    "SELECT personalityId FROM Student WHERE userId = @uid", conn))
+                {
+                    cmd.Parameters.AddWithValue("@uid", userId);
+                    object result = cmd.ExecuteScalar();
+                    return result != null && result != DBNull.Value;
+                }
+            }
+        }
+
         //  INNER CLASS: holds one row from the User table
 
         private class UserRecord

@@ -355,15 +355,15 @@
                         </span>
                         <span class="tc-question-builder-char-count" id="qCharCount">0 / 500</span>
                     </div>
-                    <div class="tc-question-builder-tc-rte-wrap">
-                        <div class="tc-question-builder-tc-rte-toolbar">
-                            <button type="button" class="tc-question-builder-tc-rte-btn" onmousedown="event.preventDefault();rteExec('bold')" title="Bold (Ctrl+B)"><i class="bi bi-type-bold"></i></button>
-                            <button type="button" class="tc-question-builder-tc-rte-btn" onmousedown="event.preventDefault();rteExec('italic')" title="Italic (Ctrl+I)"><i class="bi bi-type-italic"></i></button>
-                            <button type="button" class="tc-question-builder-tc-rte-btn" onmousedown="event.preventDefault();rteExec('underline')" title="Underline (Ctrl+U)"><i class="bi bi-type-underline"></i></button>
-                            <span class="tc-question-builder-tc-rte-sep"></span>
-                            <button type="button" class="tc-question-builder-tc-rte-btn" onmousedown="event.preventDefault();rteExec('insertUnorderedList')" title="Bullet List"><i class="bi bi-list-ul"></i></button>
-                            <button type="button" class="tc-question-builder-tc-rte-btn" onmousedown="event.preventDefault();rteExec('insertOrderedList')" title="Numbered List"><i class="bi bi-list-ol"></i></button>
-                            <span class="tc-question-builder-tc-rte-sep tc-question-builder-tc-fill-blank-only" id="fibToolbarSep" style="display:none;"></span>
+                    <div class="tc-question-builder-rte-wrap">
+                        <div class="tc-question-builder-rte-toolbar">
+                            <button type="button" class="tc-question-builder-rte-btn" onmousedown="event.preventDefault();rteExec('bold')" title="Bold (Ctrl+B)"><i class="bi bi-type-bold"></i></button>
+                            <button type="button" class="tc-question-builder-rte-btn" onmousedown="event.preventDefault();rteExec('italic')" title="Italic (Ctrl+I)"><i class="bi bi-type-italic"></i></button>
+                            <button type="button" class="tc-question-builder-rte-btn" onmousedown="event.preventDefault();rteExec('underline')" title="Underline (Ctrl+U)"><i class="bi bi-type-underline"></i></button>
+                            <span class="tc-question-builder-rte-sep"></span>
+                            <button type="button" class="tc-question-builder-rte-btn" onmousedown="event.preventDefault();rteExec('insertUnorderedList')" title="Bullet List"><i class="bi bi-list-ul"></i></button>
+                            <button type="button" class="tc-question-builder-rte-btn" onmousedown="event.preventDefault();rteExec('insertOrderedList')" title="Numbered List"><i class="bi bi-list-ol"></i></button>
+                            <span class="tc-question-builder-rte-sep tc-question-builder-tc-fill-blank-only" id="fibToolbarSep" style="display:none;"></span>
                             <span class="tc-fill-blank-counter tc-question-builder-tc-fill-blank-only" id="blankCounter" style="display:none;margin-left:auto;font-size:.75rem;">
                                 <%: T("Blanks","Kosong") %>: <strong id="blankNum">0</strong> / 4
                             </span>
@@ -371,7 +371,7 @@
                                 <i class="bi bi-plus-square-dotted"></i> <%: T("Add Blank","Tambah Kosong") %>
                             </button>
                         </div>
-                        <div id="qbRteEditor" class="tc-question-builder-tc-rte-editor"
+                        <div id="qbRteEditor" class="tc-question-builder-rte-editor"
                             contenteditable="true"
                             data-placeholder-en="Type your question here..."
                             data-placeholder-bm="Taip soalan anda di sini..."
@@ -525,21 +525,21 @@
                         <%: T("Answer Options","Pilihan Jawapan") %> *
                         <span class="tc-fill-blank-sub-label">(<%: T("Max 4 words","Maks 4 perkataan") %>)</span>
                     </div>
-                    <div class="tc-question-builder-tc-fill-blank-words" id="fibWordsContainer">
-                        <div class="tc-question-builder-tc-fill-blank-word">
-                            <span class="tc-question-builder-tc-fill-blank-num">1</span>
+                    <div class="tc-question-builder-fib-words" id="fibWordsContainer">
+                        <div class="tc-question-builder-fib-word">
+                            <span class="tc-question-builder-fib-num">1</span>
                             <input type="text" class="tc-question-builder-opt-input tc-fill-blank-word-input" placeholder="<%: T("Word 1","Perkataan 1") %>" oninput="onFibWordChange()" />
                         </div>
-                        <div class="tc-question-builder-tc-fill-blank-word">
-                            <span class="tc-question-builder-tc-fill-blank-num">2</span>
+                        <div class="tc-question-builder-fib-word">
+                            <span class="tc-question-builder-fib-num">2</span>
                             <input type="text" class="tc-question-builder-opt-input tc-fill-blank-word-input" placeholder="<%: T("Word 2","Perkataan 2") %>" oninput="onFibWordChange()" />
                         </div>
-                        <div class="tc-question-builder-tc-fill-blank-word">
-                            <span class="tc-question-builder-tc-fill-blank-num">3</span>
+                        <div class="tc-question-builder-fib-word">
+                            <span class="tc-question-builder-fib-num">3</span>
                             <input type="text" class="tc-question-builder-opt-input tc-fill-blank-word-input" placeholder="<%: T("Word 3","Perkataan 3") %>" oninput="onFibWordChange()" />
                         </div>
-                        <div class="tc-question-builder-tc-fill-blank-word">
-                            <span class="tc-question-builder-tc-fill-blank-num">4</span>
+                        <div class="tc-question-builder-fib-word">
+                            <span class="tc-question-builder-fib-num">4</span>
                             <input type="text" class="tc-question-builder-opt-input tc-fill-blank-word-input" placeholder="<%: T("Word 4","Perkataan 4") %>" oninput="onFibWordChange()" />
                         </div>
                     </div>
@@ -549,7 +549,7 @@
                             <i class="bi bi-arrow-left-right"></i>
                             <%: T("Correct Answer Mapping","Pemetaan Jawapan Betul") %> *
                         </div>
-                        <div class="tc-question-builder-tc-fill-blank-mappings" id="fibMappings"></div>
+                        <div class="tc-question-builder-fib-mappings" id="fibMappings"></div>
                         <div class="tc-fill-blank-warning" id="fibMappingError" style="display:none;margin-top:6px;">
                             <i class="bi bi-exclamation-circle-fill"></i>
                             <%: T("Each blank must map to a unique word.","Setiap kosong mesti dipetakan kepada perkataan unik.") %>
@@ -557,19 +557,19 @@
                     </div>
 
                     <div id="fibPreviewSection" class="tc-fill-blank-preview-wrap" style="display:none;">
-                        <div class="tc-question-builder-tc-fill-blank-preview-card">
-                            <div class="tc-question-builder-tc-fill-blank-preview-title">
+                        <div class="tc-question-builder-fib-preview-card">
+                            <div class="tc-question-builder-fib-preview-title">
                                 <i class="bi bi-eye"></i> <%: T("Student Preview","Pratonton Pelajar") %>
                             </div>
-                            <div class="tc-question-builder-tc-fill-blank-preview-sub">
+                            <div class="tc-question-builder-fib-preview-sub">
                                 <%: T("Students will drag the correct words into the blanks below.","Pelajar akan menyeret perkataan betul ke dalam kosong di bawah.") %>
                             </div>
-                            <div class="tc-question-builder-tc-fill-blank-preview-text" id="fibPreviewText"></div>
+                            <div class="tc-question-builder-fib-preview-text" id="fibPreviewText"></div>
                             <div style="margin-top:.75rem;">
                                 <div style="font-size:.72rem;font-weight:600;color:var(--tc-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">
                                     <%: T("Available Words","Perkataan Tersedia") %>
                                 </div>
-                                <div class="tc-question-builder-tc-fill-blank-preview-words" id="fibPreviewWords"></div>
+                                <div class="tc-question-builder-fib-preview-words" id="fibPreviewWords"></div>
                             </div>
                         </div>
                     </div>
@@ -819,12 +819,12 @@ function rteGetText(){
     return clone.innerText||'';
 }
 function rteUpdateToolbar(){
-    document.querySelectorAll('.tc-question-builder-tc-rte-btn').forEach(function(btn){btn.classList.remove('active');});
-    if(document.queryCommandState('bold'))document.querySelector('.tc-question-builder-tc-rte-btn[title*="Bold"]').classList.add('active');
-    if(document.queryCommandState('italic'))document.querySelector('.tc-question-builder-tc-rte-btn[title*="Italic"]').classList.add('active');
-    if(document.queryCommandState('underline'))document.querySelector('.tc-question-builder-tc-rte-btn[title*="Underline"]').classList.add('active');
-    if(document.queryCommandState('insertUnorderedList')){var b=document.querySelector('.tc-question-builder-tc-rte-btn[title*="Bullet"]');if(b)b.classList.add('active');}
-    if(document.queryCommandState('insertOrderedList')){var n=document.querySelector('.tc-question-builder-tc-rte-btn[title*="Numbered"]');if(n)n.classList.add('active');}
+    document.querySelectorAll('.tc-question-builder-rte-btn').forEach(function(btn){btn.classList.remove('active');});
+    if(document.queryCommandState('bold'))document.querySelector('.tc-question-builder-rte-btn[title*="Bold"]').classList.add('active');
+    if(document.queryCommandState('italic'))document.querySelector('.tc-question-builder-rte-btn[title*="Italic"]').classList.add('active');
+    if(document.queryCommandState('underline'))document.querySelector('.tc-question-builder-rte-btn[title*="Underline"]').classList.add('active');
+    if(document.queryCommandState('insertUnorderedList')){var b=document.querySelector('.tc-question-builder-rte-btn[title*="Bullet"]');if(b)b.classList.add('active');}
+    if(document.queryCommandState('insertOrderedList')){var n=document.querySelector('.tc-question-builder-rte-btn[title*="Numbered"]');if(n)n.classList.add('active');}
 }
 function rteUpdatePlaceholder(){
     var ed=document.getElementById('qbRteEditor');
@@ -1072,7 +1072,7 @@ function qbWireAutoClears(){
     document.querySelectorAll('textarea,input[type="text"],select').forEach(function(el){
         el.addEventListener('input',function(){
             qbClearErr(el);
-            var grid=el.closest('.tc-question-builder-opts,.tc-question-builder-tf-grid,.tc-question-builder-tc-fill-blank-words');
+            var grid=el.closest('.tc-question-builder-opts,.tc-question-builder-tf-grid,.tc-question-builder-fib-words');
             if(grid){var next=grid.nextElementSibling;if(next&&next.classList.contains('tc-question-builder-err-msg'))next.remove();}
         });
         el.addEventListener('change',function(){qbClearErr(el);});
@@ -1276,7 +1276,7 @@ function validateAllQuestions(){
 
             /* EN word bank: min 2 */
             switchTab('EN');
-            var fibGridEN=$qs('#sectionFIB .tc-question-builder-tc-fill-blank-words');
+            var fibGridEN=$qs('#sectionFIB .tc-question-builder-fib-words');
             var enW=(q.fibEN||[]).filter(function(s){return s&&s.trim();});
             if(enW.length<2){
                 var fibInEN=document.querySelectorAll('#sectionFIB .tc-fill-blank-word-input');
@@ -1288,7 +1288,7 @@ function validateAllQuestions(){
 
             /* BM word bank: min 2 */
             switchTab('BM');
-            var fibGridBM=$qs('#sectionFIB .tc-question-builder-tc-fill-blank-words');
+            var fibGridBM=$qs('#sectionFIB .tc-question-builder-fib-words');
             var bmW=(q.fibBM||[]).filter(function(s){return s&&s.trim();});
             if(bmW.length<2){
                 var fibInBM=document.querySelectorAll('#sectionFIB .tc-fill-blank-word-input');
@@ -1303,13 +1303,13 @@ function validateAllQuestions(){
             var enMapped=(q.fibMapEN||[]).filter(function(s){return s&&s.trim();});
             if(enMapped.length===0){
                 var mapSectionEN=$id('fibMappingSection');
-                qbSetGridErr(mapSectionEN||$qs('#sectionFIB .tc-question-builder-tc-fill-blank-words'),[],
+                qbSetGridErr(mapSectionEN||$qs('#sectionFIB .tc-question-builder-fib-words'),[],
                     _T('Please select the correct mapping order.','Sila pilih susunan pemetaan yang betul.'));
                 return{ok:false,qIdx:i,tab:'EN',firstEl:mapSectionEN};
             }
             if(enMapped.length!==enC){
                 var mapSectionEN2=$id('fibMappingSection');
-                qbSetGridErr(mapSectionEN2||$qs('#sectionFIB .tc-question-builder-tc-fill-blank-words'),[],
+                qbSetGridErr(mapSectionEN2||$qs('#sectionFIB .tc-question-builder-fib-words'),[],
                     _T('The number of mappings must match the number of blanks.','Bilangan pemetaan mesti sama dengan bilangan kosong.'));
                 return{ok:false,qIdx:i,tab:'EN',firstEl:mapSectionEN2};
             }
@@ -1319,13 +1319,13 @@ function validateAllQuestions(){
             var bmMapped=(q.fibMapBM||[]).filter(function(s){return s&&s.trim();});
             if(bmMapped.length===0){
                 var mapSectionBM=$id('fibMappingSection');
-                qbSetGridErr(mapSectionBM||$qs('#sectionFIB .tc-question-builder-tc-fill-blank-words'),[],
+                qbSetGridErr(mapSectionBM||$qs('#sectionFIB .tc-question-builder-fib-words'),[],
                     _T('Please select the correct mapping order.','Sila pilih susunan pemetaan yang betul.'));
                 return{ok:false,qIdx:i,tab:'BM',firstEl:mapSectionBM};
             }
             if(bmMapped.length!==bmC){
                 var mapSectionBM2=$id('fibMappingSection');
-                qbSetGridErr(mapSectionBM2||$qs('#sectionFIB .tc-question-builder-tc-fill-blank-words'),[],
+                qbSetGridErr(mapSectionBM2||$qs('#sectionFIB .tc-question-builder-fib-words'),[],
                     _T('The number of mappings must match the number of blanks.','Bilangan pemetaan mesti sama dengan bilangan kosong.'));
                 return{ok:false,qIdx:i,tab:'BM',firstEl:mapSectionBM2};
             }
@@ -1472,13 +1472,13 @@ function updateFibMappings(){
         var selectedVal=storedIdx[b]||'';
         var opts='<option value="">-- <%: T("Select word","Pilih perkataan") %> --</option>';
         words.forEach(function(w,wi){opts+='<option value="'+(wi+1)+'"'+(selectedVal===''+(wi+1)?' selected':'')+'>'+w+'</option>';});
-        html+='<div class="tc-question-builder-tc-fill-blank-map-row'+(selectedVal?' valid':'')+'"><span class="tc-question-builder-tc-fill-blank-map-label">'+b+'</span><span class="tc-question-builder-tc-fill-blank-map-arrow"><i class="bi bi-arrow-right"></i></span><select class="tc-question-builder-tc-fill-blank-map-select tc-fill-blank-map-dd" data-blank="'+b+'" onchange="validateFibMapping()">'+opts+'</select><span class="tc-question-builder-tc-fill-blank-map-check"><i class="bi bi-check-circle-fill"></i></span></div>';
+        html+='<div class="tc-question-builder-fib-map-row'+(selectedVal?' valid':'')+'"><span class="tc-question-builder-fib-map-label">'+b+'</span><span class="tc-question-builder-fib-map-arrow"><i class="bi bi-arrow-right"></i></span><select class="tc-question-builder-fib-map-select tc-fill-blank-map-dd" data-blank="'+b+'" onchange="validateFibMapping()">'+opts+'</select><span class="tc-question-builder-fib-map-check"><i class="bi bi-check-circle-fill"></i></span></div>';
     });
     container.innerHTML=html;updateFibPreview();
 }
 function validateFibMapping(){
     var selects=document.querySelectorAll('.tc-fill-blank-map-dd'),vals=[],dup=false;
-    selects.forEach(function(s){var row=s.closest('.tc-question-builder-tc-fill-blank-map-row');row.classList.remove('invalid');s.classList.remove('invalid');if(s.value){if(vals.indexOf(s.value)>-1){dup=true;row.classList.add('invalid');s.classList.add('invalid');}else row.classList.add('valid');vals.push(s.value);}else row.classList.remove('valid');});
+    selects.forEach(function(s){var row=s.closest('.tc-question-builder-fib-map-row');row.classList.remove('invalid');s.classList.remove('invalid');if(s.value){if(vals.indexOf(s.value)>-1){dup=true;row.classList.add('invalid');s.classList.add('invalid');}else row.classList.add('valid');vals.push(s.value);}else row.classList.remove('valid');});
     $id('fibMappingError').style.display=dup?'flex':'none';
 }
 function updateFibPreview(){
@@ -1486,7 +1486,7 @@ function updateFibPreview(){
     var html=text.replace(/\[Blank \d\]/g,'<span class="tc-fill-blank-blank">_____</span>');
     $id('fibPreviewText').innerHTML=html||'<em style="color:var(--tc-muted);"><%: T("Type your question with blanks...","Taip soalan anda dengan tempat kosong...") %></em>';
     var words=[];document.querySelectorAll('.tc-fill-blank-word-input').forEach(function(i){if(i.value.trim())words.push(i.value.trim());});
-    $id('fibPreviewWords').innerHTML=words.length?words.map(function(w){return'<span class="tc-question-builder-tc-fill-blank-chip">'+w+'</span>';}).join(''):'<em style="font-size:.78rem;color:var(--tc-muted);"><%: T("Add words to Word Bank above","Tambah perkataan ke Bank Perkataan di atas") %></em>';
+    $id('fibPreviewWords').innerHTML=words.length?words.map(function(w){return'<span class="tc-question-builder-fib-chip">'+w+'</span>';}).join(''):'<em style="font-size:.78rem;color:var(--tc-muted);"><%: T("Add words to Word Bank above","Tambah perkataan ke Bank Perkataan di atas") %></em>';
 }
 function updateCharCounts(){
     var ed=document.getElementById('qbRteEditor');

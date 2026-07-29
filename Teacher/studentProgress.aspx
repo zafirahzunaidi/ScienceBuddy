@@ -76,7 +76,7 @@
     <%-- Pending Verification State --%>
     <asp:Panel ID="pnlPending" runat="server" Visible="false">
         <div style="display:flex;flex-direction:column;align-items:center;padding:3.5rem 2rem;text-align:center;">
-            <div style="font-size:3.5rem;margin-bottom:1rem;opacity:.85;">?</div>
+            <div style="font-size:3.5rem;margin-bottom:1rem;opacity:.85;color:#f59e0b;"><i class="bi bi-hourglass-split"></i></div>
             <h2 style="font-size:1.15rem;font-weight:800;color:var(--tc-student-progress-t);margin:0 0 .6rem;">
                 <%: T("Verification Pending","Pengesahan Sedang Diproses") %>
             </h2>

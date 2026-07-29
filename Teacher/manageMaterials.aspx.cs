@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -35,7 +35,7 @@ namespace ScienceBuddy.Teacher
             }
         }
 
-        /// <summary>Bilingual text helper — returns English or Malay based on session preference.</summary>
+        /// <summary>Bilingual text helper - returns English or Malay based on session preference.</summary>
         protected string T(string en, string bm)
         {
             return CurrentLanguage == "BM" ? bm : en;
@@ -174,7 +174,7 @@ namespace ScienceBuddy.Teacher
                 conn.Open();
 
                 ddlUnit.Items.Clear();
-                ddlUnit.Items.Add(new ListItem("— Select Unit —", ""));
+                ddlUnit.Items.Add(new ListItem("- Select Unit -", ""));
 
                 string selectedLevelId = ddlLevel.SelectedValue;
 
@@ -193,7 +193,7 @@ namespace ScienceBuddy.Teacher
                 }
 
                 ddlSubtopic.Items.Clear();
-                ddlSubtopic.Items.Add(new ListItem("— Select Subtopic —", ""));
+                ddlSubtopic.Items.Add(new ListItem("- Select Subtopic -", ""));
             }
 
             hidShowEditModal.Value = "1";
@@ -206,7 +206,7 @@ namespace ScienceBuddy.Teacher
                 conn.Open();
 
                 ddlSubtopic.Items.Clear();
-                ddlSubtopic.Items.Add(new ListItem("— Select Subtopic —", ""));
+                ddlSubtopic.Items.Add(new ListItem("- Select Subtopic -", ""));
 
                 string selectedUnitId = ddlUnit.SelectedValue;
 
@@ -247,7 +247,7 @@ namespace ScienceBuddy.Teacher
 
             System.Diagnostics.Debug.WriteLine("[btnSave_Click] Validation passed " + DateTime.Now.ToString("HH:mm:ss.fff"));
 
-            // Change detection — compare with original hidden field values
+            // Change detection - compare with original hidden field values
             bool hasNewFile = fuFile.HasFile;
             bool changed = hasNewFile ||
                 !string.Equals(title, hidOrigTitle.Value.Trim(), StringComparison.Ordinal) ||
@@ -380,7 +380,7 @@ namespace ScienceBuddy.Teacher
                         return;
                     }
 
-                    // Soft delete — marks material as Deleted rather than removing the row
+                    // Soft delete - marks material as Deleted rather than removing the row
                     using (var cmd = new SqlCommand(
                         "UPDATE dbo.[Material] SET [status]='Deleted' WHERE [materialId]=@id AND [createdByUserId]=@uid", conn))
                     {
@@ -458,7 +458,7 @@ namespace ScienceBuddy.Teacher
 
         private void LoadMaterials()
         {
-            // Non-certified teachers cannot see My Materials list — pending panel is shown via SetTabUI
+            // Non-certified teachers cannot see My Materials list - pending panel is shown via SetTabUI
             if (!_isCertified)
             {
                 pnlMaterials.Visible = false;
@@ -476,7 +476,7 @@ namespace ScienceBuddy.Teacher
             string filterStatus = ddlFilterStatus.SelectedValue;
 
             string sql = @"SELECT m.[materialId],m.[materialTitle],m.[materialContent],m.[materialType],
-                m.[fileUrl],m.[createdDate],m.[status],m.[language],ISNULL(st.[subtopicTitleEN],'—') AS subtopicName
+                m.[fileUrl],m.[createdDate],m.[status],m.[language],ISNULL(st.[subtopicTitleEN],'-') AS subtopicName
                 FROM dbo.[Material] m LEFT JOIN dbo.[Subtopic] st ON st.[subtopicId]=m.[subtopicId]
                 LEFT JOIN dbo.[Unit] u ON u.[unitId]=st.[unitId] WHERE m.[createdByUserId]=@userId AND (m.[status] IS NULL OR m.[status]<>'Deleted')";
 
@@ -529,7 +529,7 @@ namespace ScienceBuddy.Teacher
             string filterType = ddlFilterType.SelectedValue;
 
             string sql = @"SELECT m.[materialId],m.[materialTitle],m.[materialContent],m.[materialType],
-                m.[fileUrl],m.[createdDate],m.[language],ISNULL(st.[subtopicTitleEN],'—') AS subtopicName,
+                m.[fileUrl],m.[createdDate],m.[language],ISNULL(st.[subtopicTitleEN],'-') AS subtopicName,
                 COALESCE(t.[name],u2.[username],'Teacher') AS teacherName
                 FROM dbo.[Material] m LEFT JOIN dbo.[Subtopic] st ON st.[subtopicId]=m.[subtopicId]
                 LEFT JOIN dbo.[Unit] un ON un.[unitId]=st.[unitId]
@@ -649,7 +649,7 @@ namespace ScienceBuddy.Teacher
         {
             // Levels
             ddlLevel.Items.Clear();
-            ddlLevel.Items.Add(new ListItem("— Select Level —", ""));
+            ddlLevel.Items.Add(new ListItem("- Select Level -", ""));
 
             using (var cmd = new SqlCommand("SELECT [levelId],[levelNameEN] FROM dbo.[Level] ORDER BY [levelId]", conn))
             using (var reader = cmd.ExecuteReader())
@@ -663,7 +663,7 @@ namespace ScienceBuddy.Teacher
 
             // Units (filtered by selected level)
             ddlUnit.Items.Clear();
-            ddlUnit.Items.Add(new ListItem("— Select Unit —", ""));
+            ddlUnit.Items.Add(new ListItem("- Select Unit -", ""));
 
             if (!string.IsNullOrEmpty(selectedLevelId))
             {
@@ -684,7 +684,7 @@ namespace ScienceBuddy.Teacher
 
             // Subtopics (filtered by selected unit)
             ddlSubtopic.Items.Clear();
-            ddlSubtopic.Items.Add(new ListItem("— Select Subtopic —", ""));
+            ddlSubtopic.Items.Add(new ListItem("- Select Subtopic -", ""));
 
             if (!string.IsNullOrEmpty(selectedUnitId))
             {

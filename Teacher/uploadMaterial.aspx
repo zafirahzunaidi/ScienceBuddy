@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="uploadMaterial.aspx.cs"
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="uploadMaterial.aspx.cs"
     Inherits="ScienceBuddy.Teacher.uploadMaterial" MasterPageFile="~/Site.Master" Title="Upload Material" %>
 
 <%-- Head --%>
@@ -114,12 +114,12 @@
             </div>
         </div>
 
-        <%-- Row 2: Description full width — rich-text editor --%>
+        <%-- Row 2: Description full width - rich-text editor --%>
         <div class="tc-upload-material-row-full">
             <div class="tc-upload-material-field">
                 <label class="tc-upload-material-label"><%: T("Description","Penerangan") %></label>
 
-                <%-- Hidden textarea — stays connected to backend unchanged --%>
+                <%-- Hidden textarea - stays connected to backend unchanged --%>
                 <asp:TextBox ID="txtDescription" runat="server"
                     TextMode="MultiLine"
                     Rows="4"
@@ -170,9 +170,9 @@
                         <label class="tc-upload-material-label"><%: T("Language","Bahasa") %> *</label>
                         <asp:HiddenField ID="hidLanguage" runat="server" Value="EN" />
                         <div class="tc-upload-material-lang-group" id="langGrp">
-                            <button type="button" class="tc-upload-material-lang-btn active" id="bEN"
+                            <button type="button" class="tc-upload-material-lang-btn<%= hidLanguage.Value == "EN" ? " active" : "" %>" id="bEN"
                                 onclick="setLang('EN')">EN</button>
-                            <button type="button" class="tc-upload-material-lang-btn" id="bBM"
+                            <button type="button" class="tc-upload-material-lang-btn<%= hidLanguage.Value == "BM" ? " active" : "" %>" id="bBM"
                                 onclick="setLang('BM')">BM</button>
                         </div>
                     </div>
@@ -325,6 +325,15 @@
         document.getElementById('bBM').className = 'tc-upload-material-lang-btn' + (v === 'BM' ? ' active' : '');
     }
 
+    /* Restore language button state after UpdatePanel partial postback */
+    if (typeof Sys !== 'undefined' && Sys.WebForms && Sys.WebForms.PageRequestManager) {
+        Sys.WebForms.PageRequestManager.getInstance().add_endRequest(function () {
+            var v = document.getElementById('<%=hidLanguage.ClientID%>').value || 'EN';
+            document.getElementById('bEN').className = 'tc-upload-material-lang-btn' + (v === 'EN' ? ' active' : '');
+            document.getElementById('bBM').className = 'tc-upload-material-lang-btn' + (v === 'BM' ? ' active' : '');
+        });
+    }
+
     function handleFile(inp) {
         hide('vFile');
         var dz = document.getElementById('dropZone');
@@ -419,7 +428,7 @@
             txDesc.value = html;
         };
 
-        /* execCommand wrapper — re-focus editor then execute */
+        /* execCommand wrapper - re-focus editor then execute */
         window.rteCmd = function (cmd) {
             editor.focus();
             document.execCommand(cmd, false, null);
@@ -443,7 +452,7 @@
         editor.addEventListener('mouseup', updateToolbarState);
         editor.addEventListener('focus', updateToolbarState);
 
-        /* Strip pasted rich formatting — keep plain text only, then re-apply via execCommand */
+        /* Strip pasted rich formatting - keep plain text only, then re-apply via execCommand */
         editor.addEventListener('paste', function (e) {
             e.preventDefault();
             var txt = (e.clipboardData || window.clipboardData).getData('text/plain');
@@ -452,7 +461,7 @@
 
         /* Sync on every input so the hidden field is always up to date */
         /* editor.addEventListener('input', function(){ syncRteToTextarea(); }); */
-        /* Sync happens only on submit — see validateForm() and btnUpload click below */
+        /* Sync happens only on submit - see validateForm() and btnUpload click below */
 
         /* Also sync before the modal upload button triggers the postback + loading state */
         var btnUpload = document.querySelector('[id$="btnUpload"]');
@@ -558,7 +567,7 @@
             });
         });
 
-        // Confirm button — navigate away
+        // Confirm button - navigate away
         var confirmBtn = document.getElementById('umUnsavedConfirm');
         if (confirmBtn) confirmBtn.addEventListener('click', function () {
             dirty = false;
