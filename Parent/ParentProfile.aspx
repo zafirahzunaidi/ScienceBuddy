@@ -91,7 +91,7 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
             </div>
             <div class="pt-field pt-field-editable">
                 <label class="pt-label"><%: T("Email","E-mel") %></label>
-                <asp:TextBox ID="txtEmail" runat="server" CssClass="pt-input" MaxLength="100" TextMode="Email" />
+                <asp:TextBox ID="txtEmail" runat="server" CssClass="pt-input" MaxLength="100" />
                 <asp:Label ID="lblEmailErr" runat="server" CssClass="pt-field-error" Visible="false" />
             </div>
             <div class="pt-field pt-field-editable">

@@ -306,29 +306,30 @@ namespace ScienceBuddy.Parent
             lblEmailErr.Visible = false;
             lblPhoneErr.Visible = false;
 
+            bool isValid = true;
+
             if (string.IsNullOrEmpty(name))
             {
                 txtName.CssClass = "pt-input pt-input-error";
                 lblNameErr.Text = T("Full name is required.", "Nama penuh diperlukan.");
                 lblNameErr.Visible = true;
-                return;
+                isValid = false;
             }
             if (string.IsNullOrEmpty(email))
             {
                 txtEmail.CssClass = "pt-input pt-input-error";
                 lblEmailErr.Text = T("Email is required.", "E-mel diperlukan.");
                 lblEmailErr.Visible = true;
-                return;
+                isValid = false;
             }
-            if (!email.Contains("@") || !email.Contains("."))
+            else if (!email.Contains("@") || !email.Contains("."))
             {
                 txtEmail.CssClass = "pt-input pt-input-error";
                 lblEmailErr.Text = T("Enter a valid email address (e.g. example@email.com).",
                     "Masukkan alamat e-mel yang sah (cth: example@email.com).");
                 lblEmailErr.Visible = true;
-                return;
+                isValid = false;
             }
-            // Phone must be digits only and at least 8 chars if provided
             if (!string.IsNullOrEmpty(phone))
             {
                 bool phoneValid = phone.Length >= 8;
@@ -346,8 +347,13 @@ namespace ScienceBuddy.Parent
                     lblPhoneErr.Text = T("Enter a valid phone number (digits only, at least 8 characters).",
                         "Masukkan nombor telefon yang sah (digit sahaja, sekurang-kurangnya 8 aksara).");
                     lblPhoneErr.Visible = true;
-                    return;
+                    isValid = false;
                 }
+            }
+
+            if (!isValid)
+            {
+                return;
             }
 
             try
