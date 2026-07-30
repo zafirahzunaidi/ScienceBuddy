@@ -104,9 +104,7 @@ namespace ScienceBuddy
             RedirectToDashboard(userRecord.Role);
         }
 
-        // ────────────────────────────────────────────────────────
-        //  BRUTE-FORCE PROTECTION (account-based via Log table)
-        // ────────────────────────────────────────────────────────
+        // brute-force protection (account-based via Log table)
 
         private bool IsAccountLocked(string userId, int maxAttempts, int lockMinutes)
         {
@@ -293,7 +291,7 @@ namespace ScienceBuddy
             litSuccess.Text = Server.HtmlEncode(message);
         }
 
-        //  LOGGING
+        //  logging
 
         private void AddLog(string userId, string action, string description, string status)
         {

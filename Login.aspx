@@ -258,7 +258,7 @@
                     <label for="<%: txtPassword.ClientID %>">Password <span class="required">*</span></label>
                     <div class="login-input-wrap">
                         <i class="bi bi-lock icon-left"></i>
-                        <asp:TextBox ID="txtPassword" runat="server" TextMode="Password" MaxLength="128" AutoComplete="current-password" placeholder="Enter your password" aria-required="true" />
+                        <asp:TextBox ID="txtPassword" runat="server" TextMode="Password" MaxLength="128" placeholder="Enter your password" aria-required="true" />
                         <button type="button" class="icon-right" id="btnTogglePassword" aria-label="Show password"><i class="bi bi-eye-slash" id="iconTogglePassword"></i></button>
                     </div>
                     <asp:RequiredFieldValidator ID="rfvPassword" runat="server" ControlToValidate="txtPassword" ErrorMessage="Password is required." CssClass="sb-field-error" Display="Dynamic" SetFocusOnError="true" ValidationGroup="LoginGroup" />

@@ -366,8 +366,15 @@ namespace ScienceBuddy.Admin
             // Server-side validation
             if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(email))
             { Response.Write("{\"success\":false,\"msg\":\"Name, username and email are required.\"}"); return; }
+            // Validate email format
+            if (!System.Text.RegularExpressions.Regex.IsMatch(email, @"^[^\s@]+@[^\s@]+\.[^\s@]+$"))
+            { Response.Write("{\"success\":false,\"msg\":\"Invalid email address format.\"}"); return; }
             if (string.IsNullOrWhiteSpace(phone))
             { Response.Write("{\"success\":false,\"msg\":\"Phone number is required.\"}"); return; }
+            // Validate Malaysian phone format
+            string phoneClean = phone.Replace("-", "").Replace(" ", "");
+            if (!System.Text.RegularExpressions.Regex.IsMatch(phoneClean, @"^01\d{8,9}$"))
+            { Response.Write("{\"success\":false,\"msg\":\"Invalid phone number format. Use Malaysian format (e.g. 012-3456789).\"}"); return; }
             if (string.IsNullOrWhiteSpace(password) || password.Length < GetPasswordMinLength())
             { Response.Write("{\"success\":false,\"msg\":\"Password must be at least " + GetPasswordMinLength() + " characters.\"}"); return; }
             if (string.IsNullOrWhiteSpace(qualification))

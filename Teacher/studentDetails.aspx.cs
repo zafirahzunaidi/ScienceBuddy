@@ -644,7 +644,9 @@ namespace ScienceBuddy.Teacher
 
             if (IsDragAndDrop(questionType))
             {
-                // Drag and Drop: display answer text in both languages
+                // Drag and Drop: correctAnswer is comma-separated (EN answers, then BM answers)
+                // For bilingual quizzes: "Switch,Suis" -> EN="Switch", BM="Suis"
+                // For multi-blank: "density,float,sink" (EN only) or "Tengkorak,Femur,menyokong" (BM only)
                 sb.Append("<div class=\"tc-student-details-ans-dd-block\">");
                 sb.AppendFormat("<div class=\"tc-student-details-ans-dd-title\">{0}</div>", T("Student's Answer", "Jawapan Pelajar"));
                 if (string.IsNullOrEmpty(selectedAnswer) || selectedAnswer == "-")
@@ -653,19 +655,40 @@ namespace ScienceBuddy.Teacher
                 }
                 else
                 {
+                    // Split student answer the same way as correct answer
+                    string[] studentParts = selectedAnswer.Split(',');
+                    int studentHalf = studentParts.Length / 2;
+                    string studentEN = studentHalf > 0 && studentParts.Length > 1
+                        ? string.Join(", ", studentParts, 0, studentHalf)
+                        : selectedAnswer;
+                    string studentBM = studentHalf > 0 && studentParts.Length > 1
+                        ? string.Join(", ", studentParts, studentHalf, studentParts.Length - studentHalf)
+                        : selectedAnswer;
+
                     sb.AppendFormat("<div class=\"tc-student-details-ans-dd-lang\"><span class=\"tc-student-details-ans-dd-lang-label\">{0}:</span> {1}</div>",
-                        T("English", "Bahasa Inggeris"), HttpUtility.HtmlEncode(selectedAnswer));
+                        T("English", "Bahasa Inggeris"), HttpUtility.HtmlEncode(studentEN));
                     sb.AppendFormat("<div class=\"tc-student-details-ans-dd-lang\"><span class=\"tc-student-details-ans-dd-lang-label\">{0}:</span> {1}</div>",
-                        T("Bahasa Melayu", "Bahasa Melayu"), HttpUtility.HtmlEncode(selectedAnswer));
+                        T("Bahasa Melayu", "Bahasa Melayu"), HttpUtility.HtmlEncode(studentBM));
                 }
                 sb.Append("</div>");
 
                 sb.Append("<div class=\"tc-student-details-ans-dd-block\">");
                 sb.AppendFormat("<div class=\"tc-student-details-ans-dd-title\">{0}</div>", T("Correct Answer", "Jawapan Betul"));
+
+                // Split correct answer: first half = EN, second half = BM
+                string[] correctParts = correctAnswer.Split(',');
+                int half = correctParts.Length / 2;
+                string correctEN = half > 0 && correctParts.Length > 1
+                    ? string.Join(", ", correctParts, 0, half)
+                    : correctAnswer;
+                string correctBM = half > 0 && correctParts.Length > 1
+                    ? string.Join(", ", correctParts, half, correctParts.Length - half)
+                    : correctAnswer;
+
                 sb.AppendFormat("<div class=\"tc-student-details-ans-dd-lang\"><span class=\"tc-student-details-ans-dd-lang-label\">{0}:</span> {1}</div>",
-                    T("English", "Bahasa Inggeris"), HttpUtility.HtmlEncode(correctAnswer));
+                    T("English", "Bahasa Inggeris"), HttpUtility.HtmlEncode(correctEN));
                 sb.AppendFormat("<div class=\"tc-student-details-ans-dd-lang\"><span class=\"tc-student-details-ans-dd-lang-label\">{0}:</span> {1}</div>",
-                    T("Bahasa Melayu", "Bahasa Melayu"), HttpUtility.HtmlEncode(correctAnswer));
+                    T("Bahasa Melayu", "Bahasa Melayu"), HttpUtility.HtmlEncode(correctBM));
                 sb.Append("</div>");
             }
 

@@ -31,7 +31,7 @@ namespace ScienceBuddy
             if (message.Length < 10 || message.Length > 1500) { ShowStatus("Message must be 10–1500 characters.", false); return; }
             if (string.IsNullOrEmpty(type)) { ShowStatus("Please select an enquiry type.", false); return; }
 
-            // Sanitize for header injection
+            // Sanitize for header injection, no carriage return + newline = no code injection
             subject = subject.Replace("\r", "").Replace("\n", "");
             email = email.Replace("\r", "").Replace("\n", "");
 

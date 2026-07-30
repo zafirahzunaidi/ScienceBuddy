@@ -391,7 +391,7 @@
                         onclick="document.getElementById('qbImgInput').click()">
                         <div class="tc-question-builder-img-upload-icon"><i class="bi bi-image"></i></div>
                         <span class="tc-question-builder-img-upload-text"><%: T("Upload Image","Muat Naik Imej") %></span>
-                        <span class="tc-question-builder-img-upload-sub"><%: T("Optional ? PNG, JPG, GIF up to 5 MB","Pilihan ? PNG, JPG, GIF sehingga 5 MB") %></span>
+                        <span class="tc-question-builder-img-upload-sub"><%: T("Optional \u00B7 PNG, JPG, GIF up to 5 MB","Pilihan \u00B7 PNG, JPG, GIF sehingga 5 MB") %></span>
                     </div>
                     <asp:FileUpload ID="fuQuestionImage" runat="server" Style="display:none;" />
                     <input type="file" id="qbImgInput" accept="image/*" onchange="handleQImgUpload(this)" style="display:none;" />
@@ -1932,7 +1932,7 @@ window.addEventListener('load',function(){
         var imgText=$qs('.tc-question-builder-img-upload-text');
         if(imgText)imgText.textContent=t('Upload Image','Muat Naik Imej');
         var imgSub=$qs('.tc-question-builder-img-upload-sub');
-        if(imgSub)imgSub.textContent=t('Optional ? PNG, JPG, GIF up to 5 MB','Pilihan ? PNG, JPG, GIF sehingga 5 MB');
+        if(imgSub)imgSub.textContent=t('Optional \u00B7 PNG, JPG, GIF up to 5 MB','Pilihan \u00B7 PNG, JPG, GIF sehingga 5 MB');
 
         /* -- Delete modal -- */
         var delTitle=$qs('.tc-question-builder-del-modal h3');

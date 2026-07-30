@@ -146,7 +146,7 @@
         <div class="sb-nav-section-label"><%: T("Profile","Profil") %></div>
         <a href="<%: ResolveUrl("~/Parent/ParentProfile.aspx") %>" class="sb-sidebar-item">
             <i class="bi bi-person item-icon"></i>
-            <span class="item-label"><%: T("Edit Profile","Edit Profil") %></span>
+            <span class="item-label"><%: T("My Profile","Profil Saya") %></span>
         </a>
 
     </div>

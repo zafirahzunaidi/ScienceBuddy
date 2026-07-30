@@ -168,8 +168,8 @@ namespace ScienceBuddy.Admin
                         ISNULL(t.[name],u.[username]) AS teacherName
                         FROM dbo.[Question] qn
                         JOIN dbo.[Quiz] q ON q.[quizId]=qn.[quizId]
-                        LEFT JOIN dbo.[User] u ON u.[userId]=q.[createdByUserId]
-                        LEFT JOIN dbo.[Teacher] t ON t.[userId]=q.[createdByUserId]
+                        LEFT JOIN dbo.[User] u ON u.[userId]=qn.[createdByUserId]
+                        LEFT JOIN dbo.[Teacher] t ON t.[userId]=qn.[createdByUserId]
                         WHERE qn.[status]='Pending'{1}", qnCol, typeFilter);
 
                     if (!string.IsNullOrWhiteSpace(search))
@@ -293,8 +293,8 @@ namespace ScienceBuddy.Admin
                         ISNULL(t.[name],u.[username]) AS teacherName
                         FROM dbo.[Question] qn
                         JOIN dbo.[Quiz] q ON q.[quizId]=qn.[quizId]
-                        LEFT JOIN dbo.[User] u ON u.[userId]=q.[createdByUserId]
-                        LEFT JOIN dbo.[Teacher] t ON t.[userId]=q.[createdByUserId]
+                        LEFT JOIN dbo.[User] u ON u.[userId]=qn.[createdByUserId]
+                        LEFT JOIN dbo.[Teacher] t ON t.[userId]=qn.[createdByUserId]
                         WHERE qn.[status] IN ('Approved','Rejected'){1}", qnCol, typeFilter);
 
                     if (!string.IsNullOrWhiteSpace(search))
@@ -590,7 +590,57 @@ namespace ScienceBuddy.Admin
                         cmd.ExecuteNonQuery();
                     }
 
-                    // Notify teacher if all questions reviewed (quiz fully resolved)
+                    // Notify the teacher who created this question
+                    try
+                    {
+                        string questionCreatorId = "";
+                        using (var cmd = new SqlCommand("SELECT [createdByUserId] FROM dbo.[Question] WHERE [questionId]=@id", conn))
+                        {
+                            cmd.Parameters.AddWithValue("@id", questionId);
+                            var result = cmd.ExecuteScalar();
+                            questionCreatorId = result?.ToString() ?? "";
+                        }
+
+                        if (!string.IsNullOrEmpty(questionCreatorId))
+                        {
+                            string qTitle = "";
+                            using (var cmd = new SqlCommand("SELECT ISNULL([quizTitleEN],[quizTitleBM]) FROM dbo.[Quiz] WHERE [quizId]=@id", conn))
+                            {
+                                cmd.Parameters.AddWithValue("@id", quizId);
+                                var result = cmd.ExecuteScalar();
+                                qTitle = result?.ToString() ?? quizId;
+                            }
+
+                            string tEN, tBM, mEN, mBM;
+                            if (action == "Approve")
+                            {
+                                tEN = "Question Approved"; tBM = "Soalan Diluluskan";
+                                mEN = "Your question (ID: " + questionId + ") in quiz \"" + qTitle + "\" has been approved.";
+                                mBM = "Soalan anda (ID: " + questionId + ") dalam kuiz \"" + qTitle + "\" telah diluluskan.";
+                            }
+                            else
+                            {
+                                tEN = "Question Rejected"; tBM = "Soalan Ditolak";
+                                mEN = "Your question (ID: " + questionId + ") in quiz \"" + qTitle + "\" was not approved. Please review and resubmit.";
+                                mBM = "Soalan anda (ID: " + questionId + ") dalam kuiz \"" + qTitle + "\" tidak diluluskan. Sila semak dan hantar semula.";
+                            }
+
+                            string nId = GenId(conn, null, "Notification", "notificationId", "N");
+                            using (var cmd = new SqlCommand("INSERT INTO dbo.[Notification]([notificationId],[toUserId],[titleEN],[titleBM],[messageEN],[messageBM],[isRead],[createdAt]) VALUES(@a,@b,@c,@d,@e,@f,0,GETDATE())", conn))
+                            {
+                                cmd.Parameters.AddWithValue("@a", nId);
+                                cmd.Parameters.AddWithValue("@b", questionCreatorId);
+                                cmd.Parameters.AddWithValue("@c", tEN);
+                                cmd.Parameters.AddWithValue("@d", tBM);
+                                cmd.Parameters.AddWithValue("@e", mEN);
+                                cmd.Parameters.AddWithValue("@f", mBM);
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+                    }
+                    catch { /* notification failure should not block success */ }
+
+                    // Notify teacher if all questions reviewed (quiz fully resolved) - for Practice quizzes
                     if (quizStatus == "Approved" || quizStatus == "Rejected")
                     {
                         try
@@ -603,7 +653,7 @@ namespace ScienceBuddy.Admin
                                 teacherUserId = result?.ToString() ?? "";
                             }
 
-                            if (!string.IsNullOrEmpty(teacherUserId))
+                            if (!string.IsNullOrEmpty(teacherUserId) && teacherUserId != adminId)
                             {
                                 string qTitle = "";
                                 using (var cmd = new SqlCommand("SELECT ISNULL([quizTitleEN],[quizTitleBM]) FROM dbo.[Quiz] WHERE [quizId]=@id", conn))

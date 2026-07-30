@@ -302,41 +302,58 @@ namespace ScienceBuddy.Parent
             txtName.CssClass = "pt-input";
             txtEmail.CssClass = "pt-input";
             txtPhone.CssClass = "pt-input";
+            lblNameErr.Visible = false;
+            lblEmailErr.Visible = false;
+            lblPhoneErr.Visible = false;
+
+            bool isValid = true;
 
             if (string.IsNullOrEmpty(name))
             {
                 txtName.CssClass = "pt-input pt-input-error";
-                ShowMsg(T("Name cannot be empty.", "Nama tidak boleh kosong."), false);
-                return;
+                lblNameErr.Text = T("Full name is required.", "Nama penuh diperlukan.");
+                lblNameErr.Visible = true;
+                isValid = false;
             }
             if (string.IsNullOrEmpty(email))
             {
                 txtEmail.CssClass = "pt-input pt-input-error";
-                ShowMsg(T("Email cannot be empty.", "E-mel tidak boleh kosong."), false);
-                return;
+                lblEmailErr.Text = T("Email is required.", "E-mel diperlukan.");
+                lblEmailErr.Visible = true;
+                isValid = false;
             }
-            if (!email.Contains("@") || !email.Contains("."))
+            else if (!email.Contains("@") || !email.Contains("."))
             {
                 txtEmail.CssClass = "pt-input pt-input-error";
-                ShowMsg(T("Please enter a valid email address.", "Sila masukkan alamat e-mel yang sah."), false);
-                return;
+                lblEmailErr.Text = T("Enter a valid email address (e.g. example@email.com).",
+                    "Masukkan alamat e-mel yang sah (cth: example@email.com).");
+                lblEmailErr.Visible = true;
+                isValid = false;
             }
-            // Phone must be digits only and at least 8 chars if provided
             if (!string.IsNullOrEmpty(phone))
             {
                 bool phoneValid = phone.Length >= 8;
                 foreach (char c in phone)
                 {
                     if (!char.IsDigit(c) && c != '+' && c != '-')
-                    { phoneValid = false; break; }
+                    {
+                        phoneValid = false;
+                        break;
+                    }
                 }
                 if (!phoneValid)
                 {
                     txtPhone.CssClass = "pt-input pt-input-error";
-                    ShowMsg(T("Please enter a valid phone number (digits only, at least 8 characters).",
-                        "Sila masukkan nombor telefon yang sah (digit sahaja, sekurang-kurangnya 8 aksara)."), false);
-                    return;
+                    lblPhoneErr.Text = T("Enter a valid phone number (digits only, at least 8 characters).",
+                        "Masukkan nombor telefon yang sah (digit sahaja, sekurang-kurangnya 8 aksara).");
+                    lblPhoneErr.Visible = true;
+                    isValid = false;
                 }
+            }
+
+            if (!isValid)
+            {
+                return;
             }
 
             try

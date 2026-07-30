@@ -96,7 +96,7 @@
             </div>
             <div class="tc-student-details-pinfo">
                 <h2><asp:Literal ID="litName" runat="server" /></h2>
-                <p>ID: <asp:Literal ID="litStudentId" runat="server" /> � <%: T("Detailed learning analytics","Analitik pembelajaran terperinci") %></p>
+                <p>ID: <asp:Literal ID="litStudentId" runat="server" /> &#183; <%: T("Detailed learning analytics","Analitik pembelajaran terperinci") %></p>
                 <div class="tc-student-details-pills">
                     <span class="tc-student-details-pill">
                         <i class="bi bi-mortarboard"></i> <asp:Literal ID="litLevel" runat="server" />
@@ -322,7 +322,7 @@
 
                     <asp:Panel ID="pnlWeakNoAttempts" runat="server" Visible="false">
                         <div class="tc-student-details-empty" style="padding:2rem;">
-                            <div style="font-size:2rem;margin-bottom:.5rem;">??</div>
+                            <div style="font-size:2rem;margin-bottom:.5rem;"><i class="bi bi-journal-x"></i></div>
                             <div style="font-size:1rem;font-weight:800;color:var(--t);margin-bottom:.3rem;">
                                 <%: T("No Quiz Attempts Yet","Belum Ada Cubaan Kuiz") %>
                             </div>
@@ -334,7 +334,7 @@
 
                     <asp:Panel ID="pnlWeakEmpty" runat="server" Visible="false">
                         <div class="tc-student-details-empty" style="padding:2rem;">
-                            <div style="font-size:2rem;margin-bottom:.5rem;">??</div>
+                            <div style="font-size:2rem;margin-bottom:.5rem;"><i class="bi bi-check-circle"></i></div>
                             <div style="font-size:1rem;font-weight:800;color:var(--t);margin-bottom:.3rem;">
                                 <%: T("No Weak Topics","Tiada Topik Lemah") %>
                             </div>

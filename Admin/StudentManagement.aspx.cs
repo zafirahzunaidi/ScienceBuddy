@@ -391,9 +391,9 @@ namespace ScienceBuddy.Admin
             return name.Substring(0, Math.Min(2, name.Length)).ToUpper();
         }
 
-        // ══════════════════════════════════════════════════════════════
+       
         // AJAX CRUD HANDLERS
-        // ══════════════════════════════════════════════════════════════
+        
 
         private void HandleAjax()
         {
@@ -463,8 +463,15 @@ namespace ScienceBuddy.Admin
 
             if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(email))
             { Response.Write("{\"success\":false,\"msg\":\"Name, username and email are required.\"}"); return; }
+            // Validate email format
+            if (!System.Text.RegularExpressions.Regex.IsMatch(email, @"^[^\s@]+@[^\s@]+\.[^\s@]+$"))
+            { Response.Write("{\"success\":false,\"msg\":\"Invalid email address format.\"}"); return; }
             if (string.IsNullOrWhiteSpace(phone))
             { Response.Write("{\"success\":false,\"msg\":\"Phone number is required.\"}"); return; }
+            // Validate Malaysian phone format: 01X-XXXXXXX or 01X-XXXXXXXX (10-11 digits starting with 01)
+            string phoneClean = phone.Replace("-", "").Replace(" ", "");
+            if (!System.Text.RegularExpressions.Regex.IsMatch(phoneClean, @"^01\d{8,9}$"))
+            { Response.Write("{\"success\":false,\"msg\":\"Invalid phone number format. Use Malaysian format (e.g. 012-3456789).\"}"); return; }
             if (string.IsNullOrWhiteSpace(password) || password.Length < GetPasswordMinLength())
             { Response.Write("{\"success\":false,\"msg\":\"Password must be at least " + GetPasswordMinLength() + " characters.\"}"); return; }
 
@@ -598,6 +605,14 @@ namespace ScienceBuddy.Admin
             string email = Request.QueryString["email"] ?? "";
             string phone = Request.QueryString["phone"] ?? "";
             string levelId = Request.QueryString["levelId"] ?? "";
+
+            // Validate phone format if provided
+            if (!string.IsNullOrWhiteSpace(phone))
+            {
+                string phoneClean = phone.Replace("-", "").Replace(" ", "");
+                if (!System.Text.RegularExpressions.Regex.IsMatch(phoneClean, @"^01\d{8,9}$"))
+                { Response.Write("{\"success\":false,\"msg\":\"Invalid phone number format. Use Malaysian format (e.g. 012-3456789).\"}"); return; }
+            }
 
             using (var conn = new SqlConnection(ConnStr))
             {

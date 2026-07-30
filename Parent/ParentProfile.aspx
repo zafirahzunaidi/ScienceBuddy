@@ -87,14 +87,17 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
             <div class="pt-field pt-field-editable">
                 <label class="pt-label"><%: T("Full Name","Nama Penuh") %></label>
                 <asp:TextBox ID="txtName" runat="server" CssClass="pt-input" MaxLength="100" />
+                <asp:Label ID="lblNameErr" runat="server" CssClass="pt-field-error" Visible="false" />
             </div>
             <div class="pt-field pt-field-editable">
                 <label class="pt-label"><%: T("Email","E-mel") %></label>
-                <asp:TextBox ID="txtEmail" runat="server" CssClass="pt-input" MaxLength="100" TextMode="Email" />
+                <asp:TextBox ID="txtEmail" runat="server" CssClass="pt-input" MaxLength="100" />
+                <asp:Label ID="lblEmailErr" runat="server" CssClass="pt-field-error" Visible="false" />
             </div>
             <div class="pt-field pt-field-editable">
                 <label class="pt-label"><%: T("Phone Number","Nombor Telefon") %></label>
                 <asp:TextBox ID="txtPhone" runat="server" CssClass="pt-input" MaxLength="20" />
+                <asp:Label ID="lblPhoneErr" runat="server" CssClass="pt-field-error" Visible="false" />
             </div>
         </div>
     </div>

@@ -13,8 +13,11 @@ namespace ScienceBuddy.Parent
         protected global::System.Web.UI.WebControls.Literal litHeroEmail;
         protected global::System.Web.UI.WebControls.TextBox txtUsername;
         protected global::System.Web.UI.WebControls.TextBox txtName;
+        protected global::System.Web.UI.WebControls.Label lblNameErr;
         protected global::System.Web.UI.WebControls.TextBox txtEmail;
+        protected global::System.Web.UI.WebControls.Label lblEmailErr;
         protected global::System.Web.UI.WebControls.TextBox txtPhone;
+        protected global::System.Web.UI.WebControls.Label lblPhoneErr;
         protected global::System.Web.UI.WebControls.DropDownList ddlLang;
         protected global::System.Web.UI.WebControls.TextBox txtCurrentPwd;
         protected global::System.Web.UI.WebControls.TextBox txtNewPwd;

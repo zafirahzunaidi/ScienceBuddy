@@ -129,9 +129,7 @@ namespace ScienceBuddy
             }
         }
 
-        // ────────────────────────────────────────────────────────
-        //  DATABASE INSERT METHODS
-        // ────────────────────────────────────────────────────────
+        // Database insert methods
 
         private void InsertUserRow(SqlConnection conn, SqlTransaction txn,
             string userId, string username, string hashedPassword, string email, string language)

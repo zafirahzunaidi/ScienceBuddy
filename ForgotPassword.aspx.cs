@@ -120,7 +120,7 @@ namespace ScienceBuddy
 
                     // Build reset URL
                     string resetUrl = Request.Url.GetLeftPart(UriPartial.Authority)
-                        + ResolveUrl("~/ResetPassword.aspx") + "?token=" + Uri.EscapeDataString(rawToken);
+                        + ResolveUrl("~/ResetPassword.aspx") + "?token=" + Uri.EscapeDataString(rawToken); // raw token as query string parameter
 
                     // Send email
                     try { SendResetEmail(email, resetUrl); }

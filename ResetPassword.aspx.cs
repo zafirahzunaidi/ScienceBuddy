@@ -45,15 +45,15 @@ namespace ScienceBuddy
                     conn.Open();
                     using (var r = cmd.ExecuteReader())
                     {
-                        if (!r.Read()) return false;
-                        if (r["usedAt"] != DBNull.Value) return false;
+                        if (!r.Read()) return false; //no token within the hash
+                        if (r["usedAt"] != DBNull.Value) return false; // token was alr used
                         DateTime expires = Convert.ToDateTime(r["expiresAt"]);
-                        if (DateTime.Now > expires) return false;
+                        if (DateTime.Now > expires) return false; // token expired
                         string userStatus = r["status"].ToString();
-                        if (userStatus != "Active") return false;
+                        if (userStatus != "Active") return false; // if account blocked/deleted
                         _userId = r["userId"].ToString();
-                        ViewState["ResetUserId"] = _userId;
-                        ViewState["TokenHash"] = tokenHash;
+                        ViewState["ResetUserId"] = _userId; // store userId in ViewState if all pass
+                        ViewState["TokenHash"] = tokenHash; // same w token hash
                         return true;
                     }
                 }
