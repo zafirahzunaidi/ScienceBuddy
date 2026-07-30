@@ -391,9 +391,9 @@ namespace ScienceBuddy.Admin
             return name.Substring(0, Math.Min(2, name.Length)).ToUpper();
         }
 
-        // ══════════════════════════════════════════════════════════════
+       
         // AJAX CRUD HANDLERS
-        // ══════════════════════════════════════════════════════════════
+        
 
         private void HandleAjax()
         {
