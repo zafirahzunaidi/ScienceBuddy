@@ -501,95 +501,130 @@ namespace ScienceBuddy.Parent
 
             try
             {
-                const string sql = @"
-                    DELETE FROM dbo.[StudentParent]
-                    WHERE studentParentId = @spId AND parentId = @parentId";
-
                 using (var conn = new SqlConnection(ConnStr))
-                using (var cmd = new SqlCommand(sql, conn))
                 {
-                    cmd.Parameters.AddWithValue("@spId", studentParentId);
-                    cmd.Parameters.AddWithValue("@parentId", _parentId);
                     conn.Open();
-                    int affected = cmd.ExecuteNonQuery();
-
-                    if (affected > 0)
+                    using (var tran = conn.BeginTransaction())
                     {
-                        string selectedChild = Session["selectedChildId"] as string;
-                        if (!string.IsNullOrEmpty(selectedChild) && selectedChild == studentId)
-                        {
-                            Session["selectedChildId"] = null;
-                        }
-
-                        // Notify the child about unlink
                         try
                         {
-                            string childUserId = "";
-                            using (var conn2 = new SqlConnection(ConnStr))
-                            using (var cmd2 = new SqlCommand("SELECT userId FROM dbo.Student WHERE studentId=@sid", conn2))
+                            // Delete related study plan data before removing the link
+                            using (var cmd = new SqlCommand(
+                                "DELETE FROM dbo.SPTask WHERE studyPlanId IN (SELECT studyPlanId FROM dbo.StudyPlan WHERE studentParentId=@spid)", conn, tran))
                             {
-                                cmd2.Parameters.AddWithValue("@sid", studentId);
-                                conn2.Open();
-                                var r = cmd2.ExecuteScalar();
-                                if (r != null && r != DBNull.Value) childUserId = r.ToString();
+                                cmd.Parameters.AddWithValue("@spid", studentParentId);
+                                cmd.ExecuteNonQuery();
                             }
 
-                            if (!string.IsNullOrEmpty(childUserId))
+                            using (var cmd = new SqlCommand(
+                                "DELETE FROM dbo.SPReward WHERE studyPlanId IN (SELECT studyPlanId FROM dbo.StudyPlan WHERE studentParentId=@spid)", conn, tran))
                             {
-                                using (var conn2 = new SqlConnection(ConnStr))
+                                cmd.Parameters.AddWithValue("@spid", studentParentId);
+                                cmd.ExecuteNonQuery();
+                            }
+
+                            using (var cmd = new SqlCommand(
+                                "DELETE FROM dbo.StudyPlan WHERE studentParentId=@spid", conn, tran))
+                            {
+                                cmd.Parameters.AddWithValue("@spid", studentParentId);
+                                cmd.ExecuteNonQuery();
+                            }
+
+                            // Now delete the parent-child link itself
+                            int affected = 0;
+                            using (var cmd = new SqlCommand(
+                                "DELETE FROM dbo.[StudentParent] WHERE studentParentId = @spId AND parentId = @parentId", conn, tran))
+                            {
+                                cmd.Parameters.AddWithValue("@spId", studentParentId);
+                                cmd.Parameters.AddWithValue("@parentId", _parentId);
+                                affected = cmd.ExecuteNonQuery();
+                            }
+
+                            tran.Commit();
+
+                            if (affected > 0)
+                            {
+                                string selectedChild = Session["selectedChildId"] as string;
+                                if (!string.IsNullOrEmpty(selectedChild) && selectedChild == studentId)
                                 {
-                                    conn2.Open();
-                                    using (var txn = conn2.BeginTransaction())
+                                    Session["selectedChildId"] = null;
+                                }
+
+                                // Notify the child about unlink
+                                try
+                                {
+                                    string childUserId = "";
+                                    using (var conn2 = new SqlConnection(ConnStr))
+                                    using (var cmd2 = new SqlCommand("SELECT userId FROM dbo.Student WHERE studentId=@sid", conn2))
                                     {
-                                        try
+                                        cmd2.Parameters.AddWithValue("@sid", studentId);
+                                        conn2.Open();
+                                        var r = cmd2.ExecuteScalar();
+                                        if (r != null && r != DBNull.Value) childUserId = r.ToString();
+                                    }
+
+                                    if (!string.IsNullOrEmpty(childUserId))
+                                    {
+                                        using (var conn2 = new SqlConnection(ConnStr))
                                         {
-                                            // Generate notification ID
-                                            int nextNum = 1;
-                                            using (var cmd3 = new SqlCommand("SELECT MAX(notificationId) FROM dbo.[Notification]", conn2, txn))
+                                            conn2.Open();
+                                            using (var txn = conn2.BeginTransaction())
                                             {
-                                                object result = cmd3.ExecuteScalar();
-                                                if (result != null && result != DBNull.Value)
+                                                try
                                                 {
-                                                    string lastId = result.ToString();
-                                                    if (lastId.Length > 1)
+                                                    int nextNum = 1;
+                                                    using (var cmd3 = new SqlCommand("SELECT MAX(notificationId) FROM dbo.[Notification]", conn2, txn))
                                                     {
-                                                        string numericPart = lastId.Substring(1);
-                                                        if (int.TryParse(numericPart, out int lastNumber))
-                                                            nextNum = lastNumber + 1;
+                                                        object result = cmd3.ExecuteScalar();
+                                                        if (result != null && result != DBNull.Value)
+                                                        {
+                                                            string lastId = result.ToString();
+                                                            if (lastId.Length > 1)
+                                                            {
+                                                                string numericPart = lastId.Substring(1);
+                                                                if (int.TryParse(numericPart, out int lastNumber))
+                                                                    nextNum = lastNumber + 1;
+                                                            }
+                                                        }
                                                     }
+                                                    string nid = "N" + nextNum.ToString("D3");
+
+                                                    using (var cmd3 = new SqlCommand("INSERT INTO dbo.Notification(notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt) VALUES(@id,@to,@te,@tb,@me,@mb,0,@now)", conn2, txn))
+                                                    {
+                                                        cmd3.Parameters.AddWithValue("@id", nid);
+                                                        cmd3.Parameters.AddWithValue("@to", childUserId);
+                                                        cmd3.Parameters.AddWithValue("@te", "Parent account unlinked");
+                                                        cmd3.Parameters.AddWithValue("@tb", "Akaun ibu bapa dinyahpaut");
+                                                        cmd3.Parameters.AddWithValue("@me", "A parent has unlinked from your account. Your learning progress is not affected.");
+                                                        cmd3.Parameters.AddWithValue("@mb", "Seorang ibu bapa telah menyahpaut daripada akaun anda. Kemajuan pembelajaran anda tidak terjejas.");
+                                                        cmd3.Parameters.AddWithValue("@now", DateTime.Now);
+                                                        cmd3.ExecuteNonQuery();
+                                                    }
+                                                    txn.Commit();
+                                                }
+                                                catch
+                                                {
+                                                    txn.Rollback();
                                                 }
                                             }
-                                            string nid = "N" + nextNum.ToString("D3");
-
-                                            using (var cmd3 = new SqlCommand("INSERT INTO dbo.Notification(notificationId,toUserId,titleEN,titleBM,messageEN,messageBM,isRead,createdAt) VALUES(@id,@to,@te,@tb,@me,@mb,0,@now)", conn2, txn))
-                                            {
-                                                cmd3.Parameters.AddWithValue("@id", nid);
-                                                cmd3.Parameters.AddWithValue("@to", childUserId);
-                                                cmd3.Parameters.AddWithValue("@te", "Parent account unlinked");
-                                                cmd3.Parameters.AddWithValue("@tb", "Akaun ibu bapa dinyahpaut");
-                                                cmd3.Parameters.AddWithValue("@me", "A parent has unlinked from your account. Your learning progress is not affected.");
-                                                cmd3.Parameters.AddWithValue("@mb", "Seorang ibu bapa telah menyahpaut daripada akaun anda. Kemajuan pembelajaran anda tidak terjejas.");
-                                                cmd3.Parameters.AddWithValue("@now", DateTime.Now);
-                                                cmd3.ExecuteNonQuery();
-                                            }
-                                            txn.Commit();
-                                        }
-                                        catch
-                                        {
-                                            txn.Rollback();
                                         }
                                     }
                                 }
+                                catch { }
+
+                                ShowMessage(T("Child unlinked successfully.", "Anak berjaya dinyahpaut."), false);
+                            }
+                            else
+                            {
+                                ShowMessage(T("Unable to unlink. The link was not found.",
+                                              "Gagal nyahpaut. Pautan tidak ditemui."), true);
                             }
                         }
-                        catch { }
-
-                        ShowMessage(T("Child unlinked successfully.", "Anak berjaya dinyahpaut."), false);
-                    }
-                    else
-                    {
-                        ShowMessage(T("Unable to unlink. The link was not found.",
-                                      "Gagal nyahpaut. Pautan tidak ditemui."), true);
+                        catch
+                        {
+                            tran.Rollback();
+                            throw;
+                        }
                     }
                 }
             }
