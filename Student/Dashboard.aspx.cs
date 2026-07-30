@@ -12,14 +12,17 @@ namespace ScienceBuddy.Student
 {
     public partial class Dashboard : System.Web.UI.Page
     {
+        // Database connection string (from Web.config)
         private string ConnectionString = ConfigurationManager.ConnectionStrings["ScienceBuddy_DB"].ConnectionString;
 
-        // Language helper
+        // Stores current language (EN or BM) so the whole page can use it
         private string CurrentLanguage = "EN";
 
-        // Personality colour for ASPX hero styling
+        // This colour changes based on the student's personality type.
+        // It is used in the .aspx file for the hero section gradient background.
         public string PersonalityColour = "#2563EB";
 
+        // Bilingual helper: returns English text or BM text depending on CurrentLanguage
         protected string T(string en, string bm)
         {
             if (CurrentLanguage == "BM")
@@ -29,17 +32,21 @@ namespace ScienceBuddy.Student
             return en;
         }
 
+        // Runs every time the page loads
         protected void Page_Load(object sender, EventArgs e)
         {
+            // Security check: kick out if not logged in or not a student
             if (Session["userId"] == null || Session["role"] == null || Session["role"].ToString() != "Student")
             {
                 Response.Redirect("~/Login.aspx", false);
                 return;
             }
 
+            // Tell the master page to use sidebar layout (not top-nav)
             ScienceBuddy.SiteMaster master = (ScienceBuddy.SiteMaster)Master;
             master.LayoutMode = "Sidebar";
 
+            // Only load data on first visit (not on button clicks / postbacks)
             if (!IsPostBack)
             {
                 InitLanguage();
@@ -87,17 +94,19 @@ namespace ScienceBuddy.Student
             Session["preferredLanguage"] = "EN";
         }
 
-        // Load all dashboard data
+        // This is the main method that loads everything on the dashboard
         private void LoadDashboard(string userId)
         {
-            // All data fetched
+            // Open one database connection and reuse it for all queries (more efficient)
             using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 
+                // Get student data (name, XP, level, personality) in one query
                 DataRow studentData = GetStudentData(connection, userId);
                 if (studentData == null)
                 {
+                    // Student profile not found — show defaults and return
                     SetHero("Student", "Student", "Beginner", "Learner", null, null, null, "EN");
                     SetStats("Beginner", 0, 0, 0);
                     ShowContinueEmpty();
@@ -290,8 +299,8 @@ namespace ScienceBuddy.Student
         // Data retrieval helpers
 
 
-        // Returns a single row joining Student + Level + Personality + User.
-        // Uses Student.userId = @userId to ensure no cross-student access
+        // Gets all student info in ONE database query by joining Student + User + Level + Personality.
+        // Uses userId from session so a student can never see another student's data.
         private DataRow GetStudentData(SqlConnection connection, string userId)
         {
             const string sql = @"
@@ -711,11 +720,12 @@ namespace ScienceBuddy.Student
             pnlNotificationsEmpty.Visible = true;
         }
 
-        /// <summary>
-        /// Sets CSS order on each section Panel so the dashboard reflows
-        /// by personality priority without JavaScript or new DB tables.
-        /// Sections wrapper is a flex-column — CSS order property controls sequence.
-        /// </summary>
+        // PERSONALITY-BASED SECTION ORDERING
+        // Each personality type sees the dashboard sections in a different order.
+        // This works by setting CSS "order" on each section panel.
+        // The parent container (.st-dash-sections) uses display:flex + flex-direction:column,
+        // so the browser renders children in the order specified by the CSS order property.
+        // No JavaScript needed — the server decides the order before sending the page.
         private void ApplyPersonalityOrder(string personalityId)
         {
             // Default order values (1=top … 6=bottom)

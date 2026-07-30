@@ -146,16 +146,6 @@ namespace ScienceBuddy.Student
             {
                 connection.Open();
 
-                if (!TableExists(connection, "LiveConsultationSession"))
-                {
-                    pnlGrid.Visible = false;
-                    pnlEmpty.Visible = true;
-                    litUpcoming.Text = "0";
-                    litJoined.Text = "0";
-                    litCompleted.Text = "0";
-                    return;
-                }
-
                 string studentId = GetStudentId(connection);
 
                 // Build query
@@ -178,7 +168,7 @@ namespace ScienceBuddy.Student
                 }
 
                 sql += @"
-                    FROM    LiveConsultationSession s
+                    FROM LiveConsultationSession s
                     LEFT JOIN Teacher t ON t.teacherId = s.teacherId
                     LEFT JOIN Unit u ON u.unitId = s.unitId
                     LEFT JOIN Subtopic st ON st.subtopicId = s.subtopicId";
@@ -243,7 +233,7 @@ namespace ScienceBuddy.Student
                         // Determine status
                         string status;
                         string statusBadgeClass;
-                        if (startDT > now)
+                        if (startDT > now) //compare date
                         {
                             status = upcomingLabel;
                             statusBadgeClass = "st-livesessions-badge-upcoming";
@@ -261,8 +251,7 @@ namespace ScienceBuddy.Student
                             countCompleted++;
                         }
 
-                        bool hasJoined = row["hasJoinedId"] != DBNull.Value &&
-                                         !string.IsNullOrEmpty(row["hasJoinedId"].ToString());
+                        bool hasJoined = row["hasJoinedId"] != DBNull.Value && !string.IsNullOrEmpty(row["hasJoinedId"].ToString());
                         if (hasJoined)
                         {
                             countJoined++;
@@ -466,20 +455,24 @@ namespace ScienceBuddy.Student
             LoadSessions();
         }
 
-        // Repeater item command (Join Session)
+        // WHEN STUDENT CLICKS "JOIN" ON A LIVE SESSION CARD
+        // Flow: record participation → award XP → open the Jitsi video room
         protected void rptSessions_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
+            // Handle "Remind Me" button — registers student + sends email
             if (e.CommandName == "Reminder")
             {
                 HandleReminder(e.CommandArgument.ToString());
                 return;
             }
 
+            // Only process Join clicks from here onwards
             if (e.CommandName != "Join")
             {
                 return;
             }
 
+            // The session ID comes from the button that was clicked
             string sessionId = e.CommandArgument.ToString();
 
             using (SqlConnection connection = new SqlConnection(ConnectionString))
@@ -609,13 +602,16 @@ namespace ScienceBuddy.Student
                     }
                 }
 
-                // Build a unique, safe room name from the session ID
+                // JITSI ROOM SETUP
+                // Room name is "ScienceBuddy-LIVE001" — same name teacher uses, so both join the same room.
+                // These hidden fields are read by JavaScript on the page to launch the embedded Jitsi video call.
                 string roomName = "ScienceBuddy-" + sessionId;
 
                 hidRoomName.Value = roomName;
                 hidDisplayName.Value = HttpUtility.HtmlEncode(displayName);
                 litRoomTitle.Text = "Live Session";
 
+                // Hide the session list, show the video room panel
                 pnlGrid.Visible = false;
                 pnlJoinedRoom.Visible = true;
             }
@@ -630,7 +626,7 @@ namespace ScienceBuddy.Student
             LoadSessions();
         }
 
-        // â”€â”€ Handle Reminder (register + send email) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Handle Reminder (register + send email)
         private void HandleReminder(string sessionId)
         {
             InitLang();

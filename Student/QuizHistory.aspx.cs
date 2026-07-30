@@ -285,7 +285,7 @@ namespace ScienceBuddy.Student
                         ScoreDisplay = score + "/" + totalMarks,
                         ResultUrl = ResolveUrl("~/Student/QuizResult.aspx?resultId=" + HttpUtility.UrlEncode(resultId)),
                         ReviewUrl = ResolveUrl("~/Student/QuizResult.aspx?resultId=" + HttpUtility.UrlEncode(resultId)),
-                        RetryUrl = ResolveUrl("~/Student/Quiz.aspx?quizId=" + HttpUtility.UrlEncode(quizId)),
+                        RetryUrl = ResolveUrl("~/Student/Quiz.aspx?quizId=" + HttpUtility.UrlEncode(quizId)), //retry link
                         ViewLbl = viewLabel,
                         ReviewLbl = reviewLabel,
                         RetryLbl = retryLabel

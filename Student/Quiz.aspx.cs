@@ -219,7 +219,7 @@ namespace ScienceBuddy.Student
                 }
                 string levelId = S(qzRow, "levelId");
 
-                // Access check
+                // only show Level quizzes if student has reached that level
                 if (!string.IsNullOrEmpty(levelId) && !string.IsNullOrEmpty(currentLevelId))
                 {
                     int ql = ExtractNum(levelId);
@@ -231,7 +231,7 @@ namespace ScienceBuddy.Student
                     }
                 }
 
-                // Load questions â€” allow Approved or NULL status (admin-created)
+                // Load questions - allow Approved or NULL status (admin-created)
                 const string qSql = @"SELECT questionId,questionTextEN,questionTextBM,questionType,questionImageUrl,
                     optionA_EN,optionA_BM,optionB_EN,optionB_BM,optionC_EN,optionC_BM,optionD_EN,optionD_BM,
                     correctAnswer,difficulty FROM Question WHERE quizId=@qid AND (status='Approved' OR status IS NULL) ORDER BY questionId";
@@ -328,13 +328,13 @@ namespace ScienceBuddy.Student
             string qText;
             if (isBM)
             {
-                qText = S(row, "questionTextBM");
+                qText = S(row, "questionTextBM"); //if bm, save question in bm
             }
             else
             {
                 qText = S(row, "questionTextEN");
             }
-            if (string.IsNullOrWhiteSpace(qText))
+            if (string.IsNullOrWhiteSpace(qText)) //if question text in bm is empty -> eng
             {
                 qText = S(row, "questionTextEN");
             }
@@ -729,7 +729,7 @@ namespace ScienceBuddy.Student
                 return;
             }
 
-            // Validate all answered
+            // check if all answered
             for (int i = 0; i < dt.Rows.Count; i++)
             {
                 if (!answers.ContainsKey(i) || string.IsNullOrWhiteSpace(answers[i]))
@@ -769,6 +769,7 @@ namespace ScienceBuddy.Student
                     totalMarks += mark;
                     bool isCorrect = CheckAnswer(qType, selected, correct, row);
                     decimal awarded;
+
                     if (isCorrect)
                     {
                         awarded = mark;

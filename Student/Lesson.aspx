@@ -89,7 +89,7 @@
 
     <%-- Reading card --%>
     <div class="st-lesson-reading" id="lessonContent">
-        <asp:Literal ID="litContent" runat="server" />
+        <asp:Literal ID="litContent" runat="server" /> <%-- Placeholder for lesson content (html in db). browser interprets it --%>
     </div>
 
     <%-- Inline Attachment --%>

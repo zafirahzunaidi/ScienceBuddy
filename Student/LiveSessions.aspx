@@ -150,13 +150,17 @@
 </asp:Content>
 
 <asp:Content ID="LiveSessionsScripts" ContentPlaceHolderID="ScriptsContent" runat="server">
-    <script src="https://meet.jit.si/external_api.js"></script>
-    <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var container = document.getElementById('jitsi-container');
-        if (!container) return;
 
-        var roomName = document.getElementById('<%= hidRoomName.ClientID %>').value;
+    <%-- loads the Jitsi library from their server --%>
+    <script src="https://meet.jit.si/external_api.js"></script>
+
+    <%-- runs after the page loads and creates the video call --%>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var container = document.getElementById('jitsi-container');
+            if (!container) return;
+
+            var roomName = document.getElementById('<%= hidRoomName.ClientID %>').value;
         var displayName = document.getElementById('<%= hidDisplayName.ClientID %>').value;
 
         var api = new JitsiMeetExternalAPI("meet.jit.si", {
@@ -168,4 +172,5 @@
         });
     });
     </script>
+
 </asp:Content>

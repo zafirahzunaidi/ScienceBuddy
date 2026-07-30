@@ -239,7 +239,7 @@ namespace ScienceBuddy.Student
                 {
                     content = row["lessonContentEN"].ToString();
                 }
-                litContent.Text = content;
+                litContent.Text = content; //save content as html, asp.net send to browser. x encode
 
                 bool isDone = false;
                 if (TableExists("LessonProgress"))

@@ -105,15 +105,6 @@ namespace ScienceBuddy.Student
         protected global::System.Web.UI.WebControls.Literal litQuizSub;
 
         /// <summary>
-        /// litQuizBtn control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litQuizBtn;
-
-        /// <summary>
         /// lnkStartQuiz control.
         /// </summary>
         /// <remarks>
@@ -121,6 +112,15 @@ namespace ScienceBuddy.Student
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.HyperLink lnkStartQuiz;
+
+        /// <summary>
+        /// litQuizBtn control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litQuizBtn;
 
         /// <summary>
         /// pnlQuizEmpty control.

@@ -141,7 +141,9 @@ namespace ScienceBuddy.Student
                                     "Selesaikan lebih banyak kuiz untuk membuka analisis pembelajaran peribadi anda.");
         }
 
-        // Load page data
+
+        // The analysis was generated automatically when the student last completed a quiz (StudentLearningAnalysisService)
+        // so just read result from fb
         private void LoadPage()
         {
             using (SqlConnection connection = new SqlConnection(ConnectionString))
@@ -265,7 +267,8 @@ namespace ScienceBuddy.Student
                 litCurrentLevel.Text = HttpUtility.HtmlEncode(levelName);
                 litPersonality.Text = HttpUtility.HtmlEncode(personalityName);
 
-                // 5. Load AILearningAnalysis
+                // 5. Load the AI-generated learning analysis from db
+                // inside data: strong topics, weak topics, recommendations, personality insight, etc.
                 decimal avgScore = 0;
                 int totalAttempts = 0;
                 string strongTopics = "";
@@ -295,7 +298,9 @@ namespace ScienceBuddy.Student
                                 weakTopics = reader["weakTopics"] != DBNull.Value ? reader["weakTopics"].ToString() : "";
 
                                 if (reader["analysisJson"] != null && reader["analysisJson"] != DBNull.Value)
+                                {
                                     generatedAnalysis = ParseLearningAnalysisJson(reader["analysisJson"].ToString());
+                                }
                             }
                         }
                     }
@@ -391,7 +396,7 @@ namespace ScienceBuddy.Student
 
                 pnlEmpty.Visible = false;
 
-                // SECTION 1: HERO - Progress scores
+                // SECTION 1: HERO
                 if (generatedAnalysis != null)
                 {
                     // Hero headline and celebration
@@ -488,9 +493,7 @@ namespace ScienceBuddy.Student
                 }
 
                 // SECTION 3: YOUR PLAN FOR TODAY
-                List<object> recommendations = BuildRecommendations(
-                    generatedAnalysis, personalityId, weakTopics,
-                    avgScore, lessonsDone, quizAttempts);
+                List<object> recommendations = BuildRecommendations(generatedAnalysis, personalityId, weakTopics, avgScore, lessonsDone, quizAttempts);
 
                 if (recommendations.Count > 0)
                 {
@@ -853,7 +856,7 @@ namespace ScienceBuddy.Student
             try
             {
                 JavaScriptSerializer serializer = new JavaScriptSerializer();
-                return serializer.Deserialize<LearningAnalysisData>(analysisJson);
+                return serializer.Deserialize<LearningAnalysisData>(analysisJson); //read json, turn -> LearningAnalysisData object. so can use .StrongTopics, .ProgressHeadline
             }
             catch (Exception ex)
             {
@@ -895,25 +898,35 @@ namespace ScienceBuddy.Student
             }
         }
 
+        // CHATBOT — when student clicks Send
+        // 1. Takes the student's message from the text box
+        // 2. Adds it to the chat history (stored in Session)
+        // 3. Sends the full conversation + student's analysis to NVIDIA API
+        // 4. Gets the AI reply and adds it to the chat history
+        // 5. The page then re-renders to show the new messages
         protected void btnAISend_Click(object sender, EventArgs e)
         {
             string userMessage = (txtAIMessage.Text ?? "").Trim();
             if (string.IsNullOrEmpty(userMessage)) return;
 
+            // Add student's message to chat history
             AppendAIMessage("user", userMessage);
             txtAIMessage.Text = "";
 
             try
             {
+                // Call NVIDIA API and get the AI's reply
                 string reply = GetNvidiaAIReply();
                 AppendAIMessage("assistant", reply);
             }
             catch (Exception ex)
             {
+                // If API fails, show a friendly error message in the chat
                 AppendAIMessage("assistant", "Sorry, I could not contact the AI service. " + ex.Message);
             }
         }
 
+        // Adds a message (either "user" or "assistant") to the chat history in Session
         private void AppendAIMessage(string role, string text)
         {
             var history = Session["AIChatHistory"] as List<Dictionary<string, string>>;

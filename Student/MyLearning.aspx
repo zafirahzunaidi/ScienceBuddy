@@ -94,8 +94,9 @@
     <div class="st-mylearning-levels">
         <asp:Repeater ID="rptLevels" runat="server" OnItemCommand="rptLevels_ItemCommand">
             <ItemTemplate>
+                <%-- loadlevel in .aspx.cs --%>
                 <asp:LinkButton runat="server" CommandName="SelectLevel" CommandArgument='<%# Eval("LevelId") %>'
-                    CssClass='<%# "st-mylearning-level-card " + Eval("CssClass") %>'
+                    CssClass='<%# "st-mylearning-level-card " + Eval("CssClass") %>' 
                     Enabled='<%# !(bool)Eval("IsLocked") %>'>
                     <div class="st-mylearning-level-icon" style="background:<%# Eval("IconBg") %>;color:<%# Eval("IconColor") %>;">
                         <%# Eval("Icon") %>
@@ -120,7 +121,7 @@
             </div>
         </div>
         <div class="st-mylearning-units">
-            <asp:Repeater ID="rptUnits" runat="server">
+            <asp:Repeater ID="rptUnits" runat="server"> <%-- show unit based on clicked lec --%>
                 <ItemTemplate>
                     <div class="st-mylearning-unit-card">
                         <div class="st-mylearning-unit-name"><%# Eval("Name") %></div>

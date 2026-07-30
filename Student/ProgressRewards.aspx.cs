@@ -623,61 +623,69 @@ namespace ScienceBuddy.Student
 
         private void BuildAIHint(SqlConnection conn, string studentId)
         {
-            string col;
-            if (CurrentLanguage == "BM")
-            {
-                col = "u.unitNameBM";
-            }
-            else
-            {
-                col = "u.unitNameEN";
-            }
-            string sql = string.Format(@"SELECT {0} AS unitName, AVG(qr.percentage) AS avgPct FROM QuizResult qr
-                INNER JOIN Quiz q ON q.quizId=qr.quizId INNER JOIN Unit u ON u.unitId=q.unitId
-                WHERE qr.studentId=@s GROUP BY {0} ORDER BY avgPct", col);
-            DataTable dataTable = new DataTable();
-            using (SqlCommand command = new SqlCommand(sql, conn))
-            {
-                command.Parameters.AddWithValue("@s", studentId);
-                new SqlDataAdapter(command).Fill(dataTable);
-            }
-
-            if (dataTable.Rows.Count < 1)
+            // Read strong and weak topics from the stored AI analysis (already generated after each quiz)
+            if (!TableExists(conn, "AILearningAnalysis"))
             {
                 pnlAIHint.Visible = false;
                 return;
             }
 
-            string weakest;
-            if (dataTable.Rows[0]["unitName"] != null)
+            string strongTopics = "";
+            string weakTopics = "";
+
+            using (SqlCommand command = new SqlCommand(
+                "SELECT strongTopics, weakTopics FROM AILearningAnalysis WHERE studentId=@s AND isLatest=1", conn))
             {
-                weakest = dataTable.Rows[0]["unitName"].ToString();
-            }
-            else
-            {
-                weakest = "\u2014";
+                command.Parameters.AddWithValue("@s", studentId);
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        if (reader["strongTopics"] != DBNull.Value)
+                            strongTopics = reader["strongTopics"].ToString();
+                        if (reader["weakTopics"] != DBNull.Value)
+                            weakTopics = reader["weakTopics"].ToString();
+                    }
+                }
             }
 
-            string strongest;
-            if (dataTable.Rows[dataTable.Rows.Count - 1]["unitName"] != null)
+            // If no analysis exists yet, hide the hint
+            if (string.IsNullOrWhiteSpace(strongTopics) && string.IsNullOrWhiteSpace(weakTopics))
             {
-                strongest = dataTable.Rows[dataTable.Rows.Count - 1]["unitName"].ToString();
-            }
-            else
-            {
-                strongest = "\u2014";
+                pnlAIHint.Visible = false;
+                return;
             }
 
-            if (dataTable.Rows.Count == 1)
+            // Get just the first topic from each (they are comma-separated lists)
+            string strongest = "";
+            if (!string.IsNullOrWhiteSpace(strongTopics))
+                strongest = strongTopics.Split(',')[0].Trim();
+
+            string weakest = "";
+            if (!string.IsNullOrWhiteSpace(weakTopics))
+                weakest = weakTopics.Split(',')[0].Trim();
+
+            // Build the hint message
+            if (!string.IsNullOrWhiteSpace(strongest) && !string.IsNullOrWhiteSpace(weakest))
             {
-                litAIHintText.Text = T("Keep practising <strong>" + HttpUtility.HtmlEncode(weakest) + "</strong> to improve your score!",
+                litAIHintText.Text = T(
+                    "You're doing great in <strong>" + HttpUtility.HtmlEncode(strongest) + "</strong>! Buddy suggests revising <strong>" + HttpUtility.HtmlEncode(weakest) + "</strong> before your next quiz.",
+                    "Anda cemerlang dalam <strong>" + HttpUtility.HtmlEncode(strongest) + "</strong>! Buddy cadangkan ulangkaji <strong>" + HttpUtility.HtmlEncode(weakest) + "</strong> sebelum kuiz seterusnya.");
+            }
+            else if (!string.IsNullOrWhiteSpace(weakest))
+            {
+                litAIHintText.Text = T(
+                    "Keep practising <strong>" + HttpUtility.HtmlEncode(weakest) + "</strong> to improve your score!",
                     "Teruskan berlatih <strong>" + HttpUtility.HtmlEncode(weakest) + "</strong> untuk meningkatkan markah!");
             }
             else
             {
-                litAIHintText.Text = T("You're doing great in <strong>" + HttpUtility.HtmlEncode(strongest) + "</strong>! Buddy suggests revising <strong>" + HttpUtility.HtmlEncode(weakest) + "</strong> before your next quiz.",
-                    "Anda cemerlang dalam <strong>" + HttpUtility.HtmlEncode(strongest) + "</strong>! Buddy cadangkan ulangkaji <strong>" + HttpUtility.HtmlEncode(weakest) + "</strong> sebelum kuiz seterusnya.");
+                litAIHintText.Text = T(
+                    "You're doing great in <strong>" + HttpUtility.HtmlEncode(strongest) + "</strong>! Keep it up!",
+                    "Anda cemerlang dalam <strong>" + HttpUtility.HtmlEncode(strongest) + "</strong>! Teruskan!");
             }
+
+            pnlAIHint.Visible = true;
         }
 
         private string GetStudentId(SqlConnection conn)

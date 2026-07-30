@@ -109,12 +109,14 @@ namespace ScienceBuddy.Student
             }
         }
 
+        //load unit based on level user selected
+        //User select level. ASP.NET see OnItemCommand="rptLevels_ItemCommand" in .aspx
         protected void rptLevels_ItemCommand(object source, System.Web.UI.WebControls.RepeaterCommandEventArgs e)
         {
-            if (e.CommandName == "SelectLevel")
+            if (e.CommandName == "SelectLevel") //check level clicked
             {
-                SelectedLevelId = e.CommandArgument.ToString();
-                LoadPage();
+                SelectedLevelId = e.CommandArgument.ToString(); //save level clicked "LV001"
+                LoadPage(); //reload page- show unit based on level clicked
             }
         }
 
@@ -153,7 +155,7 @@ namespace ScienceBuddy.Student
                     currentLevelId = "LV001";
                 }
 
-                // Auto-fix: if student passed a Level quiz but currentLevelId wasn't updated, promote now
+                // if student passed a Level quiz but currentLevelId x updated, promote now
                 using (SqlCommand fixCmd = new SqlCommand(@"
                     SELECT q.levelId FROM QuizResult qr 
                     JOIN Quiz q ON q.quizId = qr.quizId 
@@ -170,8 +172,12 @@ namespace ScienceBuddy.Student
                             string nextLevel = null;
                             switch (passedLevel)
                             {
-                                case "LV001": nextLevel = "LV002"; break;
-                                case "LV002": nextLevel = "LV003"; break;
+                                case "LV001": 
+                                    nextLevel = "LV002"; 
+                                    break;
+                                case "LV002": 
+                                    nextLevel = "LV003"; 
+                                    break;
                             }
                             if (!string.IsNullOrEmpty(nextLevel) && GetLevelOrder(nextLevel) > GetLevelOrder(currentLevelId))
                             {
@@ -190,8 +196,8 @@ namespace ScienceBuddy.Student
                 }
 
                 // Use selected level if set, otherwise default to current level
-                string displayLevelId = SelectedLevelId;
-                if (string.IsNullOrEmpty(displayLevelId))
+                string displayLevelId = SelectedLevelId; //selected level from prev clicked
+                if (string.IsNullOrEmpty(displayLevelId)) //if not click, current level
                 {
                     displayLevelId = currentLevelId;
                     SelectedLevelId = currentLevelId;
@@ -242,7 +248,7 @@ namespace ScienceBuddy.Student
                 bool isLocked = order > currentOrder;
 
                 string name;
-                if (isBM)
+                if (isBM) //level name
                 {
                     name = row["levelNameBM"].ToString();
                 }
@@ -256,7 +262,7 @@ namespace ScienceBuddy.Student
                 }
 
                 string desc;
-                if (isBM)
+                if (isBM) //level description
                 {
                     desc = row["levelDescriptionBM"].ToString();
                 }
@@ -270,7 +276,7 @@ namespace ScienceBuddy.Student
                 }
 
                 string cssClass;
-                if (lid == selectedLevelId)
+                if (lid == selectedLevelId) //send to .aspx to send to student.css to style the box
                 {
                     cssClass = "current";
                 }
@@ -372,6 +378,7 @@ namespace ScienceBuddy.Student
             bool isBM = CurrentLanguage == "BM";
             litUnitsTitle.Text = T("Units", "Unit");
 
+            //retrieve units for selected level
             const string sql = @"SELECT u.unitId, u.unitNameEN, u.unitNameBM,u.unitDescriptionEN, u.unitDescriptionBM, u.orderNo,
                        (SELECT COUNT(*) FROM Subtopic WHERE unitId = u.unitId) AS subtopicCount,
                        (SELECT COUNT(*) FROM Lesson ls JOIN Subtopic st ON st.subtopicId = ls.subtopicId WHERE st.unitId = u.unitId) AS lessonCount
@@ -416,7 +423,7 @@ namespace ScienceBuddy.Student
                 }
             }
 
-            List<object> list = new List<object>();
+            List<object> list = new List<object>(); //list of unit cards to be displayed
             foreach (DataRow row in dataTable.Rows)
             {
                 string unitId = row["unitId"].ToString();
@@ -486,9 +493,9 @@ namespace ScienceBuddy.Student
                 });
             }
 
-            pnlUnits.Visible = true;
-            rptUnits.DataSource = list;
-            rptUnits.DataBind();
+            pnlUnits.Visible = true; 
+            rptUnits.DataSource = list; //send list to the repeater on the page
+            rptUnits.DataBind(); //replace whatever was showing before
         }
 
         private void LoadLevelQuiz(SqlConnection connection, string levelId, string studentId)
@@ -557,7 +564,7 @@ namespace ScienceBuddy.Student
                             completedLessons = Convert.ToInt32(doneCmd.ExecuteScalar());
                         }
 
-                        bool unlocked = (totalLessons > 0 && completedLessons >= totalLessons);
+                        bool unlocked = (totalLessons > 0 && completedLessons >= totalLessons); //compare count lesson (all) with lessonprogress (done)
 
                         if (unlocked)
                         {

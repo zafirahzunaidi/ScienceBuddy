@@ -41,9 +41,9 @@ namespace ScienceBuddy.Student
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["userId"] == null || Session["role"] == null || Session["role"].ToString() != "Student")
+            if (Session["userId"] == null || Session["role"] == null || Session["role"].ToString() != "Student") //check student
             {
-                Response.Redirect("~/Login.aspx", false);
+                Response.Redirect("~/Login.aspx", false); //if fail, login
                 return;
             }
 
@@ -51,9 +51,9 @@ namespace ScienceBuddy.Student
 
             InitLang();
 
-            if (!IsPostBack)
+            if (!IsPostBack) 
             {
-                LoadPage();
+                LoadUnitContent();
             }
         }
 
@@ -96,8 +96,10 @@ namespace ScienceBuddy.Student
             Session["preferredLanguage"] = "EN";
         }
 
-        private void LoadPage()
+        // Loads all unit data: hero, subtopics, lessons, materials, quiz, progress
+        private void LoadUnitContent()
         {
+            // Validation: unitId must exist in URL
             string unitId = Request.QueryString["unitId"];
             string userId = Session["userId"].ToString();
             if (string.IsNullOrEmpty(unitId) || !TableExists("Unit") || !TableExists("Student"))
@@ -152,6 +154,7 @@ namespace ScienceBuddy.Student
                     return;
                 }
 
+                // Level lock: if this unit's level > student's current level, block access
                 if (Ord(unitLevel) > Ord(curLevel))
                 {
                     ShowLocked(T("Unit Locked", "Unit Dikunci"), T("Complete your current level to access this unit.", "Selesaikan tahap semasa untuk akses unit ini."));
@@ -166,6 +169,7 @@ namespace ScienceBuddy.Student
             }
         }
 
+        // Shows locked panel when student cannot access this unit
         private void ShowLocked(string t, string d)
         {
             pnlLocked.Visible = true;
@@ -175,6 +179,7 @@ namespace ScienceBuddy.Student
             litLockedBtn.Text = T("Back", "Kembali");
         }
 
+        // Displays unit title, description, level name at top of page
         private void BuildHero(SqlConnection connection, string unitId, string unitLevel)
         {
             bool bm = CurrentLanguage == "BM";
@@ -249,6 +254,7 @@ namespace ScienceBuddy.Student
             litFlashcardError.Text = T("Flashcards could not be created. Please try again.", "Kad imbas tidak dapat dicipta. Sila cuba lagi.");
         }
 
+        // Counts lessons, materials, quizzes in this unit for the progress path
         private void BuildPath(SqlConnection connection, string unitId)
         {
 
@@ -560,6 +566,7 @@ namespace ScienceBuddy.Student
             }
         }
 
+        // AI FLASHCARD: gets lesson content for this unit → sends to NVIDIA → displays 6 cards (FLASHCARD BUTTON)
         protected void btnGenerateFlashcards_Click(object sender, EventArgs e)
         {
             pnlAIFlashcards.Visible = true;
@@ -580,7 +587,7 @@ namespace ScienceBuddy.Student
 
             try
             {
-                string lessonContent = GetLessonContentForFlashcards(unitId);
+                string lessonContent = GetLessonContentForFlashcards(unitId); //load content from db
 
                 if (string.IsNullOrWhiteSpace(lessonContent))
                 {
@@ -594,7 +601,7 @@ namespace ScienceBuddy.Student
                     return;
                 }
 
-                List<AIFlashcard> flashcards = GenerateAIFlashcards(lessonContent);
+                List<AIFlashcard> flashcards = GenerateAIFlashcards(lessonContent); //generate flashcard
 
                 rptAIFlashcards.DataSource =flashcards;
 
@@ -680,7 +687,7 @@ namespace ScienceBuddy.Student
         //-AI Flashcard-
 
         //Lesson-content method
-        private string GetLessonContentForFlashcards(string unitId)
+        private string GetLessonContentForFlashcards(string unitId) //get lesson from db
         {
             StringBuilder lessonText =
                 new StringBuilder();
@@ -770,7 +777,7 @@ namespace ScienceBuddy.Student
         }
 
         //Generate AI Flashcards
-        private List<AIFlashcard> GenerateAIFlashcards(string lessonContent)
+        private List<AIFlashcard> GenerateAIFlashcards(string lessonContent) //generate flashcard
         {
             string apiKey = ConfigurationManager.AppSettings["NvidiaApiKey"];
 
@@ -852,11 +859,9 @@ namespace ScienceBuddy.Student
                     }
                 ]";
 
-            string userPrompt = "OUTPUT LANGUAGE: " + outputLanguage +
-                "\n\nLESSON CONTENT:\n" + lessonContent;
+            string userPrompt = "OUTPUT LANGUAGE: " + outputLanguage + "\n\nLESSON CONTENT:\n" + lessonContent;
 
-            List<Dictionary<string, string>> messages =
-                new List<Dictionary<string, string>>();
+            List<Dictionary<string, string>> messages = new List<Dictionary<string, string>>();
 
             messages.Add(
                 new Dictionary<string, string>
@@ -958,20 +963,15 @@ namespace ScienceBuddy.Student
                     "The AI service could not create flashcards.");
             }
 
-            Dictionary<string, object> responseData =
-                serializer.DeserializeObject(
-                    responseBody)
-                as Dictionary<string, object>;
+            Dictionary<string, object> responseData = serializer.DeserializeObject(responseBody) as Dictionary<string, object>;
 
-            if (responseData == null ||
-                !responseData.ContainsKey("choices"))
+            if (responseData == null || !responseData.ContainsKey("choices"))
             {
                 throw new Exception(
                     "The AI response did not contain choices.");
             }
 
-            object[] choices =
-                responseData["choices"] as object[];
+            object[] choices = responseData["choices"] as object[];
 
             if (choices == null ||
                 choices.Length == 0)
@@ -1025,8 +1025,7 @@ namespace ScienceBuddy.Student
                     "The flashcard JSON could not be read.");
             }
 
-            List<AIFlashcard> validCards =
-                new List<AIFlashcard>();
+            List<AIFlashcard> validCards = new List<AIFlashcard>();
 
             foreach (AIFlashcard card in generatedCards)
             {
