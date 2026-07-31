@@ -140,9 +140,8 @@ document.addEventListener('click',function(e){var pop=document.getElementById('d
         <asp:HiddenField ID="hidRewardClick" runat="server" />
         <asp:Button ID="btnRewardClick" runat="server" CssClass="d-none" OnClick="BtnRewardClick_Click" CausesValidation="false" />
 
-        <%-- ══ DANGER ZONE ══ --%>
+        <%-- ══ RESET ══ --%>
         <div class="pt-sp-danger-zone">
-            <span class="pt-sp-danger-label"><%: T("Danger Zone","Zon Bahaya") %></span>
             <button type="button" class="pt-sp-danger-btn" onclick="document.getElementById('resetModal').style.display='flex'; return false;">
                 <i class="bi bi-arrow-counterclockwise"></i> <%: T("Reset Study Plan","Tetapkan Semula Pelan Belajar") %>
             </button>
