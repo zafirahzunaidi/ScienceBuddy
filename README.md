@@ -201,7 +201,7 @@ F5
 
 # 📝 Notes
 
-> 🔐 `AppSettingsSecrets.config` is excluded via `.gitignore`.
+> 🔐 `AppSettingsSecrets.config` & `connectionStrings.config` is excluded via `.gitignore`.
 
 > 🔒 TLS 1.2 is enforced for all external API communication.
 
