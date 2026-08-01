@@ -1,121 +1,246 @@
-# ScienceBuddy
+# 🧪 ScienceBuddy
 
-A fun and personalised science learning platform for Malaysian primary school students aged 7 to 12. Built with ASP.NET Web Forms (.NET Framework 4.8.1) and SQL Server.
+> 🎓 A fun and personalised science learning platform for Malaysian primary school students (7–12 years old), built using **ASP.NET Web Forms (.NET Framework 4.8.1)** and **SQL Server**.
 
-## About
+---
 
-ScienceBuddy helps young learners explore Science through interactive lessons, quizzes, virtual labs, and AI-powered study tools. The platform supports four user roles: Student, Parent, Teacher, and Administrator. Each role has its own set of features and a personalised interface.
+## ✨ Features
 
-Key features include:
-- Personality-based dashboard personalisation
-- Level-gated learning progression with XP and badges
-- Four quiz types (MCQ, True/False, Multi-Select, Drag and Drop)
-- AI-powered learning analysis, chatbot, and flashcard generator
-- Live video sessions via embedded Jitsi Meet
-- Bilingual support (English and Bahasa Melayu)
-- Parent-child account linking with study plans
+🎯 **Personalised Learning**
+- Personality-based dashboard
+- Level-gated learning progression
+- XP, badges and certificates
 
-## Getting Started
+📚 **Interactive Learning**
+- Science lessons
+- Virtual laboratories
+- Practice quizzes
+- Unit quizzes
 
-### Prerequisites
+🤖 **AI Learning Support**
+- AI Study Companion chatbot
+- Learning analysis
+- AI flashcard generator
 
-- Visual Studio 2022 (or later) with ASP.NET and web development workload
-- SQL Server 2019 (or later) or SQL Server Express
-- SQL Server Management Studio (SSMS)
-- .NET Framework 4.8.1
+👨‍👩‍👧 **Communication**
+- Student-parent account linking
+- Discussion forum
+- Private messaging
+- Live learning sessions (Jitsi Meet)
 
-### Step 1: Set Up the Database
+🌏 **Accessibility**
+- English & Bahasa Melayu
+- Responsive interface
+- Four user roles
 
-1. Open SQL Server Management Studio (SSMS)
-2. Connect to your local SQL Server instance
-3. Open the file `Database/CreateTables.sql`
-4. Execute the script. This will create the `ScienceBuddy_DB` database and all required tables
-5. Next, open and execute `Database/SeedData.sql` to populate the tables with initial data (levels, personalities, badges, sample users, etc.)
-6. If needed, also run `Database/AddPasswordResetToken.sql` for the password reset feature
+---
 
-### Step 2: Configure the Connection String
+# 🖥️ Technology Stack
 
-1. Open the file `connectionStrings.config` in the project root
-2. Update the connection string to match your SQL Server instance:
+| Component | Technology |
+|-----------|------------|
+| 💻 Framework | ASP.NET Web Forms (.NET Framework 4.8.1) |
+| ⚙️ Language | C# |
+| 🗄️ Database | SQL Server |
+| 🎨 Styling | Bootstrap 5.2.3 + Custom CSS |
+| 🧩 JavaScript | jQuery 3.7 + Vanilla JS |
+| 🤖 AI | NVIDIA Llama 3.1 8B |
+| 📹 Video | Jitsi Meet |
+| 🔐 Security | BCrypt.Net |
+| 📄 PDF | iTextSharp |
+
+---
+
+# 👥 User Roles
+
+| Role | Description |
+|------|-------------|
+| 👦 Student | Learn through lessons, quizzes, labs and AI |
+| 👨‍👩‍👧 Parent | Monitor child progress |
+| 👩‍🏫 Teacher | Manage learning content |
+| 🛡️ Administrator | Manage the whole system |
+
+---
+
+# 📂 Project Structure
+
+```text
+ScienceBuddy/
+│
+├── 👑 Admin/
+├── 🎓 Student/
+│   └── 🧪 Labs/
+├── 👩‍🏫 Teacher/
+├── 👨‍👩‍👧 Parent/
+├── 🌐 Guest/
+│
+├── 🎨 Content/
+├── ⚡ Scripts/
+├── 🖼️ Images/
+├── 🤖 Services/
+├── 📦 App_Code/
+├── 🚀 App_Start/
+├── 🗄️ Database/
+│
+├── 📄 Site.Master
+├── 🌍 Global.asax
+└── ⚙️ Web.config
+```
+
+---
+
+# 🚀 Getting Started
+
+## 1️⃣ Clone the Repository
+
+```bash
+git clone https://github.com/your-repository.git
+```
+
+---
+
+## 2️⃣ Set Up the Database
+
+1. Open **SQL Server Management Studio**
+2. Execute:
+
+```
+Database/CreateTables.sql
+```
+
+3. Then execute
+
+```
+Database/SeedData.sql
+```
+
+4. (Optional)
+
+```
+Database/AddPasswordResetToken.sql
+```
+
+---
+
+## 3️⃣ Configure the Connection String
+
+Edit
+
+```
+connectionStrings.config
+```
 
 ```xml
 <connectionStrings>
-    <add name="ScienceBuddy_DB"
-         connectionString="Data Source=YOUR_SERVER_NAME;Initial Catalog=ScienceBuddy_DB;Integrated Security=True"
-         providerName="System.Data.SqlClient" />
+    <add
+        name="ScienceBuddy_DB"
+        connectionString="..."
+        providerName="System.Data.SqlClient"/>
 </connectionStrings>
 ```
 
-Replace `YOUR_SERVER_NAME` with your actual server (e.g. `localhost\SQLEXPRESS` or `.`).
+---
 
-### Step 3: Configure the AI API Key (Optional)
+## 4️⃣ Configure AI (Optional)
 
-The AI features require an NVIDIA API key. If you want to test AI features:
+Create
 
-1. Open or create `AppSettingsSecrets.config` in the project root
-2. Add your NVIDIA API key:
+```
+AppSettingsSecrets.config
+```
 
 ```xml
 <appSettings>
-    <add key="NvidiaApiKey" value="YOUR_NVIDIA_API_KEY_HERE" />
+    <add key="NvidiaApiKey"
+         value="YOUR_API_KEY"/>
 </appSettings>
 ```
 
-If you do not have an API key, the system will still work. AI features will show fallback content instead of generated responses.
+> 💡 Without an API key, the website still works. AI features simply display fallback content.
 
-### Step 4: Run the Project
+---
 
-1. Open `ScienceBuddy.slnx` in Visual Studio
-2. Restore NuGet packages (right-click solution > Restore NuGet Packages)
-3. Press F5 or click the green Start button
-4. The application will launch in your browser at `https://localhost:44374`
+## 5️⃣ Run the Project
 
-### Step 5: Log In
+Open
 
-Use any of the seeded accounts to test. Default test accounts (if seed data was loaded):
+```
+ScienceBuddy.slnx
+```
+
+Restore NuGet packages.
+
+Press
+
+```
+F5
+```
+
+---
+
+# 🔑 Sample Accounts
 
 | Role | Username | Password |
 |------|----------|----------|
-| Admin | admin | (check seed data) |
-| Student | (check seed data) | (check seed data) |
-| Teacher | (check seed data) | (check seed data) |
-| Parent | (check seed data) | (check seed data) |
+| 👑 Admin | admin | See seed data |
+| 👦 Student | See seed data | See seed data |
+| 👩‍🏫 Teacher | See seed data | See seed data |
+| 👨‍👩‍👧 Parent | See seed data | See seed data |
 
-## Project Structure
+---
 
-```
-ScienceBuddy/
-├── Admin/          → Administrator pages
-├── Student/        → Student pages
-├── Teacher/        → Teacher pages
-├── Parent/         → Parent pages
-├── Content/        → CSS stylesheets
-├── Scripts/        → JavaScript files
-├── Images/         → Static media assets
-├── Services/       → AI service classes
-├── App_Code/       → Shared utility classes
-├── Database/       → SQL scripts for setup
-├── Site.Master     → Shared master page
-└── Web.config      → Application configuration
-```
+# 📸 Screenshots
 
-## Technology Stack
+| Login | Student Dashboard |
+|--------|-------------------|
+| *(insert image)* | *(insert image)* |
 
-| Component | Technology |
-|-----------|-----------|
-| Framework | ASP.NET Web Forms (.NET 4.8.1) |
-| Language | C# |
-| Database | SQL Server |
-| CSS | Bootstrap 5.2.3 + custom design system |
-| JavaScript | jQuery 3.7.0 + vanilla JS |
-| AI Model | NVIDIA meta/llama-3.1-8b-instruct |
-| Video Calls | Jitsi Meet External API |
-| Password Security | BCrypt.Net-Next |
-| PDF Generation | iTextSharp |
+| AI Study Companion | Quiz |
+|--------------------|------|
+| *(insert image)* | *(insert image)* |
 
-## Notes
+---
 
-- The `AppSettingsSecrets.config` file is excluded from Git via `.gitignore` to protect the API key
-- Session timeout is the ASP.NET default of 20 minutes
-- File uploads are stored in `Images/` subfolders (Lesson, Material, PrivateMessage, Certificate)
-- The system uses TLS 1.2 for all external API calls
+## ✅ Implemented Features
+
+- ✅ Multi-role authentication
+- ✅ Student learning dashboard
+- ✅ Personality-based interface
+- ✅ Learning content management
+- ✅ Virtual laboratories
+- ✅ Practice and unit quizzes
+- ✅ XP and badge system
+- ✅ Certificate generation workflow
+- ✅ Discussion forum
+- ✅ Private messaging
+- ✅ Parent monitoring
+- ✅ Teacher management
+- ✅ Administrator management
+- ✅ AI Study Companion
+- ✅ AI Flashcards
+- ✅ AI Learning Analysis
+- ✅ Live learning sessions
+- 
+---
+
+# 📝 Notes
+
+> 🔐 `AppSettingsSecrets.config` is excluded via `.gitignore`.
+
+> 🔒 TLS 1.2 is enforced for all external API communication.
+
+> ⏰ Session timeout uses the ASP.NET default of **20 minutes**.
+
+> 📁 Uploaded files are stored inside the `Images/` folder.
+
+---
+
+# ❤️ Developed For
+
+**ScienceBuddy**
+\
+Web Application Development Project
+\
+Faculty of Computing
+\
+ASP.NET Web Forms (.NET Framework 4.8.1)
