@@ -547,10 +547,6 @@ namespace ScienceBuddy.Student
             return dt.ToString("d MMM yyyy");
         }
 
-        /// <summary>
-        /// Returns true if the given table exists in the current database.
-        /// Uses INFORMATION_SCHEMA so it never throws on a missing table.
-        /// </summary>
         private static bool TableExists(SqlConnection connection, string tableName)
         {
             const string sql = @"

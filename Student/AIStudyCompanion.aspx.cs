@@ -645,19 +645,26 @@ namespace ScienceBuddy.Student
         {
             switch (personalityId)
             {
-                case "P001": return T("I can help you earn your next badge faster.",
+                case "P001": 
+                    return T("I can help you earn your next badge faster.",
                              "Saya boleh membantu anda memperoleh lencana seterusnya dengan lebih cepat.");
-                case "P002": return T("Let's explore Science in a fun and visual way.",
+                case "P002": 
+                    return T("Let's explore Science in a fun and visual way.",
                              "Jom terokai Sains dengan cara yang menyeronokkan dan visual.");
-                case "P003": return T("Let's understand your mistakes and improve step by step.",
+                case "P003": 
+                    return T("Let's understand your mistakes and improve step by step.",
                              "Jom fahami kesilapan anda dan tambah baik langkah demi langkah.");
-                case "P004": return T("Ready for your next challenge?",
+                case "P004": 
+                    return T("Ready for your next challenge?",
                              "Bersedia untuk cabaran seterusnya?");
-                case "P005": return T("No rush. Let's learn calmly together.",
+                case "P005": 
+                    return T("No rush. Let's learn calmly together.",
                              "Tidak perlu tergesa-gesa. Jom belajar dengan tenang bersama.");
-                case "P006": return T("Let's learn together with your friends and teachers.",
+                case "P006": 
+                    return T("Let's learn together with your friends and teachers.",
                              "Jom belajar bersama rakan dan guru anda.");
-                default: return T("I'm here to help you learn better!",
+                default: 
+                    return T("I'm here to help you learn better!",
                              "Saya di sini untuk membantu anda belajar dengan lebih baik!");
             }
         }

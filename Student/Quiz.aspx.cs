@@ -31,7 +31,6 @@ namespace ScienceBuddy.Student
 
         // Pass threshold is now loaded dynamically from ConfigurationSetting
         // private const decimal PASS_THRESHOLD = 70m;
-
         private DataTable Questions
         {
             get { return ViewState["Qs"] as DataTable; }
