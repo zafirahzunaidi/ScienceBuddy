@@ -340,7 +340,7 @@
         dz.classList.remove('invalid');
         if (!inp.files || !inp.files[0]) return;
         var f = inp.files[0], ext = f.name.split('.').pop().toLowerCase();
-        if (ALLOWED.indexOf(ext) === -1) { show('vFile'); dz.classList.add('invalid'); inp.value = ''; return; }
+        if (ALLOWED.indexOf(ext) === -1) { document.getElementById('vFile').textContent = 'Unsupported file type. Accepted: PDF, DOC, DOCX, PPT, PPTX, JPG, PNG, MP4.'; show('vFile'); dz.classList.add('invalid'); inp.value = ''; fileOk = false; return; }
         if (f.size > 100 * 1024 * 1024) { document.getElementById('vFile').textContent = 'The selected file exceeds the 100 MB upload limit. Please choose a smaller file.'; show('vFile'); dz.classList.add('invalid'); inp.value = ''; fileOk = false; return; }
         fileOk = true;
         dz.style.display = 'none';

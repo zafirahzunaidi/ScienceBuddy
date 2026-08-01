@@ -901,6 +901,7 @@ namespace ScienceBuddy.Student
         // CHATBOT — when student clicks Send
         // 1. Takes the student's message from the text box
         // 2. Adds it to the chat history (stored in Session)
+
         // 3. Sends the full conversation + student's analysis to NVIDIA API
         // 4. Gets the AI reply and adds it to the chat history
         // 5. The page then re-renders to show the new messages

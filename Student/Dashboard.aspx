@@ -2,7 +2,6 @@
 
 <asp:Content ID="HeadStyle" ContentPlaceHolderID="HeadContent" runat="server">
     <link href="<%: ResolveUrl("~/Content/Student.css") %>" rel="stylesheet" />
-
 </asp:Content>
 
 <asp:Content ID="TopNavigationLinks" ContentPlaceHolderID="TopNavLinks" runat="server">

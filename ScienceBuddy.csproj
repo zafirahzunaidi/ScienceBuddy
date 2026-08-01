@@ -220,7 +220,6 @@
     <Content Include="StudentRegistration.aspx" />
     <Content Include="ParentRegistration.aspx" />
     <Content Include="TeacherRegistration.aspx" />
-    <Content Include="ProjectRules.md" />
     <Content Include="connectionStrings.config" />
     <Content Include="Database\DatabaseSchema.md" />
     <Content Include="AppSettingsSecrets.config" />
