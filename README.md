@@ -69,7 +69,6 @@ ScienceBuddy/
 │
 ├── 👑 Admin/
 ├── 🎓 Student/
-│   └── 🧪 Labs/
 ├── 👩‍🏫 Teacher/
 ├── 👨‍👩‍👧 Parent/
 ├── 🌐 Guest/
@@ -105,20 +104,9 @@ git clone https://github.com/your-repository.git
 2. Execute:
 
 ```
-Database/CreateTables.sql
+Database/ScienceBuddy Database Dummy.sql
 ```
 
-3. Then execute
-
-```
-Database/SeedData.sql
-```
-
-4. (Optional)
-
-```
-Database/AddPasswordResetToken.sql
-```
 
 ---
 
@@ -182,22 +170,11 @@ F5
 
 | Role | Username | Password |
 |------|----------|----------|
-| 👑 Admin | admin | See seed data |
-| 👦 Student | See seed data | See seed data |
-| 👩‍🏫 Teacher | See seed data | See seed data |
-| 👨‍👩‍👧 Parent | See seed data | See seed data |
+| 👑 Admin | najihah01 | Admin123 |
+| 👦 Student | maya | Maya2026 |
+| 👩‍🏫 Teacher | nurun | Nurun999 |
+| 👨‍👩‍👧 Parent | hassan | Hassan45 |
 
----
-
-# 📸 Screenshots
-
-| Login | Student Dashboard |
-|--------|-------------------|
-| *(insert image)* | *(insert image)* |
-
-| AI Study Companion | Quiz |
-|--------------------|------|
-| *(insert image)* | *(insert image)* |
 
 ---
 
@@ -207,7 +184,6 @@ F5
 - ✅ Student learning dashboard
 - ✅ Personality-based interface
 - ✅ Learning content management
-- ✅ Virtual laboratories
 - ✅ Practice and unit quizzes
 - ✅ XP and badge system
 - ✅ Certificate generation workflow
@@ -233,14 +209,3 @@ F5
 
 > 📁 Uploaded files are stored inside the `Images/` folder.
 
----
-
-# ❤️ Developed For
-
-**ScienceBuddy**
-\
-Web Application Development Project
-\
-Faculty of Computing
-\
-ASP.NET Web Forms (.NET Framework 4.8.1)
